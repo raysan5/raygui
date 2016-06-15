@@ -112,6 +112,9 @@ misrepresented as being the original software.
 #define MAX_PATH_OR_CMD 1024 /* _MAX_PATH or MAX_PATH */
 #define MAX_MULTIPLE 32
 
+#define _MAX_FNAME  32      // Ray: Added to avoid compile error
+#define _MAX_EXT    8       // Ray: Added to avoid compile error
+
 char tinyfd_version [ 8 ] = "2.4.3";
 
 #ifdef TINYFD_WIN_CONSOLE_ONLY

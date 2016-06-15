@@ -2,6 +2,11 @@
 *
 *   raygui styler - raygui Style Editor
 *
+*   Compile this program using:
+*       gcc -c external/tinyfiledialogs.c -std=c99 -Wall
+*       gcc -o $(NAME_PART).exe $(FILE_NAME) tinyfiledialogs.o -lraylib -lglfw3 -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
+*
+*
 *   This example has been created using raylib v1.5 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
@@ -135,10 +140,12 @@ int main()
                 else cursorData[w*sizeCursor*2 + 2*h + 1] = 0;
             }            
         }
-    }       
+    }
+    
     Texture2D cursorTexture = LoadTextureEx(cursorData, sizeCursor, sizeCursor, UNCOMPRESSED_GRAY_ALPHA);    
     free(cursorData);
     //-----------------------------------------------------------
+    
     // Color picker
     //-----------------------------------------------------------
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
@@ -164,6 +171,7 @@ int main()
     
     for (int i = 0; i < NUM_COLOR_SAMPLES; i++) colorSample[i] = RAYWHITE;   
     
+    int sampleDelta = 18;
     int rgbWidthLabel = 30;
     int rgbHeightLabel = 20;
     int rgbDelta = 6;
@@ -193,7 +201,7 @@ int main()
     
     bool toggleActive = false;
     int toggleNum = 3;
-    char *toggleGuiText[3] = { "toggle", "group", "selection"};
+    char *toggleGuiText[3] = { "toggle", "group", "selection" };
 
     float sliderValue = 50;
     float sliderBarValue = 50;
@@ -203,7 +211,7 @@ int main()
     int spinnerValue = 20;
 
     int comboNum = 5;
-    char *comboText[5] = { "this", "is", "a" ,"combo", "box"};
+    char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
     int comboActive = 0;
     
     char *guiText = (char *)malloc(20);    
@@ -211,6 +219,7 @@ int main()
 
     bool saveStyle = false;
     bool loadStyle = false;
+    bool isModified = false;
     
     const char *fileName;
     
@@ -231,7 +240,7 @@ int main()
     Texture2D checkerTexture = LoadTextureEx(pixels, size, size, UNCOMPRESSED_R8G8B8A8);
     
     free(pixels);
-    //----------------------------------------------------------- 
+    //-----------------------------------------------------------
     
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -251,7 +260,7 @@ int main()
             printf("Droped file detected: %s\n", droppedFiles[0]);
         }
         
-        if(guiElementSelected == PROGRESSBAR)
+        if (guiElementSelected == PROGRESSBAR)
         {
             if (progressValue > 1.0f) progressValue = 0;
             progressValue += 0.005f;
@@ -294,6 +303,8 @@ int main()
                     else if (guiPropertyType[guiPropertyHover] == 1) sizeValueSelected = GetStyleProperty(guiPropertyHover);
                 }   
                 
+                // TODO: REVIEW: Can make the application crash...
+                /*
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
                 {
                     if (guiPropertySelected == i) guiPropertySelected = -1;
@@ -311,13 +322,21 @@ int main()
                         else sizeValueSelected = GetStyleProperty(guiPropertySelected);
                     }
                 }
+                */
                 break;
             }
             else guiPropertyHover = -1;
         }
-
+       
         // Update style size value
-        if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 1)) SetStyleProperty(guiPropertySelected, sizeValueSelected);
+        if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 1)) 
+        {
+            if (GetStyleProperty(guiPropertySelected) != sizeValueSelected)
+            {
+                isModified = true;
+                SetStyleProperty(guiPropertySelected, sizeValueSelected);
+            }
+        }
         
         // Color picker logic
         if (CheckCollisionPointRec(GetMousePosition(), colorPickerBounds))
@@ -346,7 +365,14 @@ int main()
             colorPickerValue.b = blueValue;
             colorPickerValue.a = alphaValue;
             
-            if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0)) SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
+            if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0))
+            {                
+                if (GetStyleProperty(guiPropertySelected) != GetHexValue(colorPickerValue))
+                {
+                    SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
+                    isModified = true;
+                }
+            }
         }
         
         // Color samples
@@ -377,32 +403,36 @@ int main()
                     alphaValue = colorPickerValue.a;
                 }               
             }            
-        }   
-        
-        // Update style color value
+        }
+
+        // Update style color value --> PROGRAM CRASH!!!
+        /*
         if (guiPropertySelected == BACKGROUND_COLOR) bgColor = colorPickerValue;
         else if ((guiPropertySelected != BACKGROUND_COLOR) && (guiPropertyType[guiPropertySelected] == 0)) 
         {
             bgColor = GetColor(GetStyleProperty(BACKGROUND_COLOR));
             SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
         }
+        */
         
         if (saveStyle) 
         {
             SaveGuiStyle(fileName);            
             saveStyle = false;
             fileName = "";
+            isModified = false;
         }
-        
+
         if (loadStyle)
         {
             LoadGuiStyle(fileName);
             loadStyle = false;
             fileName = "";
+            isModified = false;
             
             ClearDroppedFiles();
         }
-        
+
         //----------------------------------------------------------------------------------
         
         // Draw
@@ -410,6 +440,16 @@ int main()
         BeginDrawing();
         
             ClearBackground(RAYWHITE); 
+            
+            // Show selected properties
+            if (guiPropertySelected >= 0)  DrawText(FormatText("SELECTED PROPERTY: <%s>", guiPropertyName[guiPropertySelected]), 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            else DrawText("SELECTED PROPERTY: <style property> / none", 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            
+            // Show if have been a modification
+            if (!isModified) DrawText("SAVE STATUS: SAVED (filename.style)", screenWidth - 230 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            else DrawText("SAVE STATUS: NOT SAVED", screenWidth - 230, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            
+            DrawText(FormatText("ColorPicker hexadecimal value #%x", GetHexValue(colorPickerValue)), screenWidth/2 - 180 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK); 
             
             // Background color
             DrawRectangle(0,0, guiElementRec[0].width, GetScreenHeight() - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.3f));
@@ -543,6 +583,7 @@ int main()
                     loadStyle = true;
                 }
             }
+
             if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Save Style")) 
             { 
                 fileName = tinyfd_saveFileDialog( "", "name.style", 0, NULL, NULL);
