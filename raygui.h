@@ -35,6 +35,10 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
+*   #define RAYGUI_NO_STYLE_SAVE_LOAD
+*       Avoid including style customization and save/load functions, useful when just using default
+*       raygui style. Simplyfies library functionality and code size.
+*
 *   #define RAYGUI_MALLOC()
 *   #define RAYGUI_FREE()
 *       You can define your own malloc/free implementation replacing stdlib.h malloc()/free() functions.
@@ -260,11 +264,12 @@ RAYGUIDEF void GuiProgressBar(Rectangle bounds, float value);                   
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner element, returns selected value
 RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text);                                                     // Text Box element, returns input text
 
+#if !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
 RAYGUIDEF void SaveGuiStyle(const char *fileName);                        // Save GUI style file
 RAYGUIDEF void LoadGuiStyle(const char *fileName);                        // Load GUI style file
-
 RAYGUIDEF void SetStyleProperty(int guiProperty, int value);              // Set one style property
 RAYGUIDEF int GetStyleProperty(int guiProperty);                          // Get one style property
+#endif
 
 #endif // RAYGUI_H
 
@@ -281,14 +286,17 @@ RAYGUIDEF int GetStyleProperty(int guiProperty);                          // Get
                             // NOTE: Those functions are only used in SaveGuiStyle() and LoadGuiStyle()
                         
 // Check if custom malloc/free functions defined, if not, using standard ones
-#if !defined(RAYGUI_MALLOC)
+#if !defined(RAYGUI_MALLOC) || !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
     #include <stdlib.h>     // Required for: malloc(), free() [Used only on LoadGuiStyle()]
     
     #define RAYGUI_MALLOC(size)  malloc(size)
     #define RAYGUI_FREE(ptr)     free(ptr)
 #endif
 
-#include <string.h>         // Required for: strcmp() [Used only on LoadGuiStyle()]
+#if !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
+    #include <string.h>     // Required for: strcmp() [Used only on LoadGuiStyle()]
+#endif
+
 #include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
 
 //----------------------------------------------------------------------------------
@@ -418,6 +426,7 @@ static int style[NUM_PROPERTIES] = {
     10                  // TEXTBOX_TEXT_FONTSIZE
 };
 
+#if !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
 // GUI property names (to read/write style text files)
 static const char *guiPropertyName[] = {
     "GLOBAL_BASE_COLOR",
@@ -519,6 +528,7 @@ static const char *guiPropertyName[] = {
     "TEXTBOX_LINE_COLOR",
     "TEXTBOX_TEXT_FONTSIZE"
 };
+#endif
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -1269,6 +1279,7 @@ RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text)
     return text;
 }
 
+#if !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
 // Save current GUI style into a text file
 RAYGUIDEF void SaveGuiStyle(const char *fileName)
 {
@@ -1430,6 +1441,8 @@ RAYGUIDEF void SetStyleProperty(int guiProperty, int value)
 
 // Get one style property value
 RAYGUIDEF int GetStyleProperty(int guiProperty) { return style[guiProperty]; }
+
+#endif  // !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
