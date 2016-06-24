@@ -286,7 +286,7 @@ RAYGUIDEF int GetStyleProperty(int guiProperty);                          // Get
                             // NOTE: Those functions are only used in SaveGuiStyle() and LoadGuiStyle()
                         
 // Check if custom malloc/free functions defined, if not, using standard ones
-#if !defined(RAYGUI_MALLOC) || !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
+#if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
     #include <stdlib.h>     // Required for: malloc(), free() [Used only on LoadGuiStyle()]
     
     #define RAYGUI_MALLOC(size)  malloc(size)
