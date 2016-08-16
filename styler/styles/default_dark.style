@@ -3,10 +3,13 @@ GLOBAL_BORDER_COLOR                     0xf5f5f5ff
 GLOBAL_TEXT_COLOR                       0xf5f5f5ff
 GLOBAL_TEXT_FONTSIZE                    0xa
 GLOBAL_BORDER_WIDTH                     0x1
+
 BACKGROUND_COLOR                        0x293235ff
+
 LABEL_BORDER_WIDTH                      0x0
 LABEL_TEXT_COLOR                        0x90acb4ff
 LABEL_TEXT_PADDING                      0x0
+
 BUTTON_BORDER_WIDTH                     0x2
 BUTTON_TEXT_PADDING                     0x0
 BUTTON_DEFAULT_BORDER_COLOR             0x3e4a4fff
@@ -18,8 +21,9 @@ BUTTON_HOVER_TEXT_COLOR                 0x90acb4ff
 BUTTON_PRESSED_BORDER_COLOR             0x5f9aa4ff
 BUTTON_PRESSED_INSIDE_COLOR             0x334f59ff
 BUTTON_PRESSED_TEXT_COLOR               0x5f9aa8ff
-TOGGLE_TEXT_PADDING                     0x0
-TOGGLE_BORDER_WIDTH                     0x2
+
+TOGGLE_TEXT_PADDING                     20
+TOGGLE_BORDER_WIDTH                     1
 TOGGLE_DEFAULT_BORDER_COLOR             0x3e4b4dff
 TOGGLE_DEFAULT_INSIDE_COLOR             0x344041ff
 TOGGLE_DEFAULT_TEXT_COLOR               0x828282ff
@@ -32,7 +36,9 @@ TOGGLE_PRESSED_TEXT_COLOR               0x5f9aa8ff
 TOGGLE_ACTIVE_BORDER_COLOR              0x92c763ff
 TOGGLE_ACTIVE_INSIDE_COLOR              0x334f59ff
 TOGGLE_ACTIVE_TEXT_COLOR                0x92c763ff
+
 TOGGLEGROUP_PADDING                     0x3
+
 SLIDER_BORDER_WIDTH                     0x1
 SLIDER_BUTTON_BORDER_WIDTH              0x0
 SLIDER_BORDER_COLOR                     0x828282ff
@@ -40,16 +46,19 @@ SLIDER_INSIDE_COLOR                     0x3e4b4dff
 SLIDER_DEFAULT_COLOR                    0x92c763ff
 SLIDER_HOVER_COLOR                      0xc3e0a9ff
 SLIDER_ACTIVE_COLOR                     0xffffffff
+
 SLIDERBAR_BORDER_COLOR                  0x828282ff
 SLIDERBAR_INSIDE_COLOR                  0x344041ff
 SLIDERBAR_DEFAULT_COLOR                 0x92c763ff
 SLIDERBAR_HOVER_COLOR                   0xc3e0a9ff
 SLIDERBAR_ACTIVE_COLOR                  0xffffffff
 SLIDERBAR_ZERO_LINE_COLOR               0x828282ff
+
 PROGRESSBAR_BORDER_COLOR                0x828282ff
 PROGRESSBAR_INSIDE_COLOR                0x3e4b4dff
 PROGRESSBAR_PROGRESS_COLOR              0x92c763ff
 PROGRESSBAR_BORDER_WIDTH                0x1
+
 SPINNER_LABEL_BORDER_COLOR              0x3e4b4dff
 SPINNER_LABEL_INSIDE_COLOR              0x344041ff
 SPINNER_DEFAULT_BUTTON_BORDER_COLOR     0x3e4b4dff
@@ -64,9 +73,10 @@ SPINNER_PRESSED_BUTTON_BORDER_COLOR     0x92c763ff
 SPINNER_PRESSED_BUTTON_INSIDE_COLOR     0x334f59ff
 SPINNER_PRESSED_SYMBOL_COLOR            0x92c763ff
 SPINNER_PRESSED_TEXT_COLOR              0x92c763ff
+
 COMBOBOX_PADDING                        0x1
-COMBOBOX_BUTTON_WIDTH                   0x28
-COMBOBOX_BUTTON_HEIGHT                  0xa
+COMBOBOX_BUTTON_WIDTH                   30
+COMBOBOX_BUTTON_HEIGHT                  20
 COMBOBOX_BORDER_WIDTH                   0x1
 COMBOBOX_DEFAULT_BORDER_COLOR           0x3e4b4dff
 COMBOBOX_DEFAULT_INSIDE_COLOR           0x344041ff
@@ -90,6 +100,7 @@ CHECKBOX_CLICK_BORDER_COLOR             0x5f9aa8ff
 CHECKBOX_CLICK_INSIDE_COLOR             0x334f59ff
 CHECKBOX_STATUS_ACTIVE_COLOR            0x92c763ff
 CHECKBOX_INSIDE_WIDTH                   0x2
+
 TEXTBOX_BORDER_WIDTH                    0x1
 TEXTBOX_BORDER_COLOR                    0x47595fff
 TEXTBOX_INSIDE_COLOR                    0x828282ff
