@@ -3,8 +3,8 @@
 *   raygui styler - raygui Style Editor
 *
 *   Compile this program using:
-*       gcc -c external/tinyfiledialogs.c -std=c99 -Wall
-*       gcc -o $(NAME_PART).exe $(FILE_NAME) tinyfiledialogs.o -lraylib -lglfw3 -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
+*       gcc -o $(NAME_PART).exe $(FILE_NAME) external/tinyfiledialogs.c \ 
+*       -lraylib -lglfw3 -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
 *
 *   This example has been created using raylib v1.5 (www.raylib.com)
@@ -304,7 +304,6 @@ int main()
                 }   
                 
                 // TODO: REVIEW: Can make the application crash...
-                /*
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
                 {
                     if (guiPropertySelected == i) guiPropertySelected = -1;
@@ -322,7 +321,7 @@ int main()
                         else sizeValueSelected = GetStyleProperty(guiPropertySelected);
                     }
                 }
-                */
+
                 break;
             }
             else guiPropertyHover = -1;
