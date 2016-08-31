@@ -425,8 +425,8 @@ static int style[NUM_PROPERTIES] = {
     0xffffffff,         // CHECKBOX_HOVER_INSIDE_COLOR
     0x66e7ffff,         // CHECKBOX_CLICK_BORDER_COLOR
     0xddf5ffff,         // CHECKBOX_CLICK_INSIDE_COLOR
-    0x7bb0d6ff,         // CHECKBOX_STATUS_ACTIVE_COLOR
-    4,                  // CHECKBOX_INSIDE_WIDTH
+    0xbcecffff,         // CHECKBOX_STATUS_ACTIVE_COLOR
+    1,                  // CHECKBOX_INSIDE_WIDTH
     1,                  // TEXTBOX_BORDER_WIDTH
     0x828282ff,         // TEXTBOX_BORDER_COLOR
     0xf5f5f5ff,         // TEXTBOX_INSIDE_COLOR
@@ -939,7 +939,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
            comboActive += 1;
-           if(comboActive >= comboNum) comboActive = 0;
+           if (comboActive >= comboNum) comboActive = 0;
         }
     }
 

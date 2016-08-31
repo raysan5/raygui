@@ -67,16 +67,16 @@ int main()
 
     // Defines if the property to change is a Color or a value to update it accordingly
     // NOTE: 0 - Color, 1 - value
-    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 0, 0, 0, 1, 1, 0, 1, 0, 1, 1,
-                                                            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 
                                                             1, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-                                                            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
-                                                            0, 0, 0, 0, 0, 0, 1, 1, 1, 1,  
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-                                                            0, 1, 1, 0, 0, 0, 0, 1 };
+                                                            0, 1, 1, 0, 0, 0, 0, 0, 0, 0,   
+                                                            0, 0, 0, 0, 0, 1, 1, 1, 0, 0,  
+                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
+                                                            0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  
+                                                            0, 0, 0, 0, 0, 0, 0, 1, 1, 1,   
+                                                            1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
+                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
+                                                            0, 0, 1, 1, 0, 0, 0, 0, 1 };
     int aux = 0;
     int guiPropertyPos[NUM_ELEMENTS];
 
@@ -139,19 +139,19 @@ int main()
     int sizeCursor = 16; // size must be POT
     unsigned char *cursorData = (unsigned char *)malloc(sizeCursor*sizeCursor*2*sizeof(unsigned char));
     
-    for(int w = 0; w < sizeCursor; w++)
+    for (int w = 0; w < sizeCursor; w++)
     {
         for (int h = 0; h < sizeCursor; h++)
         {
             cursorData[w*sizeCursor*2 + 2*h] = 0;
-            if((sizeCursor%2) == 0)
+            if ((sizeCursor%2) == 0)
             {
-                if(((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) && ((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)))
+                if (((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) && ((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)))
                 {
                     cursorData[w*sizeCursor*2 + 2*h + 1] = 0;
                 }
-                else if((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
-                else if((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
+                else if ((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
+                else if ((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
                 else cursorData[w*sizeCursor*2 + 2*h + 1] = 0;
             }            
         }
@@ -368,7 +368,8 @@ int main()
                 blueValue = colorPickerValue.b;
                 alphaValue = colorPickerValue.a;
             }            
-            if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))  if(IsCursorHidden()) ShowCursor();
+            
+            if (IsMouseButtonUp(MOUSE_LEFT_BUTTON) && IsCursorHidden()) ShowCursor();
         }
         else
         {
@@ -394,7 +395,7 @@ int main()
         {
             colorSelectedHover = true;
             
-            if(IsMouseButtonDown (MOUSE_RIGHT_BUTTON)) colorSample[sampleSelected] = colorPickerValue;
+            if (IsMouseButtonDown (MOUSE_RIGHT_BUTTON)) colorSample[sampleSelected] = colorPickerValue;
         }
         else colorSelectedHover = false;
         
@@ -546,7 +547,7 @@ int main()
             //DrawRectangleV(GetMousePosition(), (Vector2){ 4, 4 }, RED);
 
             // -- Color value result
-            if(colorSelectedHover) DrawRectangle(colorPickerPos.x - 3, colorPickerPos.y - 3 + colorPickerTexture.height + 2*rgbDelta, 2*rgbWidthLabel + 6, 2*rgbWidthLabel + 6, BLACK);
+            if (colorSelectedHover) DrawRectangle(colorPickerPos.x - 3, colorPickerPos.y - 3 + colorPickerTexture.height + 2*rgbDelta, 2*rgbWidthLabel + 6, 2*rgbWidthLabel + 6, BLACK);
             else DrawRectangle(colorPickerPos.x - 2, colorPickerPos.y - 2 + colorPickerTexture.height + 2*rgbDelta, 2*rgbWidthLabel + 4, 2*rgbWidthLabel + 4, Fade(COLOR_REC, 0.8f));
             DrawRectangleRec (colorSelectedBoundsRec, WHITE);
             DrawRectangleRec (colorSelectedBoundsRec, colorPickerValue);
@@ -589,7 +590,7 @@ int main()
             // -- Load and Save buttons
             if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Load Style"))
             { 
-                fileName = tinyfd_openFileDialog( "", "name.style", 0, NULL, NULL, 0);
+                fileName = tinyfd_openFileDialog("", "name.style", 0, NULL, NULL, 0);
 
                 if (fileName == NULL) fileName = "";
                 else 
@@ -601,7 +602,7 @@ int main()
 
             if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Save Style")) 
             { 
-                fileName = tinyfd_saveFileDialog( "", "name.style", 0, NULL, NULL);
+                fileName = tinyfd_saveFileDialog("", "name.style", 0, NULL, NULL);
                 
                 if (fileName == NULL) fileName = "";
                 else saveStyle = true; 
