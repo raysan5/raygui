@@ -76,7 +76,7 @@ int main()
                                                             0, 0, 0, 0, 0, 0, 0, 1, 1, 1,   
                                                             1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
                                                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 1, 1, 0, 0, 0, 0, 1 };
+                                                            0, 0, 1, 1, 0, 0, 0, 0, 1 };	//1
     int aux = 0;
     int guiPropertyPos[NUM_ELEMENTS];
 
@@ -570,17 +570,17 @@ int main()
               
             // -- RGBA sliders
             GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 14*rgbDelta, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", redValue), BLACK, COLOR_REC, RED);
-            redValue = GuiSlider((Rectangle)(Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 14*rgbDelta, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, redValue, 0, 255);
+            redValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 14*rgbDelta, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, redValue, 0, 255);
 
             GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 15*rgbDelta + rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", greenValue), BLACK, COLOR_REC, GREEN);
-            greenValue = GuiSlider((Rectangle)(Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 15*rgbDelta + rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, greenValue, 0, 255);
+            greenValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 15*rgbDelta + rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, greenValue, 0, 255);
 
             GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 16*rgbDelta + 2*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", blueValue), BLACK, COLOR_REC, BLUE);
-            blueValue = GuiSlider((Rectangle)(Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 16*rgbDelta + 2*rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, blueValue, 0, 255);
+            blueValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 16*rgbDelta + 2*rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, blueValue, 0, 255);
             
             DrawTextureRec(checkerTexture, (Rectangle){0,0,rgbWidthLabel, rgbHeightLabel}, (Vector2){colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 17*rgbDelta + 3*rgbHeightLabel}, WHITE);   
             DrawRectangle(colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 17*rgbDelta + 3*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel, Fade(colorPickerValue, (float)alphaValue/100));            
-            alphaValue = GuiSlider((Rectangle)(Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 17*rgbDelta + 3*rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, alphaValue, 0, 255);
+            alphaValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + colorPickerTexture.height + 17*rgbDelta + 3*rgbHeightLabel, colorPickerTexture.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, alphaValue, 0, 255);
             DrawRectangleLines(colorPickerPos.x,colorPickerPos.y + colorPickerTexture.height + 17*rgbDelta + 3*rgbHeightLabel,rgbWidthLabel, rgbHeightLabel, COLOR_REC);
             
             // -- VALUE Spinner 
