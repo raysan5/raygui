@@ -1,9 +1,9 @@
 # raygui
 raygui is simple and easy-to-use IMGUI header-only library.
 
-raygui was inspired by Unity OnGUI immediate mode GUI API.
+raygui was inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
-Initially raygui was conceived as an additional raylib module to create simple GUIs using a raygui graphic style (simple colors, plain rectangular shapes, wide borders, raylib standard font).
+Initially raygui was conceived as an extra module for [raylib](https://github.com/raysan5/raylib) to create simple GUIs using a raylib graphic style (simple colors, plain rectangular shapes, wide borders, raylib standard font...).
 
 ## history
 raygui was originally developed to create simple GUIs for some raylib-based tools (without external dependencies, only raylib).
@@ -33,6 +33,6 @@ Currently raygui provides the following controls:
 ## acknowledgements
 The following people has invested their time and effort into raygui project. Big thanks to them!
 
-[Kevin Gato](@Gatonevermind) for working on initial development.
-Daniel Nicolas  for working on initial development.
-Sergio Martinez for improving raygui and working on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool.
+ - [Kevin Gato](https://github.com/Gatonevermind) for working on initial development.
+ - Daniel Nicolas  for working on initial development.
+ - [Sergio Martinez](https://github.com/anidealgift) for improving raygui and working on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool.
