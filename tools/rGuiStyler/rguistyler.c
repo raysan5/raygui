@@ -34,13 +34,24 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-#include "external/tinyfiledialogs.h"
-#include "colorpicker.h"
+#include "external/tinyfiledialogs.h"   // Open/Save file dialogs
+#include "colorpicker.h"                // Color picker image data
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+#if defined(_WIN32)
+    #include <direct.h>
+    #define GetCurrentDir _getcwd
+#else
+    #include <unistd.h>
+    #define GetCurrentDir getcwd
+#endif
+
+//----------------------------------------------------------------------------------
+// Defines and Macros
+//----------------------------------------------------------------------------------
 #define FONT_SIZE           10
 #define COLOR_REC           BEIGE
 #define NUM_COLOR_SAMPLES   10
@@ -56,6 +67,20 @@ typedef enum { GLOBAL, BACKGROUND, LABEL, BUTTON, TOGGLE, TOGGLEGROUP, SLIDER, S
 
 const char *guiElementText[NUM_ELEMENTS] = { "GLOBAL", "BACKGROUND", "LABEL", "BUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX" };
 
+//----------------------------------------------------------------------------------
+// Global Variables Definition
+//----------------------------------------------------------------------------------
+static char currentPath[256];       // Path to current working folder
+
+//----------------------------------------------------------------------------------
+// Module Functions Declaration
+//----------------------------------------------------------------------------------
+static void BtnLoadStyle(void);     // Button load style function
+static void BtnSaveStyle(void);     // Button save style function
+
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
 int main()
 {
     // Initialization
@@ -76,7 +101,7 @@ int main()
                                                             0, 0, 0, 0, 0, 0, 0, 1, 1, 1,   
                                                             1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
                                                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 1, 1, 0, 0, 0, 0, 1 };	//1
+                                                            0, 0, 1, 1, 0, 0, 0, 0, 1 };
     int aux = 0;
     int guiPropertyPos[NUM_ELEMENTS];
 
@@ -87,7 +112,7 @@ int main()
     }
     
     //SetConfigFlags(FLAG_FULLSCREEN_MODE);
-    InitWindow(screenWidth, screenHeight, "raygui styler");
+    InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
     
     int count = 0;
     char **droppedFiles;
@@ -101,7 +126,7 @@ int main()
     int guiElementHover = -1;
 
     // Generate properties rectangles depending on guiPropertyNum[] and guiPropertyPos[]
-    //------------------------------------------------------------
+    //-----------------------------------------------------------------------------------
     Rectangle propertyRec[NUM_PROPERTIES];
 
     for (int j = 0; j < NUM_ELEMENTS; j++)
@@ -134,7 +159,7 @@ int main()
     //int selectHeight = screenHeight;
     //------------------------------------------------------------
     
-    // Cursor texture generation
+    // Color picker cursor texture generation
     //-----------------------------------------------------------
     int sizeCursor = 16; // size must be POT
     unsigned char *cursorData = (unsigned char *)malloc(sizeCursor*sizeCursor*2*sizeof(unsigned char));
@@ -176,7 +201,7 @@ int main()
 
     Vector2 cursorPickerPos = {colorPickerPos.x +(colorPickerTexture.width/2) - cursorTexture.width/2, colorPickerPos.y + (colorPickerTexture.height/2) - cursorTexture.height/2};
     
-    Color *colorPickerPixel = GetImageData(colorPickerImage);
+    Color *colorPickerPixels = GetImageData(colorPickerImage);
     
     Rectangle colorPickerBounds = (Rectangle){ (int)colorPickerPos.x, (int)colorPickerPos.y, colorPickerTexture.width, colorPickerTexture.height };
 
@@ -195,7 +220,7 @@ int main()
     int blueValue = 0;
     int alphaValue = 255;
     
-    // -- Color samples
+    // Color samples
     Rectangle colorSelectedBoundsRec = {colorPickerPos.x, colorPickerPos.y + colorPickerTexture.height + 2*rgbDelta, 2*rgbWidthLabel, 2*rgbWidthLabel};
     bool colorSelectedHover = false;
     
@@ -232,11 +257,7 @@ int main()
     char *guiText = (char *)malloc(20);    
     for (int i = 0; i < 20; i++) guiText[i] = '\0';
 
-    bool saveStyle = false;
-    bool loadStyle = false;
     bool isModified = false;
-    
-    const char *fileName;
     
     // Checked texture generation
     //-----------------------------------------------------------
@@ -257,6 +278,12 @@ int main()
     free(pixels);
     //-----------------------------------------------------------
     
+    // Get current directory
+    // NOTE: Current working directory could not match current executable directory
+    GetCurrentDir(currentPath, sizeof(currentPath));
+    currentPath[strlen(currentPath)] = '\\';
+    currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
     
@@ -267,12 +294,15 @@ int main()
         //----------------------------------------------------------------------------------
         if (IsFileDropped())
         {
+            /*
             guiPropertySelected = -1;
             droppedFiles = GetDroppedFiles(&count);
             fileName = droppedFiles[0];
-            loadStyle = true;
             
-            printf("Droped file detected: %s\n", droppedFiles[0]);
+            //BtnLoadStyle();
+            
+            //ClearDroppedFiles();
+            */
         }
         
         if (guiElementSelected == PROGRESSBAR)
@@ -319,6 +349,7 @@ int main()
                 }   
                 
                 // TODO: REVIEW: Can make the application crash...
+                /*
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
                 {
                     if (guiPropertySelected == i) guiPropertySelected = -1;
@@ -336,6 +367,7 @@ int main()
                         else sizeValueSelected = GetStyleProperty(guiPropertySelected);
                     }
                 }
+                */
 
                 break;
             }
@@ -362,7 +394,7 @@ int main()
                 cursorPickerPos = (Vector2){ GetMousePosition().x - cursorTexture.width/2, GetMousePosition().y - cursorTexture.height/2};
                 colorPosition = (Vector2){ GetMousePosition().x - colorPickerPos.x, GetMousePosition().y - colorPickerPos.y};
                 
-                colorPickerValue = colorPickerPixel[(int)colorPosition.x + (int)colorPosition.y*colorPickerTexture.width];
+                colorPickerValue = colorPickerPixels[(int)colorPosition.x + (int)colorPosition.y*colorPickerTexture.width];
                 redValue = colorPickerValue.r;
                 greenValue = colorPickerValue.g;
                 blueValue = colorPickerValue.b;
@@ -429,25 +461,6 @@ int main()
             SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
         }
         */
-        
-        if (saveStyle) 
-        {
-            SaveGuiStyle(fileName);            
-            saveStyle = false;
-            fileName = "";
-            isModified = false;
-        }
-
-        if (loadStyle)
-        {
-            LoadGuiStyle(fileName);
-            loadStyle = false;
-            fileName = "";
-            isModified = false;
-            
-            ClearDroppedFiles();
-        }
-
         //----------------------------------------------------------------------------------
         
         // Draw
@@ -560,6 +573,7 @@ int main()
                 else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 1, colorPickerPos.y - 1 + colorPickerTexture.height + 2*rgbDelta, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
                 DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + colorPickerTexture.height + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
             }
+            
             for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) 
             {
                 if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + colorPickerTexture.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
@@ -588,26 +602,9 @@ int main()
             sizeValueSelected = GuiSpinner((Rectangle){ colorPickerPos.x + 2*rgbWidthLabel, colorPickerPos.y + colorPickerTexture.height + 10*rgbHeightLabel, colorPickerTexture.height - 2*rgbWidthLabel, rgbWidthLabel}, sizeValueSelected, 0, 50);
 
             // -- Load and Save buttons
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Load Style"))
-            { 
-                fileName = tinyfd_openFileDialog("", "name.style", 0, NULL, NULL, 0);
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Load Style")) BtnLoadStyle();
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Save Style")) BtnSaveStyle();
 
-                if (fileName == NULL) fileName = "";
-                else 
-                {
-                    guiPropertySelected = -1;
-                    loadStyle = true;
-                }
-            }
-
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, colorPickerTexture.width, rgbWidthLabel}, "Save Style")) 
-            { 
-                fileName = tinyfd_saveFileDialog("", "name.style", 0, NULL, NULL);
-                
-                if (fileName == NULL) fileName = "";
-                else saveStyle = true; 
-            }
-            
             //GuiLabel((Rectangle){colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT + rgbDelta, 2*rgbWidthLabel, rgbWidthLabel}, "File name");
             //fileName = GuiTextBox((Rectangle){colorPickerPos.x + 2*rgbWidthLabel, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT + rgbDelta, colorPickerTexture.width - 2*rgbWidthLabel, rgbWidthLabel}, fileName);
             
@@ -638,8 +635,7 @@ int main()
     UnloadTexture(cursorTexture);
     
     free(guiText);
-    //free(fileName);
-    free(colorPickerPixel);
+    free(colorPickerPixels);
     
     ClearDroppedFiles();    // Clear internal buffers
     
@@ -647,4 +643,47 @@ int main()
     //--------------------------------------------------------------------------------------
     
     return 0;
+}
+
+//--------------------------------------------------------------------------------------------
+// Module functions
+//--------------------------------------------------------------------------------------------
+
+// Button load style function
+static void BtnLoadStyle(void)
+{
+    // Open file dialog
+    const char *filters[] = { "*.rstyle" };
+
+    const char *fileName = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rstyle)", 0);
+
+    if (fileName != NULL)
+    {
+        LoadGuiStyle(fileName);
+        
+        //guiPropertySelected = -1;
+        fileName = "";
+        //isModified = false;
+    }
+}
+
+// Button save style function
+static void BtnSaveStyle(void)
+{
+    char currrentPathFile[256];
+
+    // Add sample file name to currentPath
+    strcpy(currrentPathFile, currentPath);
+    strcat(currrentPathFile, "mystyle.rstyle\0");
+
+    // Save file dialog
+    const char *filters[] = { "*.rstyle" };
+    const char *fileName = tinyfd_saveFileDialog("Save raygui style file", currrentPathFile, 1, filters, "raygui Style Files (*.rstyle)");
+
+    if (fileName != NULL)
+    {
+        SaveGuiStyle(fileName);
+        fileName = "";
+        //isModified = false;
+    }
 }
