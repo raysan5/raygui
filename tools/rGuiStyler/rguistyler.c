@@ -211,7 +211,6 @@ int main()
     
     for (int i = 0; i < NUM_COLOR_SAMPLES; i++) colorSample[i] = RAYWHITE;   
     
-    int sampleDelta = 18;
     int rgbWidthLabel = 30;
     int rgbHeightLabel = 20;
     int rgbDelta = 6;
@@ -348,8 +347,7 @@ int main()
                     else if (guiPropertyType[guiPropertyHover] == 1) sizeValueSelected = GetStyleProperty(guiPropertyHover);
                 }   
                 
-                // TODO: REVIEW: Can make the application crash...
-                /*
+                // TODO: REVIEW: Corrected crash due to -1 values... redesign required... --> BE CAREFUL!
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
                 {
                     if (guiPropertySelected == i) guiPropertySelected = -1;
@@ -357,18 +355,18 @@ int main()
                     {
                         guiPropertySelected = i;
                         
-                        if (guiPropertyType[guiPropertyHover] == 0) 
+                        if ((guiPropertyHover > -1) && (guiPropertyType[guiPropertyHover] == 0))
                         {
-                            colorPickerValue = GetColor(GetStyleProperty(guiPropertySelected));
+                            if (guiPropertySelected > -1) colorPickerValue = GetColor(GetStyleProperty(guiPropertySelected));
+                            
                             redValue = colorPickerValue.r;
                             greenValue = colorPickerValue.g;
                             blueValue = colorPickerValue.b;  
                         }
-                        else sizeValueSelected = GetStyleProperty(guiPropertySelected);
+                        else if (guiPropertySelected > -1) sizeValueSelected = GetStyleProperty(guiPropertySelected);
                     }
                 }
-                */
-
+                
                 break;
             }
             else guiPropertyHover = -1;
@@ -452,15 +450,14 @@ int main()
             }            
         }
 
-        // Update style color value --> PROGRAM CRASH!!!
-        /*
+        // Update style color value --> BE CAREFUL...
         if (guiPropertySelected == BACKGROUND_COLOR) bgColor = colorPickerValue;
-        else if ((guiPropertySelected != BACKGROUND_COLOR) && (guiPropertyType[guiPropertySelected] == 0)) 
+        else if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0))
         {
             bgColor = GetColor(GetStyleProperty(BACKGROUND_COLOR));
             SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
         }
-        */
+        
         //----------------------------------------------------------------------------------
         
         // Draw
