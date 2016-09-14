@@ -293,15 +293,13 @@ int main()
         //----------------------------------------------------------------------------------
         if (IsFileDropped())
         {
-            /*
             guiPropertySelected = -1;
             droppedFiles = GetDroppedFiles(&count);
-            fileName = droppedFiles[0];
+            //fileName = droppedFiles[0];
             
             //BtnLoadStyle();
             
-            //ClearDroppedFiles();
-            */
+            ClearDroppedFiles();
         }
         
         if (guiElementSelected == PROGRESSBAR)
@@ -310,6 +308,8 @@ int main()
             progressValue += 0.005f;
         }
         
+        // NOTE: REVIEW!!! -> CRASHES APP... (ironically, in MSVC works perfectly)
+        /*
         for (int i = 0; i < NUM_ELEMENTS; i++)
         {
             if (CheckCollisionPointRec(GetMousePosition(), guiElementRec[i]))
@@ -457,7 +457,7 @@ int main()
             bgColor = GetColor(GetStyleProperty(BACKGROUND_COLOR));
             SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
         }
-        
+        */
         //----------------------------------------------------------------------------------
         
         // Draw

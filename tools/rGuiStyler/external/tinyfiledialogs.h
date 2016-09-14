@@ -1,10 +1,10 @@
 /*
  _________
-/         \ tinyfiledialogs.h v2.5.6 [August 6, 2016] zlib licence
+/         \ tinyfiledialogs.h v2.5.8 [September 13, 2016] zlib licence
 |tiny file| Unique header file of "tiny file dialogs" created [November 9, 2014]
 | dialogs | Copyright (c) 2014 - 2016 Guillaume Vareille http://ysengrin.com
 \____  ___/ http://tinyfiledialogs.sourceforge.net
-     \|           	                     mailto:tinfyfiledialogs@ysengrin.com
+     \|           	                     mailto:tinyfiledialogs@ysengrin.com
 
 A big thank you to Don Heyse http://ldglite.sf.net for
                    his code contributions, bug corrections & thorough testing!
@@ -39,7 +39,7 @@ NO MAIN LOOP
 
 The dialogs can be forced into console mode
 
-Windows [UTF-8 + UTF-16]
+Windows [MBCS + UTF-8 + UTF-16]
 - native code & some vbs create the graphic dialogs
 - enhanced console mode can use dialog.exe from
 http://andrear.altervista.org/home/cdialog.php
@@ -100,6 +100,7 @@ extern "C" {
 extern char tinyfd_version[8]; /* contains tinyfd current version number */
 
 #ifdef _WIN32
+/* tinyfd_winUtf8 is not ready yet, do not modify */
 extern int tinyfd_winUtf8; /* 0 (default) or 1 */
 /* on windows string char can be 0:MBSC or 1:UTF-8 (work in progress)
 unless your code is really prepared for it, leave this on MBSC.
