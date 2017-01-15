@@ -4,9 +4,9 @@
 *
 *   DEPENDENCIES:
 *
-*   raylib 1.6 - This program uses latest raylib audio module functionality.
+*   raylib 1.7 - This program uses latest raylib audio module functionality.
 *   raygui 1.0 - Simple IMGUI library (based on raylib)
-*   tinyfiledialogs 2.5.8 - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
+*   tinyfiledialogs 2.7.2 - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
 *
 *   VERSIONS HISTORY:
 *
@@ -17,6 +17,12 @@
 *   0.7  (04-Sep-2016) Program variables renaming for consistency, code reorganized
 *   0.6  (30-Aug-2016) Interface redesigned (reduced size) and new features added (wave drawing)
 *   0.5  (27-Aug-2016) Completed port and adaptation from sfxr (only sound generation and playing)
+*
+*   COMPILATION (MinGW 5.3):
+*
+*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -lraylib -lglfw3 -lopengl32 -lgdi32 / 
+*       -lopenal32 -lwinmm -lcomdlg32 -lole32 -std=c99 -Wl,--subsystem,windows -Wl,-allow-multiple-definition
+*
 *
 *   LICENSE: zlib/libpng
 *
@@ -44,7 +50,7 @@
 //#define RAYGUI_STYLE_DEFAULT_DARK
 #define RAYGUI_NO_STYLE_SAVE_LOAD       // Avoid compiling style load/save code
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../../raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Required for native open/save file dialogs
 
