@@ -1,0 +1,38 @@
+# Num Controls : 12
+
+# Control 000 : BUTTON
+type 1 rec 100 50 100 30
+
+# Control 001 : BUTTON
+type 1 rec 100 100 150 30
+
+# Control 002 : LABEL
+type 0 rec 100 150 100 30
+
+# Control 003 : TOGGLE
+type 2 rec 100 190 100 30
+
+# Control 004 : TOGGLEGROUP
+type 3 rec 100 240 90 30
+
+# Control 005 : SLIDER
+type 4 rec 100 290 300 20
+
+# Control 006 : PROGRESSBAR
+type 6 rec 100 330 250 20
+
+# Control 007 : SPINNER
+type 7 rec 350 50 150 30
+
+# Control 008 : COMBOBOX
+type 8 rec 350 100 120 30
+
+# Control 009 : CHECKBOX
+type 9 rec 420 160 20 20
+
+# Control 010 : CHECKBOX
+type 9 rec 420 210 20 20
+
+# Control 011 : TEXTBOX
+type 10 rec 450 250 150 30
+
