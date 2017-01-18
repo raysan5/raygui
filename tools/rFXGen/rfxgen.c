@@ -136,10 +136,9 @@ const float masterVolume = 0.15f;   // Master volume
 static int wavBitrate = 16;         // Wave bitrate (sample size in bits)
 static int wavFrequency = 44100;    // Wave frequency (sample rate)
 
-// Wave and Sound variables
-static Wave wave;                   // Stores wave data
+// Wave parameters
 static WaveParams params;           // Stores wave parameters for generation
-static Sound sound;                 // Stores sound data (OpenAL)
+static bool regenerate = false;     // Wave regeneration required
 
 static char currentPath[256];       // Path to current working folder
 
@@ -151,14 +150,13 @@ static Wave GenerateWave(WaveParams params,
                          int sampleRate, 
                          int sampleSize, 
                          int channels);        // Generate wave data from parameters
-static void GeneratePlay(void);                 // Generate wave data and play sound
 
 static WaveParams LoadSoundParams(const char *fileName);                // Load sound parameters from file
 static void SaveSoundParams(const char *fileName, WaveParams params);   // Save sound parameters to file
 
-static void SaveWAV(const char *fileName, Wave wave);           // Export sound to .wav file
-static void DrawWave(Wave wave, Rectangle bounds, Color color); // Draw wave data using lines
-static const char *GetExtension(const char *fileName);          // Get extension from filename
+static void SaveWAV(const char *fileName, Wave wave);            // Export sound to .wav file
+static void DrawWave(Wave *wave, Rectangle bounds, Color color); // Draw wave data using lines
+static const char *GetExtension(const char *fileName);           // Get extension from filename
 
 // Buttons functions
 static void BtnPickupCoin(void);    // Generate sound: Pickup/Coin
@@ -171,10 +169,9 @@ static void BtnBlipSelect(void);    // Generate sound: Blip/Select
 static void BtnRandomize(void);     // Generate random sound
 static void BtnMutate(void);;       // Mutate current sound
 
-static void BtnPlaySound(void);     // Play current sound
 static void BtnLoadSound(void);     // Load sound parameters file
 static void BtnSaveSound(void);     // Save sound parameters file
-static void BtnExportWav(void);     // Export current sound as .wav
+static void BtnExportWav(Wave wave); // Export current sound as .wav
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -192,7 +189,7 @@ int main(int argc, char *argv[])
                 (strcmp(GetExtension(argv[i]), "sfs") == 0))
             {
                 params = LoadSoundParams(argv[i]);
-                Wave mwave = GenerateWave(params, 44100, 32, 1);
+                Wave wave = GenerateWave(params, 44100, 32, 1);
                 
                 argv[i][strlen(argv[i]) - 3] = 'w';
                 argv[i][strlen(argv[i]) - 2] = 'a';
@@ -200,8 +197,8 @@ int main(int argc, char *argv[])
                 
                 //printf("output name: %s\n", argv[i]);
                 
-                SaveWAV(argv[i], mwave);
-                UnloadWave(mwave);
+                SaveWAV(argv[i], wave);
+                UnloadWave(wave);
             }
         }
         
@@ -220,6 +217,7 @@ int main(int argc, char *argv[])
 
     Rectangle paramsRec = { 117, 43, 265, 373 };
     
+    // Twitter logo image (grayscale)
     Image mask;
     mask.width = 16;
     mask.height = 16;
@@ -344,14 +342,14 @@ int main(int argc, char *argv[])
     char *tgroupWaveTypeText[4] = { "Square", "Sawtooth", "Sinewave", "Noise" };
     //----------------------------------------------------------------------------------------
 
-    // Wave default parameters
+    Wave wave;
     wave.sampleRate = 44100;
     wave.sampleSize = 32;       // 32 bit -> float
     wave.channels = 1;
-    
     wave.sampleCount = MAX_WAVE_LENGTH*wave.sampleRate*wave.channels;
     wave.data = (float *)malloc(wave.sampleCount*sizeof(float));
     
+    Sound sound; 
     sound = LoadSoundFromWave(wave);
     SetSoundVolume(sound, volumeValue);
 
@@ -381,16 +379,18 @@ int main(int argc, char *argv[])
         //------------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_SPACE)) PlaySound(sound);
         
-        // Check if mouse is moving sliders to generate new wave data when mouse released
-        if ((CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 265, 65, 105, 360 })) && (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)))
+        // Consider two possible cases to regenerate wave and update sound:
+        // CASE1: regenerate flag is true (set by sound buttons functions)
+        // CASE2: Mouse is moving sliders and mouse is released (checks against all sliders box - a bit crappy solution...)
+        if (regenerate || ((CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 265, 65, 105, 360 })) && (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))))
         {
-            if (playOnChangeValue) GeneratePlay();
-            else
-            {
-                UnloadWave(wave);
-                wave = GenerateWave(params, 44100, 32, 1);          // Generate wave from parameters
-                UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
-            }
+            // Generate new wave and update sound
+            UnloadWave(wave);
+            wave = GenerateWave(params, 44100, 32, 1);          // Generate wave from parameters
+            UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
+            
+            if (regenerate || playOnChangeValue) PlaySound(sound);
+            regenerate = false;
         }
 
         BeginDrawing();
@@ -525,10 +525,10 @@ int main(int argc, char *argv[])
             if (GuiButton(btnBlipSelectRec, "Blip/Select")) BtnBlipSelect();
             if (GuiButton(btnMutateRec, "Mutate")) BtnMutate();
             if (GuiButton(btnRandomizeRec, "Randomize")) BtnRandomize();
-            if (GuiButton(btnPlaySoundRec, "Play Sound")) BtnPlaySound();
+            if (GuiButton(btnPlaySoundRec, "Play Sound")) PlaySound(sound);
             if (GuiButton(btnLoadSoundRec, "Load Sound")) BtnLoadSound();
             if (GuiButton(btnSaveSoundRec, "Save Sound")) BtnSaveSound();
-            if (GuiButton(btnExportWavRec, "Export .Wav")) BtnExportWav();
+            if (GuiButton(btnExportWavRec, "Export .Wav")) BtnExportWav(wave);
             //--------------------------------------------------------------------------------
             
             // CheckBox
@@ -552,7 +552,7 @@ int main(int argc, char *argv[])
             //--------------------------------------------------------------------------------
             int previousWaveTypeValue = params.waveTypeValue;
             params.waveTypeValue = GuiToggleGroup(tgroupWaveTypeRec, 4, tgroupWaveTypeText, params.waveTypeValue);
-            if (params.waveTypeValue != previousWaveTypeValue) GeneratePlay();
+            if (params.waveTypeValue != previousWaveTypeValue) regenerate = true;
             //--------------------------------------------------------------------------------
             
             if (volumeValue < 1.0f) DrawText(FormatText("VOLUME:      %02i %%", (int)(volumeValue*100.0f)), 394, 49, 10, DARKGRAY);
@@ -560,12 +560,12 @@ int main(int argc, char *argv[])
 
 #if defined(RENDER_WAVE_TO_TEXTURE)
             BeginTextureMode(waveTarget);
-                DrawWave(wave, (Rectangle){ 0, 0, waveTarget.texture.width, waveTarget.texture.height }, MAROON);
+                DrawWave(&wave, (Rectangle){ 0, 0, waveTarget.texture.width, waveTarget.texture.height }, MAROON);
             EndTextureMode();
 
             DrawTextureEx(waveTarget.texture, (Vector2){ waveRec.x, waveRec.y }, 0.0f, 0.5f, WHITE);
 #else
-            DrawWave(wave, waveRec, MAROON);
+            DrawWave(&wave, waveRec, MAROON);
 #endif    
             DrawRectangleLines(waveRec.x, waveRec.y, waveRec.width, waveRec.height, GuiLinesColor());
             DrawRectangle(waveRec.x, waveRec.y + waveRec.height/2, waveRec.width, 1, LIGHTGRAY);
@@ -579,7 +579,6 @@ int main(int argc, char *argv[])
             DrawText(FormatText("|   Wave size: %i bytes", wave.sampleCount*wavBitrate/8), 355, 486, 10, DARKGRAY);
             
             // Adverts
-            //DrawText("based on sfxr by\nTomas Pettersson", 18, 240, 10, GRAY);
             DrawText("based on sfxr by", 16, 235, 10, GRAY);
             DrawText("Tomas Pettersson", 13, 248, 10, GRAY);
             
@@ -591,20 +590,12 @@ int main(int argc, char *argv[])
             DrawRectangle(394, 162, 92, 92, BLACK);
             DrawRectangle(400, 168, 80, 80, RAYWHITE);
             DrawText("raylib", 419, 223, 20, BLACK);
-            
-            //DrawText("based on sfxr by", 394, 13, 10, GRAY);
-            //DrawText("Tomas Pettersson", 392, 25, 10, GRAY);
-            
+
             DrawText("@raysan5", 421, 21, 10, GRAY);
             DrawTexture(texTwitter, 400, 18, Fade(BLACK, 0.4f));
-            
-            //DrawText("@raysan5", 40, 242, 10, GRAY);
-            //DrawTexture(texTwitter, 20, 240, Fade(BLACK, 0.4f));
 
         EndDrawing();
         //------------------------------------------------------------------------------------
-
-        //if (doPlay) PlaySample();
     }
 
     // De-Initialization
@@ -615,7 +606,6 @@ int main(int argc, char *argv[])
 #if defined(RENDER_WAVE_TO_TEXTURE)
     UnloadRenderTexture(waveTarget);
 #endif
-
     UnloadTexture(texTwitter);
 
     CloseAudioDevice();
@@ -965,12 +955,10 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 		if (ssample > 1.0f) ssample = 1.0f;
 		if (ssample < -1.0f) ssample = -1.0f;
 
-		*buffer++ = ssample; //buffer[i] = ssample;
+        buffer[i] = ssample;
 	}
     
-    // TODO: Convert wave to desired format... or do it on generation!
     Wave wave;
-    
     wave.sampleCount = sampleCount;
     wave.sampleRate = sampleRate;
     wave.sampleSize = sampleSize;       // default: 32 bit -> float
@@ -979,6 +967,7 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
     wave.data = malloc(wave.sampleCount*wave.sampleSize/8);
    
     // TODO: Format buffer data properly depending on sampleSize, now it only works for 32bit data!
+    // TODO: Convert wave to desired format...
     memcpy(wave.data, buffer, wave.sampleCount*wave.sampleSize/8);
     
     free(buffer);
@@ -986,18 +975,8 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
     return wave;
 }
 
-// Generate wave, update sound and play sound
-static void GeneratePlay(void)
-{
-    UnloadWave(wave);
-    wave = GenerateWave(params, 44100, 32, 1);     // Generate wave from parameters
-    UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
-    
-    PlaySound(sound);
-}
-
 // Load .rfx (rFXGen) or .sfs (sfxr) sound parameters file
-static WaveParams LoadSoundParams(const char* fileName)
+static WaveParams LoadSoundParams(const char *fileName)
 {
     WaveParams params = { 0 };
     
@@ -1094,7 +1073,7 @@ static WaveParams LoadSoundParams(const char* fileName)
 }
 
 // Save .rfx (rFXGen) or .sfs (sfxr) sound parameters file
-static void SaveSoundParams(const char* fileName, WaveParams params)
+static void SaveSoundParams(const char *fileName, WaveParams params)
 {
     if (strcmp(GetExtension(fileName),"sfs") == 0)
     {
@@ -1173,17 +1152,17 @@ static void SaveSoundParams(const char* fileName, WaveParams params)
 // NOTE: For proper visualization, MSAA x4 is recommended, alternatively
 // it should be rendered to a bigger texture and then scaled down with 
 // bilinear/trilinear texture filtering
-static void DrawWave(Wave wave, Rectangle bounds, Color color)
+static void DrawWave(Wave *wave, Rectangle bounds, Color color)
 {
     float sample, sampleNext;
     float currentSample = 0.0f;
-    float sampleIncrement = (float)wave.sampleCount/(float)(bounds.width*2);
+    float sampleIncrement = (float)wave->sampleCount/(float)(bounds.width*2);
     float sampleScale = (float)bounds.height;
     
     for (int i = 1; i < bounds.width*2 - 1; i++)
     {
-        sample = ((float *)wave.data)[(int)currentSample]*sampleScale;
-        sampleNext = ((float *)wave.data)[(int)(currentSample + sampleIncrement)]*sampleScale;
+        sample = ((float *)wave->data)[(int)currentSample]*sampleScale;
+        sampleNext = ((float *)wave->data)[(int)(currentSample + sampleIncrement)]*sampleScale;
         
         if (sample > bounds.height/2) sample = bounds.height/2;
         else if (sample < -bounds.height/2) sample = -bounds.height/2;
@@ -1289,7 +1268,7 @@ static void BtnPickupCoin(void)
         params.changeAmountValue = 0.2f + frnd(0.4f);
     }
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Laser shoot 
@@ -1340,7 +1319,7 @@ static void BtnLaserShoot(void)
 
     if (rnd(1)) params.hpfCutoffValue = frnd(0.3f);
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Explosion
@@ -1390,7 +1369,7 @@ static void BtnExplosion(void)
         params.changeAmountValue = 0.8f - frnd(1.6f);
     }
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Powerup
@@ -1423,7 +1402,7 @@ static void BtnPowerup(void)
     params.sustainTimeValue = frnd(0.4f);
     params.decayTimeValue = 0.1f + frnd(0.4f);
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Hit/Hurt
@@ -1443,7 +1422,7 @@ static void BtnHitHurt(void)
 
     if (rnd(1)) params.hpfCutoffValue = frnd(0.3f);
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Jump
@@ -1462,7 +1441,7 @@ static void BtnJump(void)
     if (rnd(1)) params.hpfCutoffValue = frnd(0.3f);
     if (rnd(1)) params.lpfCutoffValue = 1.0f - frnd(0.6f);
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate sound: Blip/Select
@@ -1478,7 +1457,7 @@ static void BtnBlipSelect(void)
     params.decayTimeValue = frnd(0.2f);
     params.hpfCutoffValue = 0.1f;
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Generate random sound
@@ -1525,7 +1504,7 @@ static void BtnRandomize(void)
     params.changeSpeedValue = frnd(2.0f) - 1.0f;
     params.changeAmountValue = frnd(2.0f) - 1.0f;
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 // Mutate current sound
@@ -1555,15 +1534,12 @@ static void BtnMutate(void)
     if (rnd(1)) params.changeSpeedValue += frnd(0.1f) - 0.05f;
     if (rnd(1)) params.changeAmountValue += frnd(0.1f) - 0.05f;
 
-    GeneratePlay();
+    regenerate = true;
 }
 
 //--------------------------------------------------------------------------------------------
 // Buttons functions: sound playing and export functions
 //--------------------------------------------------------------------------------------------
-
-// Play current sound
-static void BtnPlaySound(void) { PlaySound(sound); }
 
 // Load sound parameters file
 static void BtnLoadSound(void)
@@ -1575,7 +1551,7 @@ static void BtnLoadSound(void)
     if (fileName != NULL)
     {
         params = LoadSoundParams(fileName);
-        //GeneratePlay();
+        regenerate = true;
     }
 }
 
@@ -1596,7 +1572,7 @@ static void BtnSaveSound(void)
 }
 
 // Export current sound as .wav
-static void BtnExportWav(void)
+static void BtnExportWav(Wave wave)
 {
     char currrentPathFile[256];
 
@@ -1607,13 +1583,13 @@ static void BtnExportWav(void)
     // Save file dialog
     const char *filters[] = { "*.wav" };
     const char *fileName = tinyfd_saveFileDialog("Save wave file", currrentPathFile, 1, filters, "Wave File (*.wav)");
+
+    Wave cwave = WaveCopy(wave);
+    WaveFormat(&cwave, wavFrequency, wavBitrate, 1);
     
-    Wave ewave = WaveCopy(wave);
-    WaveFormat(&ewave, wavFrequency, wavBitrate, 1);
+    SaveWAV(fileName, cwave);
     
-    SaveWAV(fileName, ewave);
-    
-    UnloadWave(ewave);
+    UnloadWave(cwave);
 }
 
 //--------------------------------------------------------------------------------------------
