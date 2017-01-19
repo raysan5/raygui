@@ -10,7 +10,8 @@
 *
 *   VERSIONS HISTORY:
 *
-*   1.0  (XX-Sep-2016) TODO: Release stable version... not yet...
+*   1.0  (19-Jan-2017) First stable version
+*   0.XX (XX-Jan-2017) Review complete file...
 *   0.95 (14-Sep-2016) Reviewed comments and .rfx format
 *   0.9  (12-Sep-2016) Defined WaveParams struct and command line functionality
 *   0.8  (09-Sep-2016) Added open/save file dialogs using tinyfiledialogs library
@@ -20,13 +21,13 @@
 *
 *   COMPILATION (MinGW 5.3):
 *
-*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -lraylib -lglfw3 -lopengl32 -lgdi32 / 
+*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -I../.. -lraylib -lglfw3 -lopengl32 -lgdi32 / 
 *       -lopenal32 -lwinmm -lcomdlg32 -lole32 -std=c99 -Wl,--subsystem,windows -Wl,-allow-multiple-definition
 *
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2016 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2017 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -50,7 +51,7 @@
 //#define RAYGUI_STYLE_DEFAULT_DARK
 #define RAYGUI_NO_STYLE_SAVE_LOAD       // Avoid compiling style load/save code
 #define RAYGUI_IMPLEMENTATION
-#include "../../raygui.h"
+#include "raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Required for native open/save file dialogs
 
@@ -73,8 +74,6 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define MAX_WAVE_LENGTH  10             // 10 seconds
-
 #define rnd(n) GetRandomValue(0, n)
 #define frnd(range) ((float)rnd(10000)/10000.0f*range)
 
@@ -130,11 +129,10 @@ typedef struct WaveParams {
 
 // Volume parameters
 static float volumeValue = 0.6f;    // Volume
-const float masterVolume = 0.15f;   // Master volume
 
 // Export WAV variables
-static int wavBitrate = 16;         // Wave bitrate (sample size in bits)
-static int wavFrequency = 44100;    // Wave frequency (sample rate)
+static int wavSampleSize = 16;      // Wave sample size in bits (bitrate)
+static int wavSampleRate = 44100;   // Wave sample rate (frequency)
 
 // Wave parameters
 static WaveParams params;           // Stores wave parameters for generation
@@ -145,18 +143,15 @@ static char currentPath[256];       // Path to current working folder
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-static void ResetParams(WaveParams *params);    // Reset wave parameters
-static Wave GenerateWave(WaveParams params, 
-                         int sampleRate, 
-                         int sampleSize, 
-                         int channels);        // Generate wave data from parameters
+static void ResetParams(WaveParams *params);                            // Reset wave parameters
+static Wave GenerateWave(WaveParams params, int sampleRate);            // Generate wave data from parameters
 
 static WaveParams LoadSoundParams(const char *fileName);                // Load sound parameters from file
 static void SaveSoundParams(const char *fileName, WaveParams params);   // Save sound parameters to file
 
-static void SaveWAV(const char *fileName, Wave wave);            // Export sound to .wav file
-static void DrawWave(Wave *wave, Rectangle bounds, Color color); // Draw wave data using lines
-static const char *GetExtension(const char *fileName);           // Get extension from filename
+static void SaveWAV(const char *fileName, Wave wave);                   // Export sound to .wav file
+static void DrawWave(Wave *wave, Rectangle bounds, Color color);        // Draw wave data using lines
+static const char *GetExtension(const char *fileName);                  // Get extension from filename
 
 // Buttons functions
 static void BtnPickupCoin(void);    // Generate sound: Pickup/Coin
@@ -189,13 +184,15 @@ int main(int argc, char *argv[])
                 (strcmp(GetExtension(argv[i]), "sfs") == 0))
             {
                 params = LoadSoundParams(argv[i]);
-                Wave wave = GenerateWave(params, 44100, 32, 1);
+                Wave wave = GenerateWave(params, 44100);
+                
+                // Format wave data to desired sampleSize and channels
+                // NOTE: wavSampleRate and wavSampleSize are loaded from rfx or default values are used
+                WaveFormat(&wave, wavSampleRate, wavSampleSize, 1);
                 
                 argv[i][strlen(argv[i]) - 3] = 'w';
                 argv[i][strlen(argv[i]) - 2] = 'a';
                 argv[i][strlen(argv[i]) - 1] = 'v';
-                
-                //printf("output name: %s\n", argv[i]);
                 
                 SaveWAV(argv[i], wave);
                 UnloadWave(wave);
@@ -343,10 +340,12 @@ int main(int argc, char *argv[])
     //----------------------------------------------------------------------------------------
 
     Wave wave;
+    
+    // Default wave values
     wave.sampleRate = 44100;
     wave.sampleSize = 32;       // 32 bit -> float
     wave.channels = 1;
-    wave.sampleCount = MAX_WAVE_LENGTH*wave.sampleRate*wave.channels;
+    wave.sampleCount = 10*wave.sampleRate*wave.channels;    // Max sampleCount for 10 seconds
     wave.data = (float *)malloc(wave.sampleCount*sizeof(float));
     
     Sound sound; 
@@ -382,11 +381,11 @@ int main(int argc, char *argv[])
         // Consider two possible cases to regenerate wave and update sound:
         // CASE1: regenerate flag is true (set by sound buttons functions)
         // CASE2: Mouse is moving sliders and mouse is released (checks against all sliders box - a bit crappy solution...)
-        if (regenerate || ((CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 265, 65, 105, 360 })) && (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))))
+        if (regenerate || ((CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 243, 48, 102, 362 })) && (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))))
         {
             // Generate new wave and update sound
-            UnloadWave(wave);
-            wave = GenerateWave(params, 44100, 32, 1);          // Generate wave from parameters
+            free(wave.data);
+            wave = GenerateWave(params, 44100);                 // Generate wave from parameters
             UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
             
             if (regenerate || playOnChangeValue) PlaySound(sound);
@@ -541,11 +540,11 @@ int main(int argc, char *argv[])
             comboxFrequencyValue = GuiComboBox(comboxFrequencyRec, 2, comboxFrequencyText, comboxFrequencyValue);
             comboxBitRateValue = GuiComboBox(comboxBitRateRec, 2, comboxBitRateText, comboxBitRateValue);
 
-            if (comboxFrequencyValue == 0) wavFrequency = 44100;
-            else if (comboxFrequencyValue == 1) wavFrequency = 22050;
+            if (comboxFrequencyValue == 0) wavSampleRate = 44100;
+            else if (comboxFrequencyValue == 1) wavSampleRate = 22050;
 
-            if (comboxBitRateValue == 0) wavBitrate = 16;
-            else if (comboxBitRateValue == 1) wavBitrate = 8;
+            if (comboxBitRateValue == 0) wavSampleSize = 16;
+            else if (comboxBitRateValue == 1) wavSampleSize = 8;
             //--------------------------------------------------------------------------------
 
             // ToggleGroup
@@ -576,7 +575,7 @@ int main(int argc, char *argv[])
             DrawText("SOUND INFO:", 28, 486, 10, DARKGRAY);
             DrawText(FormatText("num samples: %i", wave.sampleCount), 117, 486, 10, DARKGRAY);
             DrawText(FormatText("|    duration: %i ms", wave.sampleCount*1000/(wave.sampleRate*wave.channels)), 234, 486, 10, DARKGRAY);
-            DrawText(FormatText("|   Wave size: %i bytes", wave.sampleCount*wavBitrate/8), 355, 486, 10, DARKGRAY);
+            DrawText(FormatText("|   Wave size: %i bytes", wave.sampleCount*wavSampleSize/8), 355, 486, 10, DARKGRAY);
             
             // Adverts
             DrawText("based on sfxr by", 16, 235, 10, GRAY);
@@ -593,6 +592,8 @@ int main(int argc, char *argv[])
 
             DrawText("@raysan5", 421, 21, 10, GRAY);
             DrawTexture(texTwitter, 400, 18, Fade(BLACK, 0.4f));
+            
+            //DrawRectangleRec((Rectangle){ 243, 48, 102, 362 }, Fade(RED, 0.2f));
 
         EndDrawing();
         //------------------------------------------------------------------------------------
@@ -663,53 +664,53 @@ static void ResetParams(WaveParams *params)
     //params->filterOn = false;
 }
 
-// Generates new wave data and updates sound buffer
-// NOTE: Operates on global variables: sound, wave
-static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int channels)
+// Generates new wave from wave parameters
+static Wave GenerateWave(WaveParams params, int sampleRate)
 {
-    #define MAX_WAVE_LENGTH_SECONDS  10 // 10 seconds
-
+    #define MAX_WAVE_LENGTH_SECONDS  10     // Max length for wave: 10 seconds
+    
+    // NOTE: GetRandomValue() is provided by raylib and seed is initialized at InitWindow()
+    #define GetRandomFloat(range) ((float)GetRandomValue(0, 10000)/10000.0f*range)
+    
     // Configuration parameters for generation
     // NOTE: Those parameters are calculated from selected values
-    int phase;
-    double fperiod;
-    double fmaxperiod;
-    double fslide;
-    double fdslide;
-    int period;
-    float squareDuty;
-    float squareSlide;
-    int envelopeStage;
-    int envelopeTime;
-    int envelopeLength[3];
-    float envelopeVolume;
-    float fphase;
-    float fdphase;
-    int iphase;
-    float phaserBuffer[1024];
-    int ipp;
-    float noiseBuffer[32];
-    float fltp;
-    float fltdp;
-    float fltw;
-    float fltwd;
-    float fltdmp;
-    float fltphp;
-    float flthp;
-    float flthpd;
-    float vibratoPhase;
-    float vibratoSpeed;
-    float vibratoAmplitude;
-    int repeatTime;
-    int repeatLimit;
-    int arpeggioTime;
-    int arpeggioLimit;
-    double arpeggioModulation;
+    int phase = 0;
+    double fperiod = 0.0;
+    double fmaxperiod = 0.0;
+    double fslide = 0.0;
+    double fdslide = 0.0;
+    int period = 0;
+    float squareDuty = 0.0f;
+    float squareSlide = 0.0f;
+    int envelopeStage = 0;
+    int envelopeTime = 0;
+    int envelopeLength[3] = { 0 };
+    float envelopeVolume = 0.0f;
+    float fphase = 0.0f;
+    float fdphase = 0.0f;
+    int iphase = 0;
+    float phaserBuffer[1024] = { 0.0f };
+    int ipp = 0;
+    float noiseBuffer[32] = { 0.0f };       // Required for noise wave, depends on random seed!
+    float fltp = 0.0f;
+    float fltdp = 0.0f;
+    float fltw = 0.0f;
+    float fltwd = 0.0f;
+    float fltdmp = 0.0f;
+    float fltphp = 0.0f;
+    float flthp = 0.0f;
+    float flthpd = 0.0f;
+    float vibratoPhase = 0.0f;
+    float vibratoSpeed = 0.0f;
+    float vibratoAmplitude = 0.0f;
+    int repeatTime = 0;
+    int repeatLimit = 0;
+    int arpeggioTime = 0;
+    int arpeggioLimit = 0;
+    double arpeggioModulation = 0.0;
     
     // Reset sample parameters
     //----------------------------------------------------------------------------------------
-	phase = 0;
-
 	fperiod = 100.0/(params.startFrequencyValue*params.startFrequencyValue + 0.001);
 	period = (int)fperiod;
 	fmaxperiod = 100.0/(params.minFrequencyValue*params.minFrequencyValue + 0.001);
@@ -721,31 +722,23 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 	if (params.changeAmountValue >= 0.0f) arpeggioModulation = 1.0 - pow((double)params.changeAmountValue, 2.0)*0.9;
 	else arpeggioModulation = 1.0 + pow((double)params.changeAmountValue, 2.0)*10.0;
 
-	arpeggioTime = 0;
 	arpeggioLimit = (int)(pow(1.0f - params.changeSpeedValue, 2.0f)*20000 + 32);
 
 	if (params.changeSpeedValue == 1.0f) arpeggioLimit = 0;
 
     // Reset filter parameters
-    fltp = 0.0f;
-    fltdp = 0.0f;
     fltw = pow(params.lpfCutoffValue, 3.0f)*0.1f;
     fltwd = 1.0f + params.lpfCutoffSweepValue*0.0001f;
     fltdmp = 5.0f/(1.0f + pow(params.lpfResonanceValue, 2.0f)*20.0f)*(0.01f + fltw);
     if (fltdmp > 0.8f) fltdmp = 0.8f;
-    fltphp = 0.0f;
     flthp = pow(params.hpfCutoffValue, 2.0f)*0.1f;
     flthpd = 1.0 + params.hpfCutoffSweepValue*0.0003f;
 
     // Reset vibrato
-    vibratoPhase = 0.0f;
     vibratoSpeed = pow(params.vibratoSpeedValue, 2.0f)*0.01f;
     vibratoAmplitude = params.vibratoDepthValue*0.5f;
 
     // Reset envelope
-    envelopeVolume = 0.0f;
-    envelopeStage = 0;
-    envelopeTime = 0;
     envelopeLength[0] = (int)(params.attackTimeValue*params.attackTimeValue*100000.0f);
     envelopeLength[1] = (int)(params.sustainTimeValue*params.sustainTimeValue*100000.0f);
     envelopeLength[2] = (int)(params.decayTimeValue*params.decayTimeValue*100000.0f);
@@ -757,12 +750,9 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
     if (params.phaserSweepValue < 0.0f) fdphase = -fdphase;
     
     iphase = abs((int)fphase);
-    ipp = 0;
 
-    for (int i = 0; i < 1024; i++) phaserBuffer[i] = 0.0f;
-    for (int i = 0; i < 32; i++) noiseBuffer[i] = frnd(2.0f) - 1.0f;      // TODO: Review frnd()
+    for (int i = 0; i < 32; i++) noiseBuffer[i] = GetRandomFloat(2.0f) - 1.0f;
 
-    repeatTime = 0;
     repeatLimit = (int)(pow(1.0f - params.repeatSpeedValue, 2.0f)*20000 + 32);
 
     if (params.repeatSpeedValue == 0.0f) repeatLimit = 0;
@@ -824,7 +814,7 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 		{
 			fperiod = fmaxperiod;
 
-			if (params.minFrequencyValue > 0.0f) generatingSample = false;     // TODO: minFrequencyValue shouldn't be here...
+			if (params.minFrequencyValue > 0.0f) generatingSample = false;
 		}
 
 		float rfperiod = fperiod;
@@ -884,9 +874,11 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 			{
                 //phase = 0;
 				phase %= period;
+                
 				if (params.waveTypeValue == 3)
-					for (int i = 0;i < 32; i++)
-						noiseBuffer[i] = frnd(2.0f) - 1.0f;     // TODO: Review frnd()
+                {
+					for (int i = 0;i < 32; i++) noiseBuffer[i] = GetRandomFloat(2.0f) - 1.0f;
+                }
 			}
 
 			// base waveform
@@ -947,7 +939,7 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 			ssample += sample*envelopeVolume;
 		}
 
-		ssample = ssample/8*masterVolume;   // TODO: Why masterVolume?
+		ssample = ssample/8*0.15f;      // TODO: Why masterVolume = 0.15f?
 		ssample *= 2.0f*volumeValue;
         //------------------------------------------------------------------------------------
 
@@ -961,13 +953,12 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
     Wave wave;
     wave.sampleCount = sampleCount;
     wave.sampleRate = sampleRate;
-    wave.sampleSize = sampleSize;       // default: 32 bit -> float
-    wave.channels = channels;
+    wave.sampleSize = 32;           // By default 32 bit float samples
+    wave.channels = 1;              // By default 1 channel (mono)
+    
+    // NOTE: Wave can be converted to desired format after generation
     
     wave.data = malloc(wave.sampleCount*wave.sampleSize/8);
-   
-    // TODO: Format buffer data properly depending on sampleSize, now it only works for 32bit data!
-    // TODO: Convert wave to desired format...
     memcpy(wave.data, buffer, wave.sampleCount*wave.sampleSize/8);
     
     free(buffer);
@@ -978,6 +969,8 @@ static Wave GenerateWave(WaveParams params, int sampleRate, int sampleSize, int 
 // Load .rfx (rFXGen) or .sfs (sfxr) sound parameters file
 static WaveParams LoadSoundParams(const char *fileName)
 {
+    // TODO: Review parameters save/loading (doesn't work)
+    
     WaveParams params = { 0 };
     
     if (strcmp(GetExtension(fileName),"sfs") == 0)
@@ -1056,8 +1049,8 @@ static WaveParams LoadSoundParams(const char *fileName)
             fread(&version, 1, sizeof(int), rfxFile);
             
             fread(&volumeValue, 1, sizeof(float), rfxFile);
-            fread(&wavBitrate, 1, sizeof(int), rfxFile);
-            fread(&wavFrequency, 1, sizeof(int), rfxFile);
+            fread(&wavSampleSize, 1, sizeof(int), rfxFile);
+            fread(&wavSampleRate, 1, sizeof(int), rfxFile);
             
             int channels;
             fread(&channels, 1, sizeof(int), rfxFile);
@@ -1136,8 +1129,8 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
         fwrite(&version, 1, sizeof(int), rfxFile);
         
         fwrite(&volumeValue, 1, sizeof(float), rfxFile);
-        fwrite(&wavBitrate, 1, sizeof(int), rfxFile);
-        fwrite(&wavFrequency, 1, sizeof(int), rfxFile);
+        fwrite(&wavSampleSize, 1, sizeof(int), rfxFile);
+        fwrite(&wavSampleRate, 1, sizeof(int), rfxFile);
         
         int channels = 1;
         fwrite(&channels, 1, sizeof(int), rfxFile);
@@ -1224,7 +1217,7 @@ static void SaveWAV(const char *fileName, Wave wave)
     waveFormat.subChunkID[3] = ' ';
     waveFormat.subChunkSize = 16;
     waveFormat.audioFormat = 1;
-    waveFormat.numChannels = 1;
+    waveFormat.numChannels = wave.channels;
     waveFormat.sampleRate = wave.sampleRate;
     waveFormat.byteRate = wave.sampleRate*wave.sampleSize/8;   
     waveFormat.blockAlign = wave.sampleSize/8;
@@ -1234,7 +1227,7 @@ static void SaveWAV(const char *fileName, Wave wave)
     waveData.subChunkID[1] = 'a';
     waveData.subChunkID[2] = 't';
     waveData.subChunkID[3] = 'a';
-    waveData.subChunkSize = wave.sampleCount*wave.sampleSize/8;
+    waveData.subChunkSize = wave.sampleCount*wave.channels*wave.sampleSize/8;
     
     FILE *wavFile = fopen(fileName, "wb");
     
@@ -1242,7 +1235,7 @@ static void SaveWAV(const char *fileName, Wave wave)
     fwrite(&waveFormat, 1, sizeof(WaveFormat), wavFile);
     fwrite(&waveData, 1, sizeof(WaveFormat), wavFile);
 
-    fwrite(wave.data, 1, wave.sampleRate*wave.sampleSize/8, wavFile);
+    fwrite(wave.data, 1, wave.sampleRate*wave.channels*wave.sampleSize/8, wavFile);
 
     fclose(wavFile);
 }
@@ -1278,7 +1271,7 @@ static void BtnLaserShoot(void)
 
     params.waveTypeValue = rnd(2);
 
-    if (params.waveTypeValue == 2 && rnd(1)) params.waveTypeValue = rnd(1);
+    if ((params.waveTypeValue == 2) && rnd(1)) params.waveTypeValue = rnd(1);
 
     params.startFrequencyValue = 0.5f + frnd(0.5f);
     params.minFrequencyValue = params.startFrequencyValue - 0.2f - frnd(0.6f);
@@ -1585,7 +1578,9 @@ static void BtnExportWav(Wave wave)
     const char *fileName = tinyfd_saveFileDialog("Save wave file", currrentPathFile, 1, filters, "Wave File (*.wav)");
 
     Wave cwave = WaveCopy(wave);
-    WaveFormat(&cwave, wavFrequency, wavBitrate, 1);
+    
+    // TODO: Review wave formatting...
+    WaveFormat(&cwave, wavSampleRate, wavSampleSize, 1);
     
     SaveWAV(fileName, cwave);
     
