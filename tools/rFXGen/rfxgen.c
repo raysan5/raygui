@@ -77,7 +77,7 @@
 #define rnd(n) GetRandomValue(0, n)
 #define frnd(range) ((float)rnd(10000)/10000.0f*range)
 
-// Wave parameters type
+// Wave parameters type (92 bytes)
 typedef struct WaveParams {
     
     // Wave type (square, sawtooth, sine, noise)
@@ -119,7 +119,6 @@ typedef struct WaveParams {
     float lpfResonanceValue;
     float hpfCutoffValue;
     float hpfCutoffSweepValue;
-    //bool filterOn;
 
 } WaveParams;
 
@@ -143,8 +142,8 @@ static char currentPath[256];       // Path to current working folder
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-static void ResetParams(WaveParams *params);                            // Reset wave parameters
-static Wave GenerateWave(WaveParams params, int sampleRate);            // Generate wave data from parameters
+static void ResetParams(WaveParams *params);        // Reset wave parameters
+static Wave GenerateWave(WaveParams params);        // Generate wave data from parameters
 
 static WaveParams LoadSoundParams(const char *fileName);                // Load sound parameters from file
 static void SaveSoundParams(const char *fileName, WaveParams params);   // Save sound parameters to file
@@ -184,7 +183,7 @@ int main(int argc, char *argv[])
                 (strcmp(GetExtension(argv[i]), "sfs") == 0))
             {
                 params = LoadSoundParams(argv[i]);
-                Wave wave = GenerateWave(params, 44100);
+                Wave wave = GenerateWave(params);
                 
                 // Format wave data to desired sampleSize and channels
                 // NOTE: wavSampleRate and wavSampleSize are loaded from rfx or default values are used
@@ -325,12 +324,12 @@ int main(int argc, char *argv[])
 
     // ComboBox data
     //----------------------------------------------------------------------------------------
-    Rectangle comboxFrequencyRec = { 394, 340, 61, 20 };
-    Rectangle comboxBitRateRec = { 394, 364, 61, 20 };
-    char *comboxFrequencyText[2] = { "44100 Hz", "22050 Hz" };
-    char *comboxBitRateText[2] = { "16 bit", "8 bit" };
-    int comboxFrequencyValue = 1;
-    int comboxBitRateValue = 1;
+    Rectangle comboxSampleRateRec = { 394, 340, 61, 20 };
+    Rectangle comboxSampleSizeRec = { 394, 364, 61, 20 };
+    char *comboxSampleRateText[2] = { "22050 Hz", "44100 Hz" };
+    char *comboxSampleSizeText[3] = { "8 bit", "16 bit", "32 bit" };
+    int comboxSampleRateValue = 1;
+    int comboxSampleSizeValue = 1;
     //----------------------------------------------------------------------------------------
 
     // ToggleGroup data
@@ -385,7 +384,7 @@ int main(int argc, char *argv[])
         {
             // Generate new wave and update sound
             free(wave.data);
-            wave = GenerateWave(params, 44100);                 // Generate wave from parameters
+            wave = GenerateWave(params);                        // Generate wave from parameters
             UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
             
             if (regenerate || playOnChangeValue) PlaySound(sound);
@@ -537,14 +536,15 @@ int main(int argc, char *argv[])
 
             // ComboBox
             //--------------------------------------------------------------------------------
-            comboxFrequencyValue = GuiComboBox(comboxFrequencyRec, 2, comboxFrequencyText, comboxFrequencyValue);
-            comboxBitRateValue = GuiComboBox(comboxBitRateRec, 2, comboxBitRateText, comboxBitRateValue);
+            comboxSampleRateValue = GuiComboBox(comboxSampleRateRec, 2, comboxSampleRateText, comboxSampleRateValue);
+            comboxSampleSizeValue = GuiComboBox(comboxSampleSizeRec, 3, comboxSampleSizeText, comboxSampleSizeValue);
 
-            if (comboxFrequencyValue == 0) wavSampleRate = 44100;
-            else if (comboxFrequencyValue == 1) wavSampleRate = 22050;
+            if (comboxSampleRateValue == 0) wavSampleRate = 22050;
+            else if (comboxSampleRateValue == 1) wavSampleRate = 44100;
 
-            if (comboxBitRateValue == 0) wavSampleSize = 16;
-            else if (comboxBitRateValue == 1) wavSampleSize = 8;
+            if (comboxSampleSizeValue == 0) wavSampleSize = 8;
+            else if (comboxSampleSizeValue == 1) wavSampleSize = 16;
+            else if (comboxSampleSizeValue == 2) wavSampleSize = 32;
             //--------------------------------------------------------------------------------
 
             // ToggleGroup
@@ -661,13 +661,14 @@ static void ResetParams(WaveParams *params)
 	params->lpfResonanceValue = 0.0f;
 	params->hpfCutoffValue = 0.0f;
 	params->hpfCutoffSweepValue = 0.0f;
-    //params->filterOn = false;
 }
 
 // Generates new wave from wave parameters
-static Wave GenerateWave(WaveParams params, int sampleRate)
+// NOTE: By default wave is generated as 44100Hz, 32bit float, mono
+static Wave GenerateWave(WaveParams params)
 {
     #define MAX_WAVE_LENGTH_SECONDS  10     // Max length for wave: 10 seconds
+    #define WAVE_SAMPLE_RATE      44100     // Default sample rate
     
     // NOTE: GetRandomValue() is provided by raylib and seed is initialized at InitWindow()
     #define GetRandomFloat(range) ((float)GetRandomValue(0, 10000)/10000.0f*range)
@@ -760,11 +761,11 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
     
     // NOTE: We reserve enough space for up to 10 seconds of wave audio at given sample rate
     // By default we use float size samples, they are converted to desired sample size at the end
-    float *buffer = (float *)malloc(MAX_WAVE_LENGTH_SECONDS*sampleRate*sizeof(float));
+    float *buffer = (float *)malloc(MAX_WAVE_LENGTH_SECONDS*WAVE_SAMPLE_RATE*sizeof(float));
     bool generatingSample = true;
     int sampleCount = 0;
 
-	for (int i = 0; i < MAX_WAVE_LENGTH_SECONDS*sampleRate; i++)
+	for (int i = 0; i < MAX_WAVE_LENGTH_SECONDS*WAVE_SAMPLE_RATE; i++)
 	{
 		if (!generatingSample)
         {
@@ -864,8 +865,10 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
 
 		float ssample = 0.0f;
 
+        #define MAX_SUPERSAMPLING   8
+        
         // Supersampling x8
-		for (int si = 0; si < 8; si++)
+		for (int si = 0; si < MAX_SUPERSAMPLING; si++)
 		{
 			float sample = 0.0f;
 			phase++;
@@ -891,18 +894,9 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
                     if (fp < squareDuty) sample = 0.5f;
                     else sample = -0.5f;
                 } break;
-                case 1: // Sawtooth wave
-                {
-                    sample = 1.0f - fp*2;
-                } break;
-                case 2: // Sine wave
-                {
-                    sample = sinf(fp*2*PI);
-                } break;
-                case 3: // Noise wave
-                {
-                    sample = noiseBuffer[phase*32/period];
-                } break;
+                case 1: sample = 1.0f - fp*2; break;    // Sawtooth wave
+                case 2: sample = sinf(fp*2*PI); break;  // Sine wave
+                case 3: sample = noiseBuffer[phase*32/period]; break; // Noise wave
                 default: break;
 			}
 
@@ -939,8 +933,9 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
 			ssample += sample*envelopeVolume;
 		}
 
-		ssample = ssample/8*0.15f;      // TODO: Why masterVolume = 0.15f?
-		ssample *= 2.0f*volumeValue;
+        #define SAMPLE_SCALE_COEFICIENT 0.2f    // NOTE: Used to scale sample value to [-1..1]
+        
+		ssample = (ssample/MAX_SUPERSAMPLING)*SAMPLE_SCALE_COEFICIENT;
         //------------------------------------------------------------------------------------
 
         // Accumulate samples in the buffer
@@ -952,9 +947,9 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
     
     Wave wave;
     wave.sampleCount = sampleCount;
-    wave.sampleRate = sampleRate;
-    wave.sampleSize = 32;           // By default 32 bit float samples
-    wave.channels = 1;              // By default 1 channel (mono)
+    wave.sampleRate = WAVE_SAMPLE_RATE; // By default 44100 Hz
+    wave.sampleSize = 32;               // By default 32 bit float samples
+    wave.channels = 1;                  // By default 1 channel (mono)
     
     // NOTE: Wave can be converted to desired format after generation
     
@@ -969,8 +964,6 @@ static Wave GenerateWave(WaveParams params, int sampleRate)
 // Load .rfx (rFXGen) or .sfs (sfxr) sound parameters file
 static WaveParams LoadSoundParams(const char *fileName)
 {
-    // TODO: Review parameters save/loading (doesn't work)
-    
     WaveParams params = { 0 };
     
     if (strcmp(GetExtension(fileName),"sfs") == 0)
@@ -1028,7 +1021,7 @@ static WaveParams LoadSoundParams(const char *fileName)
                 fread(&params.changeAmountValue, 1, sizeof(float), file);
             }
         }
-        else printf("SFS file version not supported\n");
+        else printf("[%s] SFS file version not supported\n", fileName);
         
         fclose(file);
     }
@@ -1037,27 +1030,27 @@ static WaveParams LoadSoundParams(const char *fileName)
         FILE *rfxFile = fopen(fileName, "rb");
 
         // Load .rfx sound parameters
-        char signature[4];
-        fread(signature, 4, sizeof(char), rfxFile);
+        unsigned char signature[4];
+        fread(signature, 4, sizeof(unsigned char), rfxFile);
         
         if ((signature[0] == 'r') &&
-            (signature[0] == 'F') &&
-            (signature[0] == 'X') &&
-            (signature[0] == ' '))
+            (signature[1] == 'F') &&
+            (signature[2] == 'X') &&
+            (signature[3] == ' '))
         {
             int version;
             fread(&version, 1, sizeof(int), rfxFile);
-            
-            fread(&volumeValue, 1, sizeof(float), rfxFile);
-            fread(&wavSampleSize, 1, sizeof(int), rfxFile);
+
             fread(&wavSampleRate, 1, sizeof(int), rfxFile);
-            
+            fread(&wavSampleSize, 1, sizeof(int), rfxFile);
+ 
             int channels;
             fread(&channels, 1, sizeof(int), rfxFile);
             
             // Read wave parameters struct
             fread(&params, 1, sizeof(WaveParams), rfxFile);
         }
+        else printf("[%s] Not a valid rFX file\n", fileName);
         
         fclose(rfxFile);
     }
@@ -1122,15 +1115,18 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
         FILE *rfxFile = fopen(fileName, "wb");
 
         // Save .rfx sound parameters
-        char signature[4] = "rFX ";
-        fwrite(signature, 4, sizeof(char), rfxFile);
+        unsigned char signature[4] = "rFX ";
+        fwrite(signature, 4, sizeof(unsigned char), rfxFile);
         
         int version = 100;      // File version
         fwrite(&version, 1, sizeof(int), rfxFile);
+
+        // NOTE: Sound config shouldn't depend on Wave parameters
+        // Wave params are used to generate a 44100Hz - 32bit float data
         
-        fwrite(&volumeValue, 1, sizeof(float), rfxFile);
-        fwrite(&wavSampleSize, 1, sizeof(int), rfxFile);
+        // TODO: review this info
         fwrite(&wavSampleRate, 1, sizeof(int), rfxFile);
+        fwrite(&wavSampleSize, 1, sizeof(int), rfxFile);
         
         int channels = 1;
         fwrite(&channels, 1, sizeof(int), rfxFile);
@@ -1233,9 +1229,9 @@ static void SaveWAV(const char *fileName, Wave wave)
     
     fwrite(&riffHeader, 1, sizeof(RiffHeader), wavFile);
     fwrite(&waveFormat, 1, sizeof(WaveFormat), wavFile);
-    fwrite(&waveData, 1, sizeof(WaveFormat), wavFile);
+    fwrite(&waveData, 1, sizeof(WaveData), wavFile);
 
-    fwrite(wave.data, 1, wave.sampleRate*wave.channels*wave.sampleSize/8, wavFile);
+    fwrite(wave.data, 1, wave.sampleCount*wave.channels*wave.sampleSize/8, wavFile);
 
     fclose(wavFile);
 }
@@ -1579,9 +1575,9 @@ static void BtnExportWav(Wave wave)
 
     Wave cwave = WaveCopy(wave);
     
-    // TODO: Review wave formatting...
+    // Before exporting wave data, we format it as desired
     WaveFormat(&cwave, wavSampleRate, wavSampleSize, 1);
-    
+
     SaveWAV(fileName, cwave);
     
     UnloadWave(cwave);
