@@ -185,9 +185,8 @@ int main(int argc, char *argv[])
                 params = LoadSoundParams(argv[i]);
                 Wave wave = GenerateWave(params);
                 
-                // Format wave data to desired sampleSize and channels
-                // NOTE: wavSampleRate and wavSampleSize are loaded from rfx or default values are used
-                WaveFormat(&wave, wavSampleRate, wavSampleSize, 1);
+                // TODO: Format wave data to desired sampleRate, sampleSize and channels
+                //WaveFormat(&wave, sampleRate, sampleSize, channels);
                 
                 argv[i][strlen(argv[i]) - 3] = 'w';
                 argv[i][strlen(argv[i]) - 2] = 'a';
@@ -1040,14 +1039,8 @@ static WaveParams LoadSoundParams(const char *fileName)
         {
             int version;
             fread(&version, 1, sizeof(int), rfxFile);
-
-            fread(&wavSampleRate, 1, sizeof(int), rfxFile);
-            fread(&wavSampleSize, 1, sizeof(int), rfxFile);
- 
-            int channels;
-            fread(&channels, 1, sizeof(int), rfxFile);
             
-            // Read wave parameters struct
+            // Load wave generation parameters
             fread(&params, 1, sizeof(WaveParams), rfxFile);
         }
         else printf("[%s] Not a valid rFX file\n", fileName);
@@ -1118,19 +1111,10 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
         unsigned char signature[4] = "rFX ";
         fwrite(signature, 4, sizeof(unsigned char), rfxFile);
         
-        int version = 100;      // File version
+        int version = 100;
         fwrite(&version, 1, sizeof(int), rfxFile);
-
-        // NOTE: Sound config shouldn't depend on Wave parameters
-        // Wave params are used to generate a 44100Hz - 32bit float data
         
-        // TODO: review this info
-        fwrite(&wavSampleRate, 1, sizeof(int), rfxFile);
-        fwrite(&wavSampleSize, 1, sizeof(int), rfxFile);
-        
-        int channels = 1;
-        fwrite(&channels, 1, sizeof(int), rfxFile);
-        
+        // Save wave generation parameters
         fwrite(&params, 1, sizeof(WaveParams), rfxFile);
         
         fclose(rfxFile);
