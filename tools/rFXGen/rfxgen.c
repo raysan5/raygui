@@ -21,7 +21,7 @@
 *
 *   COMPILATION (MinGW 5.3):
 *
-*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -I../.. -lraylib -lglfw3 -lopengl32 -lgdi32 / 
+*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -I../.. -lraylib -lglfw3 -lopengl32 -lgdi32 /
 *       -lopenal32 -lwinmm -lcomdlg32 -lole32 -std=c99 -Wl,--subsystem,windows -Wl,-allow-multiple-definition
 *
 *
@@ -60,7 +60,7 @@
 #include <string.h>                     // Required for: strcmp()
 #include <stdio.h>                      // Required for: FILE, fopen(), fread(), fwrite(), ftell(), fseek() fclose()
                                         // NOTE: Used on functions: LoadSound(), SaveSound(), WriteWAV()
-                                    
+
 #include "twitter.h"                    // Twitter icon embedded
 
 #if defined(_WIN32)
@@ -79,7 +79,7 @@
 
 // Wave parameters type (92 bytes)
 typedef struct WaveParams {
-    
+
     // Wave type (square, sawtooth, sine, noise)
     int waveTypeValue;
 
@@ -154,7 +154,7 @@ static const char *GetExtension(const char *fileName);                  // Get e
 
 // Buttons functions
 static void BtnPickupCoin(void);    // Generate sound: Pickup/Coin
-static void BtnLaserShoot(void);    // Generate sound: Laser shoot 
+static void BtnLaserShoot(void);    // Generate sound: Laser shoot
 static void BtnExplosion(void);     // Generate sound: Explosion
 static void BtnPowerup(void);       // Generate sound: Powerup
 static void BtnHitHurt(void);       // Generate sound: Hit/Hurt
@@ -177,6 +177,29 @@ int main(int argc, char *argv[])
     // .rfx files contain sampleRate, sampleSize and channels information
     if (argc > 1)
     {
+        // TODO: Support config args parameters: -hz 44100 -bit 16
+        /*
+        -? | -h — print help for command-line parameters.
+        -c file — use an alternative configuration file instead of a default file.
+        -v — print nginx version.
+        -V — print nginx version, compiler version, and configure parameters.
+        -s signal — send a signal to the master process.
+
+        //http://stackoverflow.com/questions/15683347/when-implementing-command-line-flags-should-i-prefix-with-a-fowardslash-or
+        Windows convention seems to prefer the use of the forward slash ipconfig /all
+        Unix convention seems to prefer the hyphen -v for single-letter parameters,
+        and double hyphen --verbose for multi-letter parameters.
+
+        I tend to prefer hyphens, as they are more OS-agnostic (forward slashes are
+        path delimiters in some OSes) and used in more modern Windows apps
+
+        One reason for continuing to use the single letter options is because they can be strung together:
+        ls -ltr is a lot easier to type than ls --format=long --sort=time --reverse
+
+        sample:
+        PVRTexTool -i tex_Natural_A.tga -o tex_Natural_A.pvr -f PVRTC1_2,UBN,lRGB -q pvrtcfast -legacypvr
+        */
+
         for (int i = 1; i < argc; i++)
         {
             if ((strcmp(GetExtension(argv[i]), "rfx") == 0) ||
@@ -184,19 +207,19 @@ int main(int argc, char *argv[])
             {
                 params = LoadSoundParams(argv[i]);
                 Wave wave = GenerateWave(params);
-                
+
                 // TODO: Format wave data to desired sampleRate, sampleSize and channels
                 //WaveFormat(&wave, sampleRate, sampleSize, channels);
-                
+
                 argv[i][strlen(argv[i]) - 3] = 'w';
                 argv[i][strlen(argv[i]) - 2] = 'a';
                 argv[i][strlen(argv[i]) - 1] = 'v';
-                
+
                 SaveWAV(argv[i], wave);
                 UnloadWave(wave);
             }
         }
-        
+
         return 0;
     }
 
@@ -211,7 +234,7 @@ int main(int argc, char *argv[])
     InitAudioDevice();
 
     Rectangle paramsRec = { 117, 43, 265, 373 };
-    
+
     // Twitter logo image (grayscale)
     Image mask;
     mask.width = 16;
@@ -219,18 +242,18 @@ int main(int argc, char *argv[])
     mask.mipmaps = 1;
     mask.format = UNCOMPRESSED_GRAYSCALE;
     mask.data = imTwitter;
-    
+
     Color *pixels = (Color *)malloc(16*16*sizeof(Color));
     for (int i = 0; i < 16*16; i++) pixels[i] = WHITE;
     Image twitter = LoadImageEx(pixels, 16, 16);
     free(pixels);
-    
+
     ImageAlphaMask(&twitter, mask);      // Add alpha mask to image
     ImageFormat(&twitter, UNCOMPRESSED_GRAY_ALPHA);
-    
+
     Texture2D texTwitter = LoadTextureFromImage(twitter);
     UnloadImage(twitter);
-    
+
     // Label data
     //----------------------------------------------------------------------------------------
     Rectangle lblAttackTimeRec = { paramsRec.x + 33, paramsRec.y + 5, 100, 10 };
@@ -308,13 +331,13 @@ int main(int argc, char *argv[])
     Rectangle btnBlipSelectRec = { 13, 198, 92, 20 };
     Rectangle btnMutateRec = { 13, 364, 92, 20 };
     Rectangle btnRandomizeRec = { 13, 389, 92, 20 };
-    
+
     Rectangle btnPlaySoundRec = { 394, 81, 92, 20 };
     Rectangle btnLoadSoundRec = { 394, 283, 92, 20 };
     Rectangle btnSaveSoundRec = { 394, 307, 92, 20 };
     Rectangle btnExportWavRec = { 394, 389, 92, 20 };
     //----------------------------------------------------------------------------------------
-    
+
     // CheckBox data
     //----------------------------------------------------------------------------------------
     Rectangle chkboxPlayOnChangeRec = { 394, 115, 10, 10 };
@@ -338,22 +361,22 @@ int main(int argc, char *argv[])
     //----------------------------------------------------------------------------------------
 
     Wave wave;
-    
+
     // Default wave values
     wave.sampleRate = 44100;
     wave.sampleSize = 32;       // 32 bit -> float
     wave.channels = 1;
     wave.sampleCount = 10*wave.sampleRate*wave.channels;    // Max sampleCount for 10 seconds
     wave.data = (float *)malloc(wave.sampleCount*sizeof(float));
-    
-    Sound sound; 
+
+    Sound sound;
     sound = LoadSoundFromWave(wave);
     SetSoundVolume(sound, volumeValue);
 
     ResetParams(&params);
-    
+
     Rectangle waveRec = { 13, 421, 473, 50 };
-    
+
 #define RENDER_WAVE_TO_TEXTURE
 #if defined(RENDER_WAVE_TO_TEXTURE)
     // To avoid enabling MSXAAx4, we will render wave to a texture x2
@@ -375,7 +398,7 @@ int main(int argc, char *argv[])
         // Update & Draw
         //------------------------------------------------------------------------------------
         if (IsKeyPressed(KEY_SPACE)) PlaySound(sound);
-        
+
         // Consider two possible cases to regenerate wave and update sound:
         // CASE1: regenerate flag is true (set by sound buttons functions)
         // CASE2: Mouse is moving sliders and mouse is released (checks against all sliders box - a bit crappy solution...)
@@ -385,7 +408,7 @@ int main(int argc, char *argv[])
             free(wave.data);
             wave = GenerateWave(params);                        // Generate wave from parameters
             UpdateSound(sound, wave.data, wave.sampleCount);    // Update sound buffer with new data
-            
+
             if (regenerate || playOnChangeValue) PlaySound(sound);
             regenerate = false;
         }
@@ -395,24 +418,24 @@ int main(int argc, char *argv[])
             ClearBackground(GuiBackgroundColor());
 
             DrawRectangleLines(paramsRec.x, paramsRec.y - 1, paramsRec.width, paramsRec.height + 1, GuiLinesColor());
-            
+
             DrawLine(paramsRec.x, paramsRec.y + 66, paramsRec.x + paramsRec.width, paramsRec.y + 66, GuiLinesColor());
             DrawLine(paramsRec.x, paramsRec.y + 66 + 96, paramsRec.x + paramsRec.width, paramsRec.y + 66 + 96, GuiLinesColor());
             DrawLine(paramsRec.x, paramsRec.y + 162 + 36, paramsRec.x + paramsRec.width, paramsRec.y + 162 + 36, GuiLinesColor());
             DrawLine(paramsRec.x, paramsRec.y + 198 + 36, paramsRec.x + paramsRec.width, paramsRec.y + 198 + 36, GuiLinesColor());
             DrawLine(paramsRec.x, paramsRec.y + 234 + 21, paramsRec.x + paramsRec.width, paramsRec.y + 234 + 21, GuiLinesColor());
             DrawLine(paramsRec.x, paramsRec.y + 291, paramsRec.x + paramsRec.width, paramsRec.y + 291, GuiLinesColor());
-            
+
             DrawLine(13, 225, 105, 224, GuiLinesColor());
             DrawLine(13, 358, 105, 358, GuiLinesColor());
             DrawLine(394, 108, 486, 108, GuiLinesColor());
             DrawLine(394, 277, 486, 277, GuiLinesColor());
             DrawLine(394, 334, 486, 334, GuiLinesColor());
-            
+
             // Labels
             //--------------------------------------------------------------------------------
             DrawText("rFXGen", 28, 19, 20, DARKGRAY);
-            
+
             GuiLabel(lblAttackTimeRec, "ATTACK TIME");
             GuiLabel(lblSustainTimeRec, "SUSTAIN TIME");
             GuiLabel(lblSustainPunchRec, "SUSTAIN PUNCH");
@@ -478,7 +501,7 @@ int main(int argc, char *argv[])
             volumeValue = GuiSliderBar(sldrVolumeRec, volumeValue, 0, 1);
             if (volumeValue != previousVolumeValue) SetSoundVolume(sound, volumeValue);
             //--------------------------------------------------------------------------------
-            
+
             // Slider values
             //--------------------------------------------------------------------------------
             DrawText(FormatText("%.02f", params.attackTimeValue), sldrAttackTimeRec.x + sldrAttackTimeRec.width + 7, sldrAttackTimeRec.y + 1, 10, DARKGRAY);
@@ -527,7 +550,7 @@ int main(int argc, char *argv[])
             if (GuiButton(btnSaveSoundRec, "Save Sound")) BtnSaveSound();
             if (GuiButton(btnExportWavRec, "Export .Wav")) BtnExportWav(wave);
             //--------------------------------------------------------------------------------
-            
+
             // CheckBox
             //--------------------------------------------------------------------------------
             playOnChangeValue = GuiCheckBox(chkboxPlayOnChangeRec, " Play on change", playOnChangeValue);
@@ -552,7 +575,7 @@ int main(int argc, char *argv[])
             params.waveTypeValue = GuiToggleGroup(tgroupWaveTypeRec, 4, tgroupWaveTypeText, params.waveTypeValue);
             if (params.waveTypeValue != previousWaveTypeValue) regenerate = true;
             //--------------------------------------------------------------------------------
-            
+
             if (volumeValue < 1.0f) DrawText(FormatText("VOLUME:      %02i %%", (int)(volumeValue*100.0f)), 394, 49, 10, DARKGRAY);
             else DrawText(FormatText("VOLUME:     %02i %%", (int)(volumeValue*100.0f)), 394, 49, 10, DARKGRAY);
 
@@ -564,10 +587,10 @@ int main(int argc, char *argv[])
             DrawTextureEx(waveTarget.texture, (Vector2){ waveRec.x, waveRec.y }, 0.0f, 0.5f, WHITE);
 #else
             DrawWave(&wave, waveRec, MAROON);
-#endif    
+#endif
             DrawRectangleLines(waveRec.x, waveRec.y, waveRec.width, waveRec.height, GuiLinesColor());
             DrawRectangle(waveRec.x, waveRec.y + waveRec.height/2, waveRec.width, 1, LIGHTGRAY);
-            
+
             // Draw status bar
             DrawRectangle(0, screenHeight - 20, screenWidth, 20, Fade(LIGHTGRAY, 0.5f));
             DrawLine(0, screenHeight - 20, screenWidth, screenHeight - 20, LIGHTGRAY);
@@ -575,13 +598,13 @@ int main(int argc, char *argv[])
             DrawText(FormatText("num samples: %i", wave.sampleCount), 117, 486, 10, DARKGRAY);
             DrawText(FormatText("|    duration: %i ms", wave.sampleCount*1000/(wave.sampleRate*wave.channels)), 234, 486, 10, DARKGRAY);
             DrawText(FormatText("|   Wave size: %i bytes", wave.sampleCount*wavSampleSize/8), 355, 486, 10, DARKGRAY);
-            
+
             // Adverts
             DrawText("based on sfxr by", 16, 235, 10, GRAY);
             DrawText("Tomas Pettersson", 13, 248, 10, GRAY);
-            
+
             DrawLine(13, 268, 105, 268, GuiLinesColor());
-            
+
             DrawText("www/github.com/\nraysan5/raygui", 18, 280, 10, GRAY);
             DrawText("www/github.com/\nraysan5/raylib", 18, 318, 10, GRAY);
             DrawText("powered by", 394, 149, 10, DARKGRAY);
@@ -591,7 +614,7 @@ int main(int argc, char *argv[])
 
             DrawText("@raysan5", 421, 21, 10, GRAY);
             DrawTexture(texTwitter, 400, 18, Fade(BLACK, 0.4f));
-            
+
             //DrawRectangleRec((Rectangle){ 243, 48, 102, 362 }, Fade(RED, 0.2f));
 
         EndDrawing();
@@ -602,7 +625,7 @@ int main(int argc, char *argv[])
     //----------------------------------------------------------------------------------------
     UnloadSound(sound);
     UnloadWave(wave);
-    
+
 #if defined(RENDER_WAVE_TO_TEXTURE)
     UnloadRenderTexture(waveTarget);
 #endif
@@ -623,7 +646,7 @@ static void ResetParams(WaveParams *params)
 {
     // Wave type
 	params->waveTypeValue = 0;
-    
+
     // Wave envelope params
 	params->attackTimeValue = 0.0f;
 	params->sustainTimeValue = 0.3f;
@@ -638,22 +661,22 @@ static void ResetParams(WaveParams *params)
 	params->vibratoDepthValue = 0.0f;
 	params->vibratoSpeedValue = 0.0f;
 	//params->vibratoPhaseDelay = 0.0f;
-    
+
     // Tone change params
     params->changeAmountValue = 0.0f;
 	params->changeSpeedValue = 0.0f;
-    
+
     // Square wave params
     params->squareDutyValue = 0.0f;
 	params->dutySweepValue = 0.0f;
 
     // Repeat params
 	params->repeatSpeedValue = 0.0f;
-    
+
     // Phaser params
 	params->phaserOffsetValue = 0.0f;
 	params->phaserSweepValue = 0.0f;
-    
+
     // Filter params
 	params->lpfCutoffValue = 1.0f;
 	params->lpfCutoffSweepValue = 0.0f;
@@ -668,10 +691,10 @@ static Wave GenerateWave(WaveParams params)
 {
     #define MAX_WAVE_LENGTH_SECONDS  10     // Max length for wave: 10 seconds
     #define WAVE_SAMPLE_RATE      44100     // Default sample rate
-    
+
     // NOTE: GetRandomValue() is provided by raylib and seed is initialized at InitWindow()
     #define GetRandomFloat(range) ((float)GetRandomValue(0, 10000)/10000.0f*range)
-    
+
     // Configuration parameters for generation
     // NOTE: Those parameters are calculated from selected values
     int phase = 0;
@@ -708,7 +731,7 @@ static Wave GenerateWave(WaveParams params)
     int arpeggioTime = 0;
     int arpeggioLimit = 0;
     double arpeggioModulation = 0.0;
-    
+
     // Reset sample parameters
     //----------------------------------------------------------------------------------------
 	fperiod = 100.0/(params.startFrequencyValue*params.startFrequencyValue + 0.001);
@@ -745,10 +768,10 @@ static Wave GenerateWave(WaveParams params)
 
     fphase = pow(params.phaserOffsetValue, 2.0f)*1020.0f;
     if (params.phaserOffsetValue < 0.0f) fphase = -fphase;
-    
+
     fdphase = pow(params.phaserSweepValue, 2.0f)*1.0f;
     if (params.phaserSweepValue < 0.0f) fdphase = -fdphase;
-    
+
     iphase = abs((int)fphase);
 
     for (int i = 0; i < 32; i++) noiseBuffer[i] = GetRandomFloat(2.0f) - 1.0f;
@@ -757,7 +780,7 @@ static Wave GenerateWave(WaveParams params)
 
     if (params.repeatSpeedValue == 0.0f) repeatLimit = 0;
     //----------------------------------------------------------------------------------------
-    
+
     // NOTE: We reserve enough space for up to 10 seconds of wave audio at given sample rate
     // By default we use float size samples, they are converted to desired sample size at the end
     float *buffer = (float *)malloc(MAX_WAVE_LENGTH_SECONDS*WAVE_SAMPLE_RATE*sizeof(float));
@@ -780,7 +803,7 @@ static Wave GenerateWave(WaveParams params)
 		{
             // Reset sample parameters (only some of them)
 			repeatTime = 0;
-            
+
             fperiod = 100.0/(params.startFrequencyValue*params.startFrequencyValue + 0.001);
             period = (int)fperiod;
             fmaxperiod = 100.0/(params.minFrequencyValue*params.minFrequencyValue + 0.001);
@@ -865,7 +888,7 @@ static Wave GenerateWave(WaveParams params)
 		float ssample = 0.0f;
 
         #define MAX_SUPERSAMPLING   8
-        
+
         // Supersampling x8
 		for (int si = 0; si < MAX_SUPERSAMPLING; si++)
 		{
@@ -876,7 +899,7 @@ static Wave GenerateWave(WaveParams params)
 			{
                 //phase = 0;
 				phase %= period;
-                
+
 				if (params.waveTypeValue == 3)
                 {
 					for (int i = 0;i < 32; i++) noiseBuffer[i] = GetRandomFloat(2.0f) - 1.0f;
@@ -933,7 +956,7 @@ static Wave GenerateWave(WaveParams params)
 		}
 
         #define SAMPLE_SCALE_COEFICIENT 0.2f    // NOTE: Used to scale sample value to [-1..1]
-        
+
 		ssample = (ssample/MAX_SUPERSAMPLING)*SAMPLE_SCALE_COEFICIENT;
         //------------------------------------------------------------------------------------
 
@@ -943,20 +966,20 @@ static Wave GenerateWave(WaveParams params)
 
         buffer[i] = ssample;
 	}
-    
+
     Wave wave;
     wave.sampleCount = sampleCount;
     wave.sampleRate = WAVE_SAMPLE_RATE; // By default 44100 Hz
     wave.sampleSize = 32;               // By default 32 bit float samples
     wave.channels = 1;                  // By default 1 channel (mono)
-    
+
     // NOTE: Wave can be converted to desired format after generation
-    
+
     wave.data = malloc(wave.sampleCount*wave.sampleSize/8);
     memcpy(wave.data, buffer, wave.sampleCount*wave.sampleSize/8);
-    
+
     free(buffer);
-    
+
     return wave;
 }
 
@@ -964,12 +987,12 @@ static Wave GenerateWave(WaveParams params)
 static WaveParams LoadSoundParams(const char *fileName)
 {
     WaveParams params = { 0 };
-    
+
     if (strcmp(GetExtension(fileName),"sfs") == 0)
     {
         FILE *file = fopen(fileName, "rb");
 
-        // Load .sfs sound parameters 
+        // Load .sfs sound parameters
         int version = 0;
         fread(&version, 1, sizeof(int), file);
 
@@ -992,7 +1015,7 @@ static WaveParams LoadSoundParams(const char *fileName)
 
             fread(&params.vibratoDepthValue, 1, sizeof(float), file);
             fread(&params.vibratoSpeedValue, 1, sizeof(float), file);
-            
+
             float vibratoPhaseDelay = 0.0f;
             fread(&vibratoPhaseDelay, 1, sizeof(float), file); // Not used
 
@@ -1003,13 +1026,13 @@ static WaveParams LoadSoundParams(const char *fileName)
 
             bool filterOn = false;
             fread(&filterOn, 1, sizeof(bool), file); // Not used
-            
+
             fread(&params.lpfResonanceValue, 1, sizeof(float), file);
             fread(&params.lpfCutoffValue, 1, sizeof(float), file);
             fread(&params.lpfCutoffSweepValue, 1, sizeof(float), file);
             fread(&params.hpfCutoffValue, 1, sizeof(float), file);
             fread(&params.hpfCutoffSweepValue, 1, sizeof(float), file);
-            
+
             fread(&params.phaserOffsetValue, 1, sizeof(float), file);
             fread(&params.phaserSweepValue, 1, sizeof(float), file);
             fread(&params.repeatSpeedValue, 1, sizeof(float), file);
@@ -1021,7 +1044,7 @@ static WaveParams LoadSoundParams(const char *fileName)
             }
         }
         else printf("[%s] SFS file version not supported\n", fileName);
-        
+
         fclose(file);
     }
     else if (strcmp(GetExtension(fileName),"rfx") == 0)
@@ -1031,7 +1054,7 @@ static WaveParams LoadSoundParams(const char *fileName)
         // Load .rfx sound parameters
         unsigned char signature[4];
         fread(signature, 4, sizeof(unsigned char), rfxFile);
-        
+
         if ((signature[0] == 'r') &&
             (signature[1] == 'F') &&
             (signature[2] == 'X') &&
@@ -1039,12 +1062,12 @@ static WaveParams LoadSoundParams(const char *fileName)
         {
             int version;
             fread(&version, 1, sizeof(int), rfxFile);
-            
+
             // Load wave generation parameters
             fread(&params, 1, sizeof(WaveParams), rfxFile);
         }
         else printf("[%s] Not a valid rFX file\n", fileName);
-        
+
         fclose(rfxFile);
     }
 
@@ -1058,7 +1081,7 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
     {
         FILE *sfsFile = fopen(fileName, "wb");
 
-        // Save .sfs sound parameters 
+        // Save .sfs sound parameters
         int version = 102;
         fwrite(&version, 1, sizeof(int), sfsFile);
 
@@ -1075,7 +1098,7 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
 
         fwrite(&params.vibratoDepthValue, 1, sizeof(float), sfsFile);
         fwrite(&params.vibratoSpeedValue, 1, sizeof(float), sfsFile);
-        
+
         float vibratoPhaseDelay = 0.0f;
         fwrite(&vibratoPhaseDelay, 1, sizeof(float), sfsFile); // Not used
 
@@ -1086,13 +1109,13 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
 
         bool filterOn = false;
         fwrite(&filterOn, 1, sizeof(bool), sfsFile); // Not used
-        
+
         fwrite(&params.lpfResonanceValue, 1, sizeof(float), sfsFile);
         fwrite(&params.lpfCutoffValue, 1, sizeof(float), sfsFile);
         fwrite(&params.lpfCutoffSweepValue, 1, sizeof(float), sfsFile);
         fwrite(&params.hpfCutoffValue, 1, sizeof(float), sfsFile);
         fwrite(&params.hpfCutoffSweepValue, 1, sizeof(float), sfsFile);
-        
+
         fwrite(&params.phaserOffsetValue, 1, sizeof(float), sfsFile);
         fwrite(&params.phaserSweepValue, 1, sizeof(float), sfsFile);
 
@@ -1100,7 +1123,7 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
 
         fwrite(&params.changeSpeedValue, 1, sizeof(float), sfsFile);
         fwrite(&params.changeAmountValue, 1, sizeof(float), sfsFile);
-        
+
         fclose(sfsFile);
     }
     else if (strcmp(GetExtension(fileName),"rfx") == 0)
@@ -1110,20 +1133,20 @@ static void SaveSoundParams(const char *fileName, WaveParams params)
         // Save .rfx sound parameters
         unsigned char signature[4] = "rFX ";
         fwrite(signature, 4, sizeof(unsigned char), rfxFile);
-        
+
         int version = 100;
         fwrite(&version, 1, sizeof(int), rfxFile);
-        
+
         // Save wave generation parameters
         fwrite(&params, 1, sizeof(WaveParams), rfxFile);
-        
+
         fclose(rfxFile);
     }
 }
 
 // Draw wave data
 // NOTE: For proper visualization, MSAA x4 is recommended, alternatively
-// it should be rendered to a bigger texture and then scaled down with 
+// it should be rendered to a bigger texture and then scaled down with
 // bilinear/trilinear texture filtering
 static void DrawWave(Wave *wave, Rectangle bounds, Color color)
 {
@@ -1131,21 +1154,21 @@ static void DrawWave(Wave *wave, Rectangle bounds, Color color)
     float currentSample = 0.0f;
     float sampleIncrement = (float)wave->sampleCount/(float)(bounds.width*2);
     float sampleScale = (float)bounds.height;
-    
+
     for (int i = 1; i < bounds.width*2 - 1; i++)
     {
         sample = ((float *)wave->data)[(int)currentSample]*sampleScale;
         sampleNext = ((float *)wave->data)[(int)(currentSample + sampleIncrement)]*sampleScale;
-        
+
         if (sample > bounds.height/2) sample = bounds.height/2;
         else if (sample < -bounds.height/2) sample = -bounds.height/2;
-        
+
         if (sampleNext > bounds.height/2) sampleNext = bounds.height/2;
         else if (sampleNext < -bounds.height/2) sampleNext = -bounds.height/2;
-        
-        DrawLineV((Vector2){ (float)bounds.x + (float)i/2.0f, (float)(bounds.y + bounds.height/2) + sample }, 
+
+        DrawLineV((Vector2){ (float)bounds.x + (float)i/2.0f, (float)(bounds.y + bounds.height/2) + sample },
                   (Vector2){ (float)bounds.x + (float)i/2.0f, (float)(bounds.y  + bounds.height/2) + sampleNext }, color);
-        
+
         currentSample += sampleIncrement;
     }
 }
@@ -1199,18 +1222,18 @@ static void SaveWAV(const char *fileName, Wave wave)
     waveFormat.audioFormat = 1;
     waveFormat.numChannels = wave.channels;
     waveFormat.sampleRate = wave.sampleRate;
-    waveFormat.byteRate = wave.sampleRate*wave.sampleSize/8;   
+    waveFormat.byteRate = wave.sampleRate*wave.sampleSize/8;
     waveFormat.blockAlign = wave.sampleSize/8;
     waveFormat.bitsPerSample = wave.sampleSize;
-    
+
     waveData.subChunkID[0] = 'd';
     waveData.subChunkID[1] = 'a';
     waveData.subChunkID[2] = 't';
     waveData.subChunkID[3] = 'a';
     waveData.subChunkSize = wave.sampleCount*wave.channels*wave.sampleSize/8;
-    
+
     FILE *wavFile = fopen(fileName, "wb");
-    
+
     fwrite(&riffHeader, 1, sizeof(RiffHeader), wavFile);
     fwrite(&waveFormat, 1, sizeof(WaveFormat), wavFile);
     fwrite(&waveData, 1, sizeof(WaveData), wavFile);
@@ -1244,7 +1267,7 @@ static void BtnPickupCoin(void)
     regenerate = true;
 }
 
-// Generate sound: Laser shoot 
+// Generate sound: Laser shoot
 static void BtnLaserShoot(void)
 {
     ResetParams(&params);
@@ -1363,7 +1386,7 @@ static void BtnPowerup(void)
     {
         params.startFrequencyValue = 0.2f + frnd(0.3f);
         params.slideValue = 0.05f + frnd(0.2f);
-        
+
         if (rnd(1))
         {
             params.vibratoDepthValue = frnd(0.7f);
@@ -1516,7 +1539,7 @@ static void BtnMutate(void)
 
 // Load sound parameters file
 static void BtnLoadSound(void)
-{   
+{
     // Open file dialog
     const char *filters[] = { "*.rfx", "*.sfs" };
     const char *fileName = tinyfd_openFileDialog("Load sound parameters file", currentPath, 2, filters, "Sound Param Files (*.rfx, *.sfs)", 0);
@@ -1558,12 +1581,12 @@ static void BtnExportWav(Wave wave)
     const char *fileName = tinyfd_saveFileDialog("Save wave file", currrentPathFile, 1, filters, "Wave File (*.wav)");
 
     Wave cwave = WaveCopy(wave);
-    
+
     // Before exporting wave data, we format it as desired
     WaveFormat(&cwave, wavSampleRate, wavSampleSize, 1);
 
     SaveWAV(fileName, cwave);
-    
+
     UnloadWave(cwave);
 }
 
