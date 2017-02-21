@@ -1,28 +1,30 @@
 /*******************************************************************************************
 *
-*   rFXGen 1.0 - raylib FX sounds generator (based on Tomas Petterson sfxr)
+*   rFXGen v1.0 - raylib FX sounds generator (based on Tomas Petterson sfxr)
 *
-*   DEPENDENCIES:
+*   CONFIGURATION:
 *
-*   raylib 1.7 - This program uses latest raylib audio module functionality.
-*   raygui 1.0 - Simple IMGUI library (based on raylib)
-*   tinyfiledialogs 2.7.2 - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
+*   #define RENDER_WAVE_TO_TEXTURE (defined by default)
+*       Use RenderTexture2D to render wave on. If not defined, wave is diretly drawn using lines.
 *
 *   VERSIONS HISTORY:
+*       1.0  (20-Feb-2017) First stable version
+*       0.9x (XX-Jan-2017) Review complete file...
+*       0.95 (14-Sep-2016) Reviewed comments and .rfx format
+*       0.9  (12-Sep-2016) Defined WaveParams struct and command line functionality
+*       0.8  (09-Sep-2016) Added open/save file dialogs using tinyfiledialogs library
+*       0.7  (04-Sep-2016) Program variables renaming for consistency, code reorganized
+*       0.6  (30-Aug-2016) Interface redesigned (reduced size) and new features added (wave drawing)
+*       0.5  (27-Aug-2016) Completed port and adaptation from sfxr (only sound generation and playing)
 *
-*   1.0  (19-Jan-2017) First stable version
-*   0.XX (XX-Jan-2017) Review complete file...
-*   0.95 (14-Sep-2016) Reviewed comments and .rfx format
-*   0.9  (12-Sep-2016) Defined WaveParams struct and command line functionality
-*   0.8  (09-Sep-2016) Added open/save file dialogs using tinyfiledialogs library
-*   0.7  (04-Sep-2016) Program variables renaming for consistency, code reorganized
-*   0.6  (30-Aug-2016) Interface redesigned (reduced size) and new features added (wave drawing)
-*   0.5  (27-Aug-2016) Completed port and adaptation from sfxr (only sound generation and playing)
+*   DEPENDENCIES:
+*       raylib 1.7              - This program uses latest raylib audio module functionality.
+*       raygui 1.0              - Simple IMGUI library (based on raylib)
+*       tinyfiledialogs 2.7.2   - Open/save file dialogs, it requires linkage with comdlg32 and ole32 libs.
 *
 *   COMPILATION (MinGW 5.3):
-*
-*   gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -I../.. -lraylib -lglfw3 -lopengl32 -lgdi32 /
-*       -lopenal32 -lwinmm -lcomdlg32 -lole32 -std=c99 -Wl,--subsystem,windows -Wl,-allow-multiple-definition
+*       gcc -o rfxgen.exe rfxen.c external/tinyfiledialogs.c -s -I../.. -lraylib -lglfw3 -lopengl32 -lgdi32 /
+*           -lopenal32 -lwinmm -lcomdlg32 -lole32 -std=c99 -Wl,--subsystem,windows -Wl,-allow-multiple-definition
 *
 *
 *   LICENSE: zlib/libpng
@@ -173,32 +175,39 @@ static void BtnExportWav(Wave wave); // Export current sound as .wav
 int main(int argc, char *argv[])
 {
     // Command line utility to generate wav files directly from .sfs and .rfx
-    // NOTE: .sfs uses defaults: sampleRate = 22050, sampleSize = 8, channels = 1;
-    // .rfx files contain sampleRate, sampleSize and channels information
+    // NOTE: Default generation parameters: sampleRate = 44100, sampleSize = 16, channels = 1
     if (argc > 1)
     {
-        // TODO: Support config args parameters: -hz 44100 -bit 16
+        // TODO: Parse args parameters: -r 44100 -b 16 -c 2
         /*
-        -? | -h — print help for command-line parameters.
-        -c file — use an alternative configuration file instead of a default file.
-        -v — print nginx version.
-        -V — print nginx version, compiler version, and configure parameters.
-        -s signal — send a signal to the master process.
-
-        //http://stackoverflow.com/questions/15683347/when-implementing-command-line-flags-should-i-prefix-with-a-fowardslash-or
-        Windows convention seems to prefer the use of the forward slash ipconfig /all
-        Unix convention seems to prefer the hyphen -v for single-letter parameters,
-        and double hyphen --verbose for multi-letter parameters.
-
-        I tend to prefer hyphens, as they are more OS-agnostic (forward slashes are
-        path delimiters in some OSes) and used in more modern Windows apps
-
-        One reason for continuing to use the single letter options is because they can be strung together:
-        ls -ltr is a lot easier to type than ls --format=long --sort=time --reverse
-
-        sample:
-        PVRTexTool -i tex_Natural_A.tga -o tex_Natural_A.pvr -f PVRTC1_2,UBN,lRGB -q pvrtcfast -legacypvr
+        -? | -h : print help for command-line parameters
+        -v : print rfxgen version
+        -r value : define parameter sample rate (supported: 22050, 44100)
+        -b value : define parameter bit rate (supported: 8, 16, 32)
+        -c value : define parameter channels (supported: 1-mono, 2-stereo)
+        -i input : input filename
+        -o output: output filename
         */
+        
+        for (int i = 1; i < argc; i++)
+        {
+            if (argv[i][0] == '-')
+            {
+                switch(argv[i][1])
+                {
+                    case '?':
+                    case 'h': break;
+                    case 'v':
+                    case 'V': break;
+                    case 'i':
+                    case 'o':
+                    case 'r':
+                    case 'b':
+                    case 'c':
+                    default: break;
+                }
+            }
+        }
 
         for (int i = 1; i < argc; i++)
         {
@@ -229,11 +238,11 @@ int main(int argc, char *argv[])
     int screenHeight = 500;
 
     //SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(screenWidth, screenHeight, "rFXGen - raylib FX Sound Generator");
+    InitWindow(screenWidth, screenHeight, "rFXGen - FX Sound Generator");
 
     InitAudioDevice();
 
-    Rectangle paramsRec = { 117, 43, 265, 373 };
+    Rectangle paramsRec = { 117, 43, 265, 373 };    // Parameters rectangle box
 
     // Twitter logo image (grayscale)
     Image mask;
