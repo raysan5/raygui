@@ -1,6 +1,8 @@
 /*******************************************************************************************
 *
-*   raygui 1.0 - IMGUI (Immedite Mode GUI) library for raylib (https://github.com/raysan5/raylib)
+*   raygui v1.0 - IMGUI (Immedite Mode GUI) library for raylib (www.raylib.com)
+*
+*   DESCRIPTION:
 *
 *   raygui is a library for creating simple IMGUI interfaces using raylib.
 *   It provides a set of basic components:
@@ -45,26 +47,25 @@
 *       Otherwise it will include stdlib.h and use the C standard library malloc()/free() function.
 *
 *   LIMITATIONS:
-*
 *       // TODO.
 *
-*   VERSIONS:
-*
-*   1.0 (07-Jun-2016) Converted to header-only by Ramon Santamaria.
-*   0.9 (07-Mar-2016) Reviewed and tested by Albert Martos, Ian Eito, Sergio Martinez and Ramon Santamaria.
-*   0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
+*   VERSIONS HISTORY:
+*       1.0 (07-Jun-2016) Converted to header-only by Ramon Santamaria.
+*       0.9 (07-Mar-2016) Reviewed and tested by Albert Martos, Ian Eito, Sergio Martinez and Ramon Santamaria.
+*       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   CONTRIBUTORS:
-*       Ramon Santamaria: Functions design and naming conventions.
-*       Kevin Gato: Initial implementation of basic components.
-*       Daniel Nicolas: Initial implementation of basic components.
-*       Albert Martos: Review and testing of library.
-*       Ian Eito: Review and testing of the library.
-*       Sergio Martinez: Review and testing of the library.
+*       Kevin Gato:         Initial implementation of basic components (2013)
+*       Daniel Nicolas:     Initial implementation of basic components (2013)
+*       Albert Martos:      Review and testing of the library (2015)
+*       Ian Eito:           Review and testing of the library (2015)
+*       Sergio Martinez:    Review and testing of the library (2015)
+*       Ramon Santamaria:   Supervision, review, update and maintenance
+*
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2015-2016 emegeme (@emegemegames)
+*   Copyright (c) 2015-2016 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -659,19 +660,19 @@ static const char *FormatText(const char *text, ...);   // Formatting of text wi
 // TODO: To use raygui as standalone library, those functions must be overwrite by custom ones
 
 // Input management functions
-static Vector2 GetMousePosition() { return (Vector2){ 0.0f, 0.0f }; }
-static int IsMouseButtonDown(int button) { return 0; }
-static int IsMouseButtonPressed(int button) { return 0; }
-static int IsMouseButtonReleased(int button) { return 0; }
-static int IsMouseButtonUp(int button) { return 0; }
+static Vector2 GetMousePosition() { /* TODO */ return (Vector2){ 0.0f, 0.0f }; }
+static int IsMouseButtonDown(int button) { /* TODO */ return 0; }
+static int IsMouseButtonPressed(int button) { /* TODO */ return 0; }
+static int IsMouseButtonReleased(int button) { /* TODO */ return 0; }
+static int IsMouseButtonUp(int button) { /* TODO */ return 0; }
 
-static int GetKeyPressed(void) { return 0; }    // NOTE: Only used by GuiTextBox()
-static int IsKeyDown(int key) { return 0; }     // NOTE: Only used by GuiSpinner()
+static int GetKeyPressed(void) { /* TODO */ return 0; }    // NOTE: Only used by GuiTextBox()
+static int IsKeyDown(int key) { /* TODO */ return 0; }     // NOTE: Only used by GuiSpinner()
 
 // Drawing related functions
-static int MeasureText(const char *text, int fontSize) { return 0; }
-static void DrawText(const char *text, int posX, int posY, int fontSize, Color color) { }
-static void DrawRectangleRec(Rectangle rec, Color color) { }
+static int MeasureText(const char *text, int fontSize) { /* TODO */ return 0; }
+static void DrawText(const char *text, int posX, int posY, int fontSize, Color color) { /* TODO */ }
+static void DrawRectangleRec(Rectangle rec, Color color) { /* TODO */ }
 static void DrawRectangle(int posX, int posY, int width, int height, Color color) { DrawRectangleRec((Rectangle){ posX, posY, width, height }, color); }
 #endif
 
