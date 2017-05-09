@@ -1423,23 +1423,26 @@ RAYGUIDEF void LoadGuiStyle(const char *fileName)
     int counter = 0;
 
     FILE *styleFile = fopen(fileName, "rt");
-
-    while (!feof(styleFile))
+    
+    if (styleFile != NULL)
     {
-        fscanf(styleFile, "%s %i\n", styleProp[counter].id, &styleProp[counter].value);
-        counter++;
-    }
-
-    fclose(styleFile);
-
-    for (int i = 0; i < counter; i++)
-    {
-        for (int j = 0; j < NUM_PROPERTIES; j++)
+        while (!feof(styleFile))
         {
-            if (strcmp(styleProp[i].id, guiPropertyName[j]) == 0)
+            fscanf(styleFile, "%s %i\n", styleProp[counter].id, &styleProp[counter].value);
+            counter++;
+        }
+
+        fclose(styleFile);
+
+        for (int i = 0; i < counter; i++)
+        {
+            for (int j = 0; j < NUM_PROPERTIES; j++)
             {
-                // Assign correct property to style
-                style[j] = styleProp[i].value;
+                if (strcmp(styleProp[i].id, guiPropertyName[j]) == 0)
+                {
+                    // Assign correct property to style
+                    style[j] = styleProp[i].value;
+                }
             }
         }
     }
