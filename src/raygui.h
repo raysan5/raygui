@@ -862,8 +862,8 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int 
     {
         if (i == comboActive)
         {
-		    // Update control
-    		//--------------------------------------------------------------------
+            // Update control
+            //--------------------------------------------------------------------
             int textWidth = MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE]);
 
             if (bounds.width < textWidth) bounds.width = textWidth + style[TOGGLE_TEXT_PADDING];
@@ -875,7 +875,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int 
                 else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) state = ACTIVE;
                 else state = FOCUS;
             }
-    		//--------------------------------------------------------------------
+            //--------------------------------------------------------------------
 
             // Draw control
             //--------------------------------------------------------------------
@@ -929,8 +929,8 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int 
         }
     }
 
-    if (CheckCollisionPointRec(GetMousePosition(), bounds) || 
-        CheckCollisionPointRec(GetMousePosition(), click))
+    if (CheckCollisionPointRec(mousePoint, bounds) || 
+        CheckCollisionPointRec(mousePoint, click))
     {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -1383,7 +1383,7 @@ RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text)
 {
     static int framesCounter = 0;
     
-    #define MAX_CHARS_LENGTH  	 20
+    #define MAX_CHARS_LENGTH       20
     #define KEY_BACKSPACE_TEXT  259     // GLFW BACKSPACE: 3 + 256
 
     Vector2 mousePoint = GetMousePosition();
