@@ -273,10 +273,9 @@ int main()
     int toggleNum = 3;
     char *toggleGuiText[3] = { "toggle", "group", "selection" };
 
-    float sliderValue = 50;
-    float sliderBarValue = 50;
-
-    float progressValue = 0;
+    float sliderValue = 50.0f;
+    float sliderBarValue = 50.0f;
+    float progressValue = 0.0f;
     
     int spinnerValue = 20;
 
@@ -284,7 +283,7 @@ int main()
     char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
     int comboActive = 0;
     
-    char *guiText = (char *)malloc(20);    
+    char *guiText = (char *)malloc(32);
     guiText[0] = '\0';
 
     bool isModified = false;
@@ -484,10 +483,10 @@ int main()
             }
 
             // Update style color value
-            if (guiPropertySelected == BACKGROUND_COLOR) bgColor = colorPickerValue;
+            if (guiPropertySelected == DEFAULT_BACKGROUND_COLOR) bgColor = colorPickerValue;
             else if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0))
             {
-                bgColor = GetColor(GetStyleProperty(BACKGROUND_COLOR));
+                bgColor = GetColor(GetStyleProperty(DEFAULT_BACKGROUND_COLOR));
                 SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
             }
         }
@@ -518,7 +517,7 @@ int main()
             DrawRectangle(400,0, screenWidth - 320 - 400, GetScreenHeight() - STATUS_BAR_HEIGHT, bgColor);
             
             GuiLabel((Rectangle){guiPosX, guiPosY, guiWidth, guiHeight}, "Label");
-            GuiLabelEx((Rectangle){guiPosX + deltaX, guiPosY, guiWidth, guiHeight}, "LabelEx", BLACK, BLACK, WHITE);
+            //GuiLabelEx((Rectangle){guiPosX + deltaX, guiPosY, guiWidth, guiHeight}, "LabelEx", BLACK, BLACK, WHITE);
             
             if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
             
@@ -529,18 +528,18 @@ int main()
             
             sliderValue = GuiSlider((Rectangle){guiPosX, guiPosY + 4*deltaY, 3*guiWidth, guiHeight}, sliderValue, 0, 100);
             
-            sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, -50, 50);
+            sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, 0, 100);
             
-            GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue);
+            GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
             
             spinnerValue = GuiSpinner((Rectangle){guiPosX, guiPosY + 7*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
             
             comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboNum, comboText, comboActive);
             
-            GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, "", false);
-            GuiCheckBox((Rectangle){guiPosX + deltaX/4, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, "", true);
+            GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, false);
+            GuiCheckBox((Rectangle){guiPosX + deltaX/4, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, true);
             
-            guiText = GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText);
+            guiText = GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 32);
 
             if (guiElementSelected >= 0) DrawRectangleRec(guiElementRec[guiElementSelected], COLOR_REC);
             if (guiElementHover >= 0) DrawRectangleRec(guiElementRec[guiElementHover], Fade(COLOR_REC, 0.5f));
@@ -613,13 +612,13 @@ int main()
             }
               
             // -- RGBA sliders
-            GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 14*rgbDelta, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", redValue), BLACK, COLOR_REC, RED);
+            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 14*rgbDelta, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", redValue), BLACK, COLOR_REC, RED);
             redValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 14*rgbDelta, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, redValue, 0, 255);
 
-            GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 15*rgbDelta + rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", greenValue), BLACK, COLOR_REC, GREEN);
+            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 15*rgbDelta + rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", greenValue), BLACK, COLOR_REC, GREEN);
             greenValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 15*rgbDelta + rgbHeightLabel, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, greenValue, 0, 255);
 
-            GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 16*rgbDelta + 2*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", blueValue), BLACK, COLOR_REC, BLUE);
+            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 16*rgbDelta + 2*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", blueValue), BLACK, COLOR_REC, BLUE);
             blueValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 16*rgbDelta + 2*rgbHeightLabel, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, blueValue, 0, 255);
             
             DrawTextureRec(texChecked, (Rectangle){0,0,rgbWidthLabel, rgbHeightLabel}, (Vector2){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 17*rgbDelta + 3*rgbHeightLabel}, WHITE);   
