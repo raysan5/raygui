@@ -13,7 +13,6 @@
 *       - ToggleGroup
 *       - ComboBox
 *       - CheckBox
-*       - Switch
 *       - Slider
 *       - SliderBar
 *       - ProgressBar
@@ -107,7 +106,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define NUM_PROPERTIES       99
+#define NUM_PROPERTIES       100
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -144,107 +143,109 @@
     } Rectangle;
 #endif
 
+#define DEFAULT_BORDER_COLOR_NORMAL     0x828282ff
+#define DEFAULT_BASE_COLOR_NORMAL       0xc8c8c8ff
+#define DEFAULT_TEXT_COLOR_NORMAL       0x686868ff
+#define DEFAULT_BORDER_COLOR_FOCUSED    0x7bb0d6ff
+#define DEFAULT_BASE_COLOR_FOCUSED      0xc9effeff
+#define DEFAULT_TEXT_COLOR_FOCUSED      0x6c9bbcff
+#define DEFAULT_BORDER_COLOR_PRESSED    0x048cc7ff
+#define DEFAULT_BASE_COLOR_PRESSED      0x7ceafeff
+#define DEFAULT_TEXT_COLOR_PRESSED      0x0480b5ff
+#define DEFAULT_BORDER_COLOR_DISABLED   0xb1b1b1ff
+#define DEFAULT_BASE_COLOR_DISABLED     0xfafafaff
+#define DEFAULT_TEXT_COLOR_DISABLED     0xc8c8c8ff
+
 // Gui properties enumeration
 typedef enum GuiProperty {
-    GLOBAL_BASE_COLOR = 0,
-    GLOBAL_BORDER_COLOR,
-    GLOBAL_TEXT_COLOR,
-    GLOBAL_TEXT_FONTSIZE,
-    GLOBAL_BORDER_WIDTH,
-    BACKGROUND_COLOR,
-    LINES_COLOR,
-    LABEL_BORDER_WIDTH,
-    LABEL_TEXT_COLOR,
-    LABEL_TEXT_PADDING,
+    DEFAULT_BACKGROUND_COLOR = 0,
+    DEFAULT_LINES_COLOR,
+    DEFAULT_BORDER_COLOR,
+    DEFAULT_BORDER_WIDTH,
+    DEFAULT_BASE_COLOR,
+    DEFAULT_TEXT_COLOR,
+    DEFAULT_TEXT_FONT,
+    DEFAULT_TEXT_SIZE,
+    // Label
+    LABEL_BORDER_COLOR_NORMAL,
+    LABEL_BASE_COLOR_NORMAL,
+    LABEL_TEXT_COLOR_NORMAL,
+    // Button
     BUTTON_BORDER_WIDTH,
-    BUTTON_TEXT_PADDING,
-    BUTTON_DEFAULT_BORDER_COLOR,
-    BUTTON_DEFAULT_INSIDE_COLOR,
-    BUTTON_DEFAULT_TEXT_COLOR,
-    BUTTON_HOVER_BORDER_COLOR,
-    BUTTON_HOVER_INSIDE_COLOR,
-    BUTTON_HOVER_TEXT_COLOR,
-    BUTTON_PRESSED_BORDER_COLOR,
-    BUTTON_PRESSED_INSIDE_COLOR,
-    BUTTON_PRESSED_TEXT_COLOR,
-    TOGGLE_TEXT_PADDING,
+    BUTTON_BORDER_COLOR_NORMAL,
+    BUTTON_BASE_COLOR_NORMAL,
+    BUTTON_TEXT_COLOR_NORMAL,
+    BUTTON_BORDER_COLOR_FOCUSED,
+    BUTTON_BASE_COLOR_FOCUSED,
+    BUTTON_TEXT_COLOR_FOCUSED,
+    BUTTON_BORDER_COLOR_PRESSED,
+    BUTTON_BASE_COLOR_PRESSED,
+    BUTTON_TEXT_COLOR_PRESSED,
+    // Toggle
     TOGGLE_BORDER_WIDTH,
-    TOGGLE_DEFAULT_BORDER_COLOR,
-    TOGGLE_DEFAULT_INSIDE_COLOR,
-    TOGGLE_DEFAULT_TEXT_COLOR,
-    TOGGLE_HOVER_BORDER_COLOR,
-    TOGGLE_HOVER_INSIDE_COLOR,
-    TOGGLE_HOVER_TEXT_COLOR,
-    TOGGLE_PRESSED_BORDER_COLOR,
-    TOGGLE_PRESSED_INSIDE_COLOR,
-    TOGGLE_PRESSED_TEXT_COLOR,
-    TOGGLE_ACTIVE_BORDER_COLOR,
-    TOGGLE_ACTIVE_INSIDE_COLOR,
-    TOGGLE_ACTIVE_TEXT_COLOR,
+    TOGGLE_BORDER_COLOR_NORMAL,
+    TOGGLE_BASE_COLOR_NORMAL,
+    TOGGLE_TEXT_COLOR_NORMAL,
+    TOGGLE_BORDER_COLOR_FOCUSED,
+    TOGGLE_BASE_COLOR_FOCUSED,
+    TOGGLE_TEXT_COLOR_FOCUSED,
+    TOGGLE_BORDER_COLOR_PRESSED,
+    TOGGLE_BASE_COLOR_PRESSED,
+    TOGGLE_TEXT_COLOR_PRESSED,
     TOGGLEGROUP_PADDING,
-    SLIDER_BORDER_WIDTH,
-    SLIDER_BUTTON_BORDER_WIDTH,
-    SLIDER_BORDER_COLOR,
-    SLIDER_INSIDE_COLOR,
-    SLIDER_DEFAULT_COLOR,
-    SLIDER_HOVER_COLOR,
-    SLIDER_ACTIVE_COLOR,
-    SLIDERBAR_BORDER_COLOR,
-    SLIDERBAR_INSIDE_COLOR,
-    SLIDERBAR_DEFAULT_COLOR,
-    SLIDERBAR_HOVER_COLOR,
-    SLIDERBAR_ACTIVE_COLOR,
-    SLIDERBAR_ZERO_LINE_COLOR,
-    PROGRESSBAR_BORDER_COLOR,
-    PROGRESSBAR_INSIDE_COLOR,
-    PROGRESSBAR_PROGRESS_COLOR,
+    // SliderBar
+    SLIDERBAR_BORDER_WIDTH,
+    SLIDERBAR_BORDER_COLOR_NORMAL,
+    SLIDERBAR_BASE_COLOR_NORMAL,
+    SLIDERBAR_BORDER_COLOR_FOCUSED,
+    SLIDERBAR_BASE_COLOR_FOCUSED,
+    SLIDERBAR_BORDER_COLOR_PRESSED,
+    SLIDERBAR_BASE_COLOR_PRESSED,
+    // ProgressBar
     PROGRESSBAR_BORDER_WIDTH,
-    SPINNER_LABEL_BORDER_COLOR,
-    SPINNER_LABEL_INSIDE_COLOR,
-    SPINNER_DEFAULT_BUTTON_BORDER_COLOR,
-    SPINNER_DEFAULT_BUTTON_INSIDE_COLOR,
-    SPINNER_DEFAULT_SYMBOL_COLOR,
-    SPINNER_DEFAULT_TEXT_COLOR,
-    SPINNER_HOVER_BUTTON_BORDER_COLOR,
-    SPINNER_HOVER_BUTTON_INSIDE_COLOR,
-    SPINNER_HOVER_SYMBOL_COLOR,
-    SPINNER_HOVER_TEXT_COLOR,
-    SPINNER_PRESSED_BUTTON_BORDER_COLOR,
-    SPINNER_PRESSED_BUTTON_INSIDE_COLOR,
-    SPINNER_PRESSED_SYMBOL_COLOR,
-    SPINNER_PRESSED_TEXT_COLOR,
-    COMBOBOX_PADDING,
-    COMBOBOX_BUTTON_WIDTH,
-    COMBOBOX_BUTTON_HEIGHT,
+    PROGRESSBAR_BORDER_COLOR_NORMAL,
+    PROGRESSBAR_BASE_COLOR_NORMAL,
+    PROGRESSBAR_FRONT_COLOR_NORMAL,
+    // Spinner
+    SPINNER_BUTTON_PADDING,
+    SPINNER_BORDER_COLOR_NORMAL,
+    SPINNER_BASE_COLOR_NORMAL,
+    SPINNER_TEXT_COLOR_NORMAL,
+    SPINNER_BORDER_COLOR_FOCUSED,
+    SPINNER_BASE_COLOR_FOCUSED,
+    SPINNER_TEXT_COLOR_FOCUSED,
+    // ComboBox
     COMBOBOX_BORDER_WIDTH,
-    COMBOBOX_DEFAULT_BORDER_COLOR,
-    COMBOBOX_DEFAULT_INSIDE_COLOR,
-    COMBOBOX_DEFAULT_TEXT_COLOR,
-    COMBOBOX_DEFAULT_LIST_TEXT_COLOR,
-    COMBOBOX_HOVER_BORDER_COLOR,
-    COMBOBOX_HOVER_INSIDE_COLOR,
-    COMBOBOX_HOVER_TEXT_COLOR,
-    COMBOBOX_HOVER_LIST_TEXT_COLOR,
-    COMBOBOX_PRESSED_BORDER_COLOR,
-    COMBOBOX_PRESSED_INSIDE_COLOR,
-    COMBOBOX_PRESSED_TEXT_COLOR,
-    COMBOBOX_PRESSED_LIST_BORDER_COLOR,
-    COMBOBOX_PRESSED_LIST_INSIDE_COLOR,
-    COMBOBOX_PRESSED_LIST_TEXT_COLOR,
-    CHECKBOX_DEFAULT_BORDER_COLOR,
-    CHECKBOX_DEFAULT_INSIDE_COLOR,
-    CHECKBOX_HOVER_BORDER_COLOR,
-    CHECKBOX_HOVER_INSIDE_COLOR,
-    CHECKBOX_CLICK_BORDER_COLOR,
-    CHECKBOX_CLICK_INSIDE_COLOR,
-    CHECKBOX_STATUS_ACTIVE_COLOR,
-    CHECKBOX_INSIDE_WIDTH,
+    COMBOBOX_BUTTON_PADDING,
+    COMBOBOX_BORDER_COLOR_NORMAL,
+    COMBOBOX_BASE_COLOR_NORMAL,
+    COMBOBOX_TEXT_COLOR_NORMAL,
+    COMBOBOX_BORDER_COLOR_FOCUSED,
+    COMBOBOX_BASE_COLOR_FOCUSED,
+    COMBOBOX_TEXT_COLOR_FOCUSED,
+    COMBOBOX_BORDER_COLOR_PRESSED,
+    COMBOBOX_BASE_COLOR_PRESSED,
+    COMBOBOX_TEXT_COLOR_PRESSED,
+    // CheckBox
+    CHECKBOX_BORDER_WIDTH,
+    CHECKBOX_BORDER_COLOR_NORMAL,
+    CHECKBOX_BASE_COLOR_NORMAL,
+    CHECKBOX_BORDER_COLOR_FOCUSED,
+    CHECKBOX_BASE_COLOR_FOCUSED,
+    CHECKBOX_BORDER_COLOR_PRESSED,
+    CHECKBOX_BASE_COLOR_PRESSED,
+    // TextBox
     TEXTBOX_BORDER_WIDTH,
-    TEXTBOX_BORDER_COLOR,
-    TEXTBOX_INSIDE_COLOR,
-    TEXTBOX_TEXT_COLOR,
-    TEXTBOX_LINE_COLOR,
-    TEXTBOX_TEXT_FONTSIZE
+    TEXTBOX_BORDER_COLOR_NORMAL,
+    TEXTBOX_BASE_COLOR_NORMAL,
+    TEXTBOX_TEXT_COLOR_NORMAL,
+    //TEXTBOX_CURSOR_COLOR_NORMAL,
+    TEXTBOX_BORDER_COLOR_FOCUSED,
+    TEXTBOX_BASE_COLOR_FOCUSED,
+    TEXTBOX_TEXT_COLOR_FOCUSED,
+    TEXTBOX_BORDER_COLOR_PRESSED,
+    TEXTBOX_BASE_COLOR_PRESSED,
+    TEXTBOX_TEXT_COLOR_PRESSED,
 } GuiProperty;
 
 //----------------------------------------------------------------------------------
@@ -270,7 +271,7 @@ RAYGUIDEF void GuiProgressBar(Rectangle bounds, float value);                   
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner element, returns selected value
 RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text);                                                     // Text Box element, returns input text
 
-//RAYGUIDEF void UpdateMouse(bool isMouseDown, bool isMouseUp, bool isMousePressed, bool isMouseReleased, Vector2 mousePosition);
+//RAYGUIDEF void UpdateMouse(bool isMouseDown, bool isMouseUp, Vector2 mousePosition);
 //RAYGUIDEF void UpdateKeys(int keyPressed);
 
 #if !defined(RAYGUI_NO_STYLE_SAVE_LOAD)
@@ -337,208 +338,89 @@ typedef enum { DISABLED, NORMAL, FOCUSED, PRESSED } ControlState;
 #if defined(RAYGUI_STYLE_DEFAULT_LIGHT)
 // Current GUI style (default light)
 static int style[NUM_PROPERTIES] = {
-    0xf5f5f5ff,         // GLOBAL_BASE_COLOR
-    0xf5f5f5ff,         // GLOBAL_BORDER_COLOR
-    0xf5f5f5ff,         // GLOBAL_TEXT_COLOR
-    10,                 // GLOBAL_TEXT_FONTSIZE
-    1,                  // GLOBAL_BORDER_WIDTH
-    0xf5f5f5ff,         // BACKGROUND_COLOR
-    0x90abb5ff,         // LINES_COLOR
-    1,                  // LABEL_BORDER_WIDTH
-    0x4d4d4dff,         // LABEL_TEXT_COLOR
-    20,                 // LABEL_TEXT_PADDING
-    2,                  // BUTTON_BORDER_WIDTH
-    20,                 // BUTTON_TEXT_PADDING
-    0x828282ff,         // BUTTON_DEFAULT_BORDER_COLOR
-    0xc8c8c8ff,         // BUTTON_DEFAULT_INSIDE_COLOR
-    0x4d4d4dff,         // BUTTON_DEFAULT_TEXT_COLOR
-    0xc8c8c8ff,         // BUTTON_HOVER_BORDER_COLOR
-    0xffffffff,         // BUTTON_HOVER_INSIDE_COLOR
-    0x868686ff,         // BUTTON_HOVER_TEXT_COLOR
-    0x7bb0d6ff,         // BUTTON_PRESSED_BORDER_COLOR
-    0xbcecffff,         // BUTTON_PRESSED_INSIDE_COLOR
-    0x5f9aa7ff,         // BUTTON_PRESSED_TEXT_COLOR
-    20,                 // TOGGLE_TEXT_PADDING
-    1,                  // TOGGLE_BORDER_WIDTH
-    0x828282ff,         // TOGGLE_DEFAULT_BORDER_COLOR
-    0xc8c8c8ff,         // TOGGLE_DEFAULT_INSIDE_COLOR
-    0x828282ff,         // TOGGLE_DEFAULT_TEXT_COLOR
-    0xc8c8c8ff,         // TOGGLE_HOVER_BORDER_COLOR
-    0xffffffff,         // TOGGLE_HOVER_INSIDE_COLOR
-    0x828282ff,         // TOGGLE_HOVER_TEXT_COLOR
-    0xbdd7eaff,         // TOGGLE_PRESSED_BORDER_COLOR
-    0xddf5ffff,         // TOGGLE_PRESSED_INSIDE_COLOR
-    0xafccd3ff,         // TOGGLE_PRESSED_TEXT_COLOR
-    0x7bb0d6ff,         // TOGGLE_ACTIVE_BORDER_COLOR
-    0xbcecffff,         // TOGGLE_ACTIVE_INSIDE_COLOR
-    0x5f9aa7ff,         // TOGGLE_ACTIVE_TEXT_COLOR
-    3,                  // TOGGLEGROUP_PADDING
-    1,                  // SLIDER_BORDER_WIDTH
-    1,                  // SLIDER_BUTTON_BORDER_WIDTH
-    0x828282ff,         // SLIDER_BORDER_COLOR
-    0xc8c8c8ff,         // SLIDER_INSIDE_COLOR
-    0xbcecffff,         // SLIDER_DEFAULT_COLOR
-    0xffffffff,         // SLIDER_HOVER_COLOR
-    0xddf5ffff,         // SLIDER_ACTIVE_COLOR
-    0x828282ff,         // SLIDERBAR_BORDER_COLOR
-    0xc8c8c8ff,         // SLIDERBAR_INSIDE_COLOR
-    0xbcecffff,         // SLIDERBAR_DEFAULT_COLOR
-    0xffffffff,         // SLIDERBAR_HOVER_COLOR
-    0xddf5ffff,         // SLIDERBAR_ACTIVE_COLOR
-    0x828282ff,         // SLIDERBAR_ZERO_LINE_COLOR
-    0x828282ff,         // PROGRESSBAR_BORDER_COLOR
-    0xc8c8c8ff,         // PROGRESSBAR_INSIDE_COLOR
-    0xbcecffff,         // PROGRESSBAR_PROGRESS_COLOR
-    2,                  // PROGRESSBAR_BORDER_WIDTH
-    0x828282ff,         // SPINNER_LABEL_BORDER_COLOR
-    0xc8c8c8ff,         // SPINNER_LABEL_INSIDE_COLOR
-    0x828282ff,         // SPINNER_DEFAULT_BUTTON_BORDER_COLOR
-    0xc8c8c8ff,         // SPINNER_DEFAULT_BUTTON_INSIDE_COLOR
-    0x000000ff,         // SPINNER_DEFAULT_SYMBOL_COLOR
-    0x000000ff,         // SPINNER_DEFAULT_TEXT_COLOR
-    0xc8c8c8ff,         // SPINNER_HOVER_BUTTON_BORDER_COLOR
-    0xffffffff,         // SPINNER_HOVER_BUTTON_INSIDE_COLOR
-    0x000000ff,         // SPINNER_HOVER_SYMBOL_COLOR
-    0x000000ff,         // SPINNER_HOVER_TEXT_COLOR
-    0x7bb0d6ff,         // SPINNER_PRESSED_BUTTON_BORDER_COLOR
-    0xbcecffff,         // SPINNER_PRESSED_BUTTON_INSIDE_COLOR
-    0x5f9aa7ff,         // SPINNER_PRESSED_SYMBOL_COLOR
-    0x000000ff,         // SPINNER_PRESSED_TEXT_COLOR
-    1,                  // COMBOBOX_PADDING
-    30,                 // COMBOBOX_BUTTON_WIDTH
-    20,                 // COMBOBOX_BUTTON_HEIGHT
-    1,                  // COMBOBOX_BORDER_WIDTH
-    0x828282ff,         // COMBOBOX_DEFAULT_BORDER_COLOR
-    0xc8c8c8ff,         // COMBOBOX_DEFAULT_INSIDE_COLOR
-    0x828282ff,         // COMBOBOX_DEFAULT_TEXT_COLOR
-    0x828282ff,         // COMBOBOX_DEFAULT_LIST_TEXT_COLOR
-    0xc8c8c8ff,         // COMBOBOX_HOVER_BORDER_COLOR
-    0xffffffff,         // COMBOBOX_HOVER_INSIDE_COLOR
-    0x828282ff,         // COMBOBOX_HOVER_TEXT_COLOR
-    0x828282ff,         // COMBOBOX_HOVER_LIST_TEXT_COLOR
-    0x7bb0d6ff,         // COMBOBOX_PRESSED_BORDER_COLOR
-    0xbcecffff,         // COMBOBOX_PRESSED_INSIDE_COLOR
-    0x5f9aa7ff,         // COMBOBOX_PRESSED_TEXT_COLOR
-    0x0078acff,         // COMBOBOX_PRESSED_LIST_BORDER_COLOR
-    0x66e7ffff,         // COMBOBOX_PRESSED_LIST_INSIDE_COLOR
-    0x0078acff,         // COMBOBOX_PRESSED_LIST_TEXT_COLOR
-    0x828282ff,         // CHECKBOX_DEFAULT_BORDER_COLOR
-    0xffffffff,         // CHECKBOX_DEFAULT_INSIDE_COLOR
-    0xc8c8c8ff,         // CHECKBOX_HOVER_BORDER_COLOR
-    0xffffffff,         // CHECKBOX_HOVER_INSIDE_COLOR
-    0x66e7ffff,         // CHECKBOX_CLICK_BORDER_COLOR
-    0xddf5ffff,         // CHECKBOX_CLICK_INSIDE_COLOR
-    0xbcecffff,         // CHECKBOX_STATUS_ACTIVE_COLOR
-    1,                  // CHECKBOX_INSIDE_WIDTH
-    1,                  // TEXTBOX_BORDER_WIDTH
-    0x828282ff,         // TEXTBOX_BORDER_COLOR
-    0xf5f5f5ff,         // TEXTBOX_INSIDE_COLOR
-    0x000000ff,         // TEXTBOX_TEXT_COLOR
-    0x000000ff,         // TEXTBOX_LINE_COLOR
-    10                  // TEXTBOX_TEXT_FONTSIZE
+    0xf5f5f5ff,                         // DEFAULT_BACKGROUND_COLOR
+    0x90abb5ff,                         // DEFAULT_LINES_COLOR,
+    DEFAULT_BORDER_COLOR_NORMAL,        // DEFAULT_BORDER_COLOR,
+    1,                                  // DEFAULT_BORDER_WIDTH,
+    DEFAULT_BASE_COLOR_NORMAL,          // DEFAULT_BASE_COLOR,
+    DEFAULT_TEXT_COLOR_NORMAL,          // DEFAULT_TEXT_COLOR,
+    0,                                  // DEFAULT_TEXT_FONT,
+    10,                                 // DEFAULT_TEXT_SIZE,
+    DEFAULT_BORDER_COLOR_NORMAL,        // LABEL_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // LABEL_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // LABEL_TEXT_COLOR_NORMAL,
+    2,                                  // BUTTON_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // BUTTON_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // BUTTON_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // BUTTON_TEXT_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // BUTTON_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // BUTTON_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // BUTTON_TEXT_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // BUTTON_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // BUTTON_BASE_COLOR_PRESSED,
+    DEFAULT_TEXT_COLOR_PRESSED,         // BUTTON_TEXT_COLOR_PRESSED,
+    1,                                  // TOGGLE_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // TOGGLE_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // TOGGLE_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // TOGGLE_TEXT_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // TOGGLE_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // TOGGLE_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // TOGGLE_TEXT_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // TOGGLE_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // TOGGLE_BASE_COLOR_PRESSED,
+    DEFAULT_TEXT_COLOR_PRESSED,         // TOGGLE_TEXT_COLOR_PRESSED,
+    2,                                  // TOGGLEGROUP_PADDING,
+    1,                                  // SLIDERBAR_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // SLIDERBAR_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_PRESSED,         // SLIDERBAR_BASE_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // SLIDERBAR_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // SLIDERBAR_BASE_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // SLIDERBAR_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // SLIDERBAR_BASE_COLOR_PRESSED,
+    1,                                  // PROGRESSBAR_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // PROGRESSBAR_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // PROGRESSBAR_BASE_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_FOCUSED,         // PROGRESSBAR_FRONT_COLOR_NORMAL,
+    2,                                  // SPINNER_BUTTON_PADDING
+    DEFAULT_BORDER_COLOR_NORMAL,        // SPINNER_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // SPINNER_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // SPINNER_TEXT_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // SPINNER_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // SPINNER_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // SPINNER_TEXT_COLOR_FOCUSED,
+    1,                                  // COMBOBOX_BORDER_WIDTH,
+    2,                                  // COMBOBOX_BUTTON_PADDING,
+    DEFAULT_BORDER_COLOR_NORMAL,        // COMBOBOX_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // COMBOBOX_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // COMBOBOX_TEXT_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // COMBOBOX_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // COMBOBOX_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // COMBOBOX_TEXT_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // COMBOBOX_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // COMBOBOX_BASE_COLOR_PRESSED,
+    DEFAULT_TEXT_COLOR_PRESSED,         // COMBOBOX_TEXT_COLOR_PRESSED,
+    1,                                  // CHECKBOX_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // CHECKBOX_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // CHECKBOX_BASE_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // CHECKBOX_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // CHECKBOX_BASE_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // CHECKBOX_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // CHECKBOX_BASE_COLOR_PRESSED,
+    1,                                  // TEXTBOX_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // TEXTBOX_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // TEXTBOX_BASE_COLOR_NORMAL,
+    DEFAULT_TEXT_COLOR_NORMAL,          // TEXTBOX_TEXT_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // TEXTBOX_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // TEXTBOX_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // TEXTBOX_TEXT_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // TEXTBOX_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // TEXTBOX_BASE_COLOR_PRESSED,
+    DEFAULT_TEXT_COLOR_PRESSED,         // TEXTBOX_TEXT_COLOR_PRESSED,
 };
 #elif defined(RAYGUI_STYLE_DEFAULT_DARK)
 // Current GUI style (default dark)
 static int style[NUM_PROPERTIES] = {
-    0xf5f5f5ff,         // GLOBAL_BASE_COLOR
-    0xf5f5f5ff,         // GLOBAL_BORDER_COLOR
-    0xf5f5f5ff,         // GLOBAL_TEXT_COLOR
-    0xa,                // GLOBAL_TEXT_FONTSIZE
-    0x1,                // GLOBAL_BORDER_WIDTH
-    0x293235ff,         // BACKGROUND_COLOR
-    0x90abb5ff,         // LINES_COLOR
-    0x0,                // LABEL_BORDER_WIDTH
-    0x90acb4ff,         // LABEL_TEXT_COLOR
-    0x0,                // LABEL_TEXT_PADDING
-    0x2,                // BUTTON_BORDER_WIDTH
-    0x0,                // BUTTON_TEXT_PADDING
-    0x3e4a4fff,         // BUTTON_DEFAULT_BORDER_COLOR
-    0x344041ff,         // BUTTON_DEFAULT_INSIDE_COLOR
-    0x90acb4ff,         // BUTTON_DEFAULT_TEXT_COLOR
-    0x47595fff,         // BUTTON_HOVER_BORDER_COLOR
-    0x334f59ff,         // BUTTON_HOVER_INSIDE_COLOR
-    0x90acb4ff,         // BUTTON_HOVER_TEXT_COLOR
-    0x5f9aa4ff,         // BUTTON_PRESSED_BORDER_COLOR
-    0x334f59ff,         // BUTTON_PRESSED_INSIDE_COLOR
-    0x5f9aa8ff,         // BUTTON_PRESSED_TEXT_COLOR
-    20,                 // TOGGLE_TEXT_PADDING
-    1,                  // TOGGLE_BORDER_WIDTH
-    0x3e4b4dff,         // TOGGLE_DEFAULT_BORDER_COLOR
-    0x344041ff,         // TOGGLE_DEFAULT_INSIDE_COLOR
-    0x828282ff,         // TOGGLE_DEFAULT_TEXT_COLOR
-    0x47595fff,         // TOGGLE_HOVER_BORDER_COLOR
-    0x334f59ff,         // TOGGLE_HOVER_INSIDE_COLOR
-    0x828282ff,         // TOGGLE_HOVER_TEXT_COLOR
-    0x5f9aa8ff,         // TOGGLE_PRESSED_BORDER_COLOR
-    0x334f59ff,         // TOGGLE_PRESSED_INSIDE_COLOR
-    0x5f9aa8ff,         // TOGGLE_PRESSED_TEXT_COLOR
-    0x92c763ff,         // TOGGLE_ACTIVE_BORDER_COLOR
-    0x334f59ff,         // TOGGLE_ACTIVE_INSIDE_COLOR
-    0x92c763ff,         // TOGGLE_ACTIVE_TEXT_COLOR
-    0x3,                // TOGGLEGROUP_PADDING
-    0x1,                // SLIDER_BORDER_WIDTH
-    0x0,                // SLIDER_BUTTON_BORDER_WIDTH
-    0x828282ff,         // SLIDER_BORDER_COLOR
-    0x3e4b4dff,         // SLIDER_INSIDE_COLOR
-    0x92c763ff,         // SLIDER_DEFAULT_COLOR
-    0xc3e0a9ff,         // SLIDER_HOVER_COLOR
-    0xffffffff,         // SLIDER_ACTIVE_COLOR
-    0x828282ff,         // SLIDERBAR_BORDER_COLOR
-    0x344041ff,         // SLIDERBAR_INSIDE_COLOR
-    0x92c763ff,         // SLIDERBAR_DEFAULT_COLOR
-    0xc3e0a9ff,         // SLIDERBAR_HOVER_COLOR
-    0xffffffff,         // SLIDERBAR_ACTIVE_COLOR
-    0x828282ff,         // SLIDERBAR_ZERO_LINE_COLOR
-    0x828282ff,         // PROGRESSBAR_BORDER_COLOR
-    0x3e4b4dff,         // PROGRESSBAR_INSIDE_COLOR
-    0x92c763ff,         // PROGRESSBAR_PROGRESS_COLOR
-    0x1,                // PROGRESSBAR_BORDER_WIDTH
-    0x3e4b4dff,         // SPINNER_LABEL_BORDER_COLOR
-    0x344041ff,         // SPINNER_LABEL_INSIDE_COLOR
-    0x3e4b4dff,         // SPINNER_DEFAULT_BUTTON_BORDER_COLOR
-    0x344041ff,         // SPINNER_DEFAULT_BUTTON_INSIDE_COLOR
-    0x5f9aa8ff,         // SPINNER_DEFAULT_SYMBOL_COLOR
-    0x5f9aa8ff,         // SPINNER_DEFAULT_TEXT_COLOR
-    0x47595fff,         // SPINNER_HOVER_BUTTON_BORDER_COLOR
-    0x334f59ff,         // SPINNER_HOVER_BUTTON_INSIDE_COLOR
-    0x5f9aa8ff,         // SPINNER_HOVER_SYMBOL_COLOR
-    0x5f9aa8ff,         // SPINNER_HOVER_TEXT_COLOR
-    0x92c763ff,         // SPINNER_PRESSED_BUTTON_BORDER_COLOR
-    0x334f59ff,         // SPINNER_PRESSED_BUTTON_INSIDE_COLOR
-    0x92c763ff,         // SPINNER_PRESSED_SYMBOL_COLOR
-    0x92c763ff,         // SPINNER_PRESSED_TEXT_COLOR
-    0x1,                // COMBOBOX_PADDING
-    30,                 // COMBOBOX_BUTTON_WIDTH
-    20,                 // COMBOBOX_BUTTON_HEIGHT
-    0x1,                // COMBOBOX_BORDER_WIDTH
-    0x3e4b4dff,         // COMBOBOX_DEFAULT_BORDER_COLOR
-    0x344041ff,         // COMBOBOX_DEFAULT_INSIDE_COLOR
-    0x5f9aa8ff,         // COMBOBOX_DEFAULT_TEXT_COLOR
-    0x5f9aa8ff,         // COMBOBOX_DEFAULT_LIST_TEXT_COLOR
-    0x47595fff,         // COMBOBOX_HOVER_BORDER_COLOR
-    0x334f59ff,         // COMBOBOX_HOVER_INSIDE_COLOR
-    0x5f9aa8ff,         // COMBOBOX_HOVER_TEXT_COLOR
-    0x5f9aa8ff,         // COMBOBOX_HOVER_LIST_TEXT_COLOR
-    0x5f9aa8ff,         // COMBOBOX_PRESSED_BORDER_COLOR
-    0x334f59ff,         // COMBOBOX_PRESSED_INSIDE_COLOR
-    0x5f9aa8ff,         // COMBOBOX_PRESSED_TEXT_COLOR
-    0x92c763ff,         // COMBOBOX_PRESSED_LIST_BORDER_COLOR
-    0x334f59ff,         // COMBOBOX_PRESSED_LIST_INSIDE_COLOR
-    0x92c763ff,         // COMBOBOX_PRESSED_LIST_TEXT_COLOR
-    0x47595fff,         // CHECKBOX_DEFAULT_BORDER_COLOR
-    0x344041ff,         // CHECKBOX_DEFAULT_INSIDE_COLOR
-    0x47595fff,         // CHECKBOX_HOVER_BORDER_COLOR
-    0x334f59ff,         // CHECKBOX_HOVER_INSIDE_COLOR
-    0x5f9aa8ff,         // CHECKBOX_CLICK_BORDER_COLOR
-    0x334f59ff,         // CHECKBOX_CLICK_INSIDE_COLOR
-    0x92c763ff,         // CHECKBOX_STATUS_ACTIVE_COLOR
-    0x2,                // CHECKBOX_INSIDE_WIDTH
-    0x1,                // TEXTBOX_BORDER_WIDTH
-    0x47595fff,         // TEXTBOX_BORDER_COLOR
-    0x828282ff,         // TEXTBOX_INSIDE_COLOR
-    0xff,               // TEXTBOX_TEXT_COLOR
-    0xff,               // TEXTBOX_LINE_COLOR
-    0xa,                // TEXTBOX_TEXT_FONTSIZE
+    0x00
 };
 #endif
 
@@ -548,66 +430,66 @@ static const char *guiPropertyName[] = {
     "GLOBAL_BASE_COLOR",
     "GLOBAL_BORDER_COLOR",
     "GLOBAL_TEXT_COLOR",
-    "GLOBAL_TEXT_FONTSIZE",
+    "DEFAULT_TEXT_SIZE",
     "GLOBAL_BORDER_WIDTH",
-    "BACKGROUND_COLOR",
-    "LINES_COLOR",
+    "DEFAULT_BACKGROUND_COLOR",
+    "DEFAULT_LINES_COLOR",
     "LABEL_BORDER_WIDTH",
     "LABEL_TEXT_COLOR",
     "LABEL_TEXT_PADDING",
     "BUTTON_BORDER_WIDTH",
     "BUTTON_TEXT_PADDING",
-    "BUTTON_DEFAULT_BORDER_COLOR",
-    "BUTTON_DEFAULT_INSIDE_COLOR",
-    "BUTTON_DEFAULT_TEXT_COLOR",
-    "BUTTON_HOVER_BORDER_COLOR",
-    "BUTTON_HOVER_INSIDE_COLOR",
-    "BUTTON_HOVER_TEXT_COLOR",
-    "BUTTON_PRESSED_BORDER_COLOR",
-    "BUTTON_PRESSED_INSIDE_COLOR",
-    "BUTTON_PRESSED_TEXT_COLOR",
+    "BUTTON_BORDER_COLOR_NORMAL",
+    "BUTTON_BASE_COLOR_NORMAL",
+    "BUTTON_TEXT_COLOR_NORMAL",
+    "BUTTON_BORDER_COLOR_FOCUSED",
+    "BUTTON_BASE_COLOR_FOCUSED",
+    "BUTTON_TEXT_COLOR_FOCUSED",
+    "BUTTON_BORDER_COLOR_PRESSED",
+    "BUTTON_BASE_COLOR_PRESSED",
+    "BUTTON_TEXT_COLOR_PRESSED",
     "TOGGLE_TEXT_PADDING",
     "TOGGLE_BORDER_WIDTH",
-    "TOGGLE_DEFAULT_BORDER_COLOR",
-    "TOGGLE_DEFAULT_INSIDE_COLOR",
-    "TOGGLE_DEFAULT_TEXT_COLOR",
-    "TOGGLE_HOVER_BORDER_COLOR",
-    "TOGGLE_HOVER_INSIDE_COLOR",
-    "TOGGLE_HOVER_TEXT_COLOR",
-    "TOGGLE_PRESSED_BORDER_COLOR",
-    "TOGGLE_PRESSED_INSIDE_COLOR",
-    "TOGGLE_PRESSED_TEXT_COLOR",
-    "TOGGLE_ACTIVE_BORDER_COLOR",
-    "TOGGLE_ACTIVE_INSIDE_COLOR",
-    "TOGGLE_ACTIVE_TEXT_COLOR",
+    "TOGGLE_BORDER_COLOR_NORMAL",
+    "TOGGLE_BASE_COLOR_NORMAL",
+    "TOGGLE_TEXT_COLOR_NORMAL",
+    "TOGGLE_BORDER_COLOR_FOCUSED",
+    "TOGGLE_BASE_COLOR_FOCUSED",
+    "TOGGLE_TEXT_COLOR_FOCUSED",
+    "TOGGLE_BORDER_COLOR_PRESSED",
+    "TOGGLE_BASE_COLOR_PRESSED",
+    "TOGGLE_TEXT_COLOR_PRESSED",
+    "TOGGLE_BORDER_COLOR_PRESSED",
+    "TOGGLE_BASE_COLOR_PRESSED",
+    "TOGGLE_TEXT_COLOR_PRESSED",
     "TOGGLEGROUP_PADDING",
-    "SLIDER_BORDER_WIDTH",
+    "SLIDERBAR_BORDER_WIDTH",
     "SLIDER_BUTTON_BORDER_WIDTH",
-    "SLIDER_BORDER_COLOR",
-    "SLIDER_INSIDE_COLOR",
-    "SLIDER_DEFAULT_COLOR",
-    "SLIDER_HOVER_COLOR",
-    "SLIDER_ACTIVE_COLOR",
+    "SLIDERBAR_BORDER_COLOR_NORMAL",
+    "SLIDERBAR_BASE_COLOR_NORMAL",
+    "SLIDERBAR_BASE_COLOR_NORMAL",
+    "SLIDERBAR_BASE_COLOR_FOCUSED",
+    "SLIDERBAR_BASE_COLOR_PRESSED",
     "SLIDERBAR_BORDER_COLOR",
     "SLIDERBAR_INSIDE_COLOR",
     "SLIDERBAR_DEFAULT_COLOR",
     "SLIDERBAR_HOVER_COLOR",
     "SLIDERBAR_ACTIVE_COLOR",
     "SLIDERBAR_ZERO_LINE_COLOR",
-    "PROGRESSBAR_BORDER_COLOR",
-    "PROGRESSBAR_INSIDE_COLOR",
-    "PROGRESSBAR_PROGRESS_COLOR",
+    "PROGRESSBAR_BORDER_COLOR_NORMAL",
+    "PROGRESSBAR_BASE_COLOR_NORMAL",
+    "PROGRESSBAR_FRONT_COLOR_NORMAL",
     "PROGRESSBAR_BORDER_WIDTH",
-    "SPINNER_LABEL_BORDER_COLOR",
-    "SPINNER_LABEL_INSIDE_COLOR",
+    "SPINNER_BORDER_COLOR_NORMAL",
+    "SPINNER_BASE_COLOR_NORMAL",
     "SPINNER_DEFAULT_BUTTON_BORDER_COLOR",
     "SPINNER_DEFAULT_BUTTON_INSIDE_COLOR",
     "SPINNER_DEFAULT_SYMBOL_COLOR",
-    "SPINNER_DEFAULT_TEXT_COLOR",
+    "SPINNER_TEXT_COLOR_NORMAL",
     "SPINNER_HOVER_BUTTON_BORDER_COLOR",
     "SPINNER_HOVER_BUTTON_INSIDE_COLOR",
     "SPINNER_HOVER_SYMBOL_COLOR",
-    "SPINNER_HOVER_TEXT_COLOR",
+    "SPINNER_TEXT_COLOR_FOCUSED",
     "SPINNER_PRESSED_BUTTON_BORDER_COLOR",
     "SPINNER_PRESSED_BUTTON_INSIDE_COLOR",
     "SPINNER_PRESSED_SYMBOL_COLOR",
@@ -616,32 +498,32 @@ static const char *guiPropertyName[] = {
     "COMBOBOX_BUTTON_WIDTH",
     "COMBOBOX_BUTTON_HEIGHT",
     "COMBOBOX_BORDER_WIDTH",
-    "COMBOBOX_DEFAULT_BORDER_COLOR",
-    "COMBOBOX_DEFAULT_INSIDE_COLOR",
-    "COMBOBOX_DEFAULT_TEXT_COLOR",
-    "COMBOBOX_DEFAULT_LIST_TEXT_COLOR",
-    "COMBOBOX_HOVER_BORDER_COLOR",
-    "COMBOBOX_HOVER_INSIDE_COLOR",
-    "COMBOBOX_HOVER_TEXT_COLOR",
-    "COMBOBOX_HOVER_LIST_TEXT_COLOR",
-    "COMBOBOX_PRESSED_BORDER_COLOR",
-    "COMBOBOX_PRESSED_INSIDE_COLOR",
-    "COMBOBOX_PRESSED_TEXT_COLOR",
+    "COMBOBOX_BORDER_COLOR_NORMAL",
+    "COMBOBOX_BASE_COLOR_NORMAL",
+    "COMBOBOX_TEXT_COLOR_NORMAL",
+    "BUTTON_TEXT_COLOR_NORMAL",
+    "COMBOBOX_BORDER_COLOR_FOCUSED",
+    "COMBOBOX_BASE_COLOR_FOCUSED",
+    "COMBOBOX_TEXT_COLOR_FOCUSED",
+    "BUTTON_TEXT_COLOR_FOCUSED",
+    "COMBOBOX_BORDER_COLOR_PRESSED",
+    "COMBOBOX_BASE_COLOR_PRESSED",
+    "COMBOBOX_TEXT_COLOR_PRESSED",
     "COMBOBOX_PRESSED_LIST_BORDER_COLOR",
     "COMBOBOX_PRESSED_LIST_INSIDE_COLOR",
     "COMBOBOX_PRESSED_LIST_TEXT_COLOR",
-    "CHECKBOX_DEFAULT_BORDER_COLOR",
-    "CHECKBOX_DEFAULT_INSIDE_COLOR",
-    "CHECKBOX_HOVER_BORDER_COLOR",
-    "CHECKBOX_HOVER_INSIDE_COLOR",
-    "CHECKBOX_CLICK_BORDER_COLOR",
-    "CHECKBOX_CLICK_INSIDE_COLOR",
-    "CHECKBOX_STATUS_ACTIVE_COLOR",
-    "CHECKBOX_INSIDE_WIDTH",
+    "CHECKBOX_BORDER_COLOR_NORMAL",
+    "CHECKBOX_BASE_COLOR_NORMAL",
+    "CHECKBOX_BORDER_COLOR_FOCUSED",
+    "CHECKBOX_BASE_COLOR_FOCUSED",
+    "CHECKBOX_BORDER_COLOR_PRESSED",
+    "CHECKBOX_BASE_COLOR_PRESSED",
+    "CHECKBOX_BASE_COLOR_PRESSED",
+    "CHECKBOX_BORDER_WIDTH",
     "TEXTBOX_BORDER_WIDTH",
-    "TEXTBOX_BORDER_COLOR",
-    "TEXTBOX_INSIDE_COLOR",
-    "TEXTBOX_TEXT_COLOR",
+    "TEXTBOX_BORDER_COLOR_NORMAL",
+    "TEXTBOX_BASE_COLOR_NORMAL",
+    "TEXTBOX_TEXT_COLOR_NORMAL",
     "TEXTBOX_LINE_COLOR",
     "TEXTBOX_TEXT_FONTSIZE"
 };
@@ -650,8 +532,6 @@ static const char *guiPropertyName[] = {
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-static Color ColorMultiply(Color baseColor, float value);
-
 #if defined RAYGUI_STANDALONE
 static Color GetColor(int hexValue);   // Returns a Color struct from hexadecimal value
 static int GetHexValue(Color color);   // Returns hexadecimal value for a Color
@@ -683,15 +563,15 @@ static void DrawRectangle(int posX, int posY, int width, int height, Color color
 //----------------------------------------------------------------------------------
 
 // Get background color
-RAYGUIDEF Color GuiBackgroundColor(void) { return GetColor(style[BACKGROUND_COLOR]); }
+RAYGUIDEF Color GuiBackgroundColor(void) { return GetColor(style[DEFAULT_BACKGROUND_COLOR]); }
 
 // Get lines color
-RAYGUIDEF Color GuiLinesColor(void) { return GetColor(style[LINES_COLOR]); }
+RAYGUIDEF Color GuiLinesColor(void) { return GetColor(style[DEFAULT_LINES_COLOR]); }
 
 // Label element, show text
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 {
-    GuiLabelEx(bounds, text, GetColor(style[LABEL_TEXT_COLOR]), (Color){ 0, 0, 0, 0 }, (Color){ 0, 0, 0, 0 });
+    GuiLabelEx(bounds, text, GetColor(style[LABEL_TEXT_COLOR_NORMAL]), (Color){ 0, 0, 0, 0 }, (Color){ 0, 0, 0, 0 });
 }
 
 // Label element extended, configurable colors
@@ -699,18 +579,18 @@ RAYGUIDEF void GuiLabelEx(Rectangle bounds, const char *text, Color textColor, C
 {
     // Update control
     //--------------------------------------------------------------------
-    int textWidth = MeasureText(text, style[GLOBAL_TEXT_FONTSIZE]);
-    int textHeight = style[GLOBAL_TEXT_FONTSIZE];
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
 
-    if (bounds.width < textWidth) bounds.width = textWidth + style[LABEL_TEXT_PADDING];
-    if (bounds.height < textHeight) bounds.height = textHeight + style[LABEL_TEXT_PADDING]/2;
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
     DrawRectangleRec(bounds, border);
-    DrawRectangle(bounds.x + style[LABEL_BORDER_WIDTH], bounds.y + style[LABEL_BORDER_WIDTH], bounds.width - (2*style[LABEL_BORDER_WIDTH]), bounds.height - (2*style[LABEL_BORDER_WIDTH]), inner);
-    DrawText(text, bounds.x + ((bounds.width/2) - (textWidth/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], textColor);
+    DrawRectangle(bounds.x + style[DEFAULT_BORDER_WIDTH], bounds.y + style[DEFAULT_BORDER_WIDTH], bounds.width - (2*style[DEFAULT_BORDER_WIDTH]), bounds.height - (2*style[DEFAULT_BORDER_WIDTH]), inner);
+    DrawText(text, bounds.x + ((bounds.width/2) - (textWidth/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], textColor);
     //--------------------------------------------------------------------
 }
 
@@ -722,13 +602,13 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
     Vector2 mousePoint = GetMousePosition();
     bool clicked = false;
 
-    int textWidth = MeasureText(text, style[GLOBAL_TEXT_FONTSIZE]);
-    int textHeight = style[GLOBAL_TEXT_FONTSIZE];
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
 
     // Update control
     //--------------------------------------------------------------------
-    if (bounds.width < textWidth) bounds.width = textWidth + style[BUTTON_TEXT_PADDING];
-    if (bounds.height < textHeight) bounds.height = textHeight + style[BUTTON_TEXT_PADDING]/2;
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
 
     if (CheckCollisionPointRec(mousePoint, bounds))
     {
@@ -744,21 +624,21 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
     {
         case NORMAL:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_DEFAULT_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_DEFAULT_INSIDE_COLOR]));
-            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[BUTTON_DEFAULT_TEXT_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
+            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_HOVER_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_HOVER_INSIDE_COLOR]));
-            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[BUTTON_HOVER_TEXT_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
+            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_PRESSED_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_PRESSED_INSIDE_COLOR]));
-            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[BUTTON_PRESSED_TEXT_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
+            DrawRectangle((int)(bounds.x + style[BUTTON_BORDER_WIDTH]), (int)(bounds.y + style[BUTTON_BORDER_WIDTH]) , (int)(bounds.width - (2*style[BUTTON_BORDER_WIDTH])), (int)(bounds.height - (2*style[BUTTON_BORDER_WIDTH])), GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
         default: break;
     }
@@ -775,13 +655,13 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
     
     Vector2 mousePoint = GetMousePosition();
 
-    int textWidth = MeasureText(text, style[GLOBAL_TEXT_FONTSIZE]);
-    int textHeight = style[GLOBAL_TEXT_FONTSIZE];
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
 
     // Update control
     //--------------------------------------------------------------------
-    if (bounds.width < textWidth) bounds.width = textWidth + style[TOGGLE_TEXT_PADDING];
-    if (bounds.height < textHeight) bounds.height = textHeight + style[TOGGLE_TEXT_PADDING]/2;
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
 
     if (CheckCollisionPointRec(mousePoint, bounds))
     {
@@ -803,28 +683,28 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
         {
             if (active)
             {
-                DrawRectangleRec(bounds, GetColor(style[TOGGLE_ACTIVE_BORDER_COLOR]));
-                DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_ACTIVE_INSIDE_COLOR]));
-                DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[TOGGLE_ACTIVE_TEXT_COLOR]));
+                DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
+                DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
+                DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
             }
             else
             {
-                DrawRectangleRec(bounds, GetColor(style[TOGGLE_DEFAULT_BORDER_COLOR]));
-                DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_DEFAULT_INSIDE_COLOR]));
-                DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[TOGGLE_DEFAULT_TEXT_COLOR]));
+                DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_NORMAL]));
+                DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_BASE_COLOR_NORMAL]));
+                DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_NORMAL]));
             }
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[TOGGLE_HOVER_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_HOVER_INSIDE_COLOR]));
-            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[TOGGLE_HOVER_TEXT_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
+            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_BASE_COLOR_FOCUSED]));
+            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[TOGGLE_PRESSED_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_PRESSED_INSIDE_COLOR]));
-            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[TOGGLE_PRESSED_TEXT_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
+            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]) , (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
+            DrawText(text, bounds.x + ((bounds.width/2) - (MeasureText(text, style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
         } break;
         default: break;
     }
@@ -850,10 +730,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
 {
     ControlState state = NORMAL;
 
-    Rectangle click = { bounds.x + bounds.width + style[COMBOBOX_PADDING], bounds.y, style[COMBOBOX_BUTTON_WIDTH], style[COMBOBOX_BUTTON_HEIGHT] };
+    Rectangle click = { bounds.x + bounds.width + style[COMBOBOX_BUTTON_PADDING], bounds.y, bounds.width/comboCount, bounds.height };
     Vector2 mousePoint = GetMousePosition();
 
-    int textHeight = style[GLOBAL_TEXT_FONTSIZE];
+    int textHeight = style[DEFAULT_TEXT_SIZE];
     
     bool clicked = false;
 
@@ -863,10 +743,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
         {
             // Update control
             //--------------------------------------------------------------------
-            int textWidth = MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE]);
+            int textWidth = MeasureText(comboText[i], style[DEFAULT_TEXT_SIZE]);
 
-            if (bounds.width < textWidth) bounds.width = textWidth + style[TOGGLE_TEXT_PADDING];
-            if (bounds.height < textHeight) bounds.height = textHeight + style[TOGGLE_TEXT_PADDING]/2;
+            if (bounds.width < textWidth) bounds.width = textWidth;
+            if (bounds.height < textHeight) bounds.height = textHeight;
 
             if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, click))
             {
@@ -882,49 +762,49 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             {
                 case NORMAL:
                 {
-                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_DEFAULT_BORDER_COLOR]));
-                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_DEFAULT_INSIDE_COLOR]));
+                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_NORMAL]));
+                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
 
-                    DrawRectangleRec(click, GetColor(style[COMBOBOX_DEFAULT_BORDER_COLOR]));
-                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_DEFAULT_INSIDE_COLOR]));
-                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[GLOBAL_TEXT_FONTSIZE])/2)), click.y + ((click.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_DEFAULT_LIST_TEXT_COLOR]));
-                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_DEFAULT_TEXT_COLOR]));
+                    DrawRectangleRec(click, GetColor(style[COMBOBOX_BORDER_COLOR_NORMAL]));
+                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
+                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[DEFAULT_TEXT_SIZE])/2)), click.y + ((click.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
+                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_NORMAL]));
                 } break;
                 case FOCUSED:
                 {
-                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_HOVER_BORDER_COLOR]));
-                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_HOVER_INSIDE_COLOR]));
+                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_FOCUSED]));
+                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
 
-                    DrawRectangleRec(click, GetColor(style[COMBOBOX_HOVER_BORDER_COLOR]));
-                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_HOVER_INSIDE_COLOR]));
-                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[GLOBAL_TEXT_FONTSIZE])/2)), click.y + ((click.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_HOVER_LIST_TEXT_COLOR]));
-                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_HOVER_TEXT_COLOR]));
+                    DrawRectangleRec(click, GetColor(style[COMBOBOX_BORDER_COLOR_FOCUSED]));
+                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
+                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[DEFAULT_TEXT_SIZE])/2)), click.y + ((click.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
+                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_FOCUSED]));
                 } break;
                 case PRESSED:
                 {
-                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_PRESSED_BORDER_COLOR]));
-                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_PRESSED_INSIDE_COLOR]));
+                    DrawRectangleRec(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
+                    DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
 
-                    DrawRectangleRec(click, GetColor(style[COMBOBOX_PRESSED_LIST_BORDER_COLOR]));
-                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_PRESSED_LIST_INSIDE_COLOR]));
-                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[GLOBAL_TEXT_FONTSIZE])/2)), click.y + ((click.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_PRESSED_LIST_TEXT_COLOR]));
-                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_PRESSED_TEXT_COLOR]));
+                    DrawRectangleRec(click, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
+                    DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
+                    DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[DEFAULT_TEXT_SIZE])/2)), click.y + ((click.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));
+                    DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));
                 } break;
                 default: break;
             }
             
             if (clicked)
             {
-                DrawRectangleRec(bounds, GetColor(style[COMBOBOX_PRESSED_BORDER_COLOR]));
-                DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2 * style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_PRESSED_INSIDE_COLOR]));
+                DrawRectangleRec(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
+                DrawRectangle((int)(bounds.x + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.y + style[COMBOBOX_BORDER_WIDTH]), (int)(bounds.width - (2 * style[COMBOBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
 
-                DrawRectangleRec(click, GetColor(style[COMBOBOX_PRESSED_LIST_BORDER_COLOR]));
-                DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_PRESSED_LIST_INSIDE_COLOR]));
-                DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[GLOBAL_TEXT_FONTSIZE])/2)), click.y + ((click.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_PRESSED_LIST_TEXT_COLOR]));
-                DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[GLOBAL_TEXT_FONTSIZE])/2)), bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[COMBOBOX_PRESSED_TEXT_COLOR]));
+                DrawRectangleRec(click, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
+                DrawRectangle((int)(click.x + style[COMBOBOX_BORDER_WIDTH]), (int)(click.y + style[COMBOBOX_BORDER_WIDTH]) , (int)(click.width - (2*style[COMBOBOX_BORDER_WIDTH])), (int)(click.height - (2*style[COMBOBOX_BORDER_WIDTH])), GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
+                DrawText(FormatText("%i/%i", active + 1, comboCount), click.x + ((click.width/2) - (MeasureText(FormatText("%i/%i", active + 1, comboCount), style[DEFAULT_TEXT_SIZE])/2)), click.y + ((click.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));
+                DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[DEFAULT_TEXT_SIZE])/2)), bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));
             }
 
-            //DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[]globalTextFontSize)/2)), bounds.y + ((bounds.height/2) - (style[]globalTextFontSize/2)), style[]globalTextFontSize, COMBOBOX_PRESSED_TEXT_COLOR);
+            //DrawText(comboText[i], bounds.x + ((bounds.width/2) - (MeasureText(comboText[i], style[]globalTextFontSize)/2)), bounds.y + ((bounds.height/2) - (style[]globalTextFontSize/2)), style[]globalTextFontSize, COMBOBOX_TEXT_COLOR_PRESSED);
             //--------------------------------------------------------------------
         }
     }
@@ -969,85 +849,31 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
     {
         case NORMAL:
         {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_DEFAULT_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_DEFAULT_INSIDE_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_NORMAL]));
+            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_HOVER_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_HOVER_INSIDE_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_FOCUSED]));
+            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_CLICK_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_CLICK_INSIDE_COLOR]));
+            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_PRESSED]));
+            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
         } break;
         default: break;
     }
 
-    if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2) + 1), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[LABEL_TEXT_COLOR]));
+    if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + ((bounds.height/2) - (style[DEFAULT_TEXT_SIZE]/2) + 1), style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR]));
 
     if (checked)
     {
-        DrawRectangle((int)(bounds.x + style[CHECKBOX_INSIDE_WIDTH]), (int)(bounds.y + style[CHECKBOX_INSIDE_WIDTH]), (int)(bounds.width - (2*style[CHECKBOX_INSIDE_WIDTH])), (int)(bounds.height - (2*style[CHECKBOX_INSIDE_WIDTH])), GetColor(style[CHECKBOX_STATUS_ACTIVE_COLOR]));
+        DrawRectangle((int)(bounds.x + style[CHECKBOX_BORDER_WIDTH]), (int)(bounds.y + style[CHECKBOX_BORDER_WIDTH]), (int)(bounds.width - (2*style[CHECKBOX_BORDER_WIDTH])), (int)(bounds.height - (2*style[CHECKBOX_BORDER_WIDTH])), GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
     }
     //--------------------------------------------------------------------
 
     return checked;
-}
-
-// Switch element, returns true when active
-RAYGUIDEF bool GuiSwitch(Rectangle bounds, const char *text, bool active)
-{
-    ControlState state = NORMAL;
-    
-    Vector2 mousePoint = GetMousePosition();
-
-    // Update control
-    //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))
-    {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-        {
-            state = NORMAL;
-            active = !active;
-        }
-        else state = FOCUSED;
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    switch (state)
-    {
-        case NORMAL:
-        {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_DEFAULT_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_DEFAULT_INSIDE_COLOR]));
-        } break;
-        case FOCUSED:
-        {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_HOVER_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_HOVER_INSIDE_COLOR]));
-        } break;
-        case PRESSED:
-        {
-            DrawRectangleRec(bounds, GetColor(style[CHECKBOX_CLICK_BORDER_COLOR]));
-            DrawRectangle((int)(bounds.x + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.y + style[TOGGLE_BORDER_WIDTH]), (int)(bounds.width - (2*style[TOGGLE_BORDER_WIDTH])), (int)(bounds.height - (2*style[TOGGLE_BORDER_WIDTH])), GetColor(style[CHECKBOX_CLICK_INSIDE_COLOR]));
-        } break;
-        default: break;
-    }
-
-    if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + ((bounds.height/2) - (style[GLOBAL_TEXT_FONTSIZE]/2) + 1), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[LABEL_TEXT_COLOR]));
-
-    if (active)
-    {
-        DrawRectangle((int)(bounds.x + style[CHECKBOX_INSIDE_WIDTH]), (int)(bounds.y + style[CHECKBOX_INSIDE_WIDTH]), (int)(bounds.width - (2*style[CHECKBOX_INSIDE_WIDTH])), (int)(bounds.height - (2*style[CHECKBOX_INSIDE_WIDTH])), GetColor(style[CHECKBOX_STATUS_ACTIVE_COLOR]));
-    }
-    //--------------------------------------------------------------------
-
-    return active;
 }
 
 // Slider element, returns selected value
@@ -1067,16 +893,16 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
     sliderPos = (value - minValue)/(maxValue - minValue);
 
     Rectangle sliderButton;
-    sliderButton.width = ((int)(bounds.width - (2*style[SLIDER_BUTTON_BORDER_WIDTH]))/10 - 8);
-    sliderButton.height = ((int)(bounds.height - (2*style[SLIDER_BORDER_WIDTH] + 2*style[SLIDER_BUTTON_BORDER_WIDTH])));
+    sliderButton.width = ((int)(bounds.width - (2*style[SLIDERBAR_BORDER_WIDTH]))/10 - 8);
+    sliderButton.height = ((int)(bounds.height - (2*style[SLIDERBAR_BORDER_WIDTH] + 2*style[SLIDERBAR_BORDER_WIDTH])));
 
-    float sliderButtonMinPos = bounds.x + style[SLIDER_BORDER_WIDTH] + style[SLIDER_BUTTON_BORDER_WIDTH];
-    float sliderButtonMaxPos = bounds.x + bounds.width - (style[SLIDER_BORDER_WIDTH] + style[SLIDER_BUTTON_BORDER_WIDTH] + sliderButton.width);
+    float sliderButtonMinPos = bounds.x + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_BORDER_WIDTH];
+    float sliderButtonMaxPos = bounds.x + bounds.width - (style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_BORDER_WIDTH] + sliderButton.width);
 
     buttonTravelDistance = sliderButtonMaxPos - sliderButtonMinPos;
 
-    sliderButton.x = ((int)(bounds.x + style[SLIDER_BORDER_WIDTH] + style[SLIDER_BUTTON_BORDER_WIDTH]) + (sliderPos * buttonTravelDistance));
-    sliderButton.y = ((int)(bounds.y + style[SLIDER_BORDER_WIDTH] + style[SLIDER_BUTTON_BORDER_WIDTH]));
+    sliderButton.x = ((int)(bounds.x + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_BORDER_WIDTH]) + (sliderPos * buttonTravelDistance));
+    sliderButton.y = ((int)(bounds.y + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_BORDER_WIDTH]));
 
     if (CheckCollisionPointRec(mousePoint, bounds))
     {
@@ -1099,14 +925,14 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleRec(bounds, GetColor(style[SLIDER_BORDER_COLOR]));
-    DrawRectangle((int)(bounds.x + style[SLIDER_BORDER_WIDTH]), (int)(bounds.y + style[SLIDER_BORDER_WIDTH]), (int)(bounds.width - (2*style[SLIDER_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDER_BORDER_WIDTH])), GetColor(style[SLIDER_INSIDE_COLOR]));
+    DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
+    DrawRectangle((int)(bounds.x + style[SLIDERBAR_BORDER_WIDTH]), (int)(bounds.y + style[SLIDERBAR_BORDER_WIDTH]), (int)(bounds.width - (2*style[SLIDERBAR_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDERBAR_BORDER_WIDTH])), GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
 
     switch (state)
     {
-        case NORMAL: DrawRectangleRec(sliderButton, GetColor(style[SLIDER_DEFAULT_COLOR])); break;
-        case FOCUSED: DrawRectangleRec(sliderButton, GetColor(style[SLIDER_HOVER_COLOR])); break;
-        case PRESSED: DrawRectangleRec(sliderButton, GetColor(style[SLIDER_ACTIVE_COLOR])); break;
+        case NORMAL: DrawRectangleRec(sliderButton, GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL])); break;
+        case FOCUSED: DrawRectangleRec(sliderButton, GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED])); break;
+        case PRESSED: DrawRectangleRec(sliderButton, GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -1134,10 +960,10 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 
     Rectangle sliderBar;
 
-    sliderBar.x = bounds.x + style[SLIDER_BORDER_WIDTH];
-    sliderBar.y = bounds.y + style[SLIDER_BORDER_WIDTH];
-    sliderBar.width = ((fixedValue*((float)bounds.width - 2*style[SLIDER_BORDER_WIDTH]))/(maxValue - fixedMinValue));
-    sliderBar.height = bounds.height - 2*style[SLIDER_BORDER_WIDTH];
+    sliderBar.x = bounds.x + style[SLIDERBAR_BORDER_WIDTH];
+    sliderBar.y = bounds.y + style[SLIDERBAR_BORDER_WIDTH];
+    sliderBar.width = ((fixedValue*((float)bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]))/(maxValue - fixedMinValue));
+    sliderBar.height = bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH];
 
     if (CheckCollisionPointRec(mousePoint, bounds))
     {
@@ -1147,31 +973,43 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
         {
             state = PRESSED;
 
-            sliderBar.width = (mousePoint.x - bounds.x - style[SLIDER_BORDER_WIDTH]);
+            sliderBar.width = (mousePoint.x - bounds.x - style[SLIDERBAR_BORDER_WIDTH]);
 
-            if (mousePoint.x <= (bounds.x + style[SLIDER_BORDER_WIDTH])) sliderBar.width = 0;
-            else if (mousePoint.x >= (bounds.x + bounds.width - style[SLIDER_BORDER_WIDTH])) sliderBar.width = bounds.width - 2*style[SLIDER_BORDER_WIDTH];
+            if (mousePoint.x <= (bounds.x + style[SLIDERBAR_BORDER_WIDTH])) sliderBar.width = 0;
+            else if (mousePoint.x >= (bounds.x + bounds.width - style[SLIDERBAR_BORDER_WIDTH])) sliderBar.width = bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH];
         }
     }
     else state = NORMAL;
 
-    fixedValue = ((float)sliderBar.width*(maxValue - fixedMinValue))/((float)bounds.width - 2*style[SLIDER_BORDER_WIDTH]);
+    fixedValue = ((float)sliderBar.width*(maxValue - fixedMinValue))/((float)bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]);
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR]));
-    DrawRectangle((int)(bounds.x + style[SLIDER_BORDER_WIDTH]), (int)(bounds.y + style[SLIDER_BORDER_WIDTH]) , (int)(bounds.width - (2*style[SLIDER_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDER_BORDER_WIDTH])), GetColor(style[SLIDERBAR_INSIDE_COLOR]));
-
     switch (state)
     {
-        case NORMAL: DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_DEFAULT_COLOR])); break;
-        case FOCUSED: DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_HOVER_COLOR])); break;
-        case PRESSED: DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_ACTIVE_COLOR])); break;
+        case NORMAL:
+        {
+            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
+            DrawRectangle((int)(bounds.x + style[SLIDERBAR_BORDER_WIDTH]), (int)(bounds.y + style[SLIDERBAR_BORDER_WIDTH]) , (int)(bounds.width - (2*style[SLIDERBAR_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDERBAR_BORDER_WIDTH])), GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
+            DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL])); 
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
+            DrawRectangle((int)(bounds.x + style[SLIDERBAR_BORDER_WIDTH]), (int)(bounds.y + style[SLIDERBAR_BORDER_WIDTH]) , (int)(bounds.width - (2*style[SLIDERBAR_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDERBAR_BORDER_WIDTH])), GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
+            DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED])); 
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
+            DrawRectangle((int)(bounds.x + style[SLIDERBAR_BORDER_WIDTH]), (int)(bounds.y + style[SLIDERBAR_BORDER_WIDTH]) , (int)(bounds.width - (2*style[SLIDERBAR_BORDER_WIDTH])), (int)(bounds.height - (2*style[SLIDERBAR_BORDER_WIDTH])), GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]));
+            DrawRectangleRec(sliderBar, GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED])); 
+        } break;
         default: break;
     }
 
-    if (minValue < 0 && maxValue > 0) DrawRectangle((bounds.x + style[SLIDER_BORDER_WIDTH]) - (minValue*((bounds.width - (style[SLIDER_BORDER_WIDTH]*2))/maxValue)), sliderBar.y, 1, sliderBar.height, GetColor(style[SLIDERBAR_ZERO_LINE_COLOR]));
+    if (minValue < 0 && maxValue > 0) DrawRectangle((bounds.x + style[SLIDERBAR_BORDER_WIDTH]) - (minValue*((bounds.width - (style[SLIDERBAR_BORDER_WIDTH]*2))/maxValue)), sliderBar.y, 1, sliderBar.height, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
     //--------------------------------------------------------------------
 
     return fixedValue + minValue;
@@ -1188,9 +1026,9 @@ RAYGUIDEF void GuiProgressBar(Rectangle bounds, float value)
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleRec(bounds, GetColor(style[PROGRESSBAR_BORDER_COLOR]));
-    DrawRectangleRec(progressBar, GetColor(style[PROGRESSBAR_INSIDE_COLOR]));
-    DrawRectangleRec(progressValue, GetColor(style[PROGRESSBAR_PROGRESS_COLOR]));
+    DrawRectangleRec(bounds, GetColor(style[PROGRESSBAR_BORDER_COLOR_NORMAL]));
+    DrawRectangleRec(progressBar, GetColor(style[PROGRESSBAR_BASE_COLOR_NORMAL]));
+    DrawRectangleRec(progressValue, GetColor(style[PROGRESSBAR_FRONT_COLOR_NORMAL]));
     //--------------------------------------------------------------------
 }
 
@@ -1205,16 +1043,16 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
     Rectangle leftButtonBound = { bounds.x, bounds.y, bounds.width/4, bounds.height };
     Rectangle rightButtonBound = { bounds.x + bounds.width - bounds.width/4 + 1, bounds.y, bounds.width/4, bounds.height };
 
-    int textWidth = MeasureText(FormatText("%i", value), style[GLOBAL_TEXT_FONTSIZE]);
-    //int textHeight = style[GLOBAL_TEXT_FONTSIZE];     // Unused variable
+    int textWidth = MeasureText(FormatText("%i", value), style[DEFAULT_TEXT_SIZE]);
+    //int textHeight = style[DEFAULT_TEXT_SIZE];     // Unused variable
 
     int buttonSide = 0;
 
     static int framesCounter = 0;
     static bool valueSpeed = false;;
 
-    //if (bounds.width < textWidth) bounds.width = textWidth + style[TOGGLE_TEXT_PADDING];
-    //if (bounds.height < textHeight) bounds.height = textHeight + style[TOGGLE_TEXT_PADDING]/2;
+    //if (bounds.width < textWidth) bounds.width = textWidth;
+    //if (bounds.height < textHeight) bounds.height = textHeight;
 
     // Update control
     //--------------------------------------------------------------------
@@ -1299,52 +1137,55 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
     {
         case NORMAL:
         {
-            DrawRectangleRec(leftButtonBound, GetColor(style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR]));
-            DrawRectangle(leftButtonBound.x + 2, leftButtonBound.y + 2, leftButtonBound.width - 4, leftButtonBound.height - 4, GetColor(style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR]));
+            DrawRectangleRec(leftButtonBound, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangle(leftButtonBound.x + 2, leftButtonBound.y + 2, leftButtonBound.width - 4, leftButtonBound.height - 4, GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
 
-            DrawRectangleRec(rightButtonBound, GetColor(style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR]));
-            DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR]));
+            DrawRectangleRec(rightButtonBound, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
 
-            DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[GLOBAL_TEXT_FONTSIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
-            DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[GLOBAL_TEXT_FONTSIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
+            DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[DEFAULT_TEXT_SIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
+            DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[DEFAULT_TEXT_SIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
 
-            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_LABEL_BORDER_COLOR]));
-            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_LABEL_INSIDE_COLOR]));
+            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
 
-            DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_TEXT_COLOR]));
+            DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
+            /*
             if (buttonSide == 1)
             {
-                DrawRectangleRec(leftButtonBound, GetColor(style[SPINNER_HOVER_BUTTON_BORDER_COLOR]));
-                DrawRectangle(leftButtonBound.x + 2, leftButtonBound.y + 2, leftButtonBound.width - 4, leftButtonBound.height - 4, GetColor(style[SPINNER_HOVER_BUTTON_INSIDE_COLOR]));
+                DrawRectangleRec(leftButtonBound, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
+                DrawRectangle(leftButtonBound.x + 2, leftButtonBound.y + 2, leftButtonBound.width - 4, leftButtonBound.height - 4, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
 
-                DrawRectangleRec(rightButtonBound, GetColor(style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR]));
-                DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR]));
+                DrawRectangleRec(rightButtonBound, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+                DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
 
-                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[GLOBAL_TEXT_FONTSIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_HOVER_SYMBOL_COLOR]));
-                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[GLOBAL_TEXT_FONTSIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
+                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[DEFAULT_TEXT_SIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_HOVER_SYMBOL_COLOR]));
+                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[DEFAULT_TEXT_SIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
             }
             else if (buttonSide == 2)
             {
-                DrawRectangleRec(leftButtonBound, GetColor(style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR]));
+                DrawRectangleRec(leftButtonBound, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
                 DrawRectangle(leftButtonBound.x + 2, leftButtonBound.y + 2, leftButtonBound.width - 4, leftButtonBound.height - 4, GetColor(style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR]));
 
                 DrawRectangleRec(rightButtonBound, GetColor(style[SPINNER_HOVER_BUTTON_BORDER_COLOR]));
                 DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[SPINNER_HOVER_BUTTON_INSIDE_COLOR]));
 
-                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[GLOBAL_TEXT_FONTSIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
-                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[GLOBAL_TEXT_FONTSIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_HOVER_SYMBOL_COLOR]));
+                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[DEFAULT_TEXT_SIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
+                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[DEFAULT_TEXT_SIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_HOVER_SYMBOL_COLOR]));
             }
+            */
 
-            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_LABEL_BORDER_COLOR]));
-            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_LABEL_INSIDE_COLOR]));
+            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
 
-            DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_HOVER_TEXT_COLOR]));
+            DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
+            /*
             if (buttonSide == 1)
             {
                 DrawRectangleRec(leftButtonBound, GetColor(style[SPINNER_PRESSED_BUTTON_BORDER_COLOR]));
@@ -1353,8 +1194,8 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
                 DrawRectangleRec(rightButtonBound, GetColor(style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR]));
                 DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR]));
 
-                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[GLOBAL_TEXT_FONTSIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_PRESSED_SYMBOL_COLOR]));
-                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[GLOBAL_TEXT_FONTSIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
+                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[DEFAULT_TEXT_SIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_PRESSED_SYMBOL_COLOR]));
+                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[DEFAULT_TEXT_SIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
             }
             else if (buttonSide == 2)
             {
@@ -1364,14 +1205,15 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
                 DrawRectangleRec(rightButtonBound, GetColor(style[SPINNER_PRESSED_BUTTON_BORDER_COLOR]));
                 DrawRectangle(rightButtonBound.x + 2, rightButtonBound.y + 2, rightButtonBound.width - 4, rightButtonBound.height - 4, GetColor(style[SPINNER_PRESSED_BUTTON_INSIDE_COLOR]));
 
-                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[GLOBAL_TEXT_FONTSIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
-                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[GLOBAL_TEXT_FONTSIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_PRESSED_SYMBOL_COLOR]));
+                DrawText("-", leftButtonBound.x + (leftButtonBound.width/2 - (MeasureText("+", style[DEFAULT_TEXT_SIZE]))/2), leftButtonBound.y + (leftButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_DEFAULT_SYMBOL_COLOR]));
+                DrawText("+", rightButtonBound.x + (rightButtonBound.width/2 - (MeasureText("-", style[DEFAULT_TEXT_SIZE]))/2), rightButtonBound.y + (rightButtonBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_PRESSED_SYMBOL_COLOR]));
             }
+            */
+            
+            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
 
-            DrawRectangleRec(labelBoxBound, GetColor(style[SPINNER_LABEL_BORDER_COLOR]));
-            DrawRectangle(labelBoxBound.x + 1, labelBoxBound.y + 1, labelBoxBound.width - 2, labelBoxBound.height - 2, GetColor(style[SPINNER_LABEL_INSIDE_COLOR]));
-
-            DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[GLOBAL_TEXT_FONTSIZE]/2)), style[GLOBAL_TEXT_FONTSIZE], GetColor(style[SPINNER_PRESSED_TEXT_COLOR]));
+            //DrawText(FormatText("%i", value), labelBoxBound.x + (labelBoxBound.width/2 - textWidth/2), labelBoxBound.y + (labelBoxBound.height/2 - (style[DEFAULT_TEXT_SIZE]/2)), style[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_PRESSED]));
         } break;
         default: break;
     }
@@ -1435,14 +1277,14 @@ RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds)) DrawRectangleRec(bounds, GetColor(style[TOGGLE_ACTIVE_BORDER_COLOR]));
-    else DrawRectangleRec(bounds, GetColor(style[TEXTBOX_BORDER_COLOR]));
+    if (CheckCollisionPointRec(mousePoint, bounds)) DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
+    else DrawRectangleRec(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
 
-    DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - (style[TEXTBOX_BORDER_WIDTH]*2), bounds.height - (style[TEXTBOX_BORDER_WIDTH]*2), GetColor(style[TEXTBOX_INSIDE_COLOR]));
+    DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - (style[TEXTBOX_BORDER_WIDTH]*2), bounds.height - (style[TEXTBOX_BORDER_WIDTH]*2), GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
 
-    DrawText(text, initPos, bounds.y + style[TEXTBOX_TEXT_FONTSIZE], style[TEXTBOX_TEXT_FONTSIZE], GetColor(style[TEXTBOX_TEXT_COLOR]));
+    DrawText(text, initPos, bounds.y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
 
-    if ((framesCounter/20)%2 && CheckCollisionPointRec(mousePoint, bounds)) DrawRectangle(initPos + MeasureText(text, style[GLOBAL_TEXT_FONTSIZE]) + 2, bounds.y + 5, 1, 20, GetColor(style[TEXTBOX_LINE_COLOR]));
+    if ((framesCounter/20)%2 && CheckCollisionPointRec(mousePoint, bounds)) DrawRectangle(initPos + MeasureText(text, style[DEFAULT_TEXT_SIZE]) + 2, bounds.y + 5, 1, 20, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
     //--------------------------------------------------------------------
 
     return text;
@@ -1513,115 +1355,7 @@ RAYGUIDEF void LoadGuiStyle(const char *fileName)
 }
 
 // Set one style property value
-RAYGUIDEF void SetStyleProperty(int guiProperty, int value)
-{
-    #define NUM_COLOR_SAMPLES   10
-
-    if (guiProperty == GLOBAL_BASE_COLOR)
-    {
-        Color baseColor = GetColor(value);
-        Color fadeColor[NUM_COLOR_SAMPLES];
-
-        for (int i = 0; i < NUM_COLOR_SAMPLES; i++) fadeColor[i] = ColorMultiply(baseColor, 1.0f - (float)i/(NUM_COLOR_SAMPLES - 1));
-
-        style[GLOBAL_BASE_COLOR] = value;
-        style[BACKGROUND_COLOR] = GetHexValue(fadeColor[3]);
-        style[BUTTON_DEFAULT_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[BUTTON_HOVER_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[BUTTON_PRESSED_INSIDE_COLOR] = GetHexValue(fadeColor[5]);
-        style[TOGGLE_DEFAULT_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[TOGGLE_HOVER_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[TOGGLE_PRESSED_INSIDE_COLOR] = GetHexValue(fadeColor[5]);
-        style[TOGGLE_ACTIVE_INSIDE_COLOR] = GetHexValue(fadeColor[8]);
-        style[SLIDER_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[SLIDER_DEFAULT_COLOR] = GetHexValue(fadeColor[6]);
-        style[SLIDER_HOVER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SLIDER_ACTIVE_COLOR] = GetHexValue(fadeColor[9]);
-        style[SLIDERBAR_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[SLIDERBAR_DEFAULT_COLOR] = GetHexValue(fadeColor[6]);
-        style[SLIDERBAR_HOVER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SLIDERBAR_ACTIVE_COLOR] = GetHexValue(fadeColor[9]);
-        style[SLIDERBAR_ZERO_LINE_COLOR] = GetHexValue(fadeColor[8]);
-        style[PROGRESSBAR_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[PROGRESSBAR_PROGRESS_COLOR] = GetHexValue(fadeColor[6]);
-        style[SPINNER_LABEL_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[SPINNER_DEFAULT_BUTTON_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[SPINNER_HOVER_BUTTON_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[SPINNER_PRESSED_BUTTON_INSIDE_COLOR] = GetHexValue(fadeColor[5]);
-        style[COMBOBOX_DEFAULT_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[COMBOBOX_HOVER_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[COMBOBOX_PRESSED_INSIDE_COLOR] = GetHexValue(fadeColor[8]);
-        style[COMBOBOX_PRESSED_LIST_INSIDE_COLOR] = GetHexValue(fadeColor[8]);
-        style[CHECKBOX_DEFAULT_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-        style[CHECKBOX_CLICK_INSIDE_COLOR] = GetHexValue(fadeColor[6]);
-        style[CHECKBOX_STATUS_ACTIVE_COLOR] = GetHexValue(fadeColor[8]);
-        style[TEXTBOX_INSIDE_COLOR] = GetHexValue(fadeColor[4]);
-    }
-    else if (guiProperty == GLOBAL_BORDER_COLOR)
-    {
-        Color baseColor = GetColor(value);
-        Color fadeColor[NUM_COLOR_SAMPLES];
-
-        for (int i = 0; i < NUM_COLOR_SAMPLES; i++) fadeColor[i] = ColorMultiply(baseColor, 1.0f - (float)i/(NUM_COLOR_SAMPLES - 1));
-
-        style[GLOBAL_BORDER_COLOR] = value;
-        style[BUTTON_DEFAULT_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[BUTTON_HOVER_BORDER_COLOR] = GetHexValue(fadeColor[8]);
-        style[BUTTON_PRESSED_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[TOGGLE_DEFAULT_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[TOGGLE_HOVER_BORDER_COLOR] = GetHexValue(fadeColor[8]);
-        style[TOGGLE_PRESSED_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[TOGGLE_ACTIVE_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[SLIDER_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SLIDERBAR_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[PROGRESSBAR_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SPINNER_LABEL_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SPINNER_DEFAULT_BUTTON_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[SPINNER_HOVER_BUTTON_BORDER_COLOR] = GetHexValue(fadeColor[8]);
-        style[SPINNER_PRESSED_BUTTON_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[COMBOBOX_DEFAULT_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[COMBOBOX_HOVER_BORDER_COLOR] = GetHexValue(fadeColor[8]);
-        style[COMBOBOX_PRESSED_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[COMBOBOX_PRESSED_LIST_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[CHECKBOX_DEFAULT_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-        style[CHECKBOX_HOVER_BORDER_COLOR] = GetHexValue(fadeColor[8]);
-        style[CHECKBOX_CLICK_BORDER_COLOR] = GetHexValue(fadeColor[9]);
-        style[TEXTBOX_BORDER_COLOR] = GetHexValue(fadeColor[7]);
-    }
-    else if (guiProperty == GLOBAL_TEXT_COLOR)
-    {
-        Color baseColor = GetColor(value);
-        Color fadeColor[NUM_COLOR_SAMPLES];
-
-        for (int i = 0; i < NUM_COLOR_SAMPLES; i++) fadeColor[i] = ColorMultiply(baseColor, 1.0f - (float)i/(NUM_COLOR_SAMPLES - 1));
-
-        style[GLOBAL_TEXT_COLOR] = value;
-        style[LABEL_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[BUTTON_DEFAULT_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[BUTTON_HOVER_TEXT_COLOR] = GetHexValue(fadeColor[8]);
-        style[BUTTON_PRESSED_TEXT_COLOR] = GetHexValue(fadeColor[5]);
-        style[TOGGLE_DEFAULT_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[TOGGLE_HOVER_TEXT_COLOR] = GetHexValue(fadeColor[8]);
-        style[TOGGLE_PRESSED_TEXT_COLOR] = GetHexValue(fadeColor[5]);
-        style[TOGGLE_ACTIVE_TEXT_COLOR] = GetHexValue(fadeColor[5]);
-        style[SPINNER_DEFAULT_SYMBOL_COLOR] = GetHexValue(fadeColor[9]);
-        style[SPINNER_DEFAULT_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[SPINNER_HOVER_SYMBOL_COLOR] = GetHexValue(fadeColor[8]);
-        style[SPINNER_HOVER_TEXT_COLOR] = GetHexValue(fadeColor[8]);
-        style[SPINNER_PRESSED_SYMBOL_COLOR] = GetHexValue(fadeColor[5]);
-        style[SPINNER_PRESSED_TEXT_COLOR] = GetHexValue(fadeColor[5]);
-        style[COMBOBOX_DEFAULT_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[COMBOBOX_DEFAULT_LIST_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[COMBOBOX_HOVER_TEXT_COLOR] = GetHexValue(fadeColor[8]);
-        style[COMBOBOX_HOVER_LIST_TEXT_COLOR] = GetHexValue(fadeColor[8]);
-        style[COMBOBOX_PRESSED_TEXT_COLOR] = GetHexValue(fadeColor[4]);
-        style[COMBOBOX_PRESSED_LIST_TEXT_COLOR] = GetHexValue(fadeColor[4]);
-        style[TEXTBOX_TEXT_COLOR] = GetHexValue(fadeColor[9]);
-        style[TEXTBOX_LINE_COLOR] = GetHexValue(fadeColor[6]);
-    }
-    else style[guiProperty] = value;
-
-}
+RAYGUIDEF void SetStyleProperty(int guiProperty, int value) { style[guiProperty] = value; }
 
 // Get one style property value
 RAYGUIDEF int GetStyleProperty(int guiProperty) { return style[guiProperty]; }
@@ -1631,21 +1365,6 @@ RAYGUIDEF int GetStyleProperty(int guiProperty) { return style[guiProperty]; }
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
-
-static Color ColorMultiply(Color baseColor, float value)
-{
-    Color multColor = baseColor;
-
-    if (value > 1.0f) value = 1.0f;
-    else if (value < 0.0f) value = 0.0f;
-
-    multColor.r += (255 - multColor.r)*value;
-    multColor.g += (255 - multColor.g)*value;
-    multColor.b += (255 - multColor.b)*value;
-
-    return multColor;
-}
-
 #if defined (RAYGUI_STANDALONE)
 // Returns a Color struct from hexadecimal value
 static Color GetColor(int hexValue)
@@ -1694,4 +1413,3 @@ static const char *FormatText(const char *text, ...)
 #endif
 
 #endif // RAYGUI_IMPLEMENTATION
-
