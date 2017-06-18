@@ -275,7 +275,7 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);                  // Slider Bar element, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);                // Progress Bar element, shows current progress value
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner element, returns selected value
-RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text, int textSize);                                       // Text Box element, returns input text
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box element, updates input text
 
 //RAYGUIDEF void UpdateMouse(bool isMouseDown, bool isMouseUp, Vector2 mousePosition);
 //RAYGUIDEF void UpdateKeys(int keyPressed);
@@ -1116,9 +1116,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
     return active;
 }
 
-// Text Box element, returns input text
+// Text Box element, updates input text
 // NOTE: Requires static variables: framesCounter
-RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text, int textSize)
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 {
     static int framesCounter = 0;         // Required for blinking cursor
 
@@ -1200,8 +1200,6 @@ RAYGUIDEF char *GuiTextBox(Rectangle bounds, char *text, int textSize)
         default: break;
     }
     //--------------------------------------------------------------------
-
-    return text;
 }
 
 // Spinner element, returns selected value
