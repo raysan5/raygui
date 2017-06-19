@@ -16,8 +16,8 @@
 
 #include <string.h>
 
-char *GetFileName(char *path);
-void GuiPanel(Rectangle bounds, char const *text);
+char *GetFileName(char *path);                      // Get pointer to filename data in the string
+void GuiPanel(Rectangle bounds, const char *text);  // Draw a lines panel with name
 
 int main(int argc, char *argv[0])
 {
@@ -60,6 +60,7 @@ int main(int argc, char *argv[0])
     {
         // Update
         //----------------------------------------------------------------------------------
+        
         // Check if a file is dropped
         if (IsFileDropped())
         {
@@ -74,6 +75,8 @@ int main(int argc, char *argv[0])
                 dataSize = ftell(imageFile);
                 fclose(imageFile);
                 
+                // NOTE: Returned string is just a pointer to droppedFiles[0],
+                // we need to make a copy of that data somewhere else: fileName
                 strcpy(fileName, GetFileName(droppedFiles[0]));
 
                 showImportPanel = true;
@@ -82,6 +85,7 @@ int main(int argc, char *argv[0])
             ClearDroppedFiles();
         }
         
+        // Check if load button has been pressed
         if (btnLoadPressed)
         {
             // Convert input textImageWidth, textImageHeight to int
@@ -150,12 +154,12 @@ int main(int argc, char *argv[0])
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 80, 0, 0 }, "Width:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 80, 0, 0 }, "pixels");
                 
-                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 75, 80, 20 }, textImageWidth, 16);
+                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 75, 80, 20 }, textImageWidth, 4);
                 
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 105, 0, 0 }, "Height:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 105, 0, 0 }, "pixels");
                 
-                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 100, 80, 20 }, textImageHeight, 16);
+                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 100, 80, 20 }, textImageHeight, 4);
                 
                 // ----- Pixel data panel -----
                 GuiPanel((Rectangle){ panel.x + 10, panel.y + 155, 180, 110 }, "Pixels Data");
@@ -191,7 +195,8 @@ int main(int argc, char *argv[0])
     return 0;
 }
 
-void GuiPanel(Rectangle bounds, char const *text)
+// Draw a lines panel with name
+void GuiPanel(Rectangle bounds, const char *text)
 {
     DrawLineEx((Vector2){ bounds.x + 1, bounds.y }, (Vector2){ bounds.x, bounds.y + bounds.height }, 1, GuiLinesColor());
     DrawLineEx((Vector2){ bounds.x, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, 1, GuiLinesColor());
@@ -202,6 +207,7 @@ void GuiPanel(Rectangle bounds, char const *text)
     DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
 }
 
+// Get pointer to filename data in the string
 char *GetFileName(char *path)
 {
     char *base = strrchr(path, '\\');
