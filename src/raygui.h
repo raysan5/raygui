@@ -1182,7 +1182,7 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], 
                           bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], 
                           GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
-            DrawText(text, bounds.x + 4, bounds.y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
+            DrawText(text, bounds.x + 2, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
             
         } break;
         case FOCUSED:
@@ -1191,9 +1191,9 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], 
                           bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], 
                           GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
-            DrawText(text, bounds.x + 4, bounds.y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
+            DrawText(text, bounds.x + 2, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
 
-            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + 4 + MeasureText(text, style[DEFAULT_TEXT_SIZE]) + 2, bounds.y + 5, 1, 20, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
+            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + 4 + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + 2, 1, bounds.height - 4, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
 
         } break;
         case PRESSED: break; // NOTE: PRESSED state is not used on this control
@@ -1353,7 +1353,7 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
 
 RAYGUIDEF void GuiBeginPanel(Rectangle rec)
 {
-    //offset = (Vector2){ rec.x, rec.y };
+    //offset = (Vector2){ offset.x + rec.x, offset.y + rec.y };
     
     // TODO: Limit drawing to panel limits?
 }
