@@ -283,8 +283,7 @@ int main()
     char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
     int comboActive = 0;
     
-    char *guiText = (char *)malloc(32);
-    guiText[0] = '\0';
+    char guiText[16] = "\0";
 
     bool isModified = false;
     
@@ -539,7 +538,7 @@ int main()
             GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, false);
             GuiCheckBox((Rectangle){guiPosX + deltaX/4, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, true);
             
-            guiText = GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 32);
+            GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
 
             if (guiElementSelected >= 0) DrawRectangleRec(guiElementRec[guiElementSelected], COLOR_REC);
             if (guiElementHover >= 0) DrawRectangleRec(guiElementRec[guiElementHover], Fade(COLOR_REC, 0.5f));
@@ -661,8 +660,7 @@ int main()
     UnloadTexture(texColorPicker);
     UnloadTexture(texChecked);
     UnloadTexture(texCursor);
-    
-    free(guiText);
+
     free(colorPickerPixels);
     
     ClearDroppedFiles();    // Clear internal buffers
