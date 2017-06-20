@@ -57,7 +57,7 @@
 #define ELEMENT_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
 
-#define NUM_ELEMENTS        13
+#define NUM_ELEMENTS        11
 
 // NOTE: Be extremely careful when defining: NUM_ELEMENTS, GuiElement, guiElementText, guiPropertyNum, guiPropertyType and guiPropertyPos
 // All those variables must be coherent, one small mistake breaks the program (and it could take hours to find the error!)
@@ -66,9 +66,7 @@
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 typedef enum { 
-    GLOBAL = 0, 
-    BACKGROUND, 
-    LABEL, 
+    LABEL = 0, 
     BUTTON, 
     TOGGLE, 
     TOGGLEGROUP, 
@@ -87,8 +85,6 @@ typedef enum {
 static char currentPath[256];       // Path to current working folder
 
 const char *guiElementText[NUM_ELEMENTS] = { 
-    "GLOBAL", 
-    "BACKGROUND", 
     "LABEL", 
     "BUTTON", 
     "TOGGLE", 
@@ -118,16 +114,13 @@ int main()
     const int screenWidth = 1280;
     const int screenHeight = 720;
 
-    const int guiPropertyNum[NUM_ELEMENTS] = { 5, 1, 3, 11, 14, 1, 7, 6, 4, 14, 18, 8, 6 };
+    const int guiPropertyNum[NUM_ELEMENTS] = { 3, 11, 14, 1, 7, 6, 4, 14, 18, 8, 6 };
 
     // Defines if the property to change is a Color or a value to update it accordingly
     // NOTE: 0 - Color, 1 - value
-    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 
-                                                            1, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 1, 1, 0, 0, 0, 0, 0, 0, 0,   
-                                                            0, 0, 0, 0, 0, 1, 1, 1, 0, 0,  
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  
+    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
+                                                            0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,  
+                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  
                                                             0, 0, 0, 0, 0, 0, 0, 1, 1, 1,   
                                                             1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
                                                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
@@ -269,13 +262,15 @@ int main()
 
     Color bgColor = RAYWHITE;    
     
-    bool toggleActive = false;
-    int toggleNum = 3;
+    bool toggle = false;
+    bool toggleValue = false;
     char *toggleGuiText[3] = { "toggle", "group", "selection" };
 
     float sliderValue = 50.0f;
     float sliderBarValue = 50.0f;
     float progressValue = 0.0f;
+    
+    bool checked = false;
     
     int spinnerValue = 20;
 
@@ -395,10 +390,10 @@ int main()
             }
         }
         
-        if (guiElementSelected == PROGRESSBAR)
+        //if (guiElementSelected == PROGRESSBAR)
         {
-            if (progressValue > 1.0f) progressValue = 0;
-            progressValue += 0.005f;
+            if (progressValue > 1.0f) progressValue = 0.0f;
+            progressValue += 0.0005f;
         }
         
         if (guiPropertySelected != -1)
@@ -520,23 +515,22 @@ int main()
             
             if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
             
-            GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle inactive", false);
-            GuiToggleButton((Rectangle){guiPosX + deltaX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle active", true);
+            if (toggle) toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle ACTIVE", toggle);
+            else toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle INACTIVE", toggle);
             
-            toggleActive = GuiToggleGroup((Rectangle){guiPosX, guiPosY + 3*deltaY, guiWidth, guiHeight}, toggleNum, toggleGuiText, toggleActive);
+            toggleValue = GuiToggleGroup((Rectangle){guiPosX, guiPosY + 3*deltaY, guiWidth, guiHeight}, 3, toggleGuiText, toggleValue);
             
             sliderValue = GuiSlider((Rectangle){guiPosX, guiPosY + 4*deltaY, 3*guiWidth, guiHeight}, sliderValue, 0, 100);
             
             sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, 0, 100);
             
-            GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
+            progressValue = GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
             
             spinnerValue = GuiSpinner((Rectangle){guiPosX, guiPosY + 7*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
             
             comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboNum, comboText, comboActive);
-            
-            GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, false);
-            GuiCheckBox((Rectangle){guiPosX + deltaX/4, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, true);
+
+            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, checked);
             
             GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
 
@@ -564,8 +558,6 @@ int main()
             // Draw Element selected rectangles
             switch (guiElementSelected)
             {
-                case GLOBAL: DrawRectangleLines(selectPosX + 2, 2, selectWidth - 4, GetScreenHeight() - 4 - STATUS_BAR_HEIGHT, COLOR_REC); break;
-                case BACKGROUND: DrawRectangleLines(selectPosX + 10, 10, selectWidth - 20, GetScreenHeight() - 20 - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.8f)); break;
                 case LABEL: DrawRectangleLines(selectPosX + 10, guiPosY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 case BUTTON: DrawRectangleLines(selectPosX + 10, guiPosY + deltaY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 case TOGGLE: 
