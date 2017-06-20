@@ -116,13 +116,18 @@ int main(int argc, char *argv[0])
                 
                 showImportPanel = false;
                 btnLoadPressed = false;
-                imageLoaded = true;
+                
+                if (texture.id > 0)
+                {
+                    imageLoaded = true;
+                    imageScale = 400.0f/texture.height;
+                }
             }
         }
         
         if (imageLoaded)
         {
-            // Image zoom control
+            // Image scale control
             imageScale += (float)GetMouseWheelMove();
         }
         //----------------------------------------------------------------------------------
@@ -135,7 +140,12 @@ int main(int argc, char *argv[0])
             
             DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
             
-            if (texture.id != 0) DrawTextureEx(texture, (Vector2){ SCREEN_WIDTH/2 - texture.width*imageScale/2, SCREEN_HEIGHT/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
+            if (texture.id != 0) 
+            {
+                DrawTextureEx(texture, (Vector2){ SCREEN_WIDTH/2 - texture.width*imageScale/2, SCREEN_HEIGHT/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
+                DrawText(FormatText("SCALE x%.0f", imageScale), 20, SCREEN_HEIGHT - 40, 20, LIGHTGRAY);
+                
+            }
             else DrawText("drag & drop RAW image file", 320, 180, 10, GRAY);
 
             if (showImportPanel)
