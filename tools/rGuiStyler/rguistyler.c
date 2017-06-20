@@ -31,6 +31,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
+#define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
