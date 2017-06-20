@@ -174,6 +174,14 @@ typedef enum GuiProperty {
     TOGGLE_BASE_COLOR_PRESSED,
     TOGGLE_TEXT_COLOR_PRESSED,
     TOGGLEGROUP_PADDING,
+    // Slider
+    SLIDER_BORDER_WIDTH,
+    SLIDER_BORDER_COLOR_NORMAL,
+    SLIDER_BASE_COLOR_NORMAL,
+    SLIDER_BORDER_COLOR_FOCUSED,
+    SLIDER_BASE_COLOR_FOCUSED,
+    SLIDER_BORDER_COLOR_PRESSED,
+    SLIDER_BASE_COLOR_PRESSED,
     // SliderBar
     SLIDERBAR_BORDER_WIDTH,
     SLIDERBAR_BORDER_COLOR_NORMAL,
@@ -186,7 +194,8 @@ typedef enum GuiProperty {
     PROGRESSBAR_BORDER_WIDTH,
     PROGRESSBAR_BORDER_COLOR_NORMAL,
     PROGRESSBAR_BASE_COLOR_NORMAL,
-    PROGRESSBAR_FRONT_COLOR_NORMAL,
+    PROGRESSBAR_BORDER_COLOR_FOCUSED,
+    PROGRESSBAR_BASE_COLOR_FOCUSED,
     // Spinner
     SPINNER_BUTTON_PADDING,
     SPINNER_BORDER_COLOR_NORMAL,
@@ -390,17 +399,25 @@ static int style[NUM_PROPERTIES] = {
     DEFAULT_BASE_COLOR_PRESSED,         // TOGGLE_BASE_COLOR_PRESSED,
     DEFAULT_TEXT_COLOR_PRESSED,         // TOGGLE_TEXT_COLOR_PRESSED,
     2,                                  // TOGGLEGROUP_PADDING,
+    DEFAULT_BORDER_WIDTH,               // SLIDER_BORDER_WIDTH,
+    DEFAULT_BORDER_COLOR_NORMAL,        // SLIDER_BORDER_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_NORMAL,          // SLIDER_BASE_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // SLIDER_BORDER_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // SLIDER_BASE_COLOR_FOCUSED,
+    DEFAULT_BORDER_COLOR_PRESSED,       // SLIDER_BORDER_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // SLIDER_BASE_COLOR_PRESSED,
     DEFAULT_BORDER_WIDTH,               // SLIDERBAR_BORDER_WIDTH,
     DEFAULT_BORDER_COLOR_NORMAL,        // SLIDERBAR_BORDER_COLOR_NORMAL,
     DEFAULT_BASE_COLOR_NORMAL,          // SLIDERBAR_BASE_COLOR_NORMAL,
     DEFAULT_BORDER_COLOR_FOCUSED,       // SLIDERBAR_BORDER_COLOR_FOCUSED,
-    DEFAULT_BASE_COLOR_NORMAL,          // SLIDERBAR_BASE_COLOR_FOCUSED,
+    DEFAULT_BASE_COLOR_FOCUSED,         // SLIDERBAR_BASE_COLOR_FOCUSED,
     DEFAULT_BORDER_COLOR_PRESSED,       // SLIDERBAR_BORDER_COLOR_PRESSED,
-    DEFAULT_BASE_COLOR_NORMAL,          // SLIDERBAR_BASE_COLOR_PRESSED,
+    DEFAULT_BASE_COLOR_PRESSED,         // SLIDERBAR_BASE_COLOR_PRESSED,
     DEFAULT_BORDER_WIDTH,               // PROGRESSBAR_BORDER_WIDTH,
     DEFAULT_BORDER_COLOR_NORMAL,        // PROGRESSBAR_BORDER_COLOR_NORMAL,
-    DEFAULT_BASE_COLOR_NORMAL,          // PROGRESSBAR_BASE_COLOR_NORMAL,
-    DEFAULT_BASE_COLOR_FOCUSED,         // PROGRESSBAR_FRONT_COLOR_NORMAL,
+    DEFAULT_BASE_COLOR_FOCUSED,         // PROGRESSBAR_BASE_COLOR_NORMAL,
+    DEFAULT_BORDER_COLOR_FOCUSED,       // PROGRESSBAR_BORDER_COLOR_FOCUSED
+    DEFAULT_BASE_COLOR_PRESSED,         // PROGRESSBAR_BASE_COLOR_FOCUSED,
     2,                                  // SPINNER_BUTTON_PADDING
     DEFAULT_BORDER_COLOR_NORMAL,        // SPINNER_BORDER_COLOR_NORMAL,
     DEFAULT_BASE_COLOR_NORMAL,          // SPINNER_BASE_COLOR_NORMAL,
@@ -427,9 +444,9 @@ static int style[NUM_PROPERTIES] = {
     DEFAULT_BORDER_COLOR_NORMAL,        // CHECKBOX_BORDER_COLOR_NORMAL,
     DEFAULT_BACKGROUND_COLOR,           // CHECKBOX_BASE_COLOR_NORMAL,
     DEFAULT_BORDER_COLOR_FOCUSED,       // CHECKBOX_BORDER_COLOR_FOCUSED,
-    DEFAULT_BASE_COLOR_FOCUSED,         // CHECKBOX_BASE_COLOR_FOCUSED,
+    DEFAULT_TEXT_COLOR_FOCUSED,         // CHECKBOX_BASE_COLOR_FOCUSED,
     DEFAULT_BORDER_COLOR_PRESSED,       // CHECKBOX_BORDER_COLOR_PRESSED,
-    DEFAULT_BASE_COLOR_PRESSED,         // CHECKBOX_BASE_COLOR_PRESSED,
+    DEFAULT_TEXT_COLOR_PRESSED,         // CHECKBOX_BASE_COLOR_PRESSED,
     DEFAULT_BORDER_WIDTH,               // TEXTBOX_BORDER_WIDTH,
     DEFAULT_BORDER_COLOR_NORMAL,        // TEXTBOX_BORDER_COLOR_NORMAL,
     DEFAULT_BACKGROUND_COLOR,           // TEXTBOX_BASE_COLOR_NORMAL,
@@ -789,7 +806,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
+                                       GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));
             if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
             
         } break;
@@ -857,27 +874,27 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
     {
         case NORMAL: 
         {
-            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
-            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], 
-                          bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], 
-                          GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
-            DrawRectangleRec(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
+            DrawRectangleRec(bounds, GetColor(style[SLIDER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], 
+                          bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], 
+                          GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
-            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], 
-                          bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], 
-                          GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
-            DrawRectangleRec(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
+            DrawRectangleRec(bounds, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], 
+                          bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], 
+                          GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
-            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], 
-                          bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], 
-                          GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
-            DrawRectangleRec(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
+            DrawRectangleRec(bounds, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], 
+                          bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], 
+                          GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_PRESSED]));
         } break;
         default: break;
     }
@@ -937,7 +954,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], 
                           bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], 
                           GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
-            DrawRectangleRec(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
+            DrawRectangleRec(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
@@ -970,13 +987,10 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
     //--------------------------------------------------------------------
     if (value > maxValue) value = maxValue;
     else if (value < minValue) value = minValue;
+    
+     progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
         
-    if (CheckCollisionPointRec(mousePoint, bounds))
-    {
-        state = FOCUSED;
-
-        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
-    }
+    if (CheckCollisionPointRec(mousePoint, bounds)) state = FOCUSED;
     //--------------------------------------------------------------------
 
     // Draw control
@@ -988,16 +1002,16 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
             DrawRectangleRec(bounds, GetColor(style[PROGRESSBAR_BORDER_COLOR_NORMAL]));
             DrawRectangle(bounds.x + style[PROGRESSBAR_BORDER_WIDTH], bounds.y + style[PROGRESSBAR_BORDER_WIDTH], 
                           bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH], bounds.height - 2*style[PROGRESSBAR_BORDER_WIDTH], 
-                          GetColor(style[PROGRESSBAR_BASE_COLOR_NORMAL]));
-            DrawRectangleRec(progress, GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL])); 
+                          GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleRec(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_NORMAL])); 
         } break;
         case FOCUSED:
         {
             DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], 
                           bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], 
-                          GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
-            DrawRectangleRec(progress, GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED])); 
+                          GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleRec(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED: break;
         default: break;
