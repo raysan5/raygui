@@ -57,8 +57,8 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   CONTRIBUTORS:
-*       Kevin Gato:         Initial implementation of basic components (2013)
-*       Daniel Nicolas:     Initial implementation of basic components (2013)
+*       Kevin Gato:         Initial implementation of basic components (2014)
+*       Daniel Nicolas:     Initial implementation of basic components (2014)
 *       Albert Martos:      Review and testing of the library (2015)
 *       Ian Eito:           Review and testing of the library (2015)
 *       Sergio Martinez:    Review and testing of the library (2015)
