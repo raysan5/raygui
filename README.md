@@ -1,5 +1,7 @@
+<img src="logo/logo256x256.png" width=256>
+
 # raygui
-raygui is simple and easy-to-use IMGUI header-only library.
+raygui is a simple and easy-to-use IMGUI header-only library.
 
 raygui was inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
@@ -15,7 +17,7 @@ Default dark style
 ![raygui dark design](design/raygui_style_table_dark_REV5.png)
 
 ## history
-raygui development started on December 2014 by two intenship students (Kevin Gato and Daniel Nicolas), guided by me to create a simple and easy-to-use raylib IMGUI module. On June 2015, library was mostly functional (including all planned controls) and work started into the styling possibilities for the library. Development on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources invested on the tool were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib).
+raygui development started on December 2014 by two intenship students guided by me (Kevin Gato and Daniel Nicolas), the objective was creating a simple and easy-to-use raylib IMGUI module. On June 2015, library was mostly functional (including all planned controls) and work started into the styling possibilities for the library. Development on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources invested on the tool were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib).
 
 Finally, by the end of June 2016, project was picked up again and raygui 1.0 was released. During August 2016, raygui was used to develop [rFXGen](https://github.com/raysan5/rFXGen) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) tools. 
 
