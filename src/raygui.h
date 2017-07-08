@@ -17,6 +17,7 @@
 *       - ProgressBar
 *       - Spinner
 *       - TextBox
+*       - Texture
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
 *
@@ -257,7 +258,7 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                   
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                              // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleNum, char **toggleText, int toggleActive);           // Toggle Group control, returns toggled button index
 RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);                 // Combo Box control, returns selected item index
-RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                                 // Check Box control, returns true when active
+RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                                   // Check Box control, returns true when active
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);                     // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);                  // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);                // Progress Bar control, shows current progress value
@@ -759,7 +760,7 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleCount, char **toggleTex
 }
 
 // Check Box control, returns true when active
-RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
+RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 {
     ControlState state = NORMAL;
     
@@ -791,9 +792,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
-            if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
-        
+                                       GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));        
         } break;
         case FOCUSED:
         {
@@ -805,9 +804,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));
-            if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
-            
+                                       GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));           
         } break;
         case PRESSED:
         {
@@ -820,8 +817,6 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
-            if (text != NULL) DrawText(text, bounds.x + bounds.width + 2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
-
         } break;
         default: break;
     }
@@ -1363,6 +1358,62 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
         default: break;
     }
     //--------------------------------------------------------------------
+}
+
+// Button control, returns true when clicked
+RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
+{
+    ControlState state = NORMAL;
+    
+    Vector2 mousePoint = GetMousePosition();
+    bool clicked = false;
+
+    // Update control
+    //--------------------------------------------------------------------
+
+    // Check button state
+    if (CheckCollisionPointRec(mousePoint, bounds))
+    {
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+        else state = FOCUSED;
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], 
+                          bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], 
+                          GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
+            DrawTexture(texture, bounds.x, bounds.y, WHITE);
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], 
+                          bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], 
+                          GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+            DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], 
+                          bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], 
+                          GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+            DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+        } break;
+        default: break;
+    }
+    //------------------------------------------------------------------
+
+    if (clicked) return true;
+    else return false;
 }
 
 // TODO: Panel system
