@@ -172,8 +172,7 @@ int main()
     
     int guiHeight = 30;
     int guiWidth = 150;
-    
-    int deltaX = 153;
+
     int deltaY = 60;
     
     int selectPosX = 401;
@@ -531,7 +530,7 @@ int main()
             
             comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboNum, comboText, comboActive);
 
-            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, NULL, checked);
+            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, checked);
             
             GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
 
