@@ -1,7 +1,6 @@
-<img src="logo/logo256x256.png" width=256>
+<img align="left" src="logo/logo256x256.png" width=256>
 
-# raygui
-raygui is a simple and easy-to-use IMGUI header-only library.
+**raygui** is a simple and easy-to-use IMGUI header-only library.
 
 raygui was inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
