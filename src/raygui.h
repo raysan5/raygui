@@ -50,7 +50,7 @@
 *
 *   VERSIONS HISTORY:
 *       1.5 (21-Jun-2017) Working in an improved styles system
-*       1.4 (15-Jun-2017) Rewrite of all GUI functions (removed useless ones)
+*       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
 *       1.3 (12-Jun-2017) Redesigned styles system
 *       1.1 (01-Jun-2017) Complete review of the library
 *       1.0 (07-Jun-2016) Converted to header-only by Ramon Santamaria.
@@ -563,7 +563,8 @@ static void DrawText(const char *text, int posX, int posY, int fontSize, Color c
 static void DrawRectangleRecT(Rectangle rec, Color color) { /* TODO */ }
 #endif
 
-static void DrawRectangleRecT(Rectangle rec, Color color);
+// Draw rectangle from Rectangle data (using default dont texture)
+static void DrawRectangleRecT(Rectangle rec, Color color) { DrawRectangleT(rec.x, rec.y, rec.width, rec.height, color); }
 
 //----------------------------------------------------------------------------------
 // Module Functions Definition
@@ -645,19 +646,19 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
         default: break;
@@ -705,26 +706,26 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
             if (active)
             {
                 DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
-                DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
+                DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
                 DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
             }
             else
             {
                 DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_NORMAL]));
-                DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[TOGGLE_BASE_COLOR_NORMAL]));
+                DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_NORMAL]));
                 DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[TOGGLE_TEXT_COLOR_NORMAL]));
             }
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[TOGGLE_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_FOCUSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[TOGGLE_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
+            DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, DEFAULT_TEXT_SIZE, GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
         } break;
         default: break;
@@ -772,29 +773,29 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
-            if (checked) DrawRectangleRecT((Rectangle){ bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+            DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
+            if (checked) DrawRectangleT(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]) }, GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));        
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));        
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
-            if (checked) DrawRectangleRecT((Rectangle){ bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+            DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
+            if (checked) DrawRectangleT(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]) }, GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));           
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]));           
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[CHECKBOX_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH] }, GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
-            if (checked) DrawRectangleRecT((Rectangle){ bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+            DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]));
+            if (checked) DrawRectangleT(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]) }, GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
         } break;
         default: break;
     }
@@ -849,10 +850,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
 
             DrawRectangleRecT(selector, GetColor(style[COMBOBOX_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
+            DrawRectangleT(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
             
             DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[COMBOBOX_TEXT_COLOR_NORMAL]));   
             DrawText(FormatText("%i/%i", active + 1, comboCount), 
@@ -863,10 +864,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
 
             DrawRectangleRecT(selector, GetColor(style[COMBOBOX_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
             
             DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[COMBOBOX_TEXT_COLOR_FOCUSED]));   
             DrawText(FormatText("%i/%i", active + 1, comboCount), 
@@ -877,10 +878,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
+            DrawRectangleT(bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
 
             DrawRectangleRecT(selector, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH] }, GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
+            DrawRectangleT(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
             
             DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));   
             DrawText(FormatText("%i/%i", active + 1, comboCount), 
@@ -939,19 +940,19 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
         case NORMAL: 
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDER_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH] }, GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleT(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(DEFAULT_BACKGROUND_COLOR));
             DrawRectangleRecT(slider, GetColor(style[SLIDER_BASE_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH] }, GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleT(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(DEFAULT_BACKGROUND_COLOR));
             DrawRectangleRecT(slider, GetColor(style[SLIDER_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH] }, GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleT(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(DEFAULT_BACKGROUND_COLOR));
             DrawRectangleRecT(slider, GetColor(style[SLIDER_BASE_COLOR_PRESSED]));
         } break;
         default: break;
@@ -1001,19 +1002,19 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] }, GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
             DrawRectangleRecT(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] }, GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
             DrawRectangleRecT(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] }, GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]));
+            DrawRectangleT(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]));
             DrawRectangleRecT(slider, GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED])); 
         } break;
         default: break;
@@ -1052,13 +1053,13 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[PROGRESSBAR_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[PROGRESSBAR_BORDER_WIDTH], bounds.y + style[PROGRESSBAR_BORDER_WIDTH], bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH], bounds.height - 2*style[PROGRESSBAR_BORDER_WIDTH] }, GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleT(bounds.x + style[PROGRESSBAR_BORDER_WIDTH], bounds.y + style[PROGRESSBAR_BORDER_WIDTH], bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH], bounds.height - 2*style[PROGRESSBAR_BORDER_WIDTH], GetColor(DEFAULT_BACKGROUND_COLOR));
             DrawRectangleRecT(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_NORMAL])); 
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] }, GetColor(DEFAULT_BACKGROUND_COLOR));
+            DrawRectangleT(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(DEFAULT_BACKGROUND_COLOR));
             DrawRectangleRecT(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED: break;
@@ -1194,21 +1195,21 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
         case NORMAL:
         {
             DrawRectangleRecT(spinner, GetColor(style[SPINNER_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2 }, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
+            DrawRectangleT(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
 
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (DEFAULT_TEXT_SIZE/2)), DEFAULT_TEXT_SIZE, GetColor(style[SPINNER_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(spinner, GetColor(style[SPINNER_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2 }, GetColor(style[SPINNER_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_FOCUSED]));
 
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (DEFAULT_TEXT_SIZE/2)), DEFAULT_TEXT_SIZE, GetColor(style[SPINNER_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(spinner, GetColor(style[SPINNER_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2 }, GetColor(style[SPINNER_BASE_COLOR_PRESSED]));
+            DrawRectangleT(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_PRESSED]));
 
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (DEFAULT_TEXT_SIZE/2)), DEFAULT_TEXT_SIZE, GetColor(style[SPINNER_TEXT_COLOR_PRESSED]));
         } break;
@@ -1281,17 +1282,17 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH] }, GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
             DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
             
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH] }, GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
             DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - DEFAULT_TEXT_SIZE/2, DEFAULT_TEXT_SIZE, GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
 
-            if ((framesCounter/20)%2 == 0) DrawRectangleRecT((Rectangle){ bounds.x + 4 + MeasureText(text, DEFAULT_TEXT_SIZE), bounds.y + 2, 1, bounds.height - 4 }, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
+            if ((framesCounter/20)%2 == 0) DrawRectangleT(bounds.x + 4 + MeasureText(text, DEFAULT_TEXT_SIZE), bounds.y + 2, 1, bounds.height - 4, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
 
         } break;
         case PRESSED: break; // NOTE: PRESSED state is not used on this control
@@ -1327,19 +1328,19 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
         case NORMAL:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
             DrawTexture(texture, bounds.x, bounds.y, WHITE);
         } break;
         case FOCUSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
             DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRecT(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
-            DrawRectangleRecT((Rectangle){ bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH] }, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+            DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
             DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
         } break;
         default: break;
@@ -1472,11 +1473,6 @@ static const char *FormatText(const char *text, ...)
     return buffer;
 }
 
-static void DrawRectangleRecT(Rectangle rec, Color color)
-{
-    DrawTexturePro(GetDefaultFont().texture, GetDefaultFont().chars[127].rec, 
-                   (Rectangle){ x, y, width, height }, (Vector2){ 0, 0 }, 0.0f, color);
-}
 /*
 void SetDrawRectangleFunc(void (* DrawRectangle)(Rectangle rec, Color color))
 {
