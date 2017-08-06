@@ -4,9 +4,11 @@
 
 raygui was inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
-Initially raygui was proposed as an extra module for [raylib](https://github.com/raysan5/raylib) to create simple GUIs using raylib graphic style (simple colors, plain rectangular shapes, wide borders, raylib standard font...). 
+raygui was originated as an auxiliar module for [raylib](https://github.com/raysan5/raylib) to create simple GUI interfaces using raylib graphic style (simple colors, plain rectangular shapes, wide borders, raylib default font...). 
 
-raygui has been used on some raylib-based tools like [rFXGen](https://github.com/raysan5/rFXGen), without external dependencies, only raylib.
+raygui has been used on some tools like [rFXGen](https://github.com/raysan5/rFXGen), without external dependencies, only raylib.
+
+<br>
 
 ##  styles
 Default light style
