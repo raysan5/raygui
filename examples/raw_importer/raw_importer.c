@@ -140,6 +140,8 @@ int main(int argc, char *argv[0])
             
             DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
             
+            GuiColorPicker((Rectangle){ 100, 100, 200, 200 }, RED);
+
             if (texture.id != 0) 
             {
                 DrawTextureEx(texture, (Vector2){ SCREEN_WIDTH/2 - texture.width*imageScale/2, SCREEN_HEIGHT/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
@@ -159,7 +161,7 @@ int main(int argc, char *argv[0])
                 GuiLabel((Rectangle){ panel.x + 10, panel.y + 30, 0, 0 }, FormatText("File size: %i bytes", dataSize));
                 
                 // ----- Resolution panel-----
-                GuiPanel((Rectangle){ panel.x + 10, panel.y + 55, 180, 80 }, "Resolution");
+                GuiGroupBox((Rectangle){ panel.x + 10, panel.y + 55, 180, 80 }, "Resolution");
                 
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 80, 0, 0 }, "Width:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 80, 0, 0 }, "pixels");
@@ -172,7 +174,7 @@ int main(int argc, char *argv[0])
                 GuiTextBox((Rectangle){ panel.x + 60, panel.y + 100, 80, 20 }, textImageHeight, 4);
                 
                 // ----- Pixel data panel -----
-                GuiPanel((Rectangle){ panel.x + 10, panel.y + 155, 180, 110 }, "Pixels Data");
+                GuiGroupBox((Rectangle){ panel.x + 10, panel.y + 155, 180, 110 }, "Pixels Data");
                 
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 170, 0, 0 }, "Channels:");
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 215, 0, 0 }, "Bit Depth:");
@@ -181,7 +183,7 @@ int main(int argc, char *argv[0])
                 buttonToggleDepth = GuiToggleGroup((Rectangle){ panel.x + 20, panel.y + 230, 51, 20 }, 3, arrayDepth, buttonToggleDepth);
                 
                 // ----- Header panel -----
-                GuiPanel((Rectangle){ panel.x + 10, panel.y + 285, 180, 50 }, "Header");
+                GuiGroupBox((Rectangle){ panel.x + 10, panel.y + 285, 180, 50 }, "Header");
                 
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 305, 0, 0 }, "Size:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 305, 0, 0 }, "bytes");
@@ -203,18 +205,6 @@ int main(int argc, char *argv[0])
     //--------------------------------------------------------------------------------------
     
     return 0;
-}
-
-// Draw a lines panel with name
-void GuiPanel(Rectangle bounds, const char *text)
-{
-    DrawLineEx((Vector2){ bounds.x + 1, bounds.y }, (Vector2){ bounds.x, bounds.y + bounds.height }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x, bounds.y }, (Vector2){ bounds.x + 10, bounds.y }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y }, (Vector2){ bounds.x + 20 + MeasureText(text, 10), bounds.y }, 1, GuiLinesColor());
-    
-    DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
 }
 
 // Get pointer to filename data in the string

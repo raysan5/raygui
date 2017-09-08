@@ -264,6 +264,8 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);                // Progress Bar control, shows current progress value
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner control, returns selected value
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box control, updates input text
+RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                               // Group Box control with title name
+RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                                // Color Picker control
 
 #if defined RAYGUI_STANDALONE
 // NOTE: raygui depend on some raylib input and drawing functions
@@ -1305,7 +1307,7 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
     //--------------------------------------------------------------------
 }
 
-// Button control, returns true when clicked
+// Texture button control, returns true when clicked
 RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 {
     ControlState state = NORMAL;
@@ -1315,9 +1317,7 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 
     // Update control
     //--------------------------------------------------------------------
-
-    // Check button state
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
     {
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
         else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
@@ -1353,6 +1353,90 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 
     if (clicked) return true;
     else return false;
+}
+
+// Group Box control with title name
+void GuiGroupBox(Rectangle bounds, const char *text)
+{
+    DrawLineEx((Vector2){ bounds.x + 1, bounds.y }, (Vector2){ bounds.x, bounds.y + bounds.height }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x, bounds.y }, (Vector2){ bounds.x + 10, bounds.y }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y }, (Vector2){ bounds.x + 20 + MeasureText(text, 10), bounds.y }, 1, GuiLinesColor());
+    
+    DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
+}
+
+// Color Picker control
+// TODO: It can be divided in multiple controls:
+//      Color GuiColorPicker() 
+//      unsigned char GuiColorBarAlpha() 
+//      unsigned char GuiColorBarHue()
+//      Color GuiColorBarSat() [WHITE->color]
+//      Color GuiColorBarValue() [BLACK->color]), HSV / HSL
+//      unsigned char GuiColorBarLuminance() [BLACK->WHITE]
+Color GuiColorPicker(Rectangle bounds, Color color)
+{
+    ControlState state = NORMAL;
+    
+    Vector2 mousePoint = GetMousePosition();
+    
+    // NOTE: bounds define only the color picker box, extra bars at right and bottom
+
+    // Update control
+    //--------------------------------------------------------------------
+    
+    // TODO: Check mousePoint over colorSelector and right/bottom bars
+    
+    if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
+    {
+        
+    }
+    //--------------------------------------------------------------------
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    DrawRectangleGradientEx(bounds, WHITE, WHITE, BLUE, BLUE);
+    DrawRectangleGradientEx(bounds, Fade(BLACK,0), BLACK, BLACK, Fade(BLACK,0));
+
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y, 20, bounds.height/6}, (Color){255,0,0,255}, (Color){255,255,0,255}, (Color){255,255,0,255}, (Color){255,0,0,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + bounds.height/6, 20, bounds.height/6}, (Color){255,255,0,255}, (Color){0,255,0,255}, (Color){0,255,0,255}, (Color){255,255,0,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 2*(bounds.height/6), 20, bounds.height/6}, (Color){0,255,0,255}, (Color){0,255,255,255}, (Color){0,255,255,255}, (Color){0,255,0,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 3*(bounds.height/6), 20, bounds.height/6}, (Color){0,255,255,255}, (Color){0,0,255,255}, (Color){0,0,255,255}, (Color){0,255,255,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 4*(bounds.height/6), 20, bounds.height/6}, (Color){0,0,255,255}, (Color){255,0,255,255}, (Color){255,0,255,255}, (Color){0,0,255,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 5*(bounds.height/6), 20, bounds.height/6}, (Color){255,0,255,255}, (Color){255,0,0,255}, (Color){255,0,0,255}, (Color){255,0,255,255}); // TEST
+
+    // Draw checked background
+    for (int i = 0; i < 38; i++) DrawRectangle(bounds.x + 10*(i%19), bounds.x + bounds.width + 10 + 10*(i/19), bounds.width/20, bounds.width/20, (i%2) ? GRAY : LIGHTGRAY);
+
+    DrawRectangleGradientEx((Rectangle){bounds.x, bounds.x + bounds.width + 10, bounds.width, 20}, Fade(WHITE, 0), Fade(WHITE, 0), BLUE, BLUE);
+
+    DrawRectangle(bounds.x + bounds.width + 6, 120, 28, 5, WHITE);
+    DrawRectangleLines(bounds.x + bounds.width + 6, 120, 28, 5, BLACK);
+    DrawRectangle(196, bounds.y + bounds.height + 6, 5, 28, WHITE);
+    DrawRectangleLines(196, bounds.y + bounds.height + 6, 5, 28, BLACK);
+
+    DrawCircle(150, 150, 4, WHITE);
+    
+    switch (state)
+    {
+        case NORMAL:
+        {
+
+        } break;
+        case FOCUSED:
+        {
+
+        } break;
+        case PRESSED:
+        {
+
+        } break;
+        default: break;
+    }
+    //------------------------------------------------------------------
+    
+    return color;
 }
 
 // TODO: Panel system
