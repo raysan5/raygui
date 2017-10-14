@@ -9,6 +9,9 @@ raygui was originated as an auxiliar module for [raylib](https://github.com/rays
 raygui has been used on some tools like [rFXGen](https://github.com/raysan5/rFXGen), without external dependencies, only raylib.
 
 <br>
+<br>
+
+**NOTE: raygui is under development right now, some controls and styles could be modified in the following weeks.** 
 
 ##  styles
 Default light style
@@ -18,7 +21,7 @@ Default dark style
 ![raygui dark design](design/raygui_style_table_dark_REV5.png)
 
 ## history
-raygui development started on December 2014 by two intenship students guided by me (Kevin Gato and Daniel Nicolas), the objective was creating a simple and easy-to-use raylib IMGUI module. On June 2015, library was mostly functional (including all planned controls) and work started into the styling possibilities for the library. Development on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources invested on the tool were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib).
+raygui development started on December 2014 by two intenship students guided by me (Kevin Gato and Daniel Nicolas), the objective was creating a simple and easy-to-use raylib IMGUI module. On June 2015, library was mostly functional (including all planned controls) and work started into the styling options for the library. Development on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources invested on the tool were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib).
 
 Finally, by the end of June 2016, project was picked up again and raygui 1.0 was released. During August 2016, raygui was used to develop [rFXGen](https://github.com/raysan5/rFXGen) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) tools. 
 
@@ -27,8 +30,8 @@ On June 2017, project was picked up again to be completely redesigned, almost fr
 ## notes on raygui 1.0
 Officially, raygui 1.0 was published on June 2016, about one year and a half after its developmentment started.
 
-## notes on raygui 1.5
-Expect to be published along summer 2017, a complete redesign of the library with improved style system.
+## notes on raygui 1.x
+Expect to be published along 2017, a complete redesign of the library with improved style system.
 
 ## controls
 Currently raygui provides the following controls:
