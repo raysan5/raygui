@@ -574,6 +574,9 @@ static void DrawRectangleRecT(Rectangle rec, Color color) { /* TODO */ }
 // Draw rectangle from Rectangle data (using default dont texture)
 static void DrawRectangleRecT(Rectangle rec, Color color) { DrawRectangleT(rec.x, rec.y, rec.width, rec.height, color); }
 
+static Vector3 ConvertHSVtoRGB(Vector3 hsv);        // Convert color data from HSV to RGB
+static Vector3 ConvertRGBtoHSV(Vector3 rgb);        // Convert color data from RGB to HSV
+
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
@@ -1369,140 +1372,6 @@ void GuiGroupBox(Rectangle bounds, const char *text)
     DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
 }
 
-
-Vector3 ColorTransformHue(Vector3 color, float hue)
-{
-    Vector3 result;
-
-    float U = cosf(hue*PI/180);
-    float W = sinf(hue*PI/180);
-
-    result.x = (.299+.701*U+.168*W)*color.x + (.587-.587*U+.330*W)*color.y + (.114-.114*U-.497*W)*color.z;
-    result.y = (.299-.299*U-.328*W)*color.x + (.587+.413*U+.035*W)*color.y + (.114-.114*U+.292*W)*color.z;
-    result.z = (.299-.3*U+1.25*W)*color.x + (.587-.588*U-1.05*W)*color.y + (.114+.886*U-.203*W)*color.z;
-    
-    return result;
-}
-
-//https://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
-//https://gist.github.com/mjackson/5311256
-typedef struct {
-    double r;       // a fraction between 0 and 1
-    double g;       // a fraction between 0 and 1
-    double b;       // a fraction between 0 and 1
-} rgb;
-
-typedef struct {
-    double h;       // angle in degrees
-    double s;       // a fraction between 0 and 1
-    double v;       // a fraction between 0 and 1
-} hsv;
-
-static hsv   rgb2hsv(rgb in);
-static rgb   hsv2rgb(hsv in);
-
-hsv rgb2hsv(rgb in)
-{
-    hsv         out;
-    double      min, max, delta;
-
-    min = in.r < in.g ? in.r : in.g;
-    min = min  < in.b ? min  : in.b;
-
-    max = in.r > in.g ? in.r : in.g;
-    max = max  > in.b ? max  : in.b;
-
-    out.v = max;                                // v
-    delta = max - min;
-    if (delta < 0.00001)
-    {
-        out.s = 0;
-        out.h = 0; // undefined, maybe nan?
-        return out;
-    }
-    if( max > 0.0 ) { // NOTE: if Max is == 0, this divide would cause a crash
-        out.s = (delta / max);                  // s
-    } else {
-        // if max is 0, then r = g = b = 0              
-        // s = 0, h is undefined
-        out.s = 0.0;
-        out.h = NAN;                            // its now undefined
-        return out;
-    }
-    if( in.r >= max )                           // > is bogus, just keeps compilor happy
-        out.h = ( in.g - in.b ) / delta;        // between yellow & magenta
-    else
-    if( in.g >= max )
-        out.h = 2.0 + ( in.b - in.r ) / delta;  // between cyan & yellow
-    else
-        out.h = 4.0 + ( in.r - in.g ) / delta;  // between magenta & cyan
-
-    out.h *= 60.0;                              // degrees
-
-    if( out.h < 0.0 )
-        out.h += 360.0;
-
-    return out;
-}
-
-rgb hsv2rgb(hsv in)
-{
-    double      hh, p, q, t, ff;
-    long        i;
-    rgb         out;
-
-    if(in.s <= 0.0) {       // < is bogus, just shuts up warnings
-        out.r = in.v;
-        out.g = in.v;
-        out.b = in.v;
-        return out;
-    }
-    hh = in.h;
-    if(hh >= 360.0) hh = 0.0;
-    hh /= 60.0;
-    i = (long)hh;
-    ff = hh - i;
-    p = in.v * (1.0 - in.s);
-    q = in.v * (1.0 - (in.s * ff));
-    t = in.v * (1.0 - (in.s * (1.0 - ff)));
-
-    switch(i) {
-    case 0:
-        out.r = in.v;
-        out.g = t;
-        out.b = p;
-        break;
-    case 1:
-        out.r = q;
-        out.g = in.v;
-        out.b = p;
-        break;
-    case 2:
-        out.r = p;
-        out.g = in.v;
-        out.b = t;
-        break;
-
-    case 3:
-        out.r = p;
-        out.g = q;
-        out.b = in.v;
-        break;
-    case 4:
-        out.r = t;
-        out.g = p;
-        out.b = in.v;
-        break;
-    case 5:
-    default:
-        out.r = in.v;
-        out.g = p;
-        out.b = q;
-        break;
-    }
-    return out;     
-}
-
 // Color Picker control
 // TODO: It can be divided in multiple controls:
 //      Color GuiColorPicker() 
@@ -1520,18 +1389,10 @@ Color GuiColorPicker(Rectangle bounds, float hueValue, Color color)
     Vector2 pickerSelector = { 0 };
     
     // TODO: Get color picker selector box equivalent color from color value
+    Vector3 hsv = ConvertRGBtoHSV(ColorToVector3(color));
     
-    // Required HSV to RGB conversion formula
-    // Hue: 0 ≤ hueValue < 360
-    // 0 ≤ sat ≤ 1 and 0 ≤ V ≤ 1:
-    
-    //pickerSelector.x = bounds.x + colorPos.x*color.r;
-    //pickerSelector.y = bounds.y + colorPos.y*color.r;
-    rgb in = { (float)color.r/255.0f, (float)color.g/255.0f, (float)color.b/255.0f };
-    hsv out = rgb2hsv(in);
-    
-    pickerSelector.x = bounds.x + (float)out.s*bounds.width;
-    pickerSelector.y = bounds.y + (1.0f - (float)out.v)*bounds.height;
+    pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
+    pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
     
     // NOTE: bounds define only the color picker box, extra bars at right and bottom
 
@@ -1585,7 +1446,7 @@ Color GuiColorPicker(Rectangle bounds, float hueValue, Color color)
     DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 5*(bounds.height/6), 20, bounds.height/6}, (Color){255,0,255,255}, (Color){255,0,0,255}, (Color){255,0,0,255}, (Color){255,0,255,255}); // TEST
     // Draw hue bar: selector
     //DrawRectangle(bounds.x + bounds.width + 8, 120, 24, 4, WHITE);
-    DrawRectangleLines(bounds.x + bounds.width + 8, bounds.y + (float)out.h/360.0f*bounds.height - 2, 24, 4, BLACK);
+    DrawRectangleLines(bounds.x + bounds.width + 8, bounds.y + hsv.x/360.0f*bounds.height - 2, 24, 4, BLACK);
     
     // Draw alpha bar: checked background
     for (int i = 0; i < 38; i++) DrawRectangle(bounds.x + 10*(i%19), bounds.y + bounds.height + 10 + 10*(i/19), bounds.width/19, 10, (i%2) ? LIGHTGRAY : RAYWHITE);
@@ -1696,6 +1557,129 @@ RAYGUIDEF int GetStyleProperty(int guiProperty) { return style[guiProperty]; }
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
+
+// Convert color data from RGB to HSV
+// NOTE: Color data should be passed normalized
+static Vector3 ConvertRGBtoHSV(Vector3 rgb)
+{
+    Vector3 hsv;
+    float min, max, delta;
+
+    min = rgb.x < rgb.y ? rgb.x : rgb.y;
+    min = min  < rgb.z ? min  : rgb.z;
+
+    max = rgb.x > rgb.y ? rgb.x : rgb.y;
+    max = max  > rgb.z ? max  : rgb.z;
+
+    hsv.z = max;            // Value
+    delta = max - min;
+    
+    if (delta < 0.00001f)
+    {
+        hsv.y = 0.0f;
+        hsv.x = 0.0f;       // Undefined, maybe NAN?
+        return hsv;
+    }
+    
+    if (max > 0.0f) 
+    {
+        // NOTE: If max is 0, this divide would cause a crash
+        hsv.y = (delta/max);    // Saturation
+    } 
+    else 
+    {
+        // NOTE: If max is 0, then r = g = b = 0, s = 0, h is undefined
+        hsv.y = 0.0f;
+        hsv.x = NAN;        // Undefined
+        return hsv;
+    }
+    
+    // NOTE: Comparing float values could not work properly
+    if (rgb.x >= max) hsv.x = (rgb.y - rgb.z)/delta;    // Between yellow & magenta
+    else
+    {
+        if (rgb.y >= max) hsv.x = 2.0f + (rgb.z - rgb.x)/delta;  // Between cyan & yellow
+        else hsv.x = 4.0f + (rgb.x - rgb.y)/delta;      // Between magenta & cyan
+    }
+    
+    hsv.x *= 60.0f;     // Convert to degrees
+
+    if (hsv.x < 0.0f) hsv.x += 360.0f;
+
+    return hsv;
+}
+
+// Convert color data from HSV to RGB
+// NOTE: Color data should be passed normalized
+static Vector3 ConvertHSVtoRGB(Vector3 hsv)
+{
+    Vector3 rgb;
+    float hh, p, q, t, ff;
+    long i;
+
+    // NOTE: Comparing float values could not work properly
+    if (hsv.y <= 0.0f) 
+    {
+        rgb.x = hsv.z;
+        rgb.y = hsv.z;
+        rgb.z = hsv.z;
+        return rgb;
+    }
+    
+    hh = hsv.x;
+    if (hh >= 360.0f) hh = 0.0f;
+    hh /= 60.0f;
+    
+    i = (long)hh;
+    ff = hh - i;
+    p = hsv.z*(1.0f - hsv.y);
+    q = hsv.z*(1.0f - (hsv.y*ff));
+    t = hsv.z*(1.0f - (hsv.y*(1.0f - ff)));
+
+    switch (i) 
+    {
+        case 0:
+        {
+            rgb.x = hsv.z;
+            rgb.y = t;
+            rgb.z = p;
+        } break;
+        case 1:
+        {
+            rgb.x = q;
+            rgb.y = hsv.z;
+            rgb.z = p;
+        } break;
+        case 2:
+        {
+            rgb.x = p;
+            rgb.y = hsv.z;
+            rgb.z = t;
+        } break;
+        case 3:
+        {
+            rgb.x = p;
+            rgb.y = q;
+            rgb.z = hsv.z;
+        } break;
+        case 4:
+        {
+            rgb.x = t;
+            rgb.y = p;
+            rgb.z = hsv.z;
+        } break;
+        case 5:
+        default:
+        {
+            rgb.x = hsv.z;
+            rgb.y = p;
+            rgb.z = q;
+        } break;
+    }
+    
+    return rgb;     
+}
+
 #if defined (RAYGUI_STANDALONE)
 // Returns a Color struct from hexadecimal value
 static Color GetColor(int hexValue)
