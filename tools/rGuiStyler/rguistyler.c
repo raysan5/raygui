@@ -35,7 +35,6 @@
 #include "raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
-#include "colorpicker.h"                // Color picker image data
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -119,12 +118,12 @@ int main()
 
     // Defines if the property to change is a Color or a value to update it accordingly
     // NOTE: 0 - Color, 1 - value
-    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,  
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 0, 0, 0, 0, 0, 1, 1, 1,   
-                                                            1, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
-                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  
+    const unsigned char guiPropertyType[NUM_PROPERTIES] = { 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                                            0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 
+                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 
+                                                            0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 
+                                                            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                                            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                                                             0, 0, 1, 1, 0, 0, 0, 0, 1 };
     int aux = 0;
     int guiPropertyPos[NUM_ELEMENTS];
@@ -180,56 +179,11 @@ int main()
     int selectWidth = screenWidth - 723;
     //int selectHeight = screenHeight;
     //------------------------------------------------------------
-    
-    // Color picker cursor texture generation
-    //-----------------------------------------------------------
-    int sizeCursor = 16; // size must be POT
-    unsigned char *cursorData = (unsigned char *)malloc(sizeCursor*sizeCursor*2*sizeof(unsigned char));
-    
-    for (int w = 0; w < sizeCursor; w++)
-    {
-        for (int h = 0; h < sizeCursor; h++)
-        {
-            cursorData[w*sizeCursor*2 + 2*h] = 0;
-            if ((sizeCursor%2) == 0)
-            {
-                if (((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) && ((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)))
-                {
-                    cursorData[w*sizeCursor*2 + 2*h + 1] = 0;
-                }
-                else if ((w == (sizeCursor/2 - 1)) || (w == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
-                else if ((h == (sizeCursor/2 - 1)) || (h == sizeCursor/2)) cursorData[w*sizeCursor*2 + 2*h + 1] = 255;
-                else cursorData[w*sizeCursor*2 + 2*h + 1] = 0;
-            }            
-        }
-    }
-    
-    Image imCursor = LoadImagePro(cursorData, sizeCursor, sizeCursor, UNCOMPRESSED_GRAY_ALPHA);
-    Texture2D texCursor = LoadTextureFromImage(imCursor);
-    UnloadImage(imCursor);
-    free(cursorData);
-    //-----------------------------------------------------------
-    
+        
     // Color picker
     //-----------------------------------------------------------
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
-    
-    Image colorPickerImage;
-    colorPickerImage.data = pickerData;
-    colorPickerImage.width = 256;
-    colorPickerImage.height = 256;
-    colorPickerImage.mipmaps = 1;
-    colorPickerImage.format = UNCOMPRESSED_R8G8B8;   
-
-    Texture2D texColorPicker = LoadTextureFromImage(colorPickerImage);
-
-    Vector2 cursorPickerPos = {colorPickerPos.x +(texColorPicker.width/2) - texCursor.width/2, colorPickerPos.y + (texColorPicker.height/2) - texCursor.height/2};
-    
-    Color *colorPickerPixels = GetImageData(colorPickerImage);
-    
-    Rectangle colorPickerBounds = (Rectangle){ (int)colorPickerPos.x, (int)colorPickerPos.y, texColorPicker.width, texColorPicker.height };
-
-    Vector2 colorPosition;
+    Vector2 cursorPickerPos = colorPickerPos;
     Color colorPickerValue;
     Color colorSample[NUM_COLOR_SAMPLES];
     
@@ -244,15 +198,12 @@ int main()
     int alphaValue = 255;
     
     // Color samples
-    Rectangle colorSelectedBoundsRec = {colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 2*rgbDelta, 2*rgbWidthLabel, 2*rgbWidthLabel};
-    bool colorSelectedHover = false;
-    
     Rectangle sampleBoundsRec[NUM_COLOR_SAMPLES];
     int sampleHover = -1; 
     int sampleSelected = 0;
         
-    for (int i = 0; i < NUM_COLOR_SAMPLES/2; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + texColorPicker.height + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2};
-    for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + texColorPicker.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2};
+    for (int i = 0; i < NUM_COLOR_SAMPLES/2; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2};
+    for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2};
     //------------------------------------------------------------
     
     // Value size selection
@@ -281,25 +232,6 @@ int main()
     char guiText[16] = "\0";
 
     bool isModified = false;
-    
-    // Checked texture generation
-    //-----------------------------------------------------------
-    int size = 8;
-    Color *pixels = (Color *)malloc(size*size*sizeof(Color)); 
-    
-    for (int y = 0; y < size; y++)
-    {
-        for (int x = 0; x < size; x++)
-        {
-            if (((x/(size/2) + y/(size/2)))%2 == 0) pixels[y*size + x] = RAYWHITE;
-            else pixels[y*size + x] = Fade(LIGHTGRAY, 0.5f);
-        }
-    }
-    
-    Image imChecked = LoadImagePro(pixels, size, size, UNCOMPRESSED_R8G8B8A8);
-    Texture2D texChecked = LoadTextureFromImage(imChecked);
-    UnloadImage(imChecked);
-    free(pixels);
     //-----------------------------------------------------------
     
     // Get current directory
@@ -407,46 +339,9 @@ int main()
                     SetStyleProperty(guiPropertySelected, sizeValueSelected);
                 }
             }
-        
-            // Color picker logic
-            if (CheckCollisionPointRec(GetMousePosition(), colorPickerBounds))
-            {
-                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-                {
-                    if (!IsCursorHidden()) HideCursor();
-                    
-                    cursorPickerPos = (Vector2){ GetMousePosition().x - texCursor.width/2, GetMousePosition().y - texCursor.height/2};
-                    colorPosition = (Vector2){ GetMousePosition().x - colorPickerPos.x, GetMousePosition().y - colorPickerPos.y};
-                    
-                    colorPickerValue = colorPickerPixels[(int)colorPosition.x + (int)colorPosition.y*texColorPicker.width];
-                    redValue = colorPickerValue.r;
-                    greenValue = colorPickerValue.g;
-                    blueValue = colorPickerValue.b;
-                    alphaValue = colorPickerValue.a;
-                }            
-                
-                if (IsMouseButtonUp(MOUSE_LEFT_BUTTON) && IsCursorHidden()) ShowCursor();
-            }
-            else
-            {
-                if (IsCursorHidden()) ShowCursor();
-                
-                colorPickerValue.r = redValue;
-                colorPickerValue.g = greenValue;
-                colorPickerValue.b = blueValue;
-                colorPickerValue.a = alphaValue;
-                
-                if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0))
-                {                
-                    if (GetStyleProperty(guiPropertySelected) != GetHexValue(colorPickerValue))
-                    {
-                        SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
-                        isModified = true;
-                    }
-                }
-            }
-        
+
             // Color samples
+            /*
             if (CheckCollisionPointRec(GetMousePosition(), colorSelectedBoundsRec)) 
             {
                 colorSelectedHover = true;
@@ -475,6 +370,7 @@ int main()
                     }               
                 }            
             }
+            */
 
             // Update style color value
             if (guiPropertySelected == DEFAULT_BACKGROUND_COLOR) bgColor = colorPickerValue;
@@ -571,62 +467,32 @@ int main()
                 default: break;
             }
             
-            // Value editor
-            // -- Color picker
-            DrawRectangleRec((Rectangle){colorPickerPos.x - 2, colorPickerPos.y - 2, texColorPicker.width + 4, texColorPicker.height + 4}, COLOR_REC);
-            DrawTextureV(texColorPicker, colorPickerPos, WHITE);
-            DrawTextureV(texCursor, cursorPickerPos, WHITE);
+            // Draw color picker
+            GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, 60.0f, ORANGE);
             
-            //DrawRectangleV(GetMousePosition(), (Vector2){ 4, 4 }, RED);
-
-            // -- Color value result
-            if (colorSelectedHover) DrawRectangle(colorPickerPos.x - 3, colorPickerPos.y - 3 + texColorPicker.height + 2*rgbDelta, 2*rgbWidthLabel + 6, 2*rgbWidthLabel + 6, BLACK);
-            else DrawRectangle(colorPickerPos.x - 2, colorPickerPos.y - 2 + texColorPicker.height + 2*rgbDelta, 2*rgbWidthLabel + 4, 2*rgbWidthLabel + 4, Fade(COLOR_REC, 0.8f));
-            DrawRectangleRec (colorSelectedBoundsRec, WHITE);
-            DrawRectangleRec (colorSelectedBoundsRec, colorPickerValue);
-            
-            // -- Color samples
+            // Draw color samples
+            /*
             for (int i = 0; i < NUM_COLOR_SAMPLES/2; i++) 
             {
-                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + texColorPicker.height + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
-                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + texColorPicker.height + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
-                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 1, colorPickerPos.y - 1 + texColorPicker.height + 2*rgbDelta, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
-                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + texColorPicker.height + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
+                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
+                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
+                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 1, colorPickerPos.y - 1 + 300 + 2*rgbDelta, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
+                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
             }
             
             for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) 
             {
-                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + texColorPicker.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
-                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + texColorPicker.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
-                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 1, colorPickerPos.y - 1 + texColorPicker.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
-                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + texColorPicker.height + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
+                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
+                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
+                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 1, colorPickerPos.y - 1 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
+                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
             }
-              
-            // -- RGBA sliders
-            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 14*rgbDelta, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", redValue), BLACK, COLOR_REC, RED);
-            redValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 14*rgbDelta, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, redValue, 0, 255);
+            */
 
-            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 15*rgbDelta + rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", greenValue), BLACK, COLOR_REC, GREEN);
-            greenValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 15*rgbDelta + rgbHeightLabel, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, greenValue, 0, 255);
+            // Draw Load and Save buttons
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, 260, rgbWidthLabel}, "Load Style")) BtnLoadStyle();
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, 260, rgbWidthLabel}, "Save Style")) BtnSaveStyle();
 
-            //GuiLabelEx((Rectangle){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 16*rgbDelta + 2*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel}, FormatText("%d", blueValue), BLACK, COLOR_REC, BLUE);
-            blueValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 16*rgbDelta + 2*rgbHeightLabel, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, blueValue, 0, 255);
-            
-            DrawTextureRec(texChecked, (Rectangle){0,0,rgbWidthLabel, rgbHeightLabel}, (Vector2){colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 17*rgbDelta + 3*rgbHeightLabel}, WHITE);   
-            DrawRectangle(colorPickerPos.x, colorPickerPos.y + texColorPicker.height + 17*rgbDelta + 3*rgbHeightLabel, rgbWidthLabel, rgbHeightLabel, Fade(colorPickerValue, (float)alphaValue/100));            
-            alphaValue = GuiSlider((Rectangle){colorPickerPos.x + rgbWidthLabel + rgbDelta, colorPickerPos.y + texColorPicker.height + 17*rgbDelta + 3*rgbHeightLabel, texColorPicker.height - rgbWidthLabel - rgbDelta, rgbHeightLabel}, alphaValue, 0, 255);
-            DrawRectangleLines(colorPickerPos.x,colorPickerPos.y + texColorPicker.height + 17*rgbDelta + 3*rgbHeightLabel,rgbWidthLabel, rgbHeightLabel, COLOR_REC);
-            
-            // -- VALUE Spinner 
-            GuiLabel((Rectangle){ colorPickerPos.x + 2*rgbDelta, colorPickerPos.y + texColorPicker.height + 10*rgbHeightLabel, rgbWidthLabel, rgbWidthLabel}, "Value");
-            sizeValueSelected = GuiSpinner((Rectangle){ colorPickerPos.x + 2*rgbWidthLabel, colorPickerPos.y + texColorPicker.height + 10*rgbHeightLabel, texColorPicker.height - 2*rgbWidthLabel, rgbWidthLabel}, sizeValueSelected, 0, 50);
-
-            // -- Load and Save buttons
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, texColorPicker.width, rgbWidthLabel}, "Load Style")) BtnLoadStyle();
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, texColorPicker.width, rgbWidthLabel}, "Save Style")) BtnSaveStyle();
-
-            //GuiLabel((Rectangle){colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT + rgbDelta, 2*rgbWidthLabel, rgbWidthLabel}, "File name");
-            //fileName = GuiTextBox((Rectangle){colorPickerPos.x + 2*rgbWidthLabel, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT + rgbDelta, texColorPicker.width - 2*rgbWidthLabel, rgbWidthLabel}, fileName);
             
             // Draw GUI Elements text
             for (int i = 0; i < NUM_ELEMENTS; i++) DrawText(guiElementText[i], guiElementRec[i].width/2 - MeasureText(guiElementText[i], FONT_SIZE)/2, 15 + i*ELEMENT_HEIGHT, FONT_SIZE, BLACK);
@@ -648,13 +514,6 @@ int main()
     }
     // De-Initialization
     //--------------------------------------------------------------------------------------    
-    // Unload all loaded data (textures, fonts, audio)
-    UnloadTexture(texColorPicker);
-    UnloadTexture(texChecked);
-    UnloadTexture(texCursor);
-
-    free(colorPickerPixels);
-    
     ClearDroppedFiles();    // Clear internal buffers
     
     CloseWindow();          // Close window and OpenGL context
