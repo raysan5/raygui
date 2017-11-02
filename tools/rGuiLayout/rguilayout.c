@@ -12,7 +12,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../../src/raygui.h"
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -49,8 +49,8 @@ typedef struct {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-static int screenWidth = 800;
-static int screenHeight = 450;
+static int screenWidth = 1280;
+static int screenHeight = 720;
 
 static GuiControl layout[MAX_GUI_CONTROLS];
 static int controlsCounter = 0;
@@ -76,6 +76,7 @@ int main()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "raylib tool - raygui layout editor");
     
     int controlSelected = -1;
@@ -228,7 +229,7 @@ int main()
 
             ClearBackground(RAYWHITE);
             
-            DrawGrid2D(40, 20);
+            DrawGrid2D(60, 40);
             
             if (controlSelected == -1)
             {
@@ -246,11 +247,11 @@ int main()
                     case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, 3, list, 1); break;
                     case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
                     case SLIDERBAR: GuiSliderBar(layout[i].rec, 40, 0, 100); break;
-                    case PROGRESSBAR: GuiProgressBar(layout[i].rec, 40); break;
+                    case PROGRESSBAR: GuiProgressBar(layout[i].rec, 40, 0, 100); break;
                     case SPINNER: GuiSpinner(layout[i].rec, 40, 0, 100); break;
                     case COMBOBOX: GuiComboBox(layout[i].rec, 3, list, 1); break;
-                    case CHECKBOX: GuiCheckBox(layout[i].rec, "CHECKBOX", false); break;
-                    case TEXTBOX: GuiTextBox(layout[i].rec, "test text"); break;
+                    case CHECKBOX: GuiCheckBox(layout[i].rec, false); break;
+                    case TEXTBOX: GuiTextBox(layout[i].rec, "test text", 32); break;
                     default: break;
                 }
             }
