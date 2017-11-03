@@ -1381,13 +1381,13 @@ void GuiGroupBox(Rectangle bounds, const char *text)
 //      Color GuiColorBarValue() [BLACK->color]), HSV / HSL
 //      unsigned char GuiColorBarLuminance() [BLACK->WHITE]
 Color GuiColorPicker(Rectangle bounds, Color color)
-{
+{    
     ControlState state = NORMAL;
     
     Vector2 mousePoint = GetMousePosition();
     
     Vector2 pickerSelector = { 0 };
-    
+
     Rectangle boundsHue = { bounds.x + bounds.width + 10, bounds.y, 20, bounds.height };
     Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + 10, bounds.width, 20 };
     
@@ -1395,7 +1395,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     // NOTE: ColorToVector3() only available on raylib 1.8.1
     Vector3 vcolor = { (float)color.r/255.0f, (float)color.g/255.0f, (float)color.b/255.0f };
     Vector3 hsv = ConvertRGBtoHSV(vcolor);
-    
+
     pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
     
@@ -1410,6 +1410,8 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     
     if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
     {
+        state = FOCUSED;
+        
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
         {
             if (!IsCursorHidden()) HideCursor();
@@ -1426,6 +1428,8 @@ Color GuiColorPicker(Rectangle bounds, Color color)
             
             hsv.y = colorPick.x;
             hsv.z = 1.0f - colorPick.y;
+            
+            state = PRESSED;
         }            
         
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON) && IsCursorHidden()) ShowCursor();
@@ -1469,38 +1473,46 @@ Color GuiColorPicker(Rectangle bounds, Color color)
                      (unsigned char)(255.0f*rgb.y), 
                      (unsigned char)(255.0f*rgb.z), 
                      (unsigned char)(255.0f*alpha) };
+                     
+    Vector3 maxHue = { hsv.x, 1.0f, 1.0f };
+    Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
+    Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x), 
+                     (unsigned char)(255.0f*rgbHue.y), 
+                     (unsigned char)(255.0f*rgbHue.z), 255 };
     //--------------------------------------------------------------------
     
     // Draw control
     //--------------------------------------------------------------------
     
     // Draw color picker: color box
-    DrawRectangleGradientEx(bounds, WHITE, WHITE, Fade(color, 1.0f), Fade(color, 1.0f));
+    DrawRectangleGradientEx(bounds, WHITE, WHITE, maxHueCol, maxHueCol);
     DrawRectangleGradientEx(bounds, Fade(BLACK, 0), BLACK, BLACK, Fade(BLACK, 0));
     // Draw color picker: selector
     DrawCircleV(pickerSelector, 4, WHITE);
 
     // Draw hue bar: color bars
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y, boundsHue.width, boundsHue.height/6}, (Color){255,0,0,255}, (Color){255,255,0,255}, (Color){255,255,0,255}, (Color){255,0,0,255});
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + boundsHue.height/6, boundsHue.width, boundsHue.height/6}, (Color){255,255,0,255}, (Color){0,255,0,255}, (Color){0,255,0,255}, (Color){255,255,0,255});
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 2*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,255,0,255}, (Color){0,255,255,255}, (Color){0,255,255,255}, (Color){0,255,0,255});
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 3*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,255,255,255}, (Color){0,0,255,255}, (Color){0,0,255,255}, (Color){0,255,255,255});
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 4*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,0,255,255}, (Color){255,0,255,255}, (Color){255,0,255,255}, (Color){0,0,255,255});
-    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 5*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){255,0,255,255}, (Color){255,0,0,255}, (Color){255,0,0,255}, (Color){255,0,255,255});
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y, boundsHue.width, boundsHue.height/6, (Color){ 255,0,0,255 }, (Color){ 255,255,0,255 });
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y + boundsHue.height/6, boundsHue.width, boundsHue.height/6, (Color){ 255,255,0,255 }, (Color){ 0,255,0,255 });
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y + 2*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 0,255,0,255 }, (Color){ 0,255,255,255 });
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y + 3*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 0,255,255,255 }, (Color){ 0,0,255,255 });
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y + 4*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 0,0,255,255 }, (Color){ 255,0,255,255 });
+    DrawRectangleGradientV(boundsHue.x, boundsHue.y + 5*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 255,0,255,255 }, (Color){ 255,0,0,255 });
     // Draw hue bar: selector
-    //DrawRectangle(bounds.x + bounds.width + 8, 120, 24, 4, WHITE);
-    DrawRectangleLines(boundsHue.x - 2, boundsHue.y + hsv.x/360.0f*boundsHue.height - 2, 24, 4, BLACK);
+    DrawRectangle(boundsHue.x - 1, boundsHue.y + hsv.x/360.0f*boundsHue.height - 1, 24, 2, WHITE);
+    DrawRectangleLines(boundsHue.x - 2, boundsHue.y + hsv.x/360.0f*boundsHue.height - 2, 24, 4, GuiLinesColor());
     
     // Draw alpha bar: checked background
     for (int i = 0; i < 38; i++) DrawRectangle(bounds.x + 10*(i%19), bounds.y + bounds.height + 10 + 10*(i/19), bounds.width/19, 10, (i%2) ? LIGHTGRAY : RAYWHITE);
     // Draw alpha bar: color bar
-    DrawRectangleGradientEx((Rectangle){bounds.x, bounds.y + bounds.height + 10, bounds.width, 20}, Fade(WHITE, 0), Fade(WHITE, 0), BLUE, BLUE);
+    DrawRectangleGradientH(bounds.x, bounds.y + bounds.height + 10, bounds.width, 20, Fade(WHITE, 0), maxHueCol);
     // Draw alpha bar: selector
     DrawRectangleLines(boundsAlpha.x + alpha*boundsAlpha.width - 2, boundsAlpha.y - 2, 4, 24, BLACK);
 
     // Draw selected color box
     DrawRectangle(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, color);
     DrawRectangleLines(bounds.x + bounds.width + 9, bounds.y + bounds.height + 9, 22, 22, BLACK);
+    
+    //DrawText(FormatText("%.2f %.2f", hsv.y, hsv.z), mousePoint.x, mousePoint.y, 10, WHITE);
     
     switch (state)
     {
@@ -1510,7 +1522,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
         } break;
         case FOCUSED:
         {
-
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GuiLinesColor());
         } break;
         case PRESSED:
         {
