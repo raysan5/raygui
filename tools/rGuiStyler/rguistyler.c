@@ -184,7 +184,7 @@ int main()
     //-----------------------------------------------------------
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
     Vector2 cursorPickerPos = colorPickerPos;
-    Color colorPickerValue;
+    Color colorPickerValue = RED;
     Color colorSample[NUM_COLOR_SAMPLES];
     
     for (int i = 0; i < NUM_COLOR_SAMPLES; i++) colorSample[i] = RAYWHITE;   
@@ -468,7 +468,7 @@ int main()
             }
             
             // Draw color picker
-            GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, 60.0f, ORANGE);
+            colorPickerValue = GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, colorPickerValue);
             
             // Draw color samples
             /*

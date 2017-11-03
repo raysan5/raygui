@@ -265,7 +265,7 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner control, returns selected value
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box control, updates input text
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                               // Group Box control with title name
-RAYGUIDEF Color GuiColorPicker(Rectangle bounds, float hueLevel, Color color);                                // Color Picker control
+RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                                // Color Picker control
 
 #if defined RAYGUI_STANDALONE
 // NOTE: raygui depend on some raylib input and drawing functions
@@ -1380,7 +1380,7 @@ void GuiGroupBox(Rectangle bounds, const char *text)
 //      Color GuiColorBarSat() [WHITE->color]
 //      Color GuiColorBarValue() [BLACK->color]), HSV / HSL
 //      unsigned char GuiColorBarLuminance() [BLACK->WHITE]
-Color GuiColorPicker(Rectangle bounds, float hueValue, Color color)
+Color GuiColorPicker(Rectangle bounds, Color color)
 {
     ControlState state = NORMAL;
     
@@ -1388,11 +1388,18 @@ Color GuiColorPicker(Rectangle bounds, float hueValue, Color color)
     
     Vector2 pickerSelector = { 0 };
     
-    // TODO: Get color picker selector box equivalent color from color value
-    Vector3 hsv = ConvertRGBtoHSV(ColorToVector3(color));
+    Rectangle boundsHue = { bounds.x + bounds.width + 10, bounds.y, 20, bounds.height };
+    Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + 10, bounds.width, 20 };
+    
+    // Get color picker selector box equivalent color from color value
+    // NOTE: ColorToVector3() only available on raylib 1.8.1
+    Vector3 vcolor = { (float)color.r/255.0f, (float)color.g/255.0f, (float)color.b/255.0f };
+    Vector3 hsv = ConvertRGBtoHSV(vcolor);
     
     pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
+    
+    float alpha = (float)color.a/255.0f;
     
     // NOTE: bounds define only the color picker box, extra bars at right and bottom
 
@@ -1410,51 +1417,86 @@ Color GuiColorPicker(Rectangle bounds, float hueValue, Color color)
             pickerSelector = mousePoint;
             
             // Calculate color from picker
-            Vector2 colorPos = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y }; 
+            Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y }; 
             
-            colorPos.x /= (float)bounds.width;     // Get normalized value on x
-            colorPos.y /= (float)bounds.height;    // Get normalized value on y
+            colorPick.x /= (float)bounds.width;     // Get normalized value on x
+            colorPick.y /= (float)bounds.height;    // Get normalized value on y
             
-            color.r = 255*colorPos.y;
-            color.g = 255*colorPos.y;
-            color.b = 255*colorPos.y;
+            TraceLog(LOG_DEBUG, "S: %.2f, V: %.2f", colorPick.x, (1.0f - colorPick.y)); // OK!
+            
+            hsv.y = colorPick.x;
+            hsv.z = 1.0f - colorPick.y;
         }            
         
         if (IsMouseButtonUp(MOUSE_LEFT_BUTTON) && IsCursorHidden()) ShowCursor();
     }
-    else
+    else if (IsCursorHidden()) ShowCursor();
+
+    // Check mouse over hue bar
+    if (CheckCollisionPointRec(mousePoint, boundsHue))     // Check button state
     {
-        if (IsCursorHidden()) ShowCursor();
+        if (IsKeyDown(KEY_UP))
+        {
+            hsv.x -= 2.0f;
+            if (hsv.x <= 0.0f) hsv.x = 0.0f;
+        }
+        else if (IsKeyDown(KEY_DOWN))
+        {
+            hsv.x += 2.0f;
+            if (hsv.x >= 360.0f) hsv.x = 360.0f;
+        }
     }
+    
+    // Check mouse over alpha bar
+    if (CheckCollisionPointRec(mousePoint, boundsAlpha))     // Check button state
+    {
+        if (IsKeyDown(KEY_LEFT))
+        {
+            alpha -= 0.01f;
+            if (alpha <= 0.0f) alpha = 0.0f;
+        }
+        else if (IsKeyDown(KEY_RIGHT))
+        {
+            alpha += 0.01f;
+            if (alpha >= 1.0f) alpha = 1.0f;
+        }
+    }
+
+    Vector3 rgb = ConvertHSVtoRGB(hsv);
+
+    // NOTE: Vector3ToColor() only available on raylib 1.8.1
+    color = (Color){ (unsigned char)(255.0f*rgb.x), 
+                     (unsigned char)(255.0f*rgb.y), 
+                     (unsigned char)(255.0f*rgb.z), 
+                     (unsigned char)(255.0f*alpha) };
     //--------------------------------------------------------------------
     
     // Draw control
     //--------------------------------------------------------------------
     
     // Draw color picker: color box
-    DrawRectangleGradientEx(bounds, WHITE, WHITE, color, color);
+    DrawRectangleGradientEx(bounds, WHITE, WHITE, Fade(color, 1.0f), Fade(color, 1.0f));
     DrawRectangleGradientEx(bounds, Fade(BLACK, 0), BLACK, BLACK, Fade(BLACK, 0));
     // Draw color picker: selector
     DrawCircleV(pickerSelector, 4, WHITE);
 
     // Draw hue bar: color bars
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y, 20, bounds.height/6}, (Color){255,0,0,255}, (Color){255,255,0,255}, (Color){255,255,0,255}, (Color){255,0,0,255}); // TEST
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + bounds.height/6, 20, bounds.height/6}, (Color){255,255,0,255}, (Color){0,255,0,255}, (Color){0,255,0,255}, (Color){255,255,0,255}); // TEST
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 2*(bounds.height/6), 20, bounds.height/6}, (Color){0,255,0,255}, (Color){0,255,255,255}, (Color){0,255,255,255}, (Color){0,255,0,255}); // TEST
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 3*(bounds.height/6), 20, bounds.height/6}, (Color){0,255,255,255}, (Color){0,0,255,255}, (Color){0,0,255,255}, (Color){0,255,255,255}); // TEST
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 4*(bounds.height/6), 20, bounds.height/6}, (Color){0,0,255,255}, (Color){255,0,255,255}, (Color){255,0,255,255}, (Color){0,0,255,255}); // TEST
-    DrawRectangleGradientEx((Rectangle){bounds.x + bounds.width + 10, bounds.y + 5*(bounds.height/6), 20, bounds.height/6}, (Color){255,0,255,255}, (Color){255,0,0,255}, (Color){255,0,0,255}, (Color){255,0,255,255}); // TEST
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y, boundsHue.width, boundsHue.height/6}, (Color){255,0,0,255}, (Color){255,255,0,255}, (Color){255,255,0,255}, (Color){255,0,0,255});
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + boundsHue.height/6, boundsHue.width, boundsHue.height/6}, (Color){255,255,0,255}, (Color){0,255,0,255}, (Color){0,255,0,255}, (Color){255,255,0,255});
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 2*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,255,0,255}, (Color){0,255,255,255}, (Color){0,255,255,255}, (Color){0,255,0,255});
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 3*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,255,255,255}, (Color){0,0,255,255}, (Color){0,0,255,255}, (Color){0,255,255,255});
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 4*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){0,0,255,255}, (Color){255,0,255,255}, (Color){255,0,255,255}, (Color){0,0,255,255});
+    DrawRectangleGradientEx((Rectangle){boundsHue.x, boundsHue.y + 5*(boundsHue.height/6), boundsHue.width, boundsHue.height/6}, (Color){255,0,255,255}, (Color){255,0,0,255}, (Color){255,0,0,255}, (Color){255,0,255,255});
     // Draw hue bar: selector
     //DrawRectangle(bounds.x + bounds.width + 8, 120, 24, 4, WHITE);
-    DrawRectangleLines(bounds.x + bounds.width + 8, bounds.y + hsv.x/360.0f*bounds.height - 2, 24, 4, BLACK);
+    DrawRectangleLines(boundsHue.x - 2, boundsHue.y + hsv.x/360.0f*boundsHue.height - 2, 24, 4, BLACK);
     
     // Draw alpha bar: checked background
     for (int i = 0; i < 38; i++) DrawRectangle(bounds.x + 10*(i%19), bounds.y + bounds.height + 10 + 10*(i/19), bounds.width/19, 10, (i%2) ? LIGHTGRAY : RAYWHITE);
     // Draw alpha bar: color bar
     DrawRectangleGradientEx((Rectangle){bounds.x, bounds.y + bounds.height + 10, bounds.width, 20}, Fade(WHITE, 0), Fade(WHITE, 0), BLUE, BLUE);
     // Draw alpha bar: selector
-    DrawRectangle(bounds.x, bounds.y + bounds.height + 8, 5, 24, WHITE);
-    DrawRectangleLines(bounds.x, bounds.y + bounds.height + 8, 5, 24, BLACK);
+    DrawRectangleLines(boundsAlpha.x + alpha*boundsAlpha.width - 2, boundsAlpha.y - 2, 4, 24, BLACK);
 
     // Draw selected color box
     DrawRectangle(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, color);
