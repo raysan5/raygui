@@ -240,7 +240,7 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    LoadGuiStyleImage("rguistyle_default_dark.png");
+    //LoadGuiStyleImage("rguistyle_default_dark.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
