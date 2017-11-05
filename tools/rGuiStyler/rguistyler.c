@@ -239,6 +239,8 @@ int main()
     GetCurrentDir(currentPath, sizeof(currentPath));
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
+    
+    LoadGuiStyleImage("rguistyle_default_dark.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -389,8 +391,8 @@ int main()
             ClearBackground(RAYWHITE); 
             
             // Show selected properties
-            if (guiPropertySelected >= 0)  DrawText(FormatText("SELECTED PROPERTY: <%s>", guiPropertyName[guiPropertySelected]), 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
-            else DrawText("SELECTED PROPERTY: <style property> / none", 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            //if (guiPropertySelected >= 0)  DrawText(FormatText("SELECTED PROPERTY: <%s>", guiPropertyName[guiPropertySelected]), 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
+            //else DrawText("SELECTED PROPERTY: <style property> / none", 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
             
             // Show if have been a modification
             if (!isModified) DrawText("SAVE STATUS: SAVED (filename.style)", screenWidth - 230 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
@@ -404,7 +406,7 @@ int main()
             
             // UI sample
             // Background
-            DrawRectangle(400,0, screenWidth - 320 - 400, GetScreenHeight() - STATUS_BAR_HEIGHT, bgColor);
+            DrawRectangle(400,0, screenWidth - 320 - 400, GetScreenHeight() - STATUS_BAR_HEIGHT, GuiBackgroundColor());
             
             GuiLabel((Rectangle){guiPosX, guiPosY, guiWidth, guiHeight}, "Label");
             //GuiLabelEx((Rectangle){guiPosX + deltaX, guiPosY, guiWidth, guiHeight}, "LabelEx", BLACK, BLACK, WHITE);
@@ -445,7 +447,7 @@ int main()
 
                 for (int i = guiPropertyPos[guiElementSelected]; i < guiPropertyPos[guiElementSelected] + guiPropertyNum[guiElementSelected]; i++)
                 {
-                    DrawText(guiPropertyName[i], propertyRec[i].x + propertyRec[i].width/2 - MeasureText(guiPropertyName[i], FONT_SIZE)/2, propertyRec[i].y + 15, FONT_SIZE, BLACK);
+                    //DrawText(guiPropertyName[i], propertyRec[i].x + propertyRec[i].width/2 - MeasureText(guiPropertyName[i], FONT_SIZE)/2, propertyRec[i].y + 15, FONT_SIZE, BLACK);
                 }
             }
             
