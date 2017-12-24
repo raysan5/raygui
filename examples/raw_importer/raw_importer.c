@@ -14,7 +14,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-#include <string.h>
+#include <string.h>             // Required for: strcpy()
+#include <stdlib.h>             // Required for: atoi()
 
 char *GetFileName(char *path);                      // Get pointer to filename data in the string
 void GuiPanel(Rectangle bounds, const char *text);  // Draw a lines panel with name
@@ -52,6 +53,12 @@ int main(int argc, char *argv[0])
 
     Texture2D texture = { 0 };
     
+    // Raw image import values
+    int width = 0;
+    int height = 0;
+    int format = UNCOMPRESSED_R8G8B8A8;
+    int headerSize = 0;
+    
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
     
@@ -78,6 +85,16 @@ int main(int argc, char *argv[0])
                 // NOTE: Returned string is just a pointer to droppedFiles[0],
                 // we need to make a copy of that data somewhere else: fileName
                 strcpy(fileName, GetFileName(droppedFiles[0]));
+                
+                // Try to guess possible raw values
+                // Let's assume image is square, RGBA, 8 bit per channel
+                width = round(sqrt(dataSize/4));
+                height = width;
+                headerSize = dataSize - width*height*4;
+                
+                sprintf(textImageWidth, "%i", width);
+                sprintf(textImageHeight, "%i", height);
+                sprintf(textImageSize, "%i", headerSize);
 
                 showImportPanel = true;
             }
@@ -89,14 +106,14 @@ int main(int argc, char *argv[0])
         if (btnLoadPressed)
         {
             // Convert input textImageWidth, textImageHeight to int
-            int width = atoi(textImageWidth);
-            int height = atoi(textImageHeight);
-            int format = UNCOMPRESSED_R8G8B8A8;
+            width = atoi(textImageWidth);
+            height = atoi(textImageHeight);
+            format = UNCOMPRESSED_R8G8B8A8;
             
             int channels = atoi(arrayChannel[buttonToggleChannel]);
             int bpp = atoi(arrayDepth[buttonToggleDepth]);
             
-            int headerSize = atoi(textImageSize);
+            headerSize = atoi(textImageSize);
             
             // Depending on channels and bit depth, select correct pixel format
             if ((width != 0) && (height != 0) && (bpp == 8))
@@ -139,8 +156,6 @@ int main(int argc, char *argv[0])
             ClearBackground(RAYWHITE);
             
             DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
-            
-            GuiColorPicker((Rectangle){ 100, 100, 200, 200 }, RED);
 
             if (texture.id != 0) 
             {
