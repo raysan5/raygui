@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v1.5 - A simple and easy-to-use IMGUI (Immedite Mode GUI) library for raylib (www.raylib.com)
+*   raygui v1.x - A simple and easy-to-use IMGUI (Immedite Mode GUI) library for raylib (www.raylib.com)
 *
 *   DESCRIPTION:
 *
@@ -12,12 +12,14 @@
 *       - ToggleGroup
 *       - CheckBox
 *       - ComboBox
+*       - GroupBox
+*       - TextBox
 *       - Slider
 *       - SliderBar
 *       - ProgressBar
 *       - Spinner
-*       - TextBox
 *       - Texture
+*       - ColorPicker
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
 *
@@ -127,6 +129,13 @@
         float x;
         float y;
     } Vector2;
+    
+    // Vector3 type
+    typedef struct Vector3 {
+        float x;
+        float y;
+        float z;
+    } Vector3;
 
     // Color type, RGBA (32bit)
     typedef struct Color {
@@ -143,10 +152,12 @@
         int width;
         int height;
     } Rectangle;
+    
+    typedef struct Texture2D {} Texture2D;
 #endif
 
 typedef enum GuiPropertyGeneric {
-    DEFAULT_BACKGROUND_COLOR,
+    DEFAULT_BACKGROUND_COLOR = 0,
     DEFAULT_LINES_COLOR,
     DEFAULT_TEXT_FONT,
     DEFAULT_TEXT_SIZE,
@@ -169,7 +180,7 @@ typedef enum GuiPropertyGeneric {
 // Gui properties enumeration
 typedef enum GuiProperty {
     // Label
-    LABEL_TEXT_COLOR_NORMAL,
+    LABEL_TEXT_COLOR_NORMAL = 0,
     LABEL_TEXT_COLOR_FOCUSED,
     LABEL_TEXT_COLOR_PRESSED,
     // Button
@@ -274,36 +285,31 @@ typedef enum GuiProperty {
 RAYGUIDEF Color GuiBackgroundColor(void);                                                                     // Get background color
 RAYGUIDEF Color GuiLinesColor(void);                                                                          // Get lines color
 RAYGUIDEF Color GuiTextColor(void);                                                                           // Get text color for normal state
+
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                                  // Label control, show text
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                                 // Button control, returns true when clicked
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                              // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleNum, char **toggleText, int toggleActive);           // Toggle Group control, returns toggled button index
-RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);                 // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                                   // Check Box control, returns true when active
+RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);                 // Combo Box control, returns selected item index
+RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                               // Group Box control with title name
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);                     // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);                  // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);                // Progress Bar control, shows current progress value
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner control, returns selected value
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box control, updates input text
-RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                               // Group Box control with title name
+
+RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture);                                               // Texture button control, returns true when clicked
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                                // Color Picker control
 
-RAYGUIDEF void LoadGuiStyleImage(const char *fileName);     // Load GUI style from a text file
-RAYGUIDEF void UpdateStyleComplete(void);                   // Updates full style property set with generic values
-
-#if defined RAYGUI_STANDALONE
-// NOTE: raygui depend on some raylib input and drawing functions
-// TODO: To use raygui as standalone library, those functions must be called per frame
-
-//RAYGUIDEF void UpdateMouse(bool isMouseDown, bool isMouseUp, Vector2 mousePosition);
-//RAYGUIDEF void UpdateKeys(int keyPressed);
-#endif
-
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
-RAYGUIDEF void SaveGuiStyle(const char *fileName);                        // Save GUI style file
-RAYGUIDEF void LoadGuiStyle(const char *fileName);                        // Load GUI style file
-RAYGUIDEF void SetStyleProperty(int guiProperty, int value);              // Set one style property
-RAYGUIDEF int GetStyleProperty(int guiProperty);                          // Get one style property
+RAYGUIDEF void LoadGuiStyleImage(const char *fileName);                 // Load GUI style from a text file
+RAYGUIDEF void UpdateStyleComplete(void);                               // Updates full style property set with generic values
+
+RAYGUIDEF void SaveGuiStyle(const char *fileName);                      // Save GUI style file
+RAYGUIDEF void LoadGuiStyle(const char *fileName);                      // Load GUI style file
+RAYGUIDEF void SetStyleProperty(int guiProperty, int value);            // Set one style property
+RAYGUIDEF int GetStyleProperty(int guiProperty);                        // Get one style property
 #endif
 
 #endif // RAYGUI_H
@@ -317,34 +323,22 @@ RAYGUIDEF int GetStyleProperty(int guiProperty);                          // Get
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
-#include <stdio.h>          // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf()
-                            // NOTE: Those functions are only used in SaveGuiStyle() and LoadGuiStyle()
-                            
-#include <math.h>           // Required for: sinf(), cosf()
+#include <stdio.h>          // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
+#include <math.h>           // Required for: NAN
+
+#if defined(RAYGUI_STANDALONE)
+    #include <stdarg.h>     // Required for: va_list, va_start(), vfprintf(), va_end()
+#endif
 
 // Check if custom malloc/free functions defined, if not, using standard ones
-#if !defined(RAYGUI_MALLOC) && defined(RAYGUI_STYLE_SAVE_LOAD)
-    #include <stdlib.h>     // Required for: malloc(), free() [Used only on LoadGuiStyle()]
-
+#if !defined(RAYGUI_MALLOC)
     #define RAYGUI_MALLOC(size)  malloc(size)
     #define RAYGUI_FREE(ptr)     free(ptr)
 #endif
 
-#if defined(RAYGUI_STYLE_SAVE_LOAD)
-    #include <string.h>     // Required for: strcmp() [Used only on LoadGuiStyle()]
-#endif
-
-#include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
-
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#if defined(RAYGUI_STANDALONE)
-    #define KEY_LEFT            263
-    #define KEY_RIGHT           262
-    #define MOUSE_LEFT_BUTTON     0
-#endif
-
 #if !defined(RAYGUI_STYLE_DEFAULT_LIGHT) && !defined(RAYGUI_STYLE_DEFAULT_DARK)
     #define RAYGUI_STYLE_DEFAULT_LIGHT
 #endif
@@ -380,24 +374,24 @@ static int styleGeneric[20] = {
     0xfafafaff,     // DEFAULT_BASE_COLOR_DISABLED
     0xc8c8c8ff      // DEFAULT_TEXT_COLOR_DISABLED
 #elif defined(RAYGUI_STYLE_DEFAULT_DARK)
-    0xf5f5f5ff,     // DEFAULT_BACKGROUND_COLOR
-    0x90abb5ff,     // DEFAULT_LINES_COLOR
+    0x2b3a3aff,     // DEFAULT_BACKGROUND_COLOR
+    0x638465ff,     // DEFAULT_LINES_COLOR
     0,              // DEFAULT_TEXT_FONT
     10,             // styleGeneric[DEFAULT_TEXT_SIZE]
     1,              // DEFAULT_BORDER_WIDTH
     // Generic controls color style
-    0x828282ff,     // DEFAULT_BORDER_COLOR_NORMAL
-    0xc8c8c8ff,     // DEFAULT_BASE_COLOR_NORMAL
-    0x686868ff,     // DEFAULT_TEXT_COLOR_NORMAL
-    0x7bb0d6ff,     // DEFAULT_BORDER_COLOR_FOCUSED
-    0xc9effeff,     // DEFAULT_BASE_COLOR_FOCUSED
-    0x6c9bbcff,     // DEFAULT_TEXT_COLOR_FOCUSED
-    0x048cc7ff,     // DEFAULT_BORDER_COLOR_PRESSED
+    0x60827dff,     // DEFAULT_BORDER_COLOR_NORMAL
+    0x344041ff,     // DEFAULT_BASE_COLOR_NORMAL
+    0x90acb4ff,     // DEFAULT_TEXT_COLOR_NORMAL
+    0x5f9aa8ff,     // DEFAULT_BORDER_COLOR_FOCUSED
+    0x334f59ff,     // DEFAULT_BASE_COLOR_FOCUSED
+    0x5f9aa8ff,     // DEFAULT_TEXT_COLOR_FOCUSED
+    0xa9cb8dff,     // DEFAULT_BORDER_COLOR_PRESSED
     0x7ceafeff,     // DEFAULT_BASE_COLOR_PRESSED
-    0x0480b5ff,     // DEFAULT_TEXT_COLOR_PRESSED
-    0xb1b1b1ff,     // DEFAULT_BORDER_COLOR_DISABLED
-    0xfafafaff,     // DEFAULT_BASE_COLOR_DISABLED
-    0xc8c8c8ff      // DEFAULT_TEXT_COLOR_DISABLED
+    0x97af81ff,     // DEFAULT_TEXT_COLOR_PRESSED
+    0x72817eff,     // DEFAULT_BORDER_COLOR_DISABLED
+    0x344041ff,     // DEFAULT_BASE_COLOR_DISABLED
+    0x606666ff      // DEFAULT_TEXT_COLOR_DISABLED
 #endif
 };
 
@@ -490,17 +484,68 @@ static int style[NUM_PROPERTIES] = {
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-#if defined RAYGUI_STANDALONE
+#if defined(RAYGUI_STANDALONE)
+
+#define KEY_RIGHT           262
+#define KEY_LEFT            263
+#define KEY_DOWN            264
+#define KEY_UP              265
+#define MOUSE_LEFT_BUTTON     0
+
+#ifdef __cplusplus
+    #define CLITERAL
+#else
+    #define CLITERAL    (Color)
+#endif
+
+#define WHITE      CLITERAL{ 255, 255, 255, 255 }   // White
+#define BLACK      CLITERAL{ 0, 0, 0, 255 }         // Black
+#define LIGHTGRAY  CLITERAL{ 200, 200, 200, 255 }   // Light Gray
+#define RAYWHITE   CLITERAL{ 245, 245, 245, 255 }   // My own White (raylib logo)
+
+// This functions are directly implemented in raygui
 static Color GetColor(int hexValue);   // Returns a Color struct from hexadecimal value
 static int GetHexValue(Color color);   // Returns hexadecimal value for a Color
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle
 static const char *FormatText(const char *text, ...);   // Formatting of text with variables to 'embed'
 
-// Drawing related functions
+// raygui depend on some raylib input and drawing functions
+// NOTE: To use raygui as standalone library, below functions must be defined by the user
+
 static int MeasureText(const char *text, int fontSize) { /* TODO */ return 0; }
 static void DrawText(const char *text, int posX, int posY, int fontSize, Color color) { /* TODO */ }
-static void DrawRectangleRecT(Rectangle rec, Color color) { /* TODO */ }
+static void DrawRectangleT(int x, int y, int width, int height, Color color) { /* TODO */ }
+
+// Input related functions
+static Vector2 GetMousePosition(void) { return (Vector2){ 0, 0 }; }
+//static bool IsMouseButtonPressed(int button);
+static bool IsMouseButtonDown(int button);
+static bool IsMouseButtonReleased(int button);
+
+static bool IsMouseButtonUp(int button);                       // -- GuiSpinner(), GuiColorPicker()
+static int GetKeyPressed(void);                                // -- GuiTextBox()
+static bool IsKeyDown(int key);                                // -- GuiColorPicker()
+
+// Control specific functions
+static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }           // -- GuiColorPicker()
+static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker()
+static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker()
+static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);       // -- GuiColorPicker()
+static void DrawCircleV(Vector2 center, float radius, Color color);                                       // -- GuiColorPicker()
+static bool IsCursorHidden(void) { return false; }              // -- GuiColorPicker()
+static void HideCursor(void) { }                                // -- GuiColorPicker()
+static void ShowCursor(void) { }                                // -- GuiColorPicker()
+static Color Fade(Color color, float alpha) { return WHITE; }   // -- GuiColorPicker()
+static void DrawTexture(Texture2D texture, int posX, int posY, Color tint);               // -- GuiTexture()
+static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color);       // -- GuiGroupBox()
+
+#if defined(RAYGUI_STYLE_SAVE_LOAD)
+static Image LoadImage(const char *fileName);       // -- LoadGuiStyleImage()
+static Color *GetImageData(Image image);            // -- LoadGuiStyleImage()
+static void UnloadImage(Image image);               // -- LoadGuiStyleImage()
 #endif
+
+#endif      // RAYGUI_STANDALONE
 
 // Draw rectangle from Rectangle data (using default dont texture)
 static void DrawRectangleRecT(Rectangle rec, Color color) { DrawRectangleT(rec.x, rec.y, rec.width, rec.height, color); }
@@ -682,8 +727,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleCount, char **toggleTex
 {
     for (int i = 0; i < toggleCount; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]),bounds.y,bounds.width,bounds.height}, toggleText[i], true);
-        else if (GuiToggleButton((Rectangle){bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]),bounds.y,bounds.width,bounds.height}, toggleText[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, toggleText[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, toggleText[i], false) == true) active = i;
     }
 
     return active;
@@ -745,7 +790,6 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 
     return checked;
 }
-
 
 // Combo Box control, returns selected item index
 RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, int active)
@@ -836,6 +880,100 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
     //--------------------------------------------------------------------
 
     return active;
+}
+
+// Group Box control with title name
+RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
+{
+    DrawLineEx((Vector2){ bounds.x + 1, bounds.y }, (Vector2){ bounds.x, bounds.y + bounds.height }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x, bounds.y }, (Vector2){ bounds.x + 10, bounds.y }, 1, GuiLinesColor());
+    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y }, (Vector2){ bounds.x + 20 + MeasureText(text, 10), bounds.y }, 1, GuiLinesColor());
+    
+    DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
+}
+
+// Text Box control, updates input text
+// NOTE: Requires static variables: framesCounter
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
+{
+    static int framesCounter = 0;         // Required for blinking cursor
+
+    #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
+    
+    ControlState state = NORMAL;
+
+    Vector2 mousePoint = GetMousePosition();
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (CheckCollisionPointRec(mousePoint, bounds))
+    {
+        state = FOCUSED;        // NOTE: PRESSED state is not used on this control
+        
+        framesCounter++;
+        
+        int letter = -1;
+        letter = GetKeyPressed();
+        
+        if (letter != -1)
+        {
+            if (letter == KEY_BACKSPACE_TEXT)
+            {
+                for (int i = 0; i < textSize; i++)
+                {
+                    if ((text[i] == '\0') && (i > 0))
+                    {
+                        text[i - 1] = '\0';
+                        break;
+                    }
+                }
+
+                text[textSize - 1] = '\0';
+            }
+            else
+            {
+                if ((letter >= 32) && (letter < 127))
+                {
+                    for (int i = 0; i < textSize; i++)
+                    {
+                        if (text[i] == '\0')
+                        {
+                            text[i] = (char)letter;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleRecT(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
+            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
+            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
+            
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
+            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
+            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
+
+            if ((framesCounter/20)%2 == 0) DrawRectangleT(bounds.x + 4 + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y + 2, 1, bounds.height - 4, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
+
+        } break;
+        case PRESSED: break; // NOTE: PRESSED state is not used on this control
+        default: break;
+    }
+    //--------------------------------------------------------------------
 }
 
 // Slider control, returns selected value
@@ -1161,88 +1299,6 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
     return value;
 }
 
-// Text Box control, updates input text
-// NOTE: Requires static variables: framesCounter
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
-{
-    static int framesCounter = 0;         // Required for blinking cursor
-
-    #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
-    
-    ControlState state = NORMAL;
-
-    Vector2 mousePoint = GetMousePosition();
-
-    // Update control
-    //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))
-    {
-        state = FOCUSED;        // NOTE: PRESSED state is not used on this control
-        
-        framesCounter++;
-        
-        int letter = -1;
-        letter = GetKeyPressed();
-        
-        if (letter != -1)
-        {
-            if (letter == KEY_BACKSPACE_TEXT)
-            {
-                for (int i = 0; i < textSize; i++)
-                {
-                    if ((text[i] == '\0') && (i > 0))
-                    {
-                        text[i - 1] = '\0';
-                        break;
-                    }
-                }
-
-                text[textSize - 1] = '\0';
-            }
-            else
-            {
-                if ((letter >= 32) && (letter < 127))
-                {
-                    for (int i = 0; i < textSize; i++)
-                    {
-                        if (text[i] == '\0')
-                        {
-                            text[i] = (char)letter;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    switch (state)
-    {
-        case NORMAL:
-        {
-            DrawRectangleRecT(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
-            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
-            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
-            
-        } break;
-        case FOCUSED:
-        {
-            DrawRectangleRecT(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
-            DrawRectangleT(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
-            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
-
-            if ((framesCounter/20)%2 == 0) DrawRectangleT(bounds.x + 4 + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y + 2, 1, bounds.height - 4, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
-
-        } break;
-        case PRESSED: break; // NOTE: PRESSED state is not used on this control
-        default: break;
-    }
-    //--------------------------------------------------------------------
-}
-
 // Texture button control, returns true when clicked
 RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 {
@@ -1289,18 +1345,6 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 
     if (clicked) return true;
     else return false;
-}
-
-// Group Box control with title name
-void GuiGroupBox(Rectangle bounds, const char *text)
-{
-    DrawLineEx((Vector2){ bounds.x + 1, bounds.y }, (Vector2){ bounds.x, bounds.y + bounds.height }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y + bounds.height }, (Vector2){ bounds.x + bounds.width, bounds.y }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x, bounds.y }, (Vector2){ bounds.x + 10, bounds.y }, 1, GuiLinesColor());
-    DrawLineEx((Vector2){ bounds.x + bounds.width, bounds.y }, (Vector2){ bounds.x + 20 + MeasureText(text, 10), bounds.y }, 1, GuiLinesColor());
-    
-    DrawText(text, bounds.x + 14, bounds.y - 5, 10, GuiTextColor());
 }
 
 // Color Picker control
@@ -1355,7 +1399,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
             colorPick.x /= (float)bounds.width;     // Get normalized value on x
             colorPick.y /= (float)bounds.height;    // Get normalized value on y
             
-            TraceLog(LOG_DEBUG, "S: %.2f, V: %.2f", colorPick.x, (1.0f - colorPick.y)); // OK!
+            //TraceLog(LOG_DEBUG, "S: %.2f, V: %.2f", colorPick.x, (1.0f - colorPick.y)); // OK!
             
             hsv.y = colorPick.x;
             hsv.z = 1.0f - colorPick.y;
@@ -1429,18 +1473,18 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     DrawRectangleGradientV(boundsHue.x, boundsHue.y + 4*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 0,0,255,255 }, (Color){ 255,0,255,255 });
     DrawRectangleGradientV(boundsHue.x, boundsHue.y + 5*(boundsHue.height/6), boundsHue.width, boundsHue.height/6, (Color){ 255,0,255,255 }, (Color){ 255,0,0,255 });
     // Draw hue bar: selector
-    DrawRectangle(boundsHue.x - 1, boundsHue.y + hsv.x/360.0f*boundsHue.height - 1, 24, 2, WHITE);
+    DrawRectangleT(boundsHue.x - 1, boundsHue.y + hsv.x/360.0f*boundsHue.height - 1, 24, 2, WHITE);
     DrawRectangleLines(boundsHue.x - 2, boundsHue.y + hsv.x/360.0f*boundsHue.height - 2, 24, 4, GuiLinesColor());
     
     // Draw alpha bar: checked background
-    for (int i = 0; i < 38; i++) DrawRectangle(bounds.x + 10*(i%19), bounds.y + bounds.height + 10 + 10*(i/19), bounds.width/19, 10, (i%2) ? LIGHTGRAY : RAYWHITE);
+    for (int i = 0; i < 38; i++) DrawRectangleT(bounds.x + 10*(i%19), bounds.y + bounds.height + 10 + 10*(i/19), bounds.width/19, 10, (i%2) ? LIGHTGRAY : RAYWHITE);
     // Draw alpha bar: color bar
     DrawRectangleGradientH(bounds.x, bounds.y + bounds.height + 10, bounds.width, 20, Fade(WHITE, 0), maxHueCol);
     // Draw alpha bar: selector
     DrawRectangleLines(boundsAlpha.x + alpha*boundsAlpha.width - 2, boundsAlpha.y - 2, 4, 24, BLACK);
 
     // Draw selected color box
-    DrawRectangle(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, color);
+    DrawRectangleT(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, color);
     DrawRectangleLines(bounds.x + bounds.width + 9, bounds.y + bounds.height + 9, 22, 22, BLACK);
     
     //DrawText(FormatText("%.2f %.2f", hsv.y, hsv.z), mousePoint.x, mousePoint.y, 10, WHITE);
@@ -1466,19 +1510,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     return color;
 }
 
-// TODO: Panel system
-RAYGUIDEF void GuiBeginPanel(Rectangle rec)
-{
-    //offset = (Vector2){ offset.x + rec.x, offset.y + rec.y };
-    
-    // TODO: Limit drawing to panel limits?
-}
-
-RAYGUIDEF void GuiEndPanel()
-{
-    //offset = (Vector2){ 0.0f, 0.0f };
-}
-
+#if defined(RAYGUI_STYLE_SAVE_LOAD)
 // Load GUI style from an image file
 RAYGUIDEF void LoadGuiStyleImage(const char *fileName)
 {
@@ -1489,9 +1521,9 @@ RAYGUIDEF void LoadGuiStyleImage(const char *fileName)
     styleGeneric[DEFAULT_BACKGROUND_COLOR] = GetHexValue(pixels[1 + imStyle.width*1]);
     styleGeneric[DEFAULT_LINES_COLOR] = GetHexValue(pixels[0 + imStyle.width*0]);
     
-    styleGeneric[DEFAULT_TEXT_FONT] = 0;         // Info not included in image data
-    styleGeneric[styleGeneric[DEFAULT_TEXT_SIZE]] = 20;        // Info not included in image data
-    styleGeneric[DEFAULT_BORDER_WIDTH] = 1;      // Info not included in image data
+    styleGeneric[DEFAULT_TEXT_FONT] = 0;                // Info not included in image data
+    styleGeneric[styleGeneric[DEFAULT_TEXT_SIZE]] = 20; // Info not included in image data
+    styleGeneric[DEFAULT_BORDER_WIDTH] = 1;             // Info not included in image data
 
     styleGeneric[DEFAULT_BORDER_COLOR_NORMAL] = GetHexValue(pixels[2 + imStyle.width*2]);
     styleGeneric[DEFAULT_BASE_COLOR_NORMAL] = GetHexValue(pixels[3 + imStyle.width*3]);
@@ -1599,60 +1631,39 @@ RAYGUIDEF void UpdateStyleComplete(void)
     style[TEXTBOX_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
 }
 
-#if defined(RAYGUI_STYLE_SAVE_LOAD)
 // Save current GUI style into a text file
 RAYGUIDEF void SaveGuiStyle(const char *fileName)
 {
     FILE *styleFile = fopen(fileName, "wt");
 
     //for (int i = 0; i < NUM_PROPERTIES; i++) fprintf(styleFile, "%-40s0x%x\n", guiPropertyName[i], GetStyleProperty(i));
-
-    for (int i = 0; i < NUM_PROPERTIES; i++) fprintf(styleFile, "0x%x\n", GetStyleProperty(i));
+    if (styleFile != NULL) 
+    {
+        for (int i = 0; i < NUM_PROPERTIES; i++) fprintf(styleFile, "0x%x\n", GetStyleProperty(i));
     
-    fclose(styleFile);
+        fclose(styleFile);
+    }
 }
 
 // Load GUI style from a text file
 RAYGUIDEF void LoadGuiStyle(const char *fileName)
 {
-/*
-    #define MAX_STYLE_PROPERTIES    128
-
-    typedef struct {
-        char id[64];
-        int value;
-    } StyleProperty;
-
-    StyleProperty *styleProp = (StyleProperty *)RAYGUI_MALLOC(MAX_STYLE_PROPERTIES*sizeof(StyleProperty));;
     int counter = 0;
-
+    
     FILE *styleFile = fopen(fileName, "rt");
     
     if (styleFile != NULL)
     {
         while (!feof(styleFile))
         {
-            fscanf(styleFile, "%s %i\n", styleProp[counter].id, &styleProp[counter].value);
+            fscanf(styleFile, "0x%x\n", &style[counter]);
             counter++;
         }
+        
+        //if (counter < NUM_PROPERTIES) TraceLog(LOG_WARNING, "loaded properties do not match style file properties...");
 
         fclose(styleFile);
-
-        for (int i = 0; i < counter; i++)
-        {
-            for (int j = 0; j < NUM_PROPERTIES; j++)
-            {
-                if (strcmp(styleProp[i].id, guiPropertyName[j]) == 0)
-                {
-                    // Assign correct property to style
-                    style[j] = styleProp[i].value;
-                }
-            }
-        }
     }
-
-    RAYGUI_FREE(styleProp);
-*/
 }
 
 // Set one style property value
@@ -1789,7 +1800,7 @@ static Vector3 ConvertHSVtoRGB(Vector3 hsv)
     return rgb;     
 }
 
-#if defined (RAYGUI_STANDALONE)
+#if defined(RAYGUI_STANDALONE)
 // Returns a Color struct from hexadecimal value
 static Color GetColor(int hexValue)
 {
@@ -1834,15 +1845,6 @@ static const char *FormatText(const char *text, ...)
 
     return buffer;
 }
-
-/*
-void SetDrawRectangleFunc(void (* DrawRectangle)(Rectangle rec, Color color))
-{
-    DrawRectangleRecT(rec, color);
-}
-
-SetDrawRectangleFunc(DrawRectangleT);
-*/
 #endif
 
 #endif // RAYGUI_IMPLEMENTATION
