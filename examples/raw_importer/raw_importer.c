@@ -46,18 +46,19 @@ int main(int argc, char *argv[0])
     
     bool showImportPanel = false;
     bool imageLoaded = false;
-    
     float imageScale = 1.0f;
-    
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raw image importer");
 
-    Texture2D texture = { 0 };
-    
     // Raw image import values
     int width = 0;
     int height = 0;
     int format = UNCOMPRESSED_R8G8B8A8;
     int headerSize = 0;
+    
+    LoadGuiStyleImage("rguistyle_default_dark.png");
+    
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raw image importer");
+
+    Texture2D texture = { 0 };
     
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -142,28 +143,25 @@ int main(int argc, char *argv[0])
             }
         }
         
-        if (imageLoaded)
-        {
-            // Image scale control
-            imageScale += (float)GetMouseWheelMove();
-        }
+        if (imageLoaded) imageScale += (float)GetMouseWheelMove();   // Image scale control
+        
         //----------------------------------------------------------------------------------
         
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
         
-            ClearBackground(RAYWHITE);
+            ClearBackground(GuiBackgroundColor());
             
             DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
 
             if (texture.id != 0) 
             {
                 DrawTextureEx(texture, (Vector2){ SCREEN_WIDTH/2 - texture.width*imageScale/2, SCREEN_HEIGHT/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
-                DrawText(FormatText("SCALE x%.0f", imageScale), 20, SCREEN_HEIGHT - 40, 20, LIGHTGRAY);
+                DrawText(FormatText("SCALE x%.0f", imageScale), 20, SCREEN_HEIGHT - 40, 20, GuiTextColor());
                 
             }
-            else DrawText("drag & drop RAW image file", 320, 180, 10, GRAY);
+            else DrawText("drag & drop RAW image file", 320, 180, 10, GuiTextColor());
 
             if (showImportPanel)
             {
