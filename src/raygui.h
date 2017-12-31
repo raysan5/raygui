@@ -70,7 +70,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2015-2017 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2015-2018 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -284,25 +284,28 @@ typedef enum GuiProperty {
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-RAYGUIDEF Color GuiBackgroundColor(void);                                                                     // Get background color
-RAYGUIDEF Color GuiLinesColor(void);                                                                          // Get lines color
-RAYGUIDEF Color GuiTextColor(void);                                                                           // Get text color for normal state
+RAYGUIDEF Color GuiBackgroundColor(void);                                                               // Get background color
+RAYGUIDEF Color GuiLinesColor(void);                                                                    // Get lines color
+RAYGUIDEF Color GuiTextColor(void);                                                                     // Get text color for normal state
 
-RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                                  // Label control, show text
-RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                                 // Button control, returns true when clicked
-RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                              // Toggle Button control, returns true when active
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleNum, char **toggleText, int toggleActive);           // Toggle Group control, returns toggled button index
-RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                                   // Check Box control, returns true when active
-RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);                 // Combo Box control, returns selected item index
-RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                               // Group Box control with title name
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                        // Text Box control, updates input text
-RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);                     // Slider control, returns selected value
-RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);                  // Slider Bar control, returns selected value
-RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);                // Progress Bar control, shows current progress value
-RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                            // Spinner control, returns selected value
+RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, show text
+RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                        // Toggle Button control, returns true when active
+RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleNum, char **toggleText, int toggleActive);     // Toggle Group control, returns toggled button index
+RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
+RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);           // Combo Box control, returns selected item index
+RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                  // Text Box control, updates input text
+RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
+RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
+RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
+RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                      // Spinner control, returns selected value
 
-RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture);                                               // Texture button control, returns true when clicked
-RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                                // Color Picker control
+RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture);                                         // Texture button control, returns true when clicked
+RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
+
+RAYGUIDEF void GuiEnable(void);                                         // Enable gui global state
+RAYGUIDEF void GuiDisable(void);                                        // Disable gui global state
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 RAYGUIDEF void LoadGuiStyleImage(const char *fileName);                 // Load GUI style from a text file
@@ -350,11 +353,18 @@ RAYGUIDEF int GetStyleProperty(int guiProperty);                        // Get o
 //----------------------------------------------------------------------------------
 
 // GUI controls state
-typedef enum { DISABLED, NORMAL, FOCUSED, PRESSED } ControlState;
+typedef enum GuiControlState { 
+    DISABLED = 0, 
+    NORMAL, 
+    FOCUSED, 
+    PRESSED 
+} GuiControlState;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
+static int guiState = NORMAL;
+
 static int styleGeneric[18] = {
 #if defined(RAYGUI_STYLE_DEFAULT_LIGHT)
     0xf5f5f5ff,     // DEFAULT_BACKGROUND_COLOR
@@ -532,17 +542,18 @@ static int GetKeyPressed(void);                                // -- GuiTextBox(
 static bool IsKeyDown(int key);                                // -- GuiColorPicker()
 
 // Control specific functions
-static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }           // -- GuiColorPicker()
-static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker()
-static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker()
+static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }           // -- GuiColorPicker() *
+static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker() *
+static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);// -- GuiColorPicker() *
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);       // -- GuiColorPicker()
-static void DrawCircleV(Vector2 center, float radius, Color color);                                       // -- GuiColorPicker()
-static bool IsCursorHidden(void) { return false; }              // -- GuiColorPicker()
-static void HideCursor(void) { }                                // -- GuiColorPicker()
-static void ShowCursor(void) { }                                // -- GuiColorPicker()
+static void DrawCircleV(Vector2 center, float radius, Color color);                                       // -- GuiColorPicker() *
+static bool IsCursorHidden(void) { return false; }              // -- GuiColorPicker() *
+static void HideCursor(void) { }                                // -- GuiColorPicker() *
+static void ShowCursor(void) { }                                // -- GuiColorPicker() *
 static Color Fade(Color color, float alpha) { return WHITE; }   // -- GuiColorPicker()
+
 static void DrawTexture(Texture2D texture, int posX, int posY, Color tint);               // -- GuiTexture()
-static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color);       // -- GuiGroupBox()
+static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color);       // -- GuiGroupBox() *
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 static Image LoadImage(const char *fileName);       // -- LoadGuiStyleImage()
@@ -574,23 +585,26 @@ RAYGUIDEF Color GuiTextColor(void) { return GetColor(styleGeneric[DEFAULT_TEXT_C
 // Label control
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 {
-    ControlState state = NORMAL;
+    GuiControlState state = guiState;
     
-    Vector2 mousePoint = GetMousePosition();
-    
-    // Update control
-    //--------------------------------------------------------------------
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
-    
-    // Check label state
-    if (CheckCollisionPointRec(mousePoint, bounds))
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check label state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else state = FOCUSED;
+        }
     }
     //--------------------------------------------------------------------
 
@@ -601,6 +615,7 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
         case NORMAL: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
         case FOCUSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
         case PRESSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
+        case DISABLED: //DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -609,25 +624,29 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 // Button control, returns true when clicked
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
 {
-    ControlState state = NORMAL;
-    
-    Vector2 mousePoint = GetMousePosition();
+    GuiControlState state = guiState;
     bool clicked = false;
-
-    // Update control
-    //--------------------------------------------------------------------
+    
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
     
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
 
-    // Check button state
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
-        else state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
+
+
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else state = FOCUSED;
+        }
     }
     //--------------------------------------------------------------------
 
@@ -653,40 +672,47 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
             DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+        } break;
         default: break;
     }
     //------------------------------------------------------------------
 
-    if (clicked) return true;
-    else return false;
+    return clicked;
 }
 
 // Toggle Button control, returns true when active
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
 {
-    ControlState state = NORMAL;
+    GuiControlState state = guiState;
     
-    Vector2 mousePoint = GetMousePosition();
-
-    // Update control
-    //--------------------------------------------------------------------
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
     
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
 
-    // Check toggle button state
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check toggle button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            state = NORMAL;
-            active = !active;
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                state = NORMAL;
+                active = !active;
+            }
+            else state = FOCUSED;
         }
-        else state = FOCUSED;
     }
+    else active = false;
     //--------------------------------------------------------------------
 
     // Draw control
@@ -720,6 +746,11 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
             DrawRectangleT(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+            
+        } break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -742,19 +773,21 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleCount, char **toggleTex
 // Check Box control, returns true when active
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 {
-    ControlState state = NORMAL;
-    
-    Vector2 mousePoint = GetMousePosition();
+    GuiControlState state = guiState;
 
     // Update control
     //--------------------------------------------------------------------
-    
-    // Check checkbox state
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
-        else state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check checkbox state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
+            else state = FOCUSED;
+        }
     }
     //--------------------------------------------------------------------
 
@@ -789,6 +822,11 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
                                        bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+            
+        } break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -799,38 +837,41 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 // Combo Box control, returns selected item index
 RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, int active)
 {
-    ControlState state = NORMAL;
-
-    Vector2 mousePoint = GetMousePosition();
-
     #define COMBOBOX_SELECTOR_WIDTH     35
+
+    GuiControlState state = guiState;
     
     bounds.width -= (COMBOBOX_SELECTOR_WIDTH + style[COMBOBOX_BUTTON_PADDING]);
-    
+        
     Rectangle selector = { bounds.x + bounds.width + style[COMBOBOX_BUTTON_PADDING], 
-                           bounds.y, COMBOBOX_SELECTOR_WIDTH, bounds.height };
-
-    // Update control
-    //--------------------------------------------------------------------
+                               bounds.y, COMBOBOX_SELECTOR_WIDTH, bounds.height };
+    
     if (active < 0) active = 0;
     else if (active > comboCount - 1) active = comboCount - 1;
-    
+
     int textWidth = MeasureText(comboText[active], styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
 
-    if (CheckCollisionPointRec(mousePoint, bounds) || 
-        CheckCollisionPointRec(mousePoint, selector))
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds) || 
+            CheckCollisionPointRec(mousePoint, selector))
         {
-            active += 1;
-            if (active >= comboCount) active = 0;
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+            {
+                active += 1;
+                if (active >= comboCount) active = 0;
+            }
+            else state = FOCUSED;
         }
-        else state = FOCUSED;
     }
     //--------------------------------------------------------------------
 
@@ -880,6 +921,10 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
                      styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+        } break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -903,50 +948,52 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 // NOTE: Requires static variables: framesCounter
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 {
+    GuiControlState state = guiState;
     static int framesCounter = 0;         // Required for blinking cursor
-
-    #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
-    
-    ControlState state = NORMAL;
-
-    Vector2 mousePoint = GetMousePosition();
 
     // Update control
     //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    if (state != DISABLED)
     {
-        state = FOCUSED;        // NOTE: PRESSED state is not used on this control
-        
-        framesCounter++;
-        
-        int letter = -1;
-        letter = GetKeyPressed();
-        
-        if (letter != -1)
-        {
-            if (letter == KEY_BACKSPACE_TEXT)
-            {
-                for (int i = 0; i < textSize; i++)
-                {
-                    if ((text[i] == '\0') && (i > 0))
-                    {
-                        text[i - 1] = '\0';
-                        break;
-                    }
-                }
+        Vector2 mousePoint = GetMousePosition();
 
-                text[textSize - 1] = '\0';
-            }
-            else
+        #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            state = FOCUSED;        // NOTE: PRESSED state is not used on this control
+
+            framesCounter++;
+            
+            int letter = -1;
+            letter = GetKeyPressed();
+            
+            if (letter != -1)
             {
-                if ((letter >= 32) && (letter < 127))
+                if (letter == KEY_BACKSPACE_TEXT)
                 {
                     for (int i = 0; i < textSize; i++)
                     {
-                        if (text[i] == '\0')
+                        if ((text[i] == '\0') && (i > 0))
                         {
-                            text[i] = (char)letter;
+                            text[i - 1] = '\0';
                             break;
+                        }
+                    }
+
+                    text[textSize - 1] = '\0';
+                }
+                else
+                {
+                    if ((letter >= 32) && (letter < 127))
+                    {
+                        for (int i = 0; i < textSize; i++)
+                        {
+                            if (text[i] == '\0')
+                            {
+                                text[i] = (char)letter;
+                                break;
+                            }
                         }
                     }
                 }
@@ -976,6 +1023,10 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 
         } break;
         case PRESSED: break; // NOTE: PRESSED state is not used on this control
+        case DISABLED:
+        {
+        
+        } break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -984,35 +1035,33 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 // Slider control, returns selected value
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue)
 {
-    ControlState state = NORMAL;
+    GuiControlState state = guiState;
     
-    Vector2 mousePoint = GetMousePosition();
-
     Rectangle slider = { bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - 10,
-                         bounds.y + style[SLIDER_BORDER_WIDTH],
-                         20, bounds.height - 2*style[SLIDER_BORDER_WIDTH] };
+                         bounds.y + style[SLIDER_BORDER_WIDTH], 20, bounds.height - 2*style[SLIDER_BORDER_WIDTH] };
                          
     // Update control
     //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-        {
-            state = PRESSED;
-            
-            // Get equivalent value from mousePoint.x
-            value = (((maxValue - minValue)*(mousePoint.x - (float)bounds.x))/(float)bounds.width) + minValue;
-            
-            if (value > maxValue) value = maxValue;
-            else if (value < minValue) value = minValue;
+        Vector2 mousePoint = GetMousePosition();
 
-            slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
-            
-            // Snap to limits if mouse down moved outside limits
-            //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
-            //else if ((slider.x + slider.width) > (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH])) slider.x = (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH]) - slider.width;
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                state = PRESSED;
+                
+                // Get equivalent value and slider position from mousePoint.x
+                value = (((maxValue - minValue)*(mousePoint.x - (float)bounds.x))/(float)bounds.width) + minValue;
+                slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
+                
+                // Snap to limits if mouse down moved outside limits
+                //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
+                //else if ((slider.x + slider.width) > (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH])) slider.x = (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH]) - slider.width;
+            }
+            else state = FOCUSED;
         }
-        else state = FOCUSED;
     }
     //--------------------------------------------------------------------
 
@@ -1044,6 +1093,11 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangleRecT(slider, GetColor(style[SLIDER_BASE_COLOR_PRESSED]));
             DrawRectangleT(slider.x + slider.width/2, slider.y, 1, slider.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+            
+        } break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -1054,32 +1108,30 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
 // Slider Bar control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue)
 {
-    ControlState state = NORMAL;
+    GuiControlState state = guiState;
     
-    Vector2 mousePoint = GetMousePosition();
-    
-    Rectangle slider = { bounds.x + style[SLIDERBAR_BORDER_WIDTH], 
-                         bounds.y + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_INNER_PADDING], 
+    Rectangle slider = { bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_INNER_PADDING], 
                          (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH])),
                          bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] - 2*style[SLIDERBAR_INNER_PADDING] };
 
     // Update control
     //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-        {
-            state = PRESSED;
-            
-            // Get equivalent value from mousePoint.x
-            value = (maxValue - minValue)*((mousePoint.x - (float)bounds.x)/(float)bounds.width) + minValue;
-            
-            if (value > maxValue) value = maxValue;
-            else if (value < minValue) value = minValue;
+        Vector2 mousePoint = GetMousePosition();
 
-            slider.width = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]));
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                state = PRESSED;
+                
+                // Get equivalent value and slider width from mousePoint.x
+                value = (maxValue - minValue)*((mousePoint.x - (float)bounds.x)/(float)bounds.width) + minValue;
+                slider.width = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]));
+            }
+            else state = FOCUSED;
         }
-        else state = FOCUSED;
     }
     //--------------------------------------------------------------------
 
@@ -1105,6 +1157,10 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
             DrawRectangleT(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
             DrawRectangleRecT(slider, GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED])); 
         } break;
+        case DISABLED:
+        {
+            
+        } break;
         default: break;
     }    
     //--------------------------------------------------------------------
@@ -1115,9 +1171,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 // Progress Bar control, shows current progress value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue)
 {
-    ControlState state = NORMAL;
-    
-    Vector2 mousePoint = GetMousePosition();
+    GuiControlState state = guiState;
     
     Rectangle progress = { bounds.x + style[PROGRESSBAR_BORDER_WIDTH], 
                            bounds.y + style[PROGRESSBAR_BORDER_WIDTH] + style[PROGRESSBAR_INNER_PADDING], 
@@ -1126,12 +1180,14 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
 
     // Update control
     //--------------------------------------------------------------------
-    if (value > maxValue) value = maxValue;
-    else if (value < minValue) value = minValue;
-    
-    progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
 
-    //if (CheckCollisionPointRec(mousePoint, bounds)) state = FOCUSED;      // State not required on ProgressBar
+        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
+
+        //if (CheckCollisionPointRec(mousePoint, bounds)) state = FOCUSED;      // State not required on ProgressBar
+    }
     //--------------------------------------------------------------------
 
     // Draw control
@@ -1153,6 +1209,11 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
             //DrawRectangleRecT(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_FOCUSED]));
         } break;
         case PRESSED: break;
+        case DISABLED: 
+        {
+            
+            
+        } break;
         default: break;
     }    
     //--------------------------------------------------------------------
@@ -1163,15 +1224,12 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
 // Spinner control, returns selected value
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue)
-{   
-    ControlState state = NORMAL;
-    
+{
     #define SPINNER_LEFT_BUTTON      1
     #define SPINNER_RIGHT_BUTTON     2
-    
     #define SPINNER_BUTTON_WIDTH    35
-    
-    Vector2 mousePoint = GetMousePosition();
+
+    GuiControlState state = guiState;
     
     static int framesCounter = 0;
     static bool valueSpeed = false;;
@@ -1187,77 +1245,82 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
     if (bounds.height < textHeight) bounds.height = textHeight;
 
     // Update control
-    //--------------------------------------------------------------------   
-    if (CheckCollisionPointRec(mousePoint, leftButtonBound))
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
     {
-        state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
 
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        if (CheckCollisionPointRec(mousePoint, leftButtonBound))
         {
-            state = PRESSED;
-             
-            if (!valueSpeed)
-            {
-                if (value > minValue) value--;
-                valueSpeed = true;
-            }
-            else framesCounter++;
+            state = FOCUSED;
 
-            if (value > minValue)
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
-                if (framesCounter >= 30) value -= 1;
+                state = PRESSED;
+                 
+                if (!valueSpeed)
+                {
+                    if (value > minValue) value--;
+                    valueSpeed = true;
+                }
+                else framesCounter++;
+
+                if (value > minValue)
+                {
+                    if (framesCounter >= 30) value -= 1;
+                }
             }
         }
-    }
-    else if (CheckCollisionPointRec(mousePoint, rightButtonBound))
-    {
-        state = FOCUSED;
-
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        else if (CheckCollisionPointRec(mousePoint, rightButtonBound))
         {
-            state = PRESSED;
-            
-            if (!valueSpeed)
+            state = FOCUSED;
+
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
-                if (value < maxValue) value++;
-                valueSpeed = true;
-            }
-            else framesCounter++;
+                state = PRESSED;
+                
+                if (!valueSpeed)
+                {
+                    if (value < maxValue) value++;
+                    valueSpeed = true;
+                }
+                else framesCounter++;
 
-            if (value < maxValue)
+                if (value < maxValue)
+                {
+                    if (framesCounter >= 30) value += 1;
+                }
+           }
+        }
+
+        if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
+        {
+            valueSpeed = false;
+            framesCounter = 0;
+        }
+        
+        /*
+        if (CheckCollisionPointRec(mousePoint, leftButtonBound) || 
+            CheckCollisionPointRec(mousePoint, rightButtonBound) || 
+            CheckCollisionPointRec(mousePoint, spinner))
+        {
+            if (IsKeyDown(KEY_LEFT))
             {
-                if (framesCounter >= 30) value += 1;
+                state = PRESSED;
+                buttonSide = 1;
+
+                if (value > minValue) value -= 1;
             }
-       }
-    }
+            else if (IsKeyDown(KEY_RIGHT))
+            {
+                state = PRESSED;
+                buttonSide = 2;
 
-    if (IsMouseButtonUp(MOUSE_LEFT_BUTTON))
-    {
-        valueSpeed = false;
-        framesCounter = 0;
-    }
-    
-    /*
-    if (CheckCollisionPointRec(mousePoint, leftButtonBound) || 
-        CheckCollisionPointRec(mousePoint, rightButtonBound) || 
-        CheckCollisionPointRec(mousePoint, spinner))
-    {
-        if (IsKeyDown(KEY_LEFT))
-        {
-            state = PRESSED;
-            buttonSide = 1;
-
-            if (value > minValue) value -= 1;
+                if (value < maxValue) value += 1;
+            }
         }
-        else if (IsKeyDown(KEY_RIGHT))
-        {
-            state = PRESSED;
-            buttonSide = 2;
-
-            if (value < maxValue) value += 1;
-        }
+        */
     }
-    */
     //--------------------------------------------------------------------
 
     // Draw control
@@ -1303,6 +1366,11 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
 
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+            
+        } break;
         default: break;
     }
 
@@ -1312,18 +1380,21 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
 // Texture button control, returns true when clicked
 RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 {
-    ControlState state = NORMAL;
-    
-    Vector2 mousePoint = GetMousePosition();
+    GuiControlState state = guiState;
     bool clicked = false;
-
+    
     // Update control
     //--------------------------------------------------------------------
-    if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
-        else state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
+        
+        if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else state = FOCUSED;
+        }
     }
     //--------------------------------------------------------------------
 
@@ -1349,12 +1420,15 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
             DrawRectangleT(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
             DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
         } break;
+        case DISABLED:
+        {
+            
+        } break;
         default: break;
     }
     //------------------------------------------------------------------
 
-    if (clicked) return true;
-    else return false;
+    return clicked;
 }
 
 // Color Picker control
@@ -1367,7 +1441,7 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, Texture2D texture)
 //      unsigned char GuiColorBarLuminance() [BLACK->WHITE]
 Color GuiColorPicker(Rectangle bounds, Color color)
 {    
-    ControlState state = NORMAL;
+    GuiControlState state = NORMAL;
     
     Vector2 mousePoint = GetMousePosition();
     
@@ -1519,6 +1593,10 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     
     return color;
 }
+
+
+RAYGUIDEF void GuiEnable(void) { guiState = NORMAL; }           // Enable gui global state
+RAYGUIDEF void GuiDisable(void) { guiState = DISABLED; }        // Disable gui global state
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 // Load GUI style from an image file
