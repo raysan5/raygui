@@ -52,7 +52,7 @@
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #define FONT_SIZE           10
-#define COLOR_REC           BEIGE
+#define COLOR_REC           GuiLinesColor()
 #define NUM_COLOR_SAMPLES   10
 #define ELEMENT_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
@@ -240,7 +240,7 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    //LoadGuiStyleImage("rguistyle_default_dark.png");
+    LoadGuiStyleImage("rguistyle_default_dark.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
