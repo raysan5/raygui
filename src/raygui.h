@@ -988,15 +988,12 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
     
     Vector2 mousePoint = GetMousePosition();
 
-    // Update control
-    //--------------------------------------------------------------------
-    if (value < minValue) value = minValue;
-    else if (value > maxValue) value = maxValue;
-
     Rectangle slider = { bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - 10,
                          bounds.y + style[SLIDER_BORDER_WIDTH],
                          20, bounds.height - 2*style[SLIDER_BORDER_WIDTH] };
-
+                         
+    // Update control
+    //--------------------------------------------------------------------
     if (CheckCollisionPointRec(mousePoint, bounds))
     {
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
@@ -1009,7 +1006,7 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             if (value > maxValue) value = maxValue;
             else if (value < minValue) value = minValue;
 
-            slider.x = bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
+            slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
             
             // Snap to limits if mouse down moved outside limits
             //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
@@ -1055,7 +1052,6 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
 }
 
 // Slider Bar control, returns selected value
-// NOTE: If minimum value is <0 support multidirection
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue)
 {
     ControlState state = NORMAL;
@@ -1064,7 +1060,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
     
     Rectangle slider = { bounds.x + style[SLIDERBAR_BORDER_WIDTH], 
                          bounds.y + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_INNER_PADDING], 
-                         (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH])),
+                         (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH])),
                          bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] - 2*style[SLIDERBAR_INNER_PADDING] };
 
     // Update control
@@ -1076,12 +1072,12 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
             state = PRESSED;
             
             // Get equivalent value from mousePoint.x
-            value = (((maxValue - minValue)*(mousePoint.x - (float)bounds.x))/(float)bounds.width) + minValue;
+            value = (maxValue - minValue)*((mousePoint.x - (float)bounds.x)/(float)bounds.width) + minValue;
             
             if (value > maxValue) value = maxValue;
             else if (value < minValue) value = minValue;
 
-            slider.width = (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]));
+            slider.width = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]));
         }
         else state = FOCUSED;
     }
