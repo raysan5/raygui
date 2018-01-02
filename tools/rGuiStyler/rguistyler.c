@@ -53,13 +53,12 @@
 //----------------------------------------------------------------------------------
 #define FONT_SIZE           10
 #define COLOR_REC           GuiLinesColor()
-#define NUM_COLOR_SAMPLES   10
-#define ELEMENT_HEIGHT      38
+#define CONTROL_LIST_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
 
-#define NUM_ELEMENTS        11
+#define NUM_CONTROLS        11
 
-// NOTE: Be extremely careful when defining: NUM_ELEMENTS, GuiElement, guiElementText, guiPropertyNum, guiPropertyType and guiPropertyPos
+// NOTE: Be extremely careful when defining: NUM_CONTROLS, GuiElement, guiControlText, guiPropertyNum, guiPropertyType and guiPropertyPos
 // All those variables must be coherent, one small mistake breaks the program (and it could take hours to find the error!)
 
 //----------------------------------------------------------------------------------
@@ -77,14 +76,14 @@ typedef enum {
     COMBOBOX, 
     CHECKBOX, 
     TEXTBOX 
-} GuiElement;
+} GuiControlType;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 static char currentPath[256];       // Path to current working folder
 
-const char *guiElementText[NUM_ELEMENTS] = { 
+const char *guiControlText[NUM_CONTROLS] = { 
     "LABEL", 
     "BUTTON", 
     "TOGGLE", 
@@ -113,8 +112,16 @@ int main()
     //--------------------------------------------------------------------------------------
     const int screenWidth = 1280;
     const int screenHeight = 720;
-
-    const int guiPropertyNum[NUM_ELEMENTS] = { 3, 11, 14, 1, 7, 6, 4, 14, 18, 8, 6 };
+    
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
+    
+    int dropsCount = 0;
+    char **droppedFiles;
+    
+    
+    
+    const int guiPropertyNum[NUM_CONTROLS] = { 3, 11, 14, 1, 7, 6, 4, 14, 18, 8, 6 };
 
     // Defines if the property to change is a Color or a value to update it accordingly
     // NOTE: 0 - Color, 1 - value
@@ -126,37 +133,30 @@ int main()
                                                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
                                                             0, 0, 1, 1, 0, 0, 0, 0, 1 };
     int aux = 0;
-    int guiPropertyPos[NUM_ELEMENTS];
+    int guiPropertyPos[NUM_CONTROLS];
 
-    for (int i = 0; i < NUM_ELEMENTS; i++)
+    for (int i = 0; i < NUM_CONTROLS; i++)
     {
         guiPropertyPos[i] = aux;
         aux += guiPropertyNum[i];
     }
     
-    //SetConfigFlags(FLAG_FULLSCREEN_MODE);
-    InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
+    Rectangle guiControlListRec[NUM_CONTROLS];
+
+    for (int i = 0; i < NUM_CONTROLS; i++) guiControlListRec[i] = (Rectangle){ 0, 0 + i*CONTROL_LIST_HEIGHT, 140, CONTROL_LIST_HEIGHT };
+
+    int guiControlSelected = -1;
+    int guiControlHover = -1;
     
-    int dropsCount = 0;
-    char **droppedFiles;
-    
-    Rectangle guiElementRec[NUM_ELEMENTS];
 
-    for (int i = 0; i < NUM_ELEMENTS; i++) guiElementRec[i] = (Rectangle){ 0, 0 + i*ELEMENT_HEIGHT, 140, ELEMENT_HEIGHT };
+    Rectangle guiPropertyListRec[NUM_PROPERTIES];
 
-    int guiElementSelected = -1;
-    int guiElementHover = -1;
-
-    // Generate properties rectangles depending on guiPropertyNum[] and guiPropertyPos[]
-    //-----------------------------------------------------------------------------------
-    Rectangle propertyRec[NUM_PROPERTIES];
-
-    for (int j = 0; j < NUM_ELEMENTS; j++)
+    for (int j = 0; j < NUM_CONTROLS; j++)
     {
         for (int i = 0; i < guiPropertyNum[j]; i++)
         {
-            if ((j + guiPropertyNum[j]) > 18)  propertyRec[guiPropertyPos[j] + i] = (Rectangle){ guiElementRec[0].width, guiElementRec[18 - guiPropertyNum[j]].y + i*ELEMENT_HEIGHT, 260, ELEMENT_HEIGHT };
-            else propertyRec[guiPropertyPos[j] + i] = (Rectangle){ guiElementRec[0].width, guiElementRec[j].y + i*ELEMENT_HEIGHT, 260, ELEMENT_HEIGHT };
+            if ((j + guiPropertyNum[j]) > 18)  guiPropertyListRec[guiPropertyPos[j] + i] = (Rectangle){ guiControlListRec[0].width, guiControlListRec[18 - guiPropertyNum[j]].y + i*CONTROL_LIST_HEIGHT, 260, CONTROL_LIST_HEIGHT };
+            else guiPropertyListRec[guiPropertyPos[j] + i] = (Rectangle){ guiControlListRec[0].width, guiControlListRec[j].y + i*CONTROL_LIST_HEIGHT, 260, CONTROL_LIST_HEIGHT };
         }
     }
 
@@ -164,7 +164,7 @@ int main()
     int guiPropertyHover = -1;
     //------------------------------------------------------------
 
-    // GUI
+    // Gui area variables
     //-----------------------------------------------------------
     int guiPosX = 455;
     int guiPosY = 35;
@@ -175,50 +175,17 @@ int main()
     int deltaY = 60;
     
     int selectPosX = 401;
-    //int selectPosY = 0;
     int selectWidth = screenWidth - 723;
-    //int selectHeight = screenHeight;
     //------------------------------------------------------------
-        
-    // Color picker
-    //-----------------------------------------------------------
-    Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
-    Vector2 cursorPickerPos = colorPickerPos;
-    Color colorPickerValue = RED;
-    Color colorSample[NUM_COLOR_SAMPLES];
-    
-    for (int i = 0; i < NUM_COLOR_SAMPLES; i++) colorSample[i] = RAYWHITE;   
-    
-    int rgbWidthLabel = 30;
-    int rgbHeightLabel = 20;
-    int rgbDelta = 6;
-    int redValue = 0;
-    int greenValue = 0;
-    int blueValue = 0;
-    int alphaValue = 255;
-    
-    // Color samples
-    Rectangle sampleBoundsRec[NUM_COLOR_SAMPLES];
-    int sampleHover = -1; 
-    int sampleSelected = 0;
-        
-    for (int i = 0; i < NUM_COLOR_SAMPLES/2; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2};
-    for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) sampleBoundsRec[i] = (Rectangle) {colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2};
-    //------------------------------------------------------------
-    
-    // Value size selection
-    //-----------------------------------------------------------
-    int sizeValueSelected = 10;
-    //-----------------------------------------------------------
 
-    Color bgColor = RAYWHITE;    
-    
+    // Gui controls data
+    //-----------------------------------------------------------
     bool toggle = false;
     bool toggleValue = false;
     char *toggleGuiText[3] = { "toggle", "group", "selection" };
 
     float sliderValue = 50.0f;
-    float sliderBarValue = 50.0f;
+    float sliderBarValue = 20.0f;
     float progressValue = 0.0f;
     
     bool checked = false;
@@ -229,9 +196,10 @@ int main()
     char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
     int comboActive = 0;
     
-    char guiText[16] = "\0";
+    char guiText[17] =  { '\0' };
 
-    bool isModified = false;
+    Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
+    Color colorPickerValue = RED;
     //-----------------------------------------------------------
     
     // Get current directory
@@ -240,7 +208,7 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    LoadGuiStyleImage("rguistyle_default_dark.png");
+    GuiLoadStyleImage("rguistyle_default_dark.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -253,33 +221,33 @@ int main()
         if (IsFileDropped())
         {
             droppedFiles = GetDroppedFiles(&dropsCount);
-            LoadGuiStyle(droppedFiles[0]);
+            GuiLoadStyle(droppedFiles[0]);
             ClearDroppedFiles();
         }
         
-        // NOTE: We must verify that guiElementSelected and guiPropertySelected are valid
+        // NOTE: We must verify that guiControlSelected and guiPropertySelected are valid
 
-        // Check gui element selected
-        for (int i = 0; i < NUM_ELEMENTS; i++)
+        // Check gui control selected
+        for (int i = 0; i < NUM_CONTROLS; i++)
         {
-            if (CheckCollisionPointRec(GetMousePosition(), guiElementRec[i]))
+            if (CheckCollisionPointRec(GetMousePosition(), guiControlListRec[i]))
             {
-                guiElementSelected = i;
-                guiElementHover = i;
+                guiControlSelected = i;
+                guiControlHover = i;
 
                 guiPropertySelected = -1;
                 guiPropertyHover = -1;
                 break;
             }
-            else guiElementHover = -1;
+            else guiControlHover = -1;
         }
         
         // Check gui property selected
-        if (guiElementSelected != -1)
+        if (guiControlSelected != -1)
         {
-            for (int i = guiPropertyPos[guiElementSelected]; i < guiPropertyPos[guiElementSelected] + guiPropertyNum[guiElementSelected]; i++)
+            for (int i = guiPropertyPos[guiControlSelected]; i < guiPropertyPos[guiControlSelected] + guiPropertyNum[guiControlSelected]; i++)
             {
-                if (CheckCollisionPointRec(GetMousePosition(), propertyRec[i]))
+                if (CheckCollisionPointRec(GetMousePosition(), guiPropertyListRec[i]))
                 {
                     guiPropertyHover = i;
                     
@@ -289,14 +257,9 @@ int main()
                         if (guiPropertyType[guiPropertyHover] == 0)         // Color type
                         {
                             // Update color picker color value
-                            colorPickerValue = GetColor(GetStyleProperty(guiPropertyHover));
-                            redValue = colorPickerValue.r;
-                            greenValue = colorPickerValue.g;
-                            blueValue = colorPickerValue.b;   
-                            cursorPickerPos = (Vector2){screenWidth, screenHeight};                    
+                            colorPickerValue = GetColor(GuiGetStyleProperty(guiPropertyHover));             
                         }
-                                                                            // Value Type
-                        else if (guiPropertyType[guiPropertyHover] == 1) sizeValueSelected = GetStyleProperty(guiPropertyHover);
+                        //else if (guiPropertyType[guiPropertyHover] == 1) sizeValueSelected = GuiGetStyleProperty(guiPropertyHover);
                     }   
                     
                     // Check if gui property is clicked
@@ -309,13 +272,9 @@ int main()
                             
                             if ((guiPropertyHover > -1) && (guiPropertyType[guiPropertyHover] == 0))
                             {
-                                if (guiPropertySelected > -1) colorPickerValue = GetColor(GetStyleProperty(guiPropertySelected));
-                                
-                                redValue = colorPickerValue.r;
-                                greenValue = colorPickerValue.g;
-                                blueValue = colorPickerValue.b;  
+                                if (guiPropertySelected > -1) colorPickerValue = GetColor(GuiGetStyleProperty(guiPropertySelected));
                             }
-                            else if (guiPropertySelected > -1) sizeValueSelected = GetStyleProperty(guiPropertySelected);
+                            //else if (guiPropertySelected > -1) sizeValueSelected = GuiGetStyleProperty(guiPropertySelected);
                         }
                     }
                     break;
@@ -324,137 +283,33 @@ int main()
             }
         }
         
-        //if (guiElementSelected == PROGRESSBAR)
-        {
-            if (progressValue > 1.0f) progressValue = 0.0f;
-            progressValue += 0.0005f;
-        }
-        
-        if (guiPropertySelected != -1)
-        {
-            // Update style size value
-            if (guiPropertyType[guiPropertySelected] == 1)
-            {
-                if (GetStyleProperty(guiPropertySelected) != sizeValueSelected)
-                {
-                    isModified = true;
-                    SetStyleProperty(guiPropertySelected, sizeValueSelected);
-                }
-            }
-
-            // Color samples
-            /*
-            if (CheckCollisionPointRec(GetMousePosition(), colorSelectedBoundsRec)) 
-            {
-                colorSelectedHover = true;
-
-                if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) colorSample[sampleSelected] = colorPickerValue;
-            }
-            else colorSelectedHover = false;
-            
-            for (int i = 0; i < NUM_COLOR_SAMPLES; i++)
-            {
-                if (CheckCollisionPointRec(GetMousePosition(), sampleBoundsRec[i])) 
-                {
-                    sampleHover = i;                
-                    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
-                    {
-                        sampleSelected = i;
-                    }
-                    if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) 
-                    {
-                        sampleSelected = i;
-                        colorPickerValue = colorSample[sampleSelected];
-                        redValue = colorPickerValue.r;
-                        greenValue = colorPickerValue.g;
-                        blueValue = colorPickerValue.b;
-                        alphaValue = colorPickerValue.a;
-                    }               
-                }            
-            }
-            */
-
-            // Update style color value
-            if (guiPropertySelected == DEFAULT_BACKGROUND_COLOR) bgColor = colorPickerValue;
-            else if ((guiPropertySelected >= 0) && (guiPropertyType[guiPropertySelected] == 0))
-            {
-                bgColor = GetColor(GetStyleProperty(DEFAULT_BACKGROUND_COLOR));
-                SetStyleProperty(guiPropertySelected, GetHexValue(colorPickerValue));
-            }
-        }
+        // Update progress bar automatically
+        progressValue += 0.0005f;
+        if (progressValue > 1.0f) progressValue = 0.0f;
         //----------------------------------------------------------------------------------
         
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
         
-            ClearBackground(RAYWHITE); 
+            ClearBackground(RAYWHITE);
             
-            // Show selected properties
-            //if (guiPropertySelected >= 0)  DrawText(FormatText("SELECTED PROPERTY: <%s>", guiPropertyName[guiPropertySelected]), 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
-            //else DrawText("SELECTED PROPERTY: <style property> / none", 5, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
-            
-            // Show if have been a modification
-            if (!isModified) DrawText("SAVE STATUS: SAVED (filename.style)", screenWidth - 230 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
-            else DrawText("SAVE STATUS: NOT SAVED", screenWidth - 230, screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK);
-            
-            DrawText(FormatText("ColorPicker hexadecimal value #%x", GetHexValue(colorPickerValue)), screenWidth/2 - 180 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , BLACK); 
-            
-            // Background color
-            DrawRectangle(0,0, guiElementRec[0].width, GetScreenHeight() - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.3f));
-            DrawRectangle(guiElementRec[0].width,0, propertyRec[0].width, GetScreenHeight() - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.1f));
-            
-            // UI sample
-            // Background
-            DrawRectangle(400,0, screenWidth - 320 - 400, GetScreenHeight() - STATUS_BAR_HEIGHT, GuiBackgroundColor());
-            
-            GuiLabel((Rectangle){guiPosX, guiPosY, guiWidth, guiHeight}, "Label");
-            //GuiLabelEx((Rectangle){guiPosX + deltaX, guiPosY, guiWidth, guiHeight}, "LabelEx", BLACK, BLACK, WHITE);
-            
-            if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
-            
-            if (toggle) toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle ACTIVE", toggle);
-            else toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle INACTIVE", toggle);
-            
-            toggleValue = GuiToggleGroup((Rectangle){guiPosX, guiPosY + 3*deltaY, guiWidth, guiHeight}, 3, toggleGuiText, toggleValue);
-            
-            sliderValue = GuiSlider((Rectangle){guiPosX, guiPosY + 4*deltaY, 3*guiWidth, guiHeight}, sliderValue, 0, 100);
-            
-            sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, 0, 100);
-            
-            progressValue = GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
-            
-            spinnerValue = GuiSpinner((Rectangle){guiPosX, guiPosY + 7*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
-            
-            comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboNum, comboText, comboActive);
+            DrawRectangle(400, 0, 559, GetScreenHeight() - STATUS_BAR_HEIGHT - 1, GuiBackgroundColor());
 
-            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, checked);
+            // Draw left panel property list and selections
+            DrawRectangle(0,0, guiControlListRec[0].width, GetScreenHeight() - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.3f));
+            DrawRectangle(guiControlListRec[0].width,0, guiPropertyListRec[0].width, GetScreenHeight() - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.1f));
+            if (guiControlHover >= 0) DrawRectangleRec(guiControlListRec[guiControlHover], Fade(COLOR_REC, 0.5f));
+            if (guiControlSelected >= 0) DrawRectangleLines(guiControlListRec[guiControlSelected].x, guiControlListRec[guiControlSelected].y, guiControlListRec[guiControlSelected].width, guiControlListRec[guiControlSelected].height, Fade(COLOR_REC,0.5f));
+            for (int i = 0; i < NUM_CONTROLS; i++) DrawText(guiControlText[i], guiControlListRec[i].width/2 - MeasureText(guiControlText[i], FONT_SIZE)/2, 15 + i*CONTROL_LIST_HEIGHT, FONT_SIZE, GuiTextColor());
             
-            GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
-
-            if (guiElementSelected >= 0) DrawRectangleRec(guiElementRec[guiElementSelected], COLOR_REC);
-            if (guiElementHover >= 0) DrawRectangleRec(guiElementRec[guiElementHover], Fade(COLOR_REC, 0.5f));
-            if (guiElementSelected >= 0) DrawRectangleLines(guiElementRec[guiElementSelected].x, guiElementRec[guiElementSelected].y, guiElementRec[guiElementSelected].width, guiElementRec[guiElementSelected].height, Fade(COLOR_REC,0.5f));
-
-            // Draw corresponding selected properties depending on guiElementSelected
-            //----------------------------------------------------------------------------------------------
-            if (guiElementSelected >= 0)
-            {
-                if (guiPropertyHover >= 0) DrawRectangleRec(propertyRec[guiPropertyHover], Fade(COLOR_REC,0.3f));
- 
-                if (guiPropertySelected >= 0) DrawRectangleRec(propertyRec[guiPropertySelected], Fade(COLOR_REC, 0.4f));
-                if (guiPropertySelected >= 0) DrawRectangleLines(propertyRec[guiPropertySelected].x, propertyRec[guiPropertySelected].y, propertyRec[guiPropertySelected].width, propertyRec[guiPropertySelected].height, Fade(COLOR_REC, 0.8f));
-
-                for (int i = guiPropertyPos[guiElementSelected]; i < guiPropertyPos[guiElementSelected] + guiPropertyNum[guiElementSelected]; i++)
-                {
-                    //DrawText(guiPropertyName[i], propertyRec[i].x + propertyRec[i].width/2 - MeasureText(guiPropertyName[i], FONT_SIZE)/2, propertyRec[i].y + 15, FONT_SIZE, BLACK);
-                }
-            }
+            // Draw line separators
+            DrawLine(guiControlListRec[0].width, 0, guiControlListRec[0].width, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.8f));
+            DrawLine(400, 0, 400, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.8f));
+            DrawLine(screenWidth - 320, 0, screenWidth - 320, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.8f));
             
-            //-----------------------------------------------------------------------------------------------
-
-            // Draw Element selected rectangles
-            switch (guiElementSelected)
+            // Draw selected control rectangles
+            switch (guiControlSelected)
             {
                 case LABEL: DrawRectangleLines(selectPosX + 10, guiPosY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 case BUTTON: DrawRectangleLines(selectPosX + 10, guiPosY + deltaY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
@@ -468,48 +323,43 @@ int main()
                 case TEXTBOX: DrawRectangleLines(selectPosX + 10, guiPosY + (10 * deltaY) - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 default: break;
             }
+
             
-            // Draw color picker
+            // Draw GUI test controls
+            GuiLabel((Rectangle){guiPosX, guiPosY, guiWidth, guiHeight}, "Label");
+
+            if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
+            
+            if (toggle) toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle ACTIVE", toggle);
+            else toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle INACTIVE", toggle);
+            
+            toggleValue = GuiToggleGroup((Rectangle){guiPosX, guiPosY + 3*deltaY, guiWidth, guiHeight}, toggleGuiText, 3, toggleValue);
+            
+            sliderValue = GuiSlider((Rectangle){guiPosX, guiPosY + 4*deltaY, 3*guiWidth, guiHeight}, sliderValue, 0, 100);
+            
+            sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, -10.0f, 40.0f);
+            
+            progressValue = GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
+            
+            spinnerValue = GuiSpinner((Rectangle){guiPosX, guiPosY + 7*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
+            
+            comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboText, comboNum, comboActive);
+
+            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, checked);
+            
+            GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
+            
             colorPickerValue = GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, colorPickerValue);
             
-            // Draw color samples
-            /*
-            for (int i = 0; i < NUM_COLOR_SAMPLES/2; i++) 
-            {
-                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
-                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
-                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta - 1, colorPickerPos.y - 1 + 300 + 2*rgbDelta, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
-                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + i*rgbWidthLabel + 3*rgbDelta + i*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
-            }
-            
-            for (int i = NUM_COLOR_SAMPLES/2; i < NUM_COLOR_SAMPLES; i++) 
-            {
-                if (i == sampleSelected) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, BLACK); 
-                else if (i == sampleHover) DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 2, colorPickerPos.y - 2 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 4, rgbWidthLabel + 2, Fade(COLOR_REC, 0.8f));
-                else DrawRectangle (colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta - 1, colorPickerPos.y - 1 + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel + 2, rgbWidthLabel, Fade(COLOR_REC, 0.6f));
-                DrawRectangle(colorPickerPos.x + 2*rgbWidthLabel + (i-5)*rgbWidthLabel + 3*rgbDelta + (i-5)*rgbDelta, colorPickerPos.y + 300 + 2*rgbDelta + rgbWidthLabel + 2, rgbWidthLabel, rgbWidthLabel - 2, colorSample[i]);  
-            }
-            */
 
             // Draw Load and Save buttons
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 3*rgbWidthLabel - rgbDelta - STATUS_BAR_HEIGHT, 260, rgbWidthLabel}, "Load Style")) BtnLoadStyle();
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - 2*rgbWidthLabel - STATUS_BAR_HEIGHT, 260, rgbWidthLabel}, "Save Style")) BtnSaveStyle();
-
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - STATUS_BAR_HEIGHT - 100, 260, 30 }, "Load Style")) BtnLoadStyle();
+            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - STATUS_BAR_HEIGHT - 60, 260, 30 }, "Save Style")) BtnSaveStyle();
             
-            // Draw GUI Elements text
-            for (int i = 0; i < NUM_ELEMENTS; i++) DrawText(guiElementText[i], guiElementRec[i].width/2 - MeasureText(guiElementText[i], FONT_SIZE)/2, 15 + i*ELEMENT_HEIGHT, FONT_SIZE, BLACK);
-
-            // Draw Borders
-            DrawLine(guiElementRec[0].width, 0, guiElementRec[0].width, screenHeight - STATUS_BAR_HEIGHT, COLOR_REC);
-            DrawLine(400, 0, 400, screenHeight - STATUS_BAR_HEIGHT, COLOR_REC);
-            DrawLine(401, 0, 401, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.4f));
-            DrawLine(screenWidth - 320, 0, screenWidth - 320, screenHeight - STATUS_BAR_HEIGHT, COLOR_REC);
-            DrawLine(screenWidth - 321, 0, screenWidth - 321, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.4f));
-            
-            // Draw info bar            
+            // Draw bottom status bar info         
             DrawLine(0, screenHeight - STATUS_BAR_HEIGHT, screenWidth, screenHeight - STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.8f));
-            DrawLine(0, screenHeight - STATUS_BAR_HEIGHT + 1, screenWidth, screenHeight - STATUS_BAR_HEIGHT + 1, Fade(COLOR_REC, 0.4f));
             DrawRectangle(0, screenHeight - STATUS_BAR_HEIGHT, screenWidth, STATUS_BAR_HEIGHT, Fade(COLOR_REC, 0.1f));
+            DrawText(FormatText("ColorPicker hexadecimal value #%x", GetHexValue(colorPickerValue)), screenWidth - 260 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , GuiTextColor()); 
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -534,9 +384,9 @@ static void BtnLoadStyle(void)
     // Open file dialog
     const char *filters[] = { "*.rstyle" };
 
-    const char *fileName = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rstyle)", 0);
+    const char *fileName; // = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rstyle)", 0);
 
-    if (fileName != NULL) LoadGuiStyle(fileName);
+    if (fileName != NULL) GuiLoadStyle(fileName);
 }
 
 // Button save style function
@@ -550,12 +400,11 @@ static void BtnSaveStyle(void)
 
     // Save file dialog
     const char *filters[] = { "*.rstyle" };
-    const char *fileName = tinyfd_saveFileDialog("Save raygui style file", currrentPathFile, 1, filters, "raygui Style Files (*.rstyle)");
+    const char *fileName; // = tinyfd_saveFileDialog("Save raygui style file", currrentPathFile, 1, filters, "raygui Style Files (*.rstyle)");
 
     if (fileName != NULL)
     {
-        SaveGuiStyle(fileName);
+        GuiSaveStyle(fileName);
         fileName = "";
-        //isModified = false;
     }
 }
