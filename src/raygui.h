@@ -282,16 +282,20 @@ typedef enum GuiProperty {
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-RAYGUIDEF Color GuiBackgroundColor(void);                                                               // Get background color
-RAYGUIDEF Color GuiLinesColor(void);                                                                    // Get lines color
-RAYGUIDEF Color GuiTextColor(void);                                                                     // Get text color for normal state
+RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
+RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
+
+RAYGUIDEF Color GuiBackgroundColor(void);                               // Get background color
+RAYGUIDEF Color GuiLinesColor(void);                                    // Get lines color
+RAYGUIDEF Color GuiTextColor(void);                                     // Get text color for normal state
 
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, show text
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                        // Toggle Button control, returns true when active
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleNum, char **toggleText, int toggleActive);     // Toggle Group control, returns toggled button index
+RAYGUIDEF int GuiToggleGroup(Rectangle bounds, char **text, int count, int active);                     // Toggle Group control, returns toggled button index
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
-RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboNum, char **comboText, int comboActive);           // Combo Box control, returns selected item index
+RAYGUIDEF int GuiComboBox(Rectangle bounds, char **text, int count, int active);                        // Combo Box control, returns selected item index
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                  // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
@@ -299,11 +303,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue);                      // Spinner control, returns selected value
 
-RAYGUIDEF bool GuiTexture(Rectangle bounds, unsigned int textureId);                                    // Texture button control, returns true when clicked
-RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
-
-RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
-RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
+RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);          // Color Picker control
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 RAYGUIDEF void GuiLoadStyleImage(const char *fileName);                 // Load style from an image style file
@@ -639,7 +639,6 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
     {
         Vector2 mousePoint = GetMousePosition();
 
-
         // Check button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
@@ -677,6 +676,64 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
             DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+        } break;
+        default: break;
+    }
+    //------------------------------------------------------------------
+
+    return clicked;
+}
+
+// Image button control, returns true when clicked
+// TODO: Just provide textureId instead of full Texture2D
+RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture)
+{
+    GuiControlState state = guiState;
+    bool clicked = false;
+    
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+        
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else state = FOCUSED;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
+            DrawTexture(texture, bounds.x, bounds.y, WHITE);
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+            DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+            DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+        } break;
+        case DISABLED:
+        {
+            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawTexture(texture, bounds.x, bounds.y, GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -762,12 +819,12 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
 }
 
 // Toggle Group control, returns toggled button index
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, int toggleCount, char **toggleText, int active)
+RAYGUIDEF int GuiToggleGroup(Rectangle bounds, char **text, int count, int active)
 {
-    for (int i = 0; i < toggleCount; i++)
+    for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, toggleText[i], true);
-        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, toggleText[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, text[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, text[i], false) == true) active = i;
     }
 
     return active;
@@ -842,7 +899,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 }
 
 // Combo Box control, returns selected item index
-RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, int active)
+RAYGUIDEF int GuiComboBox(Rectangle bounds, char **text, int count, int active)
 {
     #define COMBOBOX_SELECTOR_WIDTH     35
 
@@ -854,9 +911,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
                                bounds.y, COMBOBOX_SELECTOR_WIDTH, bounds.height };
     
     if (active < 0) active = 0;
-    else if (active > comboCount - 1) active = comboCount - 1;
+    else if (active > count - 1) active = count - 1;
 
-    int textWidth = MeasureText(comboText[active], styleGeneric[DEFAULT_TEXT_SIZE]);
+    int textWidth = MeasureText(text[active], styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth) bounds.width = textWidth;
@@ -875,7 +932,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
             {
                 active += 1;
-                if (active >= comboCount) active = 0;
+                if (active >= count) active = 0;
             }
             else state = FOCUSED;
         }
@@ -894,9 +951,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             DrawRectangleRec(selector, GetColor(style[COMBOBOX_BORDER_COLOR_NORMAL]));
             DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_NORMAL]));
             
-            DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_NORMAL]));   
-            DrawText(FormatText("%i/%i", active + 1, comboCount), 
-                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, comboCount), 
+            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_NORMAL]));   
+            DrawText(FormatText("%i/%i", active + 1, count), 
+                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
                      styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
         } break;
@@ -908,9 +965,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             DrawRectangleRec(selector, GetColor(style[COMBOBOX_BORDER_COLOR_FOCUSED]));
             DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_FOCUSED]));
             
-            DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_FOCUSED]));   
-            DrawText(FormatText("%i/%i", active + 1, comboCount), 
-                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, comboCount), 
+            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_FOCUSED]));   
+            DrawText(FormatText("%i/%i", active + 1, count), 
+                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
                      styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
         } break;
@@ -922,9 +979,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             DrawRectangleRec(selector, GetColor(style[COMBOBOX_BORDER_COLOR_PRESSED]));
             DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_PRESSED]));
             
-            DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));   
-            DrawText(FormatText("%i/%i", active + 1, comboCount), 
-                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, comboCount), 
+            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));   
+            DrawText(FormatText("%i/%i", active + 1, count), 
+                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
                      styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
@@ -936,9 +993,9 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, int comboCount, char **comboText, in
             DrawRectangleRec(selector, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
             DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
             
-            DrawText(comboText[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
-            DrawText(FormatText("%i/%i", active + 1, comboCount), 
-                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, comboCount), 
+            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawText(FormatText("%i/%i", active + 1, count), 
+                     selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
                      styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
         } break;
@@ -1373,24 +1430,32 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
     return value;
 }
 
-// Texture button control, returns true when clicked
-RAYGUIDEF bool GuiTexture(Rectangle bounds, unsigned int textureId)
+// List View control, returns selected list element index
+RAYGUIDEF int GuiListView(Rectangle bounds, char **text, int count, int active)
 {
+    // TODO: Implement list view with scrolling bars and selectable elements (hover/press)
+
     GuiControlState state = guiState;
-    bool clicked = false;
-    
+
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
         Vector2 mousePoint = GetMousePosition();
-        
-        if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
+
+        /*
+        if (CheckCollisionPointRec(mousePoint, bounds) || 
+            CheckCollisionPointRec(mousePoint, selector))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+            {
+                active += 1;
+                if (active >= count) active = 0;
+            }
             else state = FOCUSED;
         }
+        */
     }
     //--------------------------------------------------------------------
 
@@ -1400,32 +1465,29 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, unsigned int textureId)
     {
         case NORMAL:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
-            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
-            //DrawTexture(texture, bounds.x, bounds.y, WHITE);
+
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
-            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
-            //DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
+
         } break;
         case PRESSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
-            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
-            //DrawTexture(texture, bounds.x, bounds.y, GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
+
         } break;
         case DISABLED:
         {
-            
+
         } break;
         default: break;
     }
-    //------------------------------------------------------------------
-
-    return clicked;
+    //--------------------------------------------------------------------
+    
+    return -1;
 }
+
+
+
 
 // Color Picker control
 // TODO: It can be divided in multiple controls:
@@ -1435,7 +1497,7 @@ RAYGUIDEF bool GuiTexture(Rectangle bounds, unsigned int textureId)
 //      Color GuiColorBarSat() [WHITE->color]
 //      Color GuiColorBarValue() [BLACK->color]), HSV / HSL
 //      unsigned char GuiColorBarLuminance() [BLACK->WHITE]
-Color GuiColorPicker(Rectangle bounds, Color color)
+RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 {    
     GuiControlState state = NORMAL;
     
@@ -1463,7 +1525,8 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     
     // TODO: Check mousePoint over colorSelector and right/bottom bars
     
-    if (CheckCollisionPointRec(mousePoint, bounds))     // Check button state
+    // Check button state
+    if (CheckCollisionPointRec(mousePoint, bounds))
     {
         state = FOCUSED;
         
@@ -1492,7 +1555,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     //else if (IsCursorHidden()) ShowCursor();
 
     // Check mouse over hue bar
-    if (CheckCollisionPointRec(mousePoint, boundsHue))     // Check button state
+    if (CheckCollisionPointRec(mousePoint, boundsHue))
     {
         if (IsKeyDown(KEY_UP))
         {
@@ -1507,7 +1570,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     }
     
     // Check mouse over alpha bar
-    if (CheckCollisionPointRec(mousePoint, boundsAlpha))     // Check button state
+    if (CheckCollisionPointRec(mousePoint, boundsAlpha))
     {
         if (IsKeyDown(KEY_LEFT))
         {
