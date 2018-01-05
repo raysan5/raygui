@@ -12,14 +12,16 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
+#define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
 
 #include <string.h>             // Required for: strcpy()
 #include <stdlib.h>             // Required for: atoi()
 
-char *GetFileName(char *path);                      // Get pointer to filename data in the string
-void GuiPanel(Rectangle bounds, const char *text);  // Draw a lines panel with name
 
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
 int main(int argc, char *argv[0])
 {
     // Initialization
@@ -54,7 +56,7 @@ int main(int argc, char *argv[0])
     int format = UNCOMPRESSED_R8G8B8A8;
     int headerSize = 0;
     
-    LoadGuiStyleImage("rguistyle_default_dark.png");
+    GuiLoadStyleImage("rguistyle_default_dark.png");
     
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raw image importer");
 
@@ -192,8 +194,8 @@ int main(int argc, char *argv[0])
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 170, 0, 0 }, "Channels:");
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 215, 0, 0 }, "Bit Depth:");
                 
-                buttonToggleChannel = GuiToggleGroup((Rectangle){ panel.x + 20, panel.y + 185, 38, 20 }, 4, arrayChannel, buttonToggleChannel);
-                buttonToggleDepth = GuiToggleGroup((Rectangle){ panel.x + 20, panel.y + 230, 51, 20 }, 3, arrayDepth, buttonToggleDepth);
+                buttonToggleChannel = GuiToggleGroup((Rectangle){ panel.x + 20, panel.y + 185, 38, 20 }, arrayChannel, 4, buttonToggleChannel);
+                buttonToggleDepth = GuiToggleGroup((Rectangle){ panel.x + 20, panel.y + 230, 51, 20 }, arrayDepth, 3, buttonToggleDepth);
                 
                 // ----- Header panel -----
                 GuiGroupBox((Rectangle){ panel.x + 10, panel.y + 285, 180, 50 }, "Header");
@@ -218,12 +220,4 @@ int main(int argc, char *argv[0])
     //--------------------------------------------------------------------------------------
     
     return 0;
-}
-
-// Get pointer to filename data in the string
-char *GetFileName(char *path)
-{
-    char *base = strrchr(path, '\\');
-
-    return base ? base + 1 : path;
 }
