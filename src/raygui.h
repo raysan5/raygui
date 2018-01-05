@@ -289,8 +289,9 @@ RAYGUIDEF Color GuiBackgroundColor(void);                               // Get b
 RAYGUIDEF Color GuiLinesColor(void);                                    // Get lines color
 RAYGUIDEF Color GuiTextColor(void);                                     // Get text color for normal state
 
-RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, show text
+RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                        // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, char **text, int count, int active);                     // Toggle Group control, returns toggled button index
@@ -586,7 +587,7 @@ RAYGUIDEF Color GuiTextColor(void) { return GetColor(styleGeneric[DEFAULT_TEXT_C
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 {
     GuiControlState state = guiState;
-    
+
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
 
@@ -595,27 +596,17 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 
     // Update control
     //--------------------------------------------------------------------
-    if (state != DISABLED)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        // Check label state
-        if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else state = FOCUSED;
-        }
-    }
+    // ...
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
     switch (state)
     {
-        case NORMAL: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
-        case FOCUSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
-        case PRESSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
-        case DISABLED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        case NORMAL: 
+        case FOCUSED:
+        case PRESSED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
+        case DISABLED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -680,6 +671,48 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
         default: break;
     }
     //------------------------------------------------------------------
+
+    return clicked;
+}
+
+// Label button control
+RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
+{
+    GuiControlState state = guiState;
+    bool clicked = false;
+    
+    int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
+    int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
+
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check label state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else state = FOCUSED;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
+        case FOCUSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
+        case PRESSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
+        case DISABLED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
 
     return clicked;
 }
