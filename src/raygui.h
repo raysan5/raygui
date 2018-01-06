@@ -294,9 +294,9 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                   
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                        // Toggle Button control, returns true when active
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, char **text, int count, int active);                     // Toggle Group control, returns toggled button index
+RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active);               // Toggle Group control, returns toggled button index
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
-RAYGUIDEF int GuiComboBox(Rectangle bounds, char **text, int count, int active);                        // Combo Box control, returns selected item index
+RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                  // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
@@ -802,9 +802,10 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
                 active = !active;
             }
             else state = FOCUSED;
+            
+            // TODO: DrawTextureV(texCursor, mousePoint, WHITE);
         }
     }
-    else active = false;
     //--------------------------------------------------------------------
 
     // Draw control
@@ -852,7 +853,7 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
 }
 
 // Toggle Group control, returns toggled button index
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, char **text, int count, int active)
+RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active)
 {
     for (int i = 0; i < count; i++)
     {
@@ -932,7 +933,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 }
 
 // Combo Box control, returns selected item index
-RAYGUIDEF int GuiComboBox(Rectangle bounds, char **text, int count, int active)
+RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active)
 {
     #define COMBOBOX_SELECTOR_WIDTH     35
 
@@ -1224,6 +1225,8 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
             }
             else state = FOCUSED;
         }
+        
+        if (slider.width > bounds.width) slider.width = bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH];
     }
     //--------------------------------------------------------------------
 
