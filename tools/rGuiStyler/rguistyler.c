@@ -182,7 +182,7 @@ int main()
     //-----------------------------------------------------------
     bool toggle = false;
     bool toggleValue = false;
-    char *toggleGuiText[3] = { "toggle", "group", "selection" };
+    const char *toggleGuiText[3] = { "toggle", "group", "selection" };
 
     float sliderValue = 50.0f;
     float sliderBarValue = 20.0f;
@@ -193,13 +193,14 @@ int main()
     int spinnerValue = 20;
 
     int comboNum = 5;
-    char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
+    const char *comboText[5] = { "this", "is", "a" ,"combo", "box" };
     int comboActive = 0;
     
     char guiText[17] =  { '\0' };
 
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
     Color colorPickerValue = RED;
+    Texture2D texIcons = LoadTexture("rmap_icons.png");
     //-----------------------------------------------------------
     
     // Get current directory
@@ -208,7 +209,7 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    GuiLoadStyleImage("rguistyle_default_dark.png");
+    GuiLoadStyleImage("rguistyle_default_light.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -330,6 +331,10 @@ int main()
 
             if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
             
+            if (GuiLabelButton((Rectangle){guiPosX + guiWidth + 10, guiPosY + deltaY, guiWidth, guiHeight}, "LabelButton")) {}
+            
+            if (GuiImageButtonEx((Rectangle){ guiPosX + guiWidth*2 + 10, guiPosY + deltaY, texIcons.width/3 + 50, texIcons.height/6 + 50 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 })) { }
+            
             if (toggle) toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle ACTIVE", toggle);
             else toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle INACTIVE", toggle);
             
@@ -349,8 +354,9 @@ int main()
             
             GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
             
+            //GuiDisable();
             colorPickerValue = GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, colorPickerValue);
-            
+            GuiEnable();
 
             // Draw Load and Save buttons
             if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - STATUS_BAR_HEIGHT - 100, 260, 30 }, "Load Style")) BtnLoadStyle();

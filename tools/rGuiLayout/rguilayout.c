@@ -5,7 +5,7 @@
 *   This example has been created using raylib 1.6 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
-*   Copyright (c) 2014 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2018 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
 
@@ -81,7 +81,7 @@ int main()
     
     int controlSelected = -1;
     
-    char *list[3] = { "ONE", "TWO", "THREE" };
+    const char *list[3] = { "ONE", "TWO", "THREE" };
     
     bool snapMode = false;
     int selectedType = BUTTON;
@@ -244,12 +244,12 @@ int main()
                     case LABEL: GuiLabel(layout[i].rec, "TEXT SAMPLE"); break;
                     case BUTTON: GuiButton(layout[i].rec, "BUTTON"); break;
                     case TOGGLE: GuiToggleButton(layout[i].rec, "TOGGLE", false); break;
-                    case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, 3, list, 1); break;
+                    case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
                     case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
                     case SLIDERBAR: GuiSliderBar(layout[i].rec, 40, 0, 100); break;
                     case PROGRESSBAR: GuiProgressBar(layout[i].rec, 40, 0, 100); break;
                     case SPINNER: GuiSpinner(layout[i].rec, 40, 0, 100); break;
-                    case COMBOBOX: GuiComboBox(layout[i].rec, 3, list, 1); break;
+                    case COMBOBOX: GuiComboBox(layout[i].rec, list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(layout[i].rec, false); break;
                     case TEXTBOX: GuiTextBox(layout[i].rec, "test text", 32); break;
                     default: break;
