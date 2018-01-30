@@ -1509,7 +1509,6 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
             {
                 state = NORMAL;
                 active = !active;
-                
             }
             else state = FOCUSED;
         }
@@ -1561,6 +1560,7 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
 // List View control, returns selected list element index
 RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active)
 {
+    #define LISTVIEW_ELEMENT_HEIGHT  30
     // TODO: Implement list view with scrolling bars and selectable elements (hover/press)
 
     GuiControlState state = guiState;
@@ -1572,32 +1572,41 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
+       
         Vector2 mousePoint = GetMousePosition();
         
-        endIndex = bounds.height/(30 + style[TOGGLEGROUP_PADDING]) + 1;
+        endIndex = bounds.height/(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]);
         
-        startIndex += GetMouseWheelMove();
-        
-        if (startIndex > 0 && (endIndex < count - 1)) endIndex += startIndex;
-        
-        if (startIndex < 0) startIndex = 0;
-        else if (startIndex > count - endIndex) startIndex = count - endIndex;
+        if (endIndex < count)
+        {
+            startIndex -= GetMouseWheelMove();
+            if (startIndex < 0) startIndex = 0;
 
+            endIndex += startIndex;
+            
+            if (startIndex > (count - (endIndex - startIndex)))
+            {
+                startIndex = count - (endIndex - startIndex);
+            }
+        }
+        
         if (endIndex > count) endIndex = count;
         
-        /*
-        if (CheckCollisionPointRec(mousePoint, bounds) || 
-            CheckCollisionPointRec(mousePoint, selector))
+        if (count*LISTVIEW_ELEMENT_HEIGHT <= bounds.height) startIndex = 0;
+        
+        
+        if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
             {
-                active += 1;
-                if (active >= count) active = 0;
+                
+                //active += 1;
+                //if (active >= count) active = 0;
             }
             else state = FOCUSED;
         }
-        */
+        
         
         //(maxIndexCount + indexOffset) > count) ? count : (maxIndexCount + indexOffset)
         
@@ -1610,18 +1619,31 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
 
     // Draw control
     //--------------------------------------------------------------------
-    
-    DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GRAY);
-    
     for (int i = startIndex; i < endIndex; i++)
     {
-        if (i == active) GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y + 3 + (i - startIndex)*(30 + style[TOGGLEGROUP_PADDING]), bounds.width - 15, 30 }, text[i], true);
-        else if (GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y  + 3 + (i - startIndex)*(30 + style[TOGGLEGROUP_PADDING]), bounds.width - 15, 30 }, text[i], false) == true) active = i;
+        if (i == active) 
+        {
+            if (GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y + 3 + (i - startIndex)*(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]), bounds.width - 15, LISTVIEW_ELEMENT_HEIGHT }, text[i], true) == false) active = -1;
+        }
+        else
+        {
+            if (GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y  + 3 + (i - startIndex)*(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]), bounds.width - 15, LISTVIEW_ELEMENT_HEIGHT }, text[i], false) == true) active = i;
+        }
     }
     
     DrawRectangle(0, 0, 10, bounds.height, LIGHTGRAY);
-    DrawRectangle(0, 0, 10, bounds.height/count, GRAY);
     
+    int barHeight = bounds.height - (count - (endIndex - startIndex))*LISTVIEW_ELEMENT_HEIGHT;
+    
+    // TODO: Review bar logic when bar size should be shorter than LISTVIEW_ELEMENT_HEIGHT
+    if (bounds.height < ((count - (endIndex - startIndex))*LISTVIEW_ELEMENT_HEIGHT))
+    {
+        float newHeight = (float)(endIndex - startIndex)*15.0f/(float)(endIndex - startIndex);
+        barHeight = (float)bounds.height - (float)((count - (endIndex - startIndex))*newHeight);
+    }
+    
+    DrawRectangle(0, startIndex*LISTVIEW_ELEMENT_HEIGHT, 10, barHeight, GRAY);
+
     //DrawText(FormatText("MAX INDEX: %i", endIndex), 200, 60, 20, RED);
     //DrawText(FormatText("INDEX OFFSET: %i", startIndex), 200, 120, 20, RED);
     
@@ -1629,19 +1651,19 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     {
         case NORMAL:
         {
-            
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
-            
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
         } break;
         default: break;
     }
