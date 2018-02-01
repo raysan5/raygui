@@ -56,7 +56,8 @@
 #define CONTROL_LIST_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
 
-#define NUM_CONTROLS        11
+#define NUM_CONTROLS        15
+#define NUM_STYLES        12
 
 // NOTE: Be extremely careful when defining: NUM_CONTROLS, GuiElement, guiControlText, guiPropertyNum, guiPropertyType and guiPropertyPos
 // All those variables must be coherent, one small mistake breaks the program (and it could take hours to find the error!)
@@ -85,16 +86,35 @@ static char currentPath[256];       // Path to current working folder
 
 const char *guiControlText[NUM_CONTROLS] = { 
     "LABEL", 
+    "LABELBUTTON",
     "BUTTON", 
+    "IMAGEBUTTON",
     "TOGGLE", 
     "TOGGLEGROUP", 
     "SLIDER", 
     "SLIDERBAR", 
     "PROGRESSBAR", 
+    "CHECKBOX", 
     "SPINNER", 
     "COMBOBOX", 
-    "CHECKBOX", 
-    "TEXTBOX" 
+    "TEXTBOX",
+    "LISTVIEW",
+    "COLORPICKER"
+};
+
+const char *guiStylesText[NUM_STYLES] = { 
+    "BORDER_COLOR_NORMAL",
+    "BASE_COLOR_NORMAL",
+    "TEXT_COLOR_NORMAL",
+    "BORDER_COLOR_FOCUSED",
+    "BASE_COLOR_FOCUSED",
+    "TEXT_COLOR_FOCUSED",
+    "BORDER_COLOR_PRESSED",
+    "BASE_COLOR_PRESSED",
+    "TEXT_COLOR_PRESSED",
+    "BORDER_COLOR_DISABLED",
+    "BASE_COLOR_DISABLED",
+    "TEXT_COLOR_DISABLED"
 };
 /*
 const char *guiListText[30] = {
@@ -143,12 +163,12 @@ int main()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
+    const int screenWidth = 700;
+    const int screenHeight = 700;
     
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
-    SetWindowMinSize(850, 600);
+    SetWindowMinSize(700, 700);
     
     int dropsCount = 0;
     char **droppedFiles;
@@ -206,7 +226,7 @@ int main()
     int guiHeight = 30;
     int guiWidth = 150;
 
-    int deltaY = 60;
+    int deltaY = 45;
     
     int selectPosX = 401;
     int selectWidth = screenWidth - 723;
@@ -234,10 +254,13 @@ int main()
 
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
     Color colorPickerValue = RED;
-    Texture2D texIcons = LoadTexture("icons.png");
+    Texture2D texIcons = LoadTexture("resources/icons.png");
+    Texture2D texLogo = LoadTexture("resources/logo128x128.png");
     
-    bool listElementActive = false;
     int listViewActive = -1;
+    int listViewStyleActive = -1;
+    
+    int controlsAnchorPos = 340;
     //-----------------------------------------------------------
     
     // Get current directory
@@ -246,7 +269,7 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    GuiLoadStyleImage("rguistyle_default_light.png");
+    GuiLoadStyleImage("resources/rguistyle_default_light.png");
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -264,7 +287,7 @@ int main()
         }
 
         //colorPickerValue = GetColor(GuiGetStyleProperty(BUTTON_BASE_COLOR_NORMAL));
-        GuiSetStyleProperty(BUTTON_BASE_COLOR_NORMAL, GetHexValue(colorPickerValue));
+        //GuiSetStyleProperty(BUTTON_BASE_COLOR_NORMAL, GetHexValue(colorPickerValue));
         
         // Update progress bar automatically
         progressValue += 0.0005f;
@@ -277,10 +300,25 @@ int main()
         
             ClearBackground(RAYWHITE);
             
-            DrawRectangle(400, 0, 559, GetScreenHeight() - STATUS_BAR_HEIGHT - 1, GuiBackgroundColor());
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiBackgroundColor());
+            
+            //Draw top and bottom bars
+            DrawRectangle(0, 0, GetScreenWidth(), 25, GRAY);
+            DrawRectangle(0, GetScreenHeight() - 25, GetScreenWidth(), 25, LIGHTGRAY);
+            
+            //Draw top and bottom bars' text
+            GuiLabel((Rectangle){20, GetScreenHeight() - 18, guiWidth/2, guiHeight}, FormatText("CURRENT SELECTION: %s_%s", guiControlText[listViewActive], guiStylesText[listViewStyleActive]));
+            GuiLabel((Rectangle){controlsAnchorPos + 100, GetScreenHeight() - 18, guiWidth/2, guiHeight}, FormatText("SAVE STATUS: %s", guiText));
+            
+            DrawText("CHOOSE CONTROL", 25, 10, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
+            DrawText(">   CHOOSE PROPERTY STYLE", 140, 10, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
+            DrawText(">                            STYLE VIEWER", controlsAnchorPos, 10, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
+            
+            //Draw texture of the logo
+            DrawTexture(texLogo, 10, 540, WHITE);
             
             // Draw selected control rectangles
-            switch (listViewActive)
+            /*switch (listViewActive)
             {
                 case LABEL: DrawRectangleLines(selectPosX + 10, guiPosY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 case BUTTON: DrawRectangleLines(selectPosX + 10, guiPosY + deltaY - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
@@ -293,53 +331,59 @@ int main()
                 case CHECKBOX: DrawRectangleLines(selectPosX + 10, guiPosY + (9 * deltaY) - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 case TEXTBOX: DrawRectangleLines(selectPosX + 10, guiPosY + (10 * deltaY) - 10, selectWidth - 20, guiHeight + 20, Fade(COLOR_REC, 0.8f)); break;
                 default: break;
-            }
+            }*/
 
-            listViewActive = GuiListView((Rectangle){ 0, 0, 140, GetScreenHeight() }, guiControlText, NUM_CONTROLS, listViewActive);
+            listViewActive = GuiListView((Rectangle){ 0, guiPosY, 140, 720/1.5f }, guiControlText, NUM_CONTROLS, listViewActive);
+            
+            listViewStyleActive = GuiListView((Rectangle){ 145, guiPosY, 140, 720/1.5f }, guiStylesText, NUM_STYLES, listViewStyleActive);
 
-            GuiLabel((Rectangle){guiPosX, guiPosY, guiWidth, guiHeight}, "Label");
+            GuiLabel((Rectangle){controlsAnchorPos, guiPosY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, "Label");
 
-            if (GuiButton((Rectangle){guiPosX, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
+            //if (GuiButton((Rectangle){controlsAnchorPos, guiPosY + deltaY, guiWidth, guiHeight}, "Button")) { }
             
-            if (GuiLabelButton((Rectangle){guiPosX + guiWidth + 10, guiPosY + deltaY, guiWidth, guiHeight}, "LabelButton")) {}
+            if (GuiLabelButton((Rectangle){controlsAnchorPos + guiWidth/3, guiPosY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth, guiHeight}, "LabelButton")) {}
             
-            if (GuiImageButtonEx((Rectangle){ guiPosX + guiWidth*2 + 10, guiPosY + deltaY, texIcons.width/3 + 50, texIcons.height/6 + 50 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 })) { }
+            if (GuiImageButtonEx((Rectangle){ controlsAnchorPos + guiWidth*2.3f - guiWidth/3, guiPosY, texIcons.width/3, texIcons.height/6 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 })) { }
             
-            if (toggle) toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle ACTIVE", toggle);
-            else toggle = GuiToggleButton((Rectangle){guiPosX, guiPosY + 2*deltaY, guiWidth, guiHeight}, "Toggle INACTIVE", toggle);
+            if (toggle) toggle = GuiToggleButton((Rectangle){controlsAnchorPos, guiPosY + deltaY, guiWidth/2, guiHeight}, "Toggle ACT", toggle);
+            else toggle = GuiToggleButton((Rectangle){controlsAnchorPos, guiPosY + deltaY, guiWidth/2, guiHeight}, "Toggle INE", toggle);
             
-            toggleValue = GuiToggleGroup((Rectangle){guiPosX, guiPosY + 3*deltaY, guiWidth, guiHeight}, toggleGuiText, 3, toggleValue);
+            toggleValue = GuiToggleGroup((Rectangle){controlsAnchorPos + guiWidth/1.5f, guiPosY + deltaY, guiWidth/2, guiHeight}, toggleGuiText, 3, toggleValue);
             
-            sliderValue = GuiSlider((Rectangle){guiPosX, guiPosY + 4*deltaY, 3*guiWidth, guiHeight}, sliderValue, 0, 100);
+            sliderValue = GuiSlider((Rectangle){controlsAnchorPos, guiPosY + 2*deltaY, 2.2f*guiWidth, guiHeight}, sliderValue, 0, 100);
             
-            sliderBarValue = GuiSliderBar((Rectangle){guiPosX, guiPosY + 5*deltaY, 3*guiWidth, guiHeight}, sliderBarValue, -10.0f, 40.0f);
+            sliderBarValue = GuiSliderBar((Rectangle){controlsAnchorPos, guiPosY + 3*deltaY, 2.2f*guiWidth, guiHeight}, sliderBarValue, -10.0f, 40.0f);
             
-            progressValue = GuiProgressBar((Rectangle){guiPosX, guiPosY + 6*deltaY, 3*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
+            progressValue = GuiProgressBar((Rectangle){controlsAnchorPos, guiPosY + 4*deltaY, 1.9f*guiWidth, guiHeight}, progressValue, 0.0f, 1.0f);
             
-            spinnerValue = GuiSpinner((Rectangle){guiPosX, guiPosY + 7*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
+            spinnerValue = GuiSpinner((Rectangle){controlsAnchorPos, guiPosY + 5*deltaY, guiWidth, guiHeight}, spinnerValue, 0, 100);
             
-            comboActive = GuiComboBox((Rectangle){guiPosX, guiPosY + 8*deltaY, guiWidth, guiHeight}, comboText, comboNum, comboActive);
+            comboActive = GuiComboBox((Rectangle){controlsAnchorPos + guiWidth*1.2f, guiPosY + 5*deltaY, guiWidth, guiHeight}, comboText, comboNum, comboActive);
 
-            checked = GuiCheckBox((Rectangle){guiPosX, guiPosY + 9*deltaY, guiWidth/5, guiHeight}, checked);
+            checked = GuiCheckBox((Rectangle){controlsAnchorPos + guiWidth*2, guiPosY + 4*deltaY, guiWidth/5, guiHeight}, checked);
             
-            GuiTextBox((Rectangle){guiPosX, guiPosY + 10*deltaY, guiWidth, guiHeight}, guiText, 16);
+            GuiTextBox((Rectangle){controlsAnchorPos, guiPosY + 6*deltaY, guiWidth, guiHeight}, guiText, 16);
             
-            colorPickerValue = GuiColorPicker((Rectangle){ colorPickerPos.x, colorPickerPos.y, 240, 240 }, colorPickerValue);
+            colorPickerValue = GuiColorPicker((Rectangle){ controlsAnchorPos, guiPosY + 7*deltaY, 240, 240 }, colorPickerValue);
 
+            //Draw labels for GuiColorPicker information
+            GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("R: %i", colorPickerValue.r));
+            GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7.4f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("G: %i", colorPickerValue.g));
+            GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7.8f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("B: %i", colorPickerValue.b));
+            GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 8.2f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("A: %i", colorPickerValue.a));
+            GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 12.5f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("#%x", GetHexValue(colorPickerValue)));
             
             // Draw Load and Save buttons
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - STATUS_BAR_HEIGHT - 100, 260, 30 }, "Load Style")) BtnLoadStyle();
-            if (GuiButton((Rectangle){ colorPickerPos.x, screenHeight - STATUS_BAR_HEIGHT - 60, 260, 30 }, "Save Style")) BtnSaveStyle();
-            
-            
-            // Draw bottom status bar info         
-            DrawText(FormatText("ColorPicker hexadecimal value #%x", GetHexValue(colorPickerValue)), screenWidth - 260 , screenHeight - STATUS_BAR_HEIGHT + 8, FONT_SIZE , GuiTextColor()); 
-            
+            if (GuiButton((Rectangle){ controlsAnchorPos + guiWidth*1.2f - guiWidth/3, guiPosY, guiWidth, guiHeight }, "Load Style")) BtnLoadStyle();
+            if (GuiButton((Rectangle){ controlsAnchorPos + guiWidth*1.2f, guiPosY + 6*deltaY, guiWidth, guiHeight }, "Save Style")) BtnSaveStyle();
+
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
     // De-Initialization
     //--------------------------------------------------------------------------------------    
+    UnloadTexture(texIcons);
+    UnloadTexture(texLogo);
     ClearDroppedFiles();    // Clear internal buffers
     
     CloseWindow();          // Close window and OpenGL context
