@@ -116,7 +116,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define NUM_PROPERTIES       100
+#define NUM_PROPERTIES       144
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -187,6 +187,7 @@ typedef enum GuiProperty {
     LABEL_TEXT_COLOR_NORMAL = 0,
     LABEL_TEXT_COLOR_FOCUSED,
     LABEL_TEXT_COLOR_PRESSED,
+        LABEL_TEXT_COLOR_DISABLED,
     // Button
     BUTTON_BORDER_WIDTH,
     BUTTON_BORDER_COLOR_NORMAL,
@@ -198,6 +199,9 @@ typedef enum GuiProperty {
     BUTTON_BORDER_COLOR_PRESSED,
     BUTTON_BASE_COLOR_PRESSED,
     BUTTON_TEXT_COLOR_PRESSED,
+        BUTTON_BORDER_COLOR_DISABLED,
+        BUTTON_BASE_COLOR_DISABLED,
+        BUTTON_TEXT_COLOR_DISABLED,
     // Toggle
     TOGGLE_BORDER_WIDTH,
     TOGGLE_BORDER_COLOR_NORMAL,
@@ -209,6 +213,9 @@ typedef enum GuiProperty {
     TOGGLE_BORDER_COLOR_PRESSED,
     TOGGLE_BASE_COLOR_PRESSED,
     TOGGLE_TEXT_COLOR_PRESSED,
+        TOGGLE_BORDER_COLOR_DISABLED,
+        TOGGLE_BASE_COLOR_DISABLED,
+        TOGGLE_TEXT_COLOR_DISABLED,
     TOGGLEGROUP_PADDING,
     // Slider
     SLIDER_BORDER_WIDTH,
@@ -218,6 +225,8 @@ typedef enum GuiProperty {
     SLIDER_BASE_COLOR_FOCUSED,
     SLIDER_BORDER_COLOR_PRESSED,
     SLIDER_BASE_COLOR_PRESSED,
+        SLIDER_BORDER_COLOR_DISABLED,
+        SLIDER_BASE_COLOR_DISABLED,
     // SliderBar
     SLIDERBAR_INNER_PADDING,
     SLIDERBAR_BORDER_WIDTH,
@@ -227,6 +236,8 @@ typedef enum GuiProperty {
     SLIDERBAR_BASE_COLOR_FOCUSED,
     SLIDERBAR_BORDER_COLOR_PRESSED,
     SLIDERBAR_BASE_COLOR_PRESSED,
+        SLIDERBAR_BORDER_COLOR_DISABLED,
+        SLIDERBAR_BASE_COLOR_DISABLED,
     // ProgressBar
     PROGRESSBAR_INNER_PADDING,
     PROGRESSBAR_BORDER_WIDTH,
@@ -234,6 +245,8 @@ typedef enum GuiProperty {
     PROGRESSBAR_BASE_COLOR_NORMAL,
     PROGRESSBAR_BORDER_COLOR_FOCUSED,
     PROGRESSBAR_BASE_COLOR_FOCUSED,
+        PROGRESSBAR_BORDER_COLOR_DISABLED,
+        PROGRESSBAR_BASE_COLOR_DISABLED,
     // Spinner
     SPINNER_INNER_PADDING,
     SPINNER_BUTTON_PADDING,
@@ -246,9 +259,13 @@ typedef enum GuiProperty {
     SPINNER_BORDER_COLOR_PRESSED,
     SPINNER_BASE_COLOR_PRESSED,
     SPINNER_TEXT_COLOR_PRESSED,
+        SPINNER_BORDER_COLOR_DISABLED,
+        SPINNER_BASE_COLOR_DISABLED,
+        SPINNER_TEXT_COLOR_DISABLED,
     // ComboBox
     COMBOBOX_BORDER_WIDTH,
     COMBOBOX_BUTTON_PADDING,
+    COMBOBOX_SELECTOR_WIDTH,
     COMBOBOX_BORDER_COLOR_NORMAL,
     COMBOBOX_BASE_COLOR_NORMAL,
     COMBOBOX_TEXT_COLOR_NORMAL,
@@ -258,6 +275,9 @@ typedef enum GuiProperty {
     COMBOBOX_BORDER_COLOR_PRESSED,
     COMBOBOX_BASE_COLOR_PRESSED,
     COMBOBOX_TEXT_COLOR_PRESSED,
+        COMBOBOX_BORDER_COLOR_DISABLED,
+        COMBOBOX_BASE_COLOR_DISABLED,
+        COMBOBOX_TEXT_COLOR_DISABLED,
     // CheckBox
     CHECKBOX_BORDER_WIDTH,
     CHECKBOX_INNER_PADDING,
@@ -267,6 +287,8 @@ typedef enum GuiProperty {
     CHECKBOX_BASE_COLOR_FOCUSED,
     CHECKBOX_BORDER_COLOR_PRESSED,
     CHECKBOX_BASE_COLOR_PRESSED,
+        CHECKBOX_BORDER_COLOR_DISABLED,
+        CHECKBOX_BASE_COLOR_DISABLED,
     // TextBox
     TEXTBOX_BORDER_WIDTH,
     TEXTBOX_BORDER_COLOR_NORMAL,
@@ -278,6 +300,31 @@ typedef enum GuiProperty {
     TEXTBOX_BORDER_COLOR_PRESSED,
     TEXTBOX_BASE_COLOR_PRESSED,
     TEXTBOX_TEXT_COLOR_PRESSED,
+        TEXTBOX_BORDER_COLOR_DISABLED,
+        TEXTBOX_BASE_COLOR_DISABLED,
+        TEXTBOX_TEXT_COLOR_DISABLED,
+        // ColorPicker
+        COLORPICKER_BORDER_COLOR_NORMAL,
+        COLORPICKER_BASE_COLOR_NORMAL,
+        COLORPICKER_BORDER_COLOR_FOCUSED,
+        COLORPICKER_BASE_COLOR_FOCUSED,
+        COLORPICKER_BORDER_COLOR_PRESSED,
+        COLORPICKER_BASE_COLOR_PRESSED,
+        COLORPICKER_BORDER_COLOR_DISABLED,
+        COLORPICKER_BASE_COLOR_DISABLED,
+        // ListView
+        LISTVIEW_BORDER_COLOR_NORMAL,
+        LISTVIEW_BASE_COLOR_NORMAL,
+        LISTVIEW_TEXT_COLOR_NORMAL,
+        LISTVIEW_BORDER_COLOR_FOCUSED,
+        LISTVIEW_BASE_COLOR_FOCUSED,
+        LISTVIEW_TEXT_COLOR_FOCUSED,
+        LISTVIEW_BORDER_COLOR_PRESSED,
+        LISTVIEW_BASE_COLOR_PRESSED,
+        LISTVIEW_TEXT_COLOR_PRESSED,
+        LISTVIEW_BORDER_COLOR_DISABLED,
+        LISTVIEW_BASE_COLOR_DISABLED,
+        LISTVIEW_TEXT_COLOR_DISABLED,
 } GuiProperty;
 
 //----------------------------------------------------------------------------------
@@ -424,6 +471,7 @@ static int style[NUM_PROPERTIES] = {
     0x686868ff,     // LABEL_TEXT_COLOR_NORMAL -----> DEFAULT_TEXT_COLOR_NORMAL
     0x6c9bbcff,     // LABEL_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
     0x480b5ff,      // LABEL_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x606666ff,      // LABEL_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x2,            // BUTTON_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // BUTTON_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // BUTTON_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -434,6 +482,10 @@ static int style[NUM_PROPERTIES] = {
     0x48cc7ff,      // BUTTON_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // BUTTON_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x480b5ff,      // BUTTON_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // BUTTON_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // BUTTON_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_COLOR_COLOR_DISABLED
+        
     0x1,            // TOGGLE_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // TOGGLE_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // TOGGLE_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -444,6 +496,9 @@ static int style[NUM_PROPERTIES] = {
     0x48cc7ff,      // TOGGLE_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // TOGGLE_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x480b5ff,      // TOGGLE_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // TOGGLE_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // TOGGLE_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // TOGGLE_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x2,            // TOGGLEGROUP_PADDING
     0x1,            // SLIDER_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // SLIDER_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
@@ -452,6 +507,8 @@ static int style[NUM_PROPERTIES] = {
     0xc9effeff,     // SLIDER_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
     0x48cc7ff,      // SLIDER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // SLIDER_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
+        0x72817eff,      // SLIDER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // SLIDER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
     0x1,            // SLIDERBAR_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // SLIDERBAR_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // SLIDERBAR_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -459,12 +516,16 @@ static int style[NUM_PROPERTIES] = {
     0xc9effeff,     // SLIDERBAR_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
     0x48cc7ff,      // SLIDERBAR_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // SLIDERBAR_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
+        0x72817eff,      // SLIDERBAR_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // SLIDERBAR_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
     0x1,            // PROGRESSBAR_INNER_PADDING
     0x1,            // PROGRESSBAR_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // PROGRESSBAR_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc9effeff,     // PROGRESSBAR_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_PRESSED
     0x7bb0d6ff,     // PROGRESSBAR_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
     0x97e8ffff,     // PROGRESSBAR_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
+        0x72817eff,      // PROGRESSBAR_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // PROGRESSBAR_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
     0x2,            // SPINNER_BUTTON_PADDING
     0x828282ff,     // SPINNER_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // SPINNER_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -475,8 +536,12 @@ static int style[NUM_PROPERTIES] = {
     0x48cc7ff,      // SPINNER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // SPINNER_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x480b5ff,      // SPINNER_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // SPINNER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // SPINNER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // SPINNER_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // COMBOBOX_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x2,            // COMBOBOX_BUTTON_PADDING
+    0X23,           // COMBOBOX_SELECTOR_WIDTH
     0x828282ff,     // COMBOBOX_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // COMBOBOX_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
     0x686868ff,     // COMBOBOX_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
@@ -486,6 +551,9 @@ static int style[NUM_PROPERTIES] = {
     0x48cc7ff,      // COMBOBOX_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // COMBOBOX_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x480b5ff,      // COMBOBOX_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // COMBOBOX_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // COMBOBOX_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // COMBOBOX_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // CHECKBOX_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x1,            // CHECKBOX_INNER_PADDING
     0x828282ff,     // CHECKBOX_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
@@ -494,6 +562,8 @@ static int style[NUM_PROPERTIES] = {
     0x6c9bbcff,     // CHECKBOX_BASE_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
     0x48cc7ff,      // CHECKBOX_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x480b5ff,      // CHECKBOX_BASE_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // CHECKBOX_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // CHECKBOX_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
     0x1,            // TEXTBOX_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // TEXTBOX_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xf5f5f5ff,     // TEXTBOX_BASE_COLOR_NORMAL ----> DEFAULT_BACKGROUND_COLOR
@@ -504,6 +574,30 @@ static int style[NUM_PROPERTIES] = {
     0x48cc7ff,      // TEXTBOX_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // TEXTBOX_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x480b5ff,      // TEXTBOX_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // TEXTBOX_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // TEXTBOX_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // TEXTBOX_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
+        0x828282ff,     // COLORPICKER_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
+        0xf5f5f5ff,     // COLORPICKER_BASE_COLOR_NORMAL ----> DEFAULT_BACKGROUND_COLOR
+        0x7bb0d6ff,     // COLORPICKER_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
+        0x6c9bbcff,     // COLORPICKER_BASE_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
+        0x48cc7ff,      // COLORPICKER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
+        0x480b5ff,      // COLORPICKER_BASE_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // COLORPICKER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // COLORPICKER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x828282ff,     // LISTVIEW_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
+        0xc8c8c8ff,     // LISTVIEW_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
+        0x686868ff,     // LISTVIEW_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
+        0x7bb0d6ff,     // LISTVIEW_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
+        0xc9effeff,     // LISTVIEW_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
+        0x6c9bbcff,     // LISTVIEW_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
+        0x48cc7ff,      // LISTVIEW_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
+        0x97e8ffff,     // LISTVIEW_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
+        0x480b5ff,      // LISTVIEW_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+        0x72817eff,     // LISTVIEW_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+        0x344041ff,     // LISTVIEW_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+        0x606666ff,     // LISTVIEW_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
+        
 };
 
 //----------------------------------------------------------------------------------
@@ -615,7 +709,7 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
         case NORMAL: 
         case FOCUSED:
         case PRESSED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
-        case DISABLED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        case DISABLED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -673,9 +767,9 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -693,8 +787,10 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
 
-    if (bounds.width < textWidth) bounds.width = textWidth;
-    if (bounds.height < textHeight) bounds.height = textHeight;
+    //if (bounds.width < textWidth) bounds.width = textWidth;
+    //if (bounds.height < textHeight) bounds.height = textHeight;
+    bounds.width = textWidth;
+    bounds.height = textHeight;
 
     // Update control
     //--------------------------------------------------------------------
@@ -716,10 +812,10 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     switch (state)
     {
-        case NORMAL: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
-        case FOCUSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
-        case PRESSED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
-        case DISABLED: DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        case NORMAL: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
+        case FOCUSED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
+        case PRESSED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
+        case DISABLED: DrawText(text, bounds.x, bounds.y, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -758,25 +854,25 @@ RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle t
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
-            DrawTexturePro(texture, texSource, bounds, (Vector2){ 0, 0 }, 0 , GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
+            DrawTextureRec(texture, texSource, (Vector2){ bounds.x, bounds.y }, GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
-            DrawTexturePro(texture, texSource, bounds, (Vector2){ 0, 0 }, 0 , GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
+            DrawTextureRec(texture, texSource, (Vector2){ bounds.x, bounds.y }, GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
-            DrawTexturePro(texture, texSource, bounds, (Vector2){ 0, 0 }, 0 , GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
+            DrawTextureRec(texture, texSource, (Vector2){ bounds.x, bounds.y }, GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawTexturePro(texture, texSource, bounds, (Vector2){ 0, 0 }, 0 , GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
+            DrawTextureRec(texture, texSource, (Vector2){ bounds.x, bounds.y }, GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -858,9 +954,9 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[TOGGLE_BASE_COLOR_DISABLED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -936,7 +1032,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
         case DISABLED:
         {
             DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[TOGGLE_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[TOGGLE_BORDER_WIDTH], bounds.height - 2*style[TOGGLE_BORDER_WIDTH], GetColor(style[CHECKBOX_BASE_COLOR_DISABLED]));
             if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
                                        bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
                                        bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
@@ -952,8 +1048,6 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 // Combo Box control, returns selected item index
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active)
 {
-    #define COMBOBOX_SELECTOR_WIDTH     35
-
     GuiControlState state = guiState;
     
     bounds.width -= (COMBOBOX_SELECTOR_WIDTH + style[COMBOBOX_BUTTON_PADDING]);
@@ -1038,17 +1132,17 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[COMBOBOX_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[COMBOBOX_BORDER_WIDTH], bounds.y + style[COMBOBOX_BORDER_WIDTH], bounds.width - 2*style[COMBOBOX_BORDER_WIDTH], bounds.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_DISABLED]));
 
-            DrawRectangleRec(selector, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(selector, GetColor(style[COMBOBOX_BORDER_COLOR_DISABLED]));
+            DrawRectangle(selector.x + style[COMBOBOX_BORDER_WIDTH], selector.y + style[COMBOBOX_BORDER_WIDTH], selector.width - 2*style[COMBOBOX_BORDER_WIDTH], selector.height - 2*style[COMBOBOX_BORDER_WIDTH], GetColor(style[COMBOBOX_BASE_COLOR_DISABLED]));
             
-            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawText(text[active], bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_DISABLED]));
             DrawText(FormatText("%i/%i", active + 1, count), 
                      selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
-                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1073,6 +1167,9 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 // NOTE: Requires static variables: framesCounter
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 {
+    #define GUITEXTBOX_PADDING 4
+    #define GUITEXTBOX_LINE_PADDING 4
+
     GuiControlState state = guiState;
     static int framesCounter = 0;         // Required for blinking cursor
 
@@ -1119,22 +1216,22 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
         {
             DrawRectangleRec(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]));
-            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
-            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
             
-            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + 4 + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y + 2, 1, bounds.height - 4, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
+            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + GUITEXTBOX_LINE_PADDING + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOX_LINE_PADDING/2, 1, bounds.height - GUITEXTBOX_LINE_PADDING, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(text, bounds.x + 4, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_DISABLED]));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1144,10 +1241,14 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
 // Slider control, returns selected value
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue)
 {
+    //*#define GUISLIDER_SLIDER_WIDTH       20
+    #define GUISLIDER_SLIDER_WIDTH       20
+    #define GUISLIDER_SLIDER_LINE_THICK  1
+    
     GuiControlState state = guiState;
     
-    Rectangle slider = { bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - 10,
-                         bounds.y + style[SLIDER_BORDER_WIDTH], 20, bounds.height - 2*style[SLIDER_BORDER_WIDTH] };
+    Rectangle slider = { bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - GUISLIDER_SLIDER_WIDTH/2,
+                         bounds.y + style[SLIDER_BORDER_WIDTH], GUISLIDER_SLIDER_WIDTH, bounds.height - 2*style[SLIDER_BORDER_WIDTH] };
                          
     // Update control
     //--------------------------------------------------------------------
@@ -1184,7 +1285,7 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(style[SLIDER_BASE_COLOR_NORMAL]));
             
             DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_PRESSED]));
-            DrawRectangle(slider.x + slider.width/2, slider.y, 1, slider.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangle(slider.x + slider.width/2, slider.y, GUISLIDER_SLIDER_LINE_THICK, slider.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
         } break;
         case FOCUSED:
         {
@@ -1192,7 +1293,7 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(style[SLIDER_BASE_COLOR_NORMAL]));
             
             DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_FOCUSED]));
-            DrawRectangle(slider.x + slider.width/2, slider.y, 1, slider.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(slider.x + slider.width/2, slider.y, GUISLIDER_SLIDER_LINE_THICK, slider.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
@@ -1200,12 +1301,12 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(style[SLIDER_BASE_COLOR_NORMAL]));
             
             DrawRectangleRec(slider, GetColor(style[SLIDER_BASE_COLOR_PRESSED]));
-            DrawRectangle(slider.x + slider.width/2, slider.y, 1, slider.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangle(slider.x + slider.width/2, slider.y, GUISLIDER_SLIDER_LINE_THICK, slider.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[SLIDER_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(style[SLIDER_BASE_COLOR_DISABLED]));
             DrawRectangleRec(slider, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
@@ -1271,8 +1372,8 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[SLIDERBAR_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], GetColor(style[SLIDER_BASE_COLOR_DISABLED]));
             DrawRectangleRec(slider, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
@@ -1318,9 +1419,9 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
         case PRESSED: break;    // NOTE: State not used on this control
         case DISABLED: 
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[PROGRESSBAR_BORDER_COLOR_DISABLED]));
             DrawRectangle(bounds.x + style[PROGRESSBAR_BORDER_WIDTH], bounds.y + style[PROGRESSBAR_BORDER_WIDTH], bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH], bounds.height - 2*style[PROGRESSBAR_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BACKGROUND_COLOR]));
-            DrawRectangleRec(progress, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(progress, GetColor(style[PROGRESSBAR_BASE_COLOR_DISABLED]));
         } break;
         default: break;
     }    
@@ -1333,18 +1434,21 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue)
 {
-    #define SPINNER_LEFT_BUTTON      1
-    #define SPINNER_RIGHT_BUTTON     2
-    #define SPINNER_BUTTON_WIDTH    35
+    // #define SPINNER_BUTTONS_PADDING      1
+    // #define SPINNER_BUTTONS_PADDING     2
+    //*#define SPINNER_BUTTONS_PADDING     2
+    //*#define SPINNER_BUTTONS_WIDTH             35
+    #define SPINNER_BUTTONS_PADDING     2
+    #define SPINNER_BUTTONS_WIDTH             35
 
     GuiControlState state = guiState;
     
     static int framesCounter = 0;
     static bool valueSpeed = false;;
     
-    Rectangle spinner = { bounds.x + SPINNER_BUTTON_WIDTH + style[SPINNER_BUTTON_PADDING], bounds.y, bounds.width - 2*(SPINNER_BUTTON_WIDTH + style[SPINNER_BUTTON_PADDING]), bounds.height };
-    Rectangle leftButtonBound = { bounds.x, bounds.y, SPINNER_BUTTON_WIDTH, bounds.height };
-    Rectangle rightButtonBound = { bounds.x + bounds.width - SPINNER_BUTTON_WIDTH, bounds.y, SPINNER_BUTTON_WIDTH, bounds.height };
+    Rectangle spinner = { bounds.x + SPINNER_BUTTONS_WIDTH + style[SPINNER_BUTTONS_PADDING], bounds.y, bounds.width - 2*(SPINNER_BUTTONS_WIDTH + style[SPINNER_BUTTON_PADDING]), bounds.height };
+    Rectangle leftButtonBound = { bounds.x, bounds.y, SPINNER_BUTTONS_WIDTH, bounds.height };
+    Rectangle rightButtonBound = { bounds.x + bounds.width - SPINNER_BUTTONS_WIDTH, bounds.y, SPINNER_BUTTONS_WIDTH, bounds.height };
 
     int textWidth = MeasureText(FormatText("%i", value), styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
@@ -1456,26 +1560,26 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
         case NORMAL:
         {
             DrawRectangleRec(spinner, GetColor(style[SPINNER_BORDER_COLOR_NORMAL]));
-            DrawRectangle(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
+            DrawRectangle(spinner.x + SPINNER_BUTTONS_PADDING, spinner.y + SPINNER_BUTTONS_PADDING, spinner.width - SPINNER_BUTTONS_PADDING, spinner.height - SPINNER_BUTTONS_PADDING, GetColor(style[SPINNER_BASE_COLOR_NORMAL]));
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRec(spinner, GetColor(style[SPINNER_BORDER_COLOR_FOCUSED]));
-            DrawRectangle(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_FOCUSED]));
+            DrawRectangle(spinner.x + SPINNER_BUTTONS_PADDING, spinner.y + SPINNER_BUTTONS_PADDING, spinner.width - SPINNER_BUTTONS_PADDING, spinner.height - SPINNER_BUTTONS_PADDING, GetColor(style[SPINNER_BASE_COLOR_FOCUSED]));
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRec(spinner, GetColor(style[SPINNER_BORDER_COLOR_PRESSED]));
-            DrawRectangle(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(style[SPINNER_BASE_COLOR_PRESSED]));
+            DrawRectangle(spinner.x + SPINNER_BUTTONS_PADDING, spinner.y + SPINNER_BUTTONS_PADDING, spinner.width - SPINNER_BUTTONS_PADDING, spinner.height - SPINNER_BUTTONS_PADDING, GetColor(style[SPINNER_BASE_COLOR_PRESSED]));
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(spinner, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(spinner.x + 1, spinner.y + 1, spinner.width - 2, spinner.height - 2, GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleRec(spinner, GetColor(style[SPINNER_BORDER_COLOR_DISABLED]));
+            DrawRectangle(spinner.x + SPINNER_BUTTONS_PADDING, spinner.y + SPINNER_BUTTONS_PADDING, spinner.width - SPINNER_BUTTONS_PADDING, spinner.height - SPINNER_BUTTONS_PADDING, GetColor(style[SPINNER_BASE_COLOR_DISABLED]));
+            DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1486,12 +1590,14 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
 // List Element control, returns element state
 RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
 {
+    #define GUILISTELEMENT_PADDING  2
+    
     GuiControlState state = guiState;
     
     int textWidth = MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]);
     int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
     
-    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.width < textWidth) bounds.width = textWidth + GUILISTELEMENT_PADDING*2;
     if (bounds.height < textHeight) bounds.height = textHeight;
     
     
@@ -1523,32 +1629,32 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
         {
             if (active)
             {
-                DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
-                DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
-                DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
+                DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BASE_COLOR_PRESSED]));
+                DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]));
+                DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_PRESSED]));
             }
             else
             {
                 //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BORDER_COLOR_NORMAL]));
-                DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_NORMAL]));
+                DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_NORMAL]));
             }
         } break;
         case FOCUSED:
         {
-            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BASE_COLOR_FOCUSED]));
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_FOCUSED]));
+            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BASE_COLOR_FOCUSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BASE_COLOR_PRESSED]));
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BORDER_COLOR_PRESSED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TOGGLE_TEXT_COLOR_PRESSED]));
+            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BASE_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
             //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[LISTVIEW_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1560,7 +1666,13 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
 // List View control, returns selected list element index
 RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active)
 {
-    #define LISTVIEW_ELEMENT_HEIGHT  30
+    //*#define GUILISTVIEW_ELEMENTS_HEIGHT    30
+    //*#define GUILISTVIEW_ELEMENTS_PADDING    2
+    //*#define GUILISTVIEW_BAR_WIDTH       10
+    #define GUILISTVIEW_ELEMENTS_HEIGHT    30
+    #define GUILISTVIEW_ELEMENTS_PADDING    2
+    #define GUILISTVIEW_BAR_WIDTH       10
+    #define GUILISTVIEW_LINE_THICK       1
     // TODO: Implement list view with scrolling bars and selectable elements (hover/press)
 
     GuiControlState state = guiState;
@@ -1572,10 +1684,18 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
-       
+        for(int i = 0; i < count; i++)
+        {
+            int textWidth = MeasureText(text[i], styleGeneric[DEFAULT_TEXT_SIZE]);
+            if (bounds.width - GUILISTVIEW_BAR_WIDTH - 2*GUILISTVIEW_ELEMENTS_PADDING - GUILISTVIEW_LINE_THICK < textWidth)
+            {
+                 bounds.width = textWidth + GUILISTVIEW_BAR_WIDTH + 2*GUILISTVIEW_ELEMENTS_PADDING + GUILISTVIEW_LINE_THICK;
+            }               
+       }
+      
         Vector2 mousePoint = GetMousePosition();
         
-        endIndex = bounds.height/(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]);
+        endIndex = bounds.height/(GUILISTVIEW_ELEMENTS_HEIGHT + GUILISTVIEW_ELEMENTS_PADDING);
         
         if (endIndex < count)
         {
@@ -1592,7 +1712,7 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         
         if (endIndex > count) endIndex = count;
         
-        if (count*LISTVIEW_ELEMENT_HEIGHT <= bounds.height) startIndex = 0;
+        if (count*GUILISTVIEW_ELEMENTS_HEIGHT <= bounds.height) startIndex = 0;
         
         
         if (CheckCollisionPointRec(mousePoint, bounds))
@@ -1623,27 +1743,30 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     {
         if (i == active) 
         {
-            if (GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y + 3 + (i - startIndex)*(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]), bounds.width - 15, LISTVIEW_ELEMENT_HEIGHT }, text[i], true) == false) active = -1;
+            if (GuiListElement((Rectangle){ bounds.x + GUILISTVIEW_BAR_WIDTH  + GUILISTVIEW_ELEMENTS_PADDING, bounds.y + GUILISTVIEW_ELEMENTS_PADDING + GUILISTVIEW_LINE_THICK + (i - startIndex)*(GUILISTVIEW_ELEMENTS_HEIGHT + GUILISTVIEW_ELEMENTS_PADDING), bounds.width - GUILISTVIEW_BAR_WIDTH - 2*GUILISTVIEW_ELEMENTS_PADDING - GUILISTVIEW_LINE_THICK, GUILISTVIEW_ELEMENTS_HEIGHT }, text[i], true) == false) active = -1;
         }
         else
         {
-            if (GuiListElement((Rectangle){ bounds.x + 10  + style[TOGGLEGROUP_PADDING], bounds.y  + 3 + (i - startIndex)*(LISTVIEW_ELEMENT_HEIGHT + style[TOGGLEGROUP_PADDING]), bounds.width - 15, LISTVIEW_ELEMENT_HEIGHT }, text[i], false) == true) active = i;
+            if (GuiListElement((Rectangle){ bounds.x + GUILISTVIEW_BAR_WIDTH  + GUILISTVIEW_ELEMENTS_PADDING, bounds.y  + GUILISTVIEW_ELEMENTS_PADDING + GUILISTVIEW_LINE_THICK + (i - startIndex)*(GUILISTVIEW_ELEMENTS_HEIGHT + GUILISTVIEW_ELEMENTS_PADDING), bounds.width - GUILISTVIEW_BAR_WIDTH - 2*GUILISTVIEW_ELEMENTS_PADDING - GUILISTVIEW_LINE_THICK, GUILISTVIEW_ELEMENTS_HEIGHT }, text[i], false) == true) active = i;
         }
     }
     
-    DrawRectangle(0, 0, 10, bounds.height, LIGHTGRAY);
+    DrawRectangle(bounds.x, bounds.y, GUILISTVIEW_BAR_WIDTH, bounds.height, LIGHTGRAY);
     
-    int barHeight = bounds.height - (count - (endIndex - startIndex))*LISTVIEW_ELEMENT_HEIGHT;
+    int barHeight = bounds.height - (count - (endIndex - startIndex))*GUILISTVIEW_ELEMENTS_HEIGHT;
     
     // TODO: Review bar logic when bar size should be shorter than LISTVIEW_ELEMENT_HEIGHT
-    if (bounds.height < ((count - (endIndex - startIndex))*LISTVIEW_ELEMENT_HEIGHT))
+    if (bounds.height < ((count - (endIndex - startIndex))*GUILISTVIEW_ELEMENTS_HEIGHT))
     {
-        float newHeight = (float)(endIndex - startIndex)*15.0f/(float)(endIndex - startIndex);
+        float newHeight = (float)(endIndex - startIndex)*(float)(GUILISTVIEW_ELEMENTS_HEIGHT/2)/(float)(endIndex - startIndex);
         barHeight = (float)bounds.height - (float)((count - (endIndex - startIndex))*newHeight);
     }
     
-    DrawRectangle(0, startIndex*LISTVIEW_ELEMENT_HEIGHT, 10, barHeight, GRAY);
-
+    if (state != DISABLED)
+    {
+        if(barHeight >= bounds.height) DrawRectangle(bounds.x, startIndex*GUILISTVIEW_ELEMENTS_HEIGHT + bounds.y, GUILISTVIEW_BAR_WIDTH, barHeight, LIGHTGRAY);
+        else DrawRectangle(bounds.x, startIndex*GUILISTVIEW_ELEMENTS_HEIGHT + bounds.y, GUILISTVIEW_BAR_WIDTH, barHeight, GRAY);
+    }        
     //DrawText(FormatText("MAX INDEX: %i", endIndex), 200, 60, 20, RED);
     //DrawText(FormatText("INDEX OFFSET: %i", startIndex), 200, 120, 20, RED);
     
@@ -1651,19 +1774,23 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     {
         case NORMAL:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_NORMAL]));
+            
         } break;
         case FOCUSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]));
+            
         } break;
         case PRESSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]));
+            
         } break;
         case DISABLED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x, startIndex*GUILISTVIEW_ELEMENTS_HEIGHT + bounds.y, GUILISTVIEW_BAR_WIDTH, barHeight, GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1675,6 +1802,8 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
 // Color Panel control
 RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
 {
+    #define GUICOLORPANEL_SELECTOR_THICK    6
+    
     GuiControlState state = guiState;
     Vector2 pickerSelector = { 0 };
     
@@ -1734,21 +1863,16 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
         DrawRectangleGradientEx(bounds, Fade(BLACK, 0), BLACK, BLACK, Fade(BLACK, 0));
         
         // Draw color picker: selector
-        DrawRectangle(pickerSelector.x - 3, pickerSelector.y - 3, 6, 6, WHITE);
+        DrawRectangle(pickerSelector.x - GUICOLORPANEL_SELECTOR_THICK/2, pickerSelector.y - GUICOLORPANEL_SELECTOR_THICK/2, GUICOLORPANEL_SELECTOR_THICK, GUICOLORPANEL_SELECTOR_THICK, WHITE);
         
-        //Draw color selected panel
-        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + 10*(i%(bounds.width/10)) + bounds.width + 10, bounds.y + bounds.height + 10, bounds.width/(bounds.width/10), 10, (i%2) ? LIGHTGRAY : RAYWHITE);
-        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + 10*(i%(bounds.width/10)) + bounds.width + 10, bounds.y + 10 + bounds.height + 10, bounds.width/(bounds.width/10), 10, (i%2) ? RAYWHITE : LIGHTGRAY);
-        DrawRectangle(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, color);
-        DrawRectangleLines(bounds.x + bounds.width + 10, bounds.y + bounds.height + 10, 20, 20, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
     }
  
     switch (state)
     {
-        case NORMAL: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_NORMAL])); break;
-        case FOCUSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED])); break;
-        case PRESSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[BUTTON_BORDER_COLOR_PRESSED])); break;
-        case DISABLED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        case NORMAL: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL])); break;
+        case FOCUSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED])); break;
+        case PRESSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED])); break;
+        case DISABLED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -1760,8 +1884,14 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
 // NOTE: Returns alpha value normalized [0..1]
 RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
 {
+    #define GUICOLORBARALPHA_SELECTOR_WIDTH     6
+    #define GUICOLORBARALPHA_SELECTOR_PADDING   2
+    #define CHECKER_SIZE                       10
+    
+    //#define GUICOLORBAR_SELECTOR_THICK          6
+    
     GuiControlState state = guiState;
-    Rectangle selector = { bounds.x + alpha*bounds.width - 2, bounds.y - 2, 6, bounds.height + 4 };
+    Rectangle selector = { bounds.x + alpha*bounds.width - GUICOLORBARALPHA_SELECTOR_PADDING, bounds.y - GUICOLORBARALPHA_SELECTOR_PADDING, GUICOLORBARALPHA_SELECTOR_WIDTH, bounds.height + GUICOLORBARALPHA_SELECTOR_PADDING*2 };
 
     // Update control
     //--------------------------------------------------------------------
@@ -1790,31 +1920,30 @@ RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
     // Draw control
     //--------------------------------------------------------------------
     // Draw alpha bar: checked background
-    for (int i = 0; i < bounds.width/10; i++) DrawRectangle(bounds.x + 10*(i%(bounds.width/10)), bounds.y, bounds.width/(bounds.width/10), 10, (i%2) ? LIGHTGRAY : RAYWHITE);
-    for (int i = 0; i < bounds.width/10; i++) DrawRectangle(bounds.x + 10*(i%(bounds.width/10)), bounds.y + 10, bounds.width/(bounds.width/10), 10, (i%2) ? RAYWHITE : LIGHTGRAY);
+    for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? LIGHTGRAY : RAYWHITE);
+    for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y + CHECKER_SIZE, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? RAYWHITE : LIGHTGRAY);
     DrawRectangleGradientH(bounds.x, bounds.y, bounds.width, bounds.height, (Color){ 255,255,255,0 }, (Color){ 0,0,0,255 });
     
     switch (state)
     {
         case NORMAL: 
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_NORMAL]));
-            DrawRectangle(selector.x , selector.y, selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(selector.x , selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
         } break;
         case FOCUSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], GetColor(styleGeneric[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
             DrawRectangleRec(selector, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
@@ -1828,8 +1957,11 @@ RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
 // NOTE: Returns hue value normalized [0..1]
 RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
 {
+    #define GUICOLORBARHUE_SELECTOR_HEIGHT   6
+    #define GUICOLORBARHUE_SELECTOR_PADDING  2
+    
     GuiControlState state = guiState;
-    Rectangle selector = { bounds.x - 2, bounds.y + hue/360.0f*bounds.height - 2, bounds.width + 4, 6 };
+    Rectangle selector = { bounds.x - GUICOLORBARHUE_SELECTOR_PADDING, bounds.y + hue/360.0f*bounds.height - GUICOLORBARHUE_SELECTOR_PADDING, bounds.width + GUICOLORBARHUE_SELECTOR_PADDING*2, GUICOLORBARHUE_SELECTOR_HEIGHT };
     
     // Update control
     //--------------------------------------------------------------------
@@ -1870,12 +2002,12 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
     if (state != DISABLED)
     {
         //Draw hue bar:color bars
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height/6, (Color){ 255,0,0,255 }, (Color){ 255,255,0,255 });
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + bounds.height/6 + 1, bounds.width - 2, bounds.height/6, (Color){ 255,255,0,255 }, (Color){ 0,255,0,255 });
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + 2*(bounds.height/6) + 1, bounds.width - 2, bounds.height/6, (Color){ 0,255,0,255 }, (Color){ 0,255,255,255 });
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + 3*(bounds.height/6) + 1, bounds.width - 2, bounds.height/6, (Color){ 0,255,255,255 }, (Color){ 0,0,255,255 });
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + 4*(bounds.height/6) + 1, bounds.width - 2, bounds.height/6, (Color){ 0,0,255,255 }, (Color){ 255,0,255,255 });
-        DrawRectangleGradientV(bounds.x + 1, bounds.y + 5*(bounds.height/6) + 1, bounds.width - 2, bounds.height/6 - 2, (Color){ 255,0,255,255 }, (Color){ 255,0,0,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6, (Color){ 255,0,0,255 }, (Color){ 255,255,0,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + bounds.height/6 + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6, (Color){ 255,255,0,255 }, (Color){ 0,255,0,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + 2*(bounds.height/6) + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6, (Color){ 0,255,0,255 }, (Color){ 0,255,255,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + 3*(bounds.height/6) + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6, (Color){ 0,255,255,255 }, (Color){ 0,0,255,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + 4*(bounds.height/6) + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6, (Color){ 0,0,255,255 }, (Color){ 255,0,255,255 });
+        DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + 5*(bounds.height/6) + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, bounds.height/6 - GUICOLORBARHUE_SELECTOR_PADDING, (Color){ 255,0,255,255 }, (Color){ 255,0,0,255 });
     }
     else
     {
@@ -1887,23 +2019,23 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
         case NORMAL:
         {
             // Draw hue bar: selector
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_NORMAL]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
         } break;
         case FOCUSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
-            DrawRectangle(selector.x, selector.y , selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED]));
+            DrawRectangle(selector.x, selector.y , selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[SLIDER_BORDER_COLOR_PRESSED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
-            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1925,10 +2057,15 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
 // NOTE: bounds define GuiColorPanel() size
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 {
+    //*#define COLORPICKER_BARS_THICK      20
+    //*#define COLORPICKER_BARS_PADDING    10
+    #define COLORPICKER_BARS_THICK      20
+    #define COLORPICKER_BARS_PADDING    10
+    
     color = GuiColorPanel(bounds, color);
     
-    Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + 10, bounds.width, 20 };
-    Rectangle boundsHue = { bounds.x + bounds.width + 10, bounds.y, 20, bounds.height };
+    Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + COLORPICKER_BARS_PADDING, bounds.width, COLORPICKER_BARS_THICK };
+    Rectangle boundsHue = { bounds.x + bounds.width + COLORPICKER_BARS_PADDING, bounds.y, COLORPICKER_BARS_THICK, bounds.height };
     
     Vector3 hsv = ConvertRGBtoHSV((Vector3){ color.r/255.0f, color.g/255.0f, color.b/255.0f });
     
@@ -1939,7 +2076,17 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
     Vector3 rgb = ConvertHSVtoRGB(hsv);
 
     color = (Color){ (unsigned char)(rgb.x*255.0f), (unsigned char)(rgb.y*255.0f), (unsigned char)(rgb.z*255.0f), color.a };
-       
+    
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    // Draw color selected panel
+    for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + COLORPICKER_BARS_PADDING*(i%(bounds.width/(COLORPICKER_BARS_THICK/2))) + bounds.width + COLORPICKER_BARS_PADDING, bounds.y + bounds.height + COLORPICKER_BARS_PADDING, bounds.width/(bounds.width/(COLORPICKER_BARS_THICK/2)), COLORPICKER_BARS_THICK/2, (i%2) ? LIGHTGRAY : RAYWHITE);
+    for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + COLORPICKER_BARS_PADDING*(i%(bounds.width/(COLORPICKER_BARS_THICK/2))) + bounds.width + COLORPICKER_BARS_PADDING, bounds.y + COLORPICKER_BARS_PADDING + bounds.height + COLORPICKER_BARS_PADDING, bounds.width/(bounds.width/(COLORPICKER_BARS_THICK/2)), COLORPICKER_BARS_THICK/2, (i%2) ? RAYWHITE : LIGHTGRAY);
+    DrawRectangle(bounds.x + bounds.width + COLORPICKER_BARS_PADDING, bounds.y + bounds.height + COLORPICKER_BARS_PADDING, COLORPICKER_BARS_THICK, COLORPICKER_BARS_THICK, color);
+    DrawRectangleLines(bounds.x + bounds.width + COLORPICKER_BARS_PADDING, bounds.y + bounds.height + COLORPICKER_BARS_PADDING, COLORPICKER_BARS_THICK, COLORPICKER_BARS_THICK, GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]));
+    //--------------------------------------------------------------------
+
     return color;
 }
 
@@ -2004,6 +2151,7 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[LABEL_TEXT_COLOR_NORMAL] = styleGeneric[DEFAULT_TEXT_COLOR_NORMAL];
     style[LABEL_TEXT_COLOR_FOCUSED] = styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED];
     style[LABEL_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[LABEL_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
     // Button
     style[BUTTON_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH]*2;
     style[BUTTON_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
@@ -2015,6 +2163,9 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[BUTTON_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[BUTTON_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[BUTTON_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[BUTTON_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[BUTTON_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[BUTTON_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
     // ToggleButton / ToggleGroup
     style[TOGGLE_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
     style[TOGGLE_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
@@ -2026,6 +2177,9 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[TOGGLE_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[TOGGLE_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[TOGGLE_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[TOGGLE_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[TOGGLE_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[TOGGLE_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
     style[TOGGLEGROUP_PADDING] = 2;
     // Slider
     style[SLIDER_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
@@ -2035,6 +2189,8 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[SLIDER_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_BASE_COLOR_FOCUSED];
     style[SLIDER_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[SLIDER_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
+        style[SLIDER_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[SLIDER_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
     // SliderBar
     style[SLIDERBAR_INNER_PADDING] = 1;
     style[SLIDERBAR_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
@@ -2044,6 +2200,8 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[SLIDERBAR_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_BASE_COLOR_FOCUSED];
     style[SLIDERBAR_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[SLIDERBAR_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
+        style[SLIDERBAR_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[SLIDERBAR_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
     // ProgressBar
     style[PROGRESSBAR_INNER_PADDING] = 1;
     style[PROGRESSBAR_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
@@ -2051,6 +2209,8 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[PROGRESSBAR_BASE_COLOR_NORMAL] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[PROGRESSBAR_BORDER_COLOR_FOCUSED] = styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED];
     style[PROGRESSBAR_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_BASE_COLOR_FOCUSED];
+        style[PROGRESSBAR_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[PROGRESSBAR_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
     // Spinner
     style[SPINNER_BUTTON_PADDING] = 2;
     style[SPINNER_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
@@ -2062,6 +2222,9 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[SPINNER_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[SPINNER_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[SPINNER_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[SPINNER_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[SPINNER_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[SPINNER_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
     // ComboBox
     style[COMBOBOX_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
     style[COMBOBOX_BUTTON_PADDING] = 2;              // 
@@ -2074,6 +2237,9 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[COMBOBOX_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[COMBOBOX_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[COMBOBOX_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[COMBOBOX_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[COMBOBOX_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[COMBOBOX_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
     // CheckBox
     style[CHECKBOX_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
     style[CHECKBOX_INNER_PADDING] = 1;
@@ -2083,6 +2249,8 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[CHECKBOX_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED];
     style[CHECKBOX_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[CHECKBOX_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[CHECKBOX_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[CHECKBOX_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
     // TextBox
     style[TEXTBOX_BORDER_WIDTH] = styleGeneric[DEFAULT_BORDER_WIDTH];
     style[TEXTBOX_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
@@ -2094,6 +2262,31 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[TEXTBOX_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
     style[TEXTBOX_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
     style[TEXTBOX_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[TEXTBOX_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[TEXTBOX_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[TEXTBOX_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
+        // ColorPicker
+        style[COLORPICKER_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
+        style[COLORPICKER_BASE_COLOR_NORMAL] = styleGeneric[DEFAULT_BACKGROUND_COLOR];
+        style[COLORPICKER_BORDER_COLOR_FOCUSED] = styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED];
+        style[COLORPICKER_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED];
+        style[COLORPICKER_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
+        style[COLORPICKER_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[COLORPICKER_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[COLORPICKER_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        // ListView
+        style[LISTVIEW_BORDER_COLOR_NORMAL] = styleGeneric[DEFAULT_BORDER_COLOR_NORMAL];
+        style[LISTVIEW_BASE_COLOR_NORMAL] = styleGeneric[DEFAULT_BACKGROUND_COLOR];
+        style[LISTVIEW_TEXT_COLOR_NORMAL] = styleGeneric[DEFAULT_TEXT_COLOR_NORMAL];
+        style[LISTVIEW_BORDER_COLOR_FOCUSED] = styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED];
+        style[LISTVIEW_BASE_COLOR_FOCUSED] = styleGeneric[DEFAULT_BASE_COLOR_FOCUSED];
+        style[LISTVIEW_TEXT_COLOR_FOCUSED] = styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED];
+        style[LISTVIEW_BORDER_COLOR_PRESSED] = styleGeneric[DEFAULT_BORDER_COLOR_PRESSED];
+        style[LISTVIEW_BASE_COLOR_PRESSED] = styleGeneric[DEFAULT_BASE_COLOR_PRESSED];
+        style[LISTVIEW_TEXT_COLOR_PRESSED] = styleGeneric[DEFAULT_TEXT_COLOR_PRESSED];
+        style[LISTVIEW_BORDER_COLOR_DISABLED] = styleGeneric[DEFAULT_BORDER_COLOR_DISABLED];
+        style[LISTVIEW_BASE_COLOR_DISABLED] = styleGeneric[DEFAULT_BASE_COLOR_DISABLED];
+        style[LISTVIEW_TEXT_COLOR_DISABLED] = styleGeneric[DEFAULT_TEXT_COLOR_DISABLED];
 }
 
 // Save current GUI style into a text file
