@@ -160,6 +160,7 @@ static void BtnLoadStyle(void);     // Button load style function
 static void BtnSaveStyle(void);     // Button save style function
 
 static int GetGuiStylePropertyIndex(int control, int property);
+static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -178,31 +179,31 @@ int main()
     int dropsCount = 0;
     char **droppedFiles;
     
-    int guiPosX = 340;
+    int guiPosX = 336;
     int guiPosY = 35;
     bool saveColor = false;
 
     // TODO: Define gui controls rectangles
     Rectangle bounds[NUM_CONTROLS] = {
-        (Rectangle){ guiPosX + 19, guiPosY + 18, 50, 10 },          // LABEL
-        (Rectangle){ guiPosX + 86, guiPosY + 18, 140, 10 },          // LABELBUTTON
-        (Rectangle){ guiPosX + 200, guiPosY + 290, 180, 30 },        // BUTTON pos.x +2
-        (Rectangle){ guiPosX + 240, guiPosY + 5, 125, 30 },         // IMAGEBUTTON
-        (Rectangle){ guiPosX + 11, guiPosY + 52, 62, 30 },          // TOGGLE
-        (Rectangle){ guiPosX + 86, guiPosY + 52, 68, 30 },         // TOGGLEGROUP
-        (Rectangle){ guiPosX + 20, guiPosY + 110, 352, 20 },        // SLIDER
-        (Rectangle){ guiPosX + 20, guiPosY + 150, 352, 20 },        // SLIDERBAR
-        (Rectangle){ guiPosX + 20, guiPosY + 190, 322, 20 },        // PROGRESSBAR    
-        (Rectangle){ guiPosX + 320, guiPosY + 190, 20, 20 },        // CHECKBOX
-        (Rectangle){ guiPosX + 20, guiPosY + 240, 150, 30 },        // SPINNER
-        (Rectangle){ guiPosX + 200, guiPosY + 240, 150, 30 },       // COMBOBOX
-        (Rectangle){ guiPosX + 20, guiPosY + 290, 180, 30 },        // TEXTBOX pos.x +2
-        (Rectangle){ 0, guiPosY, 140, GetScreenHeight() - 100 },    // LISTVIEW
-        (Rectangle){ guiPosX + 20, guiPosY + 330, 240, 240 },       // COLORPICKER
+        (Rectangle){ guiPosX + 23, guiPosY + 18, 50, 10 },          // LABEL
+        (Rectangle){ guiPosX + 98, guiPosY + 18, 140, 10 },         // LABELBUTTON
+        (Rectangle){ guiPosX + 184, guiPosY + 250, 180, 30 },       // BUTTON pos.x +2
+        (Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },         // IMAGEBUTTON
+        (Rectangle){ guiPosX + 20, guiPosY + 54, 60, 30 },          // TOGGLE
+        (Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 },          // TOGGLEGROUP
+        (Rectangle){ guiPosX + 20, guiPosY + 104, 344, 20 },        // SLIDER
+        (Rectangle){ guiPosX + 20, guiPosY + 134, 344, 20 },        // SLIDERBAR
+        (Rectangle){ guiPosX + 20, guiPosY + 164, 320, 20 },        // PROGRESSBAR    
+        (Rectangle){ guiPosX + 344, guiPosY + 164, 20, 20 },        // CHECKBOX
+        (Rectangle){ guiPosX + 20, guiPosY + 204, 150, 30 },        // SPINNER
+        (Rectangle){ guiPosX + 20, guiPosY + 250, 150, 30 },        // COMBOBOX
+        (Rectangle){ guiPosX + 184, guiPosY + 204, 180, 30 },       // TEXTBOX pos.x +2
+        (Rectangle){ 10, guiPosY + 2, 140, 563 },                   // LISTVIEW
+        (Rectangle){ guiPosX + 20, guiPosY + 295, 240, 240 },       // COLORPICKER
         
         
     };
-        
+
     // Get current directory
     // NOTE: Current working directory could not match current executable directory
     GetCurrentDir(currentPath, sizeof(currentPath));
@@ -212,7 +213,6 @@ int main()
     GuiLoadStyleImage("resources/rguistyle_default_light.png");
     
     Texture2D texIcons = LoadTexture("resources/icons.png");
-    Texture2D texLogo = LoadTexture("resources/logo128x128.png");
     
     SetTargetFPS(60);
     //------------------------------------------------------------
@@ -220,6 +220,9 @@ int main()
     // Gui controls data
     //-----------------------------------------------------------
     bool toggle = false;
+    bool toggleBackgroundColor = false;
+    bool toggleLinesColor = false;
+    bool toggleDefaultColor = false;
     bool toggleValue = false;
     const char *toggleGuiText[4] = { "toggle", "group", "selection", "group" };
 
@@ -236,6 +239,7 @@ int main()
     int comboActive = 0;
     
     char guiText[17] =  { '\0' };
+    
 
     Vector2 colorPickerPos = { (float)screenWidth - 287, 20.0f };
     Color colorPickerValue = RED;
@@ -244,6 +248,10 @@ int main()
     int selectedProperty = -1;
     int selectedPropertyLastFrame = -1;
     int selectedControlLastFrame = -1;
+    
+    Color colorBoxValue[12];
+    
+    for (int i = 0; i < 12; i++) colorBoxValue[i] = WHITE;
     //--------------------------------------------------------------------------------------
     
     // Main game loop
@@ -261,6 +269,7 @@ int main()
         if ((selectedControl != -1) && (selectedProperty != -1))
         {
             if ((selectedPropertyLastFrame != selectedProperty) || (selectedControlLastFrame != selectedControl)) saveColor = false;
+            
             if (!saveColor)
             {
                 colorPickerValue = GetColor(GuiGetStyleProperty(GetGuiStylePropertyIndex(selectedControl, selectedProperty)));
@@ -268,8 +277,6 @@ int main()
             }
 
             GuiSetStyleProperty(GetGuiStylePropertyIndex(selectedControl, selectedProperty), GetHexValue(colorPickerValue));
-            
-            
         }
         
         selectedPropertyLastFrame = selectedProperty;
@@ -309,12 +316,12 @@ int main()
             switch (selectedControl)
             {
                 case LABEL:
-                case LABELBUTTON: selectedProperty = GuiListView((Rectangle){ 145, guiPosY, 180, GetScreenHeight() - 100 }, guiStylesTextA, NUM_STYLES_A, selectedProperty); break;
+                case LABELBUTTON: selectedProperty = GuiListView((Rectangle){ 156, guiPosY + 2, 180, 485 }, guiStylesTextA, NUM_STYLES_A, selectedProperty); break;
                 case SLIDER: 
                 case SLIDERBAR:
                 case PROGRESSBAR:
                 case CHECKBOX:
-                case COLORPICKER: selectedProperty = GuiListView((Rectangle){ 145, guiPosY, 180, GetScreenHeight() - 100 }, guiStylesTextB, NUM_STYLES_B, selectedProperty); break;
+                case COLORPICKER: selectedProperty = GuiListView((Rectangle){ 156, guiPosY + 2, 180, 485 }, guiStylesTextB, NUM_STYLES_B, selectedProperty); break;
                 case BUTTON:
                 case IMAGEBUTTON:
                 case TOGGLE: 
@@ -323,7 +330,7 @@ int main()
                 case TEXTBOX: 
                 case SPINNER:
                 case LISTVIEW:
-                default: selectedProperty = GuiListView((Rectangle){ 145, guiPosY, 180, GetScreenHeight() - 100 }, guiStylesTextC, NUM_STYLES_C, selectedProperty); break;
+                default: selectedProperty = GuiListView((Rectangle){ 156, guiPosY + 2, 180, 485 }, guiStylesTextC, NUM_STYLES_C, selectedProperty); break;
             }
 
             GuiEnable();
@@ -334,8 +341,7 @@ int main()
             
             if (GuiImageButtonEx(bounds[IMAGEBUTTON], texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { }
             
-            if (toggle) toggle = GuiToggleButton(bounds[TOGGLE], "Toggle", toggle);
-            else toggle = GuiToggleButton(bounds[TOGGLE], "Toggle", toggle);
+            toggle = GuiToggleButton(bounds[TOGGLE], "Toggle", toggle);
             
             toggleValue = GuiToggleGroup(bounds[TOGGLEGROUP], toggleGuiText, 4, toggleValue);
             
@@ -355,14 +361,20 @@ int main()
             
             colorPickerValue = GuiColorPicker(bounds[COLORPICKER], colorPickerValue);
 
-            // Draw labels for GuiColorPicker information
-            GuiGroupBox((Rectangle){ guiPosX + 300, guiPosY + 340, 50, 80 }, "RGBA");
-            // GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7.2f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("R: %i", colorPickerValue.r));
-            // GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7.5f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("G: %i", colorPickerValue.g));
-            // GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 7.8f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("B: %i", colorPickerValue.b));
-            // GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 8.1f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("A: %i", colorPickerValue.a));
-            // GuiLabel((Rectangle){controlsAnchorPos + guiWidth*1.9f, guiPosY + 12.5f*deltaY + guiHeight/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, guiWidth/2, guiHeight}, FormatText("#%x", GetHexValue(colorPickerValue)));
+            // Draw default styles toggles
+            toggleBackgroundColor = GuiToggleButton((Rectangle){ 156, guiPosY + 495, 180, 20 }, "BACKGROUND_COLOR", toggleBackgroundColor);
+            toggleLinesColor = GuiToggleButton((Rectangle){ 156, guiPosY + 520, 180, 20 }, "LINES_COLOR", toggleLinesColor);
+            toggleDefaultColor = GuiToggleButton((Rectangle){ 156, guiPosY + 545, 180, 20 }, "DEFAULT_STYLE_MODE", toggleDefaultColor);
             
+            // Draw labels for GuiColorPicker information
+            GuiGroupBox((Rectangle){ guiPosX + 303, guiPosY + 299, 60, 70 }, "RGBA");
+            GuiGroupBox((Rectangle){ guiPosX + 303, guiPosY + 385, 60, 60 }, "HSV");
+            GuiTextBox((Rectangle){ guiPosX + 303, guiPosY + 545, 60, 20 }, "HexValue", 16);
+            
+            for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ guiPosX + 303 + 20*(i%3), guiPosY +  455 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
+            
+            DrawRectangleLinesEx((Rectangle){ guiPosX + 303, guiPosY +  455, 60, 80 }, 2, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_NORMAL]));
+
             // Draw Load and Save buttons
             if (GuiButton(bounds[BUTTON], "Save Style")) BtnSaveStyle();
             
@@ -375,7 +387,7 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------    
     UnloadTexture(texIcons);
-    UnloadTexture(texLogo);
+
     ClearDroppedFiles();        // Clear internal buffers
     
     CloseWindow();              // Close window and OpenGL context
@@ -448,4 +460,21 @@ static int GetGuiStylePropertyIndex(int control, int property)
     //guiProp = TOGGLE_BORDER_COLOR_NORMAL + property;                  // type C
 
     return guiProp;
+}
+
+static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color)
+{
+    Vector2 mousePoint = GetMousePosition();
+    
+    if (CheckCollisionPointRec(mousePoint, bounds))
+    {
+        if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) *colorPicker = (Color){ color.r, color.g, color.b, color.a };
+        else if(IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) color = *colorPicker;
+    }
+    
+    //draw
+    DrawRectangleRec(bounds, color);
+    DrawRectangleLinesEx(bounds, 1, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_NORMAL]));
+    
+    return color;
 }
