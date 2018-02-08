@@ -12,12 +12,14 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "../../src/raygui.h"
+#define RAYGUI_STYLE_SAVE_LOAD
+#include "raygui.h"
+#include "easings.h"
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define MAX_GUI_CONTROLS    128         // Maximum number of gui controls
+#define MAX_GUI_CONTROLS    64          // Maximum number of gui controls
 
 #define GRID_LINE_SPACING   10          // Grid line spacing in pixels
 #define GRID_ALPHA          0.1f        // Grid lines alpha amount
@@ -28,6 +30,7 @@
 typedef enum { 
     LABEL = 0, 
     BUTTON, 
+    IMAGEBUTTON,
     TOGGLE, 
     TOGGLEGROUP, 
     SLIDER, 
@@ -36,14 +39,17 @@ typedef enum {
     SPINNER, 
     COMBOBOX, 
     CHECKBOX, 
-    TEXTBOX 
+    TEXTBOX,
+    LISTVIEW,
+    COLORPICKER
 } GuiControlType;
 
 // Gui control type
 typedef struct {
     int id;
-    GuiControlType type;
+    int type;
     Rectangle rec;
+    char text[32];
 } GuiControl;
 
 //----------------------------------------------------------------------------------
@@ -57,9 +63,9 @@ static int controlsCounter = 0;
 
 //Rectangle defaultControlWidth[] = { };
 
-const char *controlTypeName[] = { "LABEL", "BUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX" };
-const char *controlTypeNameLow[] = { "Label", "Button", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox" };
-const char *controlTypeNameShort[] = { "lbl", "btn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox" };
+const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "LISTVIEW", "COLORPICKER" };
+const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "ListView", "ColorPicker" };
+const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "lstvw", "clrpckr" };
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -87,6 +93,104 @@ int main()
     int selectedType = BUTTON;
     int mouseX, mouseY;
     
+    int selectedTypeDraw = LABEL;
+    bool controlCollision = false;
+    Rectangle recDraw = { 0, 0, 100, 30 };
+    Rectangle listViewControls = { -200, 0, 140, 500 };
+    int counterListViewControls = 0;
+    int startPosXListViewControls = -200;
+    int deltaPosXListViewControls = 0;
+    Rectangle listViewControlsCounter = { GetScreenWidth() + 140, 0, 140, 500 };
+    int counterListViewControlsCounter = 0;
+    int startPosXListViewControlsCounter = GetScreenWidth() + 140;
+    int deltaPosXListViewControlsCounter = 0;
+    const char *guiControls[14] = { 
+        "LABEL", 
+        "BUTTON", 
+        "IMAGEBUTTON",
+        "TOGGLE", 
+        "TOGGLEGROUP", 
+        "SLIDER", 
+        "SLIDERBAR", 
+        "PROGRESSBAR", 
+        "SPINNER", 
+        "COMBOBOX", 
+        "CHECKBOX", 
+        "TEXTBOX",
+        "LISTVIEW",
+        "COLORPICKER"
+    };
+    
+    const char *guiControlsCounter[64] = { 
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "50",
+        "51",
+        "52",
+        "53",
+        "54",
+        "55",
+        "56",
+        "57",
+        "58",
+        "59",
+        "60",
+        "61",
+        "62",
+        "63"
+    };
+    
+    GuiLoadStyleImage("default_light.png");
+    Texture2D texture = LoadTexture("default_light.png");
+    
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
 
@@ -97,8 +201,65 @@ int main()
         //----------------------------------------------------------------------------------
         mouseX = GetMouseX();
         mouseY = GetMouseY();
+        // Updates the recDraw position
+        recDraw.x = mouseX - recDraw.width/2;
+        recDraw.y = mouseY - recDraw.height/2;
+        // Checks if the recDraw is colliding with the list of the controls
+        if (CheckCollisionPointRec(GetMousePosition(), listViewControls))controlCollision = true;
         
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (controlSelected == -1))
+        // Toggle on the controlListView
+        if (IsKeyPressed(KEY_TAB))
+        {
+            startPosXListViewControls = listViewControls.x;
+            deltaPosXListViewControls = 0 - startPosXListViewControls;
+            counterListViewControls = 0;
+        }
+        if (IsKeyDown(KEY_TAB))
+        {
+            counterListViewControls++;
+            if (counterListViewControls >= 60) counterListViewControls = 60;
+            listViewControls.x = (int)EaseCubicInOut(counterListViewControls, startPosXListViewControls, deltaPosXListViewControls, 60);
+        }  
+        else if (IsKeyReleased(KEY_TAB))
+        {
+            startPosXListViewControls = listViewControls.x;
+            deltaPosXListViewControls = -200 - startPosXListViewControls;
+            counterListViewControls = 0;
+        }
+        else
+        {
+            counterListViewControls++;
+            if (counterListViewControls >= 60) counterListViewControls = 60;
+            listViewControls.x = (int)EaseCubicInOut(counterListViewControls, startPosXListViewControls, deltaPosXListViewControls, 60);
+        }
+        
+        // Toggle on the controlListViewCounter
+        if (IsKeyPressed(KEY_LEFT_SHIFT))
+        {
+            startPosXListViewControlsCounter = listViewControlsCounter.x;
+            deltaPosXListViewControlsCounter = GetScreenWidth() -listViewControlsCounter.width - startPosXListViewControlsCounter;
+            counterListViewControlsCounter = 0;
+        }
+        if (IsKeyDown(KEY_LEFT_SHIFT))
+        {
+            counterListViewControlsCounter++;
+            if (counterListViewControlsCounter >= 60) counterListViewControlsCounter = 60;
+            listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
+        }  
+        else if (IsKeyReleased(KEY_LEFT_SHIFT))
+        {
+            startPosXListViewControlsCounter = listViewControlsCounter.x;
+            deltaPosXListViewControlsCounter = GetScreenWidth() + 140 - startPosXListViewControlsCounter;
+            counterListViewControlsCounter = 0;
+        }
+        else
+        {
+            counterListViewControlsCounter++;
+            if (counterListViewControlsCounter >= 60) counterListViewControlsCounter = 60;
+            listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
+        }
+        
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (controlSelected == -1) && !controlCollision)
         {
             // Add new control (button)
             layout[controlsCounter].id = controlsCounter;
@@ -120,6 +281,9 @@ int main()
         
         if (controlSelected != -1)
         {
+            //Disables the recDraw
+            controlCollision = true;
+            
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 layout[controlSelected].rec.x = mouseX - layout[controlSelected].rec.width/2;
@@ -190,6 +354,7 @@ int main()
         }
         else
         {
+            /*
             if (IsKeyPressed(KEY_LEFT))
             {
                 selectedType--;
@@ -200,6 +365,14 @@ int main()
                 selectedType++;
                 if (selectedType > TEXTBOX) selectedType = TEXTBOX;
             }
+            */
+            //Enables the recDraw
+            if (!CheckCollisionPointRec(GetMousePosition(), listViewControls))controlCollision = false;
+            // Updates the selectedType with the MouseWheel
+            selectedType -= GetMouseWheelMove();
+            if (selectedType < LABEL) selectedType = LABEL;
+            else if (selectedType > COLORPICKER) selectedType = COLORPICKER;
+            selectedTypeDraw = selectedType;
         }
         
         if (IsKeyPressed(KEY_S)) snapMode = !snapMode;
@@ -216,8 +389,28 @@ int main()
             
             if (offsetY >= GRID_LINE_SPACING/2) mouseY += (GRID_LINE_SPACING - offsetY);
             else mouseY -= offsetY;
+            
+            // SnapMode of the DrawingControls
+            // Snap rectangle position to closer snap point
+            offsetX = recDraw.x%GRID_LINE_SPACING;
+            offsetY = recDraw.y%GRID_LINE_SPACING;
+
+            if (offsetX >= GRID_LINE_SPACING/2) recDraw.x += (GRID_LINE_SPACING - offsetX);
+            else recDraw.x -= offsetX;
+
+            if (offsetY >= GRID_LINE_SPACING/2) recDraw.y += (GRID_LINE_SPACING - offsetY);
+            else recDraw.y -= offsetY;
+            // Snap rectangle size to closer snap point sizes
+            offsetX = recDraw.width%GRID_LINE_SPACING;
+            offsetY = recDraw.height%GRID_LINE_SPACING;
+            
+            if (offsetX >= GRID_LINE_SPACING/2) recDraw.width += (GRID_LINE_SPACING - offsetX);
+            else recDraw.width -= offsetX;
+            
+            if (offsetY >= GRID_LINE_SPACING/2) recDraw.height += (GRID_LINE_SPACING - offsetY);
+            else recDraw.height -= offsetY;
         }
-        
+     
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) SaveGuiLayout("test_layout.rlyt");
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) LoadGuiLayout("test_layout.rlyt");
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateGuiLayoutCode("test_layout.c");
@@ -237,12 +430,35 @@ int main()
                 DrawLine(mouseX, mouseY - 8, mouseX, mouseY + 8, RED);
             }
 
+            // Draws the recDraw of the control selected
+            if(!controlCollision)  
+            switch (selectedTypeDraw)
+            {
+                case LABEL: GuiLabel(recDraw, "TEXT SAMPLE"); break;
+                case BUTTON: GuiButton(recDraw, "BUTTON"); break;
+                case IMAGEBUTTON: GuiImageButton(recDraw, texture); break;
+                case TOGGLE: GuiToggleButton(recDraw, "TOGGLE", false); break;
+                case TOGGLEGROUP: GuiToggleGroup(recDraw, list, 3, 1); break;
+                case SLIDER: GuiSlider(recDraw, 40, 0, 100); break;
+                case SLIDERBAR: GuiSliderBar(recDraw, 40, 0, 100); break;
+                case PROGRESSBAR: GuiProgressBar(recDraw, 40, 0, 100); break;
+                case SPINNER: GuiSpinner(recDraw, 40, 0, 100); break;
+                case COMBOBOX: GuiComboBox(recDraw, list, 3, 1); break;
+                case CHECKBOX: GuiCheckBox(recDraw, false); break;
+                case TEXTBOX: GuiTextBox(recDraw, "test text", 32); break;
+                case LISTVIEW: GuiListView(recDraw, guiControls, 14, 1); break;
+                case COLORPICKER: GuiColorPicker(recDraw, RED); break;
+                default: break;
+            }
+            
             for (int i = 0; i < controlsCounter; i++)
             {
+                // Draws the Controls when placed on the grid.
                 switch (layout[i].type)
                 {
                     case LABEL: GuiLabel(layout[i].rec, "TEXT SAMPLE"); break;
                     case BUTTON: GuiButton(layout[i].rec, "BUTTON"); break;
+                    case IMAGEBUTTON: GuiImageButton(layout[i].rec, texture); break;
                     case TOGGLE: GuiToggleButton(layout[i].rec, "TOGGLE", false); break;
                     case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
                     case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
@@ -252,9 +468,20 @@ int main()
                     case COMBOBOX: GuiComboBox(layout[i].rec, list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(layout[i].rec, false); break;
                     case TEXTBOX: GuiTextBox(layout[i].rec, "test text", 32); break;
+                    case LISTVIEW: GuiListView(layout[i].rec, guiControls, 14, 1); break;
+                    case COLORPICKER: GuiColorPicker(layout[i].rec, RED); break;
                     default: break;
                 }
             }
+            
+            // Draw the list of controls
+            DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
+            selectedType = GuiListView(listViewControls, guiControls, 14, selectedType);
+            
+            // Draw the list of controlsCounter
+            DrawRectangleRec(listViewControlsCounter, Fade(WHITE, 0.7f));
+            GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, -1);
+           
             
             if ((controlSelected != -1) && (controlSelected < controlsCounter)) DrawRectangleRec(layout[controlSelected].rec, Fade(RED, 0.5f));
             
