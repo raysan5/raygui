@@ -116,7 +116,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define NUM_PROPERTIES       152
+#define NUM_PROPERTIES       138
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -228,7 +228,6 @@ typedef enum GuiProperty {
     SLIDER_BASE_COLOR_PRESSED,
     SLIDER_BORDER_COLOR_DISABLED,
     SLIDER_BASE_COLOR_DISABLED,
-
     // SliderBar
     SLIDERBAR_INNER_PADDING,
     SLIDERBAR_BORDER_WIDTH,
@@ -333,7 +332,7 @@ typedef enum GuiProperty {
     LISTVIEW_TEXT_COLOR_PRESSED,
     LISTVIEW_BORDER_COLOR_DISABLED,
     LISTVIEW_BASE_COLOR_DISABLED,
-    LISTVIEW_TEXT_COLOR_DISABLED,
+    LISTVIEW_TEXT_COLOR_DISABLED
 } GuiProperty;
 
 //----------------------------------------------------------------------------------
@@ -480,7 +479,7 @@ static int style[NUM_PROPERTIES] = {
     0x686868ff,     // LABEL_TEXT_COLOR_NORMAL -----> DEFAULT_TEXT_COLOR_NORMAL
     0x6c9bbcff,     // LABEL_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
     0x480b5ff,      // LABEL_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
-    0x606666ff,      // LABEL_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
+    0x606666ff,     // LABEL_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x2,            // BUTTON_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // BUTTON_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // BUTTON_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -494,7 +493,6 @@ static int style[NUM_PROPERTIES] = {
     0x72817eff,     // BUTTON_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x344041ff,     // BUTTON_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
     0x606666ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_COLOR_COLOR_DISABLED
-        
     0x1,            // TOGGLE_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // TOGGLE_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // TOGGLE_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -517,8 +515,9 @@ static int style[NUM_PROPERTIES] = {
     0xc9effeff,     // SLIDER_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
     0x48cc7ff,      // SLIDER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
     0x97e8ffff,     // SLIDER_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
-    0x72817eff,      // SLIDER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+    0x72817eff,     // SLIDER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x344041ff,     // SLIDER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+    0x1,            //SLIDERBAR_INNER_PADDING
     0x1,            // SLIDERBAR_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x828282ff,     // SLIDERBAR_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc8c8c8ff,     // SLIDERBAR_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -614,7 +613,7 @@ static int style[NUM_PROPERTIES] = {
     0x480b5ff,      // LISTVIEW_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
     0x72817eff,     // LISTVIEW_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x344041ff,     // LISTVIEW_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x606666ff,     // LISTVIEW_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED        
+    0x606666ff      // LISTVIEW_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED        
 };
 
 //----------------------------------------------------------------------------------
@@ -1700,9 +1699,10 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
 }
 
 // List View control, returns selected list element index
-RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active)
+RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active) // int *startIndex)
 {
     #define LISTVIEW_LINE_THICK       1
+    
     // TODO: Implement list view with scrolling bars and selectable elements (hover/press)
 
     GuiControlState state = guiState;
