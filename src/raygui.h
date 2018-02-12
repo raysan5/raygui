@@ -1,10 +1,12 @@
 /*******************************************************************************************
 *
-*   raygui v1.x - A simple and easy-to-use IMGUI (Immedite Mode GUI) library for raylib (www.raylib.com)
+*   raygui v2.0 - A simple and easy-to-use immedite-mode-gui library for raylib (www.raylib.com)
 *
 *   DESCRIPTION:
 *
-*   raygui is a library for creating simple IMGUI interfaces using raylib. Basic controls provided:
+*   raygui is a library for creating simple IMGUI interfaces using raylib, intended for tools dev. 
+*   
+*   Basic controls provided:
 *
 *       - Label
 *       - Button
@@ -54,7 +56,7 @@
 *       Some controls missing, like panels.
 *
 *   VERSIONS HISTORY:
-*       1.x (Jan-2018)    LOTS of CHANGES!
+*       2.0 (Jan-2018)    Added new controls.
 *       1.5 (21-Jun-2017) Working in an improved styles system
 *       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
 *       1.3 (12-Jun-2017) Redesigned styles system
@@ -64,19 +66,19 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   CONTRIBUTORS:
+*       Ramon Santamaria:   Supervision, review, redesign, update and maintenance...
 *       Kevin Gato:         Initial implementation of basic components (2014)
 *       Daniel Nicolas:     Initial implementation of basic components (2014)
 *       Albert Martos:      Review and testing of the library (2015)
 *       Ian Eito:           Review and testing of the library (2015)
 *       Sergio Martinez:    Review and testing of the library (2015)
-*       Ramon Santamaria:   Supervision, review, update and maintenance... and 2017 redesign
 *       Adria Arranz:       Testing and Implementation of additional controls (2018)
 *       Jordi Jorba:        Testing and Implementation of additional controls (2018)
 *
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2015-2018 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2018 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
