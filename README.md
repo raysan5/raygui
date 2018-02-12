@@ -31,7 +31,7 @@ On June 2017, started a complete redesign of the library, almost from scratch, a
 Officially, raygui 1.0 was published on June 2016, about one year and a half after its developmentment started.
 
 ## notes on raygui 2.0
-Current development version, the one avaliable here, supposed a complete redesign of the library with an improved styling system.
+Current development version, the one avaliable here, a complete redesign of the library with an improved styling system.
 
 ## controls
 raygui provides the following controls:
@@ -58,5 +58,4 @@ The following people has invested their time and effort into raygui project. Big
 
  - Adria Arranz and Jordi Jorba for improving raygui, adding new controls and working on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) redesign and rewrite.
  - [Sergio Martinez](https://github.com/anidealgift) for improving raygui and working on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool.
- - [Kevin Gato](https://github.com/Gatonevermind) for working on initial development.
- - Daniel Nicolas  for working on initial development.
+ - Daniel Nicolas and [Kevin Gato](https://github.com/Gatonevermind) for working on initial development.
