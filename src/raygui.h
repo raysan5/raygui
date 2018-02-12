@@ -640,7 +640,7 @@ static int style[NUM_PROPERTIES] = {
 
 // This functions are directly implemented in raygui
 static Color GetColor(int hexValue);            // Returns a Color struct from hexadecimal value
-static int GetHexValue(Color color);            // Returns hexadecimal value for a Color
+static int ColorToInt(Color color);            // Returns hexadecimal value for a Color
 static Color Fade(Color color, float alpha);    // Color fade-in or fade-out, alpha goes from 0.0f to 1.0f
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);  // Check if point is inside rectangle
 static const char *FormatText(const char *text, ...);   // Formatting of text with variables to 'embed'
@@ -2128,20 +2128,20 @@ RAYGUIDEF void GuiLoadStyleImage(const char *fileName)
     Color *pixels = GetImageData(imStyle);
 
     // Load generic style color palette
-    styleGeneric[DEFAULT_BACKGROUND_COLOR] = GetHexValue(pixels[1 + imStyle.width*1]);
-    styleGeneric[DEFAULT_LINES_COLOR] = GetHexValue(pixels[0 + imStyle.width*0]);
-    styleGeneric[DEFAULT_BORDER_COLOR_NORMAL] = GetHexValue(pixels[2 + imStyle.width*2]);
-    styleGeneric[DEFAULT_BASE_COLOR_NORMAL] = GetHexValue(pixels[3 + imStyle.width*3]);
-    styleGeneric[DEFAULT_TEXT_COLOR_NORMAL] = GetHexValue(pixels[9 + imStyle.width*4]);
-    styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED] = GetHexValue(pixels[17 + imStyle.width*2]);
-    styleGeneric[DEFAULT_BASE_COLOR_FOCUSED] = GetHexValue(pixels[18 + imStyle.width*3]);
-    styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED] = GetHexValue(pixels[24 + imStyle.width*4]);
-    styleGeneric[DEFAULT_BORDER_COLOR_PRESSED] = GetHexValue(pixels[32 + imStyle.width*2]);
-    styleGeneric[DEFAULT_BASE_COLOR_PRESSED] = GetHexValue(pixels[33 + imStyle.width*3]);
-    styleGeneric[DEFAULT_TEXT_COLOR_PRESSED] = GetHexValue(pixels[39 + imStyle.width*4]);
-    styleGeneric[DEFAULT_BORDER_COLOR_DISABLED] = GetHexValue(pixels[47 + imStyle.width*2]);
-    styleGeneric[DEFAULT_BASE_COLOR_DISABLED] = GetHexValue(pixels[48 + imStyle.width*3]);
-    styleGeneric[DEFAULT_TEXT_COLOR_DISABLED] = GetHexValue(pixels[54 + imStyle.width*4]);
+    styleGeneric[DEFAULT_BACKGROUND_COLOR] = ColorToInt(pixels[1 + imStyle.width*1]);
+    styleGeneric[DEFAULT_LINES_COLOR] = ColorToInt(pixels[0 + imStyle.width*0]);
+    styleGeneric[DEFAULT_BORDER_COLOR_NORMAL] = ColorToInt(pixels[2 + imStyle.width*2]);
+    styleGeneric[DEFAULT_BASE_COLOR_NORMAL] = ColorToInt(pixels[3 + imStyle.width*3]);
+    styleGeneric[DEFAULT_TEXT_COLOR_NORMAL] = ColorToInt(pixels[9 + imStyle.width*4]);
+    styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED] = ColorToInt(pixels[17 + imStyle.width*2]);
+    styleGeneric[DEFAULT_BASE_COLOR_FOCUSED] = ColorToInt(pixels[18 + imStyle.width*3]);
+    styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED] = ColorToInt(pixels[24 + imStyle.width*4]);
+    styleGeneric[DEFAULT_BORDER_COLOR_PRESSED] = ColorToInt(pixels[32 + imStyle.width*2]);
+    styleGeneric[DEFAULT_BASE_COLOR_PRESSED] = ColorToInt(pixels[33 + imStyle.width*3]);
+    styleGeneric[DEFAULT_TEXT_COLOR_PRESSED] = ColorToInt(pixels[39 + imStyle.width*4]);
+    styleGeneric[DEFAULT_BORDER_COLOR_DISABLED] = ColorToInt(pixels[47 + imStyle.width*2]);
+    styleGeneric[DEFAULT_BASE_COLOR_DISABLED] = ColorToInt(pixels[48 + imStyle.width*3]);
+    styleGeneric[DEFAULT_TEXT_COLOR_DISABLED] = ColorToInt(pixels[54 + imStyle.width*4]);
     
     // Update full style with generic values
     GuiUpdateStyleComplete();
@@ -2153,20 +2153,20 @@ RAYGUIDEF void GuiLoadStyleImage(const char *fileName)
 RAYGUIDEF void GuiLoadStylePalette(Color *palette)
 {
     // Load generic style color palette
-    styleGeneric[DEFAULT_BACKGROUND_COLOR] = GetHexValue(palette[0]);
-    styleGeneric[DEFAULT_LINES_COLOR] = GetHexValue(palette[1]);
-    styleGeneric[DEFAULT_BORDER_COLOR_NORMAL] = GetHexValue(palette[2]);
-    styleGeneric[DEFAULT_BASE_COLOR_NORMAL] = GetHexValue(palette[3]);
-    styleGeneric[DEFAULT_TEXT_COLOR_NORMAL] = GetHexValue(palette[4]);
-    styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED] = GetHexValue(palette[5]);
-    styleGeneric[DEFAULT_BASE_COLOR_FOCUSED] = GetHexValue(palette[6]);
-    styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED] = GetHexValue(palette[7]);
-    styleGeneric[DEFAULT_BORDER_COLOR_PRESSED] = GetHexValue(palette[8]);
-    styleGeneric[DEFAULT_BASE_COLOR_PRESSED] = GetHexValue(palette[9]);
-    styleGeneric[DEFAULT_TEXT_COLOR_PRESSED] = GetHexValue(palette[10]);
-    styleGeneric[DEFAULT_BORDER_COLOR_DISABLED] = GetHexValue(palette[11]);
-    styleGeneric[DEFAULT_BASE_COLOR_DISABLED] = GetHexValue(palette[12]);
-    styleGeneric[DEFAULT_TEXT_COLOR_DISABLED] = GetHexValue(palette[13]);
+    styleGeneric[DEFAULT_BACKGROUND_COLOR] = ColorToInt(palette[0]);
+    styleGeneric[DEFAULT_LINES_COLOR] = ColorToInt(palette[1]);
+    styleGeneric[DEFAULT_BORDER_COLOR_NORMAL] = ColorToInt(palette[2]);
+    styleGeneric[DEFAULT_BASE_COLOR_NORMAL] = ColorToInt(palette[3]);
+    styleGeneric[DEFAULT_TEXT_COLOR_NORMAL] = ColorToInt(palette[4]);
+    styleGeneric[DEFAULT_BORDER_COLOR_FOCUSED] = ColorToInt(palette[5]);
+    styleGeneric[DEFAULT_BASE_COLOR_FOCUSED] = ColorToInt(palette[6]);
+    styleGeneric[DEFAULT_TEXT_COLOR_FOCUSED] = ColorToInt(palette[7]);
+    styleGeneric[DEFAULT_BORDER_COLOR_PRESSED] = ColorToInt(palette[8]);
+    styleGeneric[DEFAULT_BASE_COLOR_PRESSED] = ColorToInt(palette[9]);
+    styleGeneric[DEFAULT_TEXT_COLOR_PRESSED] = ColorToInt(palette[10]);
+    styleGeneric[DEFAULT_BORDER_COLOR_DISABLED] = ColorToInt(palette[11]);
+    styleGeneric[DEFAULT_BASE_COLOR_DISABLED] = ColorToInt(palette[12]);
+    styleGeneric[DEFAULT_TEXT_COLOR_DISABLED] = ColorToInt(palette[13]);
     
     // Update full style with generic values
     GuiUpdateStyleComplete();
@@ -2512,7 +2512,7 @@ static Color GetColor(int hexValue)
 }
 
 // Returns hexadecimal value for a Color
-static int GetHexValue(Color color)
+static int ColorToInt(Color color)
 {
     return (((int)color.r << 24) | ((int)color.g << 16) | ((int)color.b << 8) | (int)color.a);
 }

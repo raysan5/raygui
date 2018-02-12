@@ -255,6 +255,8 @@ int main(int argc, char *argv[])
     bool toggleBackgroundColor = false;
     bool toggleLinesColor = false;
     bool toggleDefaultColor = false;
+    
+    Vector3 colorHSV = { 0.0f, 0.0f, 0.0f };
     //--------------------------------------------------------------------------------------
     
     // Main game loop
@@ -271,7 +273,7 @@ int main(int argc, char *argv[])
         
         if (toggleBackgroundColor)
         {
-            styleGeneric[DEFAULT_BACKGROUND_COLOR] = GetHexValue(colorPickerValue);
+            styleGeneric[DEFAULT_BACKGROUND_COLOR] = ColorToInt(colorPickerValue);
         }
         else
         {
@@ -285,7 +287,7 @@ int main(int argc, char *argv[])
                 saveColor = true;
             }
 
-            GuiSetStyleProperty(GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty), GetHexValue(colorPickerValue));
+            GuiSetStyleProperty(GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty), ColorToInt(colorPickerValue));
         }
         }
         
@@ -299,6 +301,8 @@ int main(int argc, char *argv[])
         // TODO: Support text editing on GuiTextBox()
         // NOTE: Editing mode should be detected (status = MOUSE_HOVER) and update colorPicker properly...
         sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
+        
+        colorHSV = ColorToHSV(colorPickerValue);
         //----------------------------------------------------------------------------------
         
         // Draw
@@ -381,15 +385,19 @@ int main(int argc, char *argv[])
             toggleLinesColor = GuiToggleButton((Rectangle){ 156, guiPosY + 521, 180, 20 }, "LINES_COLOR", toggleLinesColor);
             toggleDefaultColor = GuiToggleButton((Rectangle){ 156, guiPosY + 546, 180, 20 }, "DEFAULT_STYLE_MODE", toggleDefaultColor);
             
-            // Draw labels for GuiColorPicker information
+            // Draw labels for GuiColorPicker information (RGBA)
             GuiGroupBox((Rectangle){ guiPosX + 303, guiPosY + 299, 60, 74 }, "RGBA");
-            
             GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 310, 60, 70 }, FormatText("R:   %03i", colorPickerValue.r));
             GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 325, 60, 70 }, FormatText("G:   %03i", colorPickerValue.g));
             GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 340, 60, 70 }, FormatText("B:   %03i", colorPickerValue.b));
             GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 355, 60, 70 }, FormatText("A:   %03i", colorPickerValue.a));
             
+            // Draw labels for GuiColorPicker information (HSV)
             GuiGroupBox((Rectangle){ guiPosX + 303, guiPosY + 385, 60, 60 }, "HSV");
+            GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 395, 60, 70 }, FormatText("H:  %.0f º", colorHSV.x));
+            GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 412, 60, 70 }, FormatText("S:  %.0f %%", colorHSV.y*100));
+            GuiLabel((Rectangle){ guiPosX + 313, guiPosY + 429, 60, 70 }, FormatText("V:  %.0f %%", colorHSV.z*100));
+
             GuiTextBox((Rectangle){ guiPosX + 303, guiPosY + 545, 60, 20 }, colorHex, 8);
             
             for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ guiPosX + 303 + 20*(i%3), guiPosY +  455 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
