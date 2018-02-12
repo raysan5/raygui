@@ -785,7 +785,7 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
+            DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_DISABLED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
         } break;
@@ -839,6 +839,13 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
 
     return clicked;
+}
+
+// Image button control, returns true when clicked
+// TODO: Just provide textureId instead of full Texture2D
+RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture)
+{
+    return GuiImageButtonEx(bounds, texture, (Rectangle){ 0, 0, texture.width, texture.height }, NULL);
 }
 
 // Image button control, returns true when clicked
@@ -921,13 +928,6 @@ RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle t
     //------------------------------------------------------------------
 
     return clicked;
-}
-
-// Image button control, returns true when clicked
-// TODO: Just provide textureId instead of full Texture2D
-RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture)
-{
-    return GuiImageButtonEx(bounds, texture, (Rectangle){ 0, 0, texture.width, texture.height }, NULL);
 }
 
 // Toggle Button control, returns true when active
@@ -1615,7 +1615,7 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int minValue, int maxValue
         case DISABLED:
         {
             DrawRectangleRec(spinner, GetColor(style[SPINNER_BORDER_COLOR_DISABLED]));
-            DrawRectangle(spinner.x + style[SPINNER_BUTTON_PADDING], spinner.y + style[SPINNER_BUTTON_PADDING], spinner.width - style[SPINNER_BUTTON_PADDING], spinner.height - style[SPINNER_BUTTON_PADDING], GetColor(style[SPINNER_BASE_COLOR_DISABLED]));
+            DrawRectangle(spinner.x + style[SPINNER_BUTTON_PADDING], spinner.y + style[SPINNER_BUTTON_PADDING], spinner.width - style[SPINNER_BUTTON_PADDING]*2, spinner.height - style[SPINNER_BUTTON_PADDING]*2, GetColor(style[SPINNER_BASE_COLOR_DISABLED]));
             DrawText(FormatText("%i", value), spinner.x + (spinner.width/2 - textWidth/2), spinner.y + (spinner.height/2 - (styleGeneric[DEFAULT_TEXT_SIZE]/2)), styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[SPINNER_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
