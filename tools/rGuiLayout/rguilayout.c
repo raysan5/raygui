@@ -104,6 +104,8 @@ int main()
     int counterListViewControlsCounter = 0;
     int startPosXListViewControlsCounter = GetScreenWidth() + 140;
     int deltaPosXListViewControlsCounter = 0;
+    bool controlDrag = false;
+ 
     const char *guiControls[14] = { 
         "LABEL", 
         "BUTTON", 
@@ -271,6 +273,7 @@ int main()
         
         for (int i = 0; i < controlsCounter; i++)
         {
+            if (controlDrag) break;
             if (CheckCollisionPointRec(GetMousePosition(), layout[i].rec)) 
             {
                 controlSelected = i;
@@ -284,7 +287,17 @@ int main()
             //Disables the recDraw
             controlCollision = true;
             
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                controlDrag = true;
+            }
+            else if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                controlDrag = false;
+                controlSelected = -1;
+            } 
+             
+            if(controlDrag)
             {
                 layout[controlSelected].rec.x = mouseX - layout[controlSelected].rec.width/2;
                 layout[controlSelected].rec.y = mouseY - layout[controlSelected].rec.height/2;
@@ -422,7 +435,7 @@ int main()
 
             ClearBackground(RAYWHITE);
             
-            DrawGrid2D(60, 40);
+            DrawGrid2D(77, 40);
             
             if (controlSelected == -1)
             {
@@ -486,7 +499,7 @@ int main()
             if ((controlSelected != -1) && (controlSelected < controlsCounter)) DrawRectangleRec(layout[controlSelected].rec, Fade(RED, 0.5f));
             
             // Debug information
-            DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
+            /*DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
             DrawText(FormatText("Selected type: %s", controlTypeName[selectedType]), 300, screenHeight - 20, 20, BLUE);
             if (snapMode) DrawText("SNAP ON", 700, screenHeight - 20, 20, RED);
             if (controlSelected != -1) DrawText(FormatText("rec: (%i, %i, %i, %i)", 
@@ -494,6 +507,17 @@ int main()
                                                 layout[controlSelected].rec.width, layout[controlSelected].rec.height), 
                                                 10, screenHeight - 40, 10, DARKGREEN);
             DrawText(FormatText("mouse: (%i, %i)", mouseX, mouseY), 700, screenHeight - 40, 10, RED);
+            */
+            // Draw status bar bottom with debug information
+            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, LIGHTGRAY);
+            GuiLabel((Rectangle){20, GetScreenHeight() - 16, 100, 20}, FormatText("Controls count: %i", controlsCounter));
+            GuiLabel((Rectangle){150, GetScreenHeight() - 16, 100, 20}, FormatText("Selected type: %s", controlTypeName[selectedType]));
+            if (snapMode) GuiLabel((Rectangle){615, GetScreenHeight() - 16, 100, 20}, "SNAP ON");
+            if (controlSelected != -1) GuiLabel((Rectangle){475, GetScreenHeight() - 16, 100, 20}, FormatText("rec: (%i, %i, %i, %i)", 
+                                                layout[controlSelected].rec.x, layout[controlSelected].rec.y, 
+                                                layout[controlSelected].rec.width, layout[controlSelected].rec.height));
+            GuiLabel((Rectangle){350, GetScreenHeight() - 16, 100, 20}, FormatText("mouse: (%i, %i)", mouseX, mouseY));
+
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -515,7 +539,9 @@ int main()
 static void DrawGrid2D(int divsX, int divsY)
 {
     int spacing = 0;
-    
+    /*divsX = GetScreenHeight()/13;
+    divsY = GetScreenWidth()/13;
+    */
     // Draw vertical grid lines
     for (int i = 0; i < divsX; i++)
     {
