@@ -361,6 +361,7 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active);               // Toggle Group control, returns toggled button index
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
+RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active);               // Dropdown Box control, returns selected item
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                  // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
@@ -1193,6 +1194,90 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
     return active;
 }
 
+
+// Dropdown Box control, returns selected item
+RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active)
+{
+    #define DROPDOWNBOX_PADDING 1
+    
+    GuiControlState state = guiState;
+    bool dropActive = false;
+   
+    //bounds.width -= (style[COMBOBOX_SELECTOR_WIDTH] + style[COMBOBOX_BUTTON_PADDING]);
+
+    int textWidth = MeasureText(text[active], styleGeneric[DEFAULT_TEXT_SIZE]);
+    int textHeight = styleGeneric[DEFAULT_TEXT_SIZE];
+
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
+    
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+        
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        {
+            bounds.height *= (count + 1);
+            dropActive = true;
+        }
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        //if (dropActive ? CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height*count }) : CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                state = PRESSED;
+                //dropActive = true;
+            }
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+            {
+                //dropActive = false;
+                //active += 1;
+                //if (active >= count) active = 0;
+            }
+            else state = FOCUSED;
+        }
+        else state = NORMAL;
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+        } break;
+        case FOCUSED:
+        {
+            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleLinesEx(bounds, 1, GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]));
+            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+
+            for(int i = 0; i < count; i++)
+            {
+                GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height/(count + 1)*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height/(count + 1) - DROPDOWNBOX_PADDING }, text[i], false);
+            }
+            
+        } break;
+        case DISABLED:
+        {
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+    return active;
+}
 // Group Box control with title name
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 {
@@ -1200,13 +1285,39 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
     #define GROUPBOX_TEXT_PADDING 10
     #define GROUPBOX_PADDING 2
     
-    DrawRectangle(bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GuiLinesColor());
-    DrawRectangle(bounds.x, bounds.y + bounds.height, bounds.width + GROUPBOX_LINE_THICK, GROUPBOX_LINE_THICK, GuiLinesColor());
-    DrawRectangle(bounds.x + bounds.width, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GuiLinesColor());
-    DrawRectangle(bounds.x, bounds.y, GROUPBOX_TEXT_PADDING, GROUPBOX_LINE_THICK, GuiLinesColor());
-    DrawRectangle(bounds.x + 2*GROUPBOX_TEXT_PADDING + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y, bounds.width - 2*GROUPBOX_TEXT_PADDING - MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), GROUPBOX_LINE_THICK, GuiLinesColor());
+    GuiControlState state = guiState;
     
-    DrawText(text, bounds.x + GROUPBOX_TEXT_PADDING + 2*GROUPBOX_PADDING, bounds.y - 2*GROUPBOX_PADDING - GROUPBOX_LINE_THICK, styleGeneric[DEFAULT_TEXT_SIZE], GuiTextColor());
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+        DrawRectangle(bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GuiLinesColor());
+        DrawRectangle(bounds.x, bounds.y + bounds.height, bounds.width + GROUPBOX_LINE_THICK, GROUPBOX_LINE_THICK, GuiLinesColor());
+        DrawRectangle(bounds.x + bounds.width, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GuiLinesColor());
+        DrawRectangle(bounds.x, bounds.y, GROUPBOX_TEXT_PADDING, GROUPBOX_LINE_THICK, GuiLinesColor());
+        DrawRectangle(bounds.x + 2*GROUPBOX_TEXT_PADDING + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y, bounds.width - 2*GROUPBOX_TEXT_PADDING - MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), GROUPBOX_LINE_THICK, GuiLinesColor());
+
+        DrawText(text, bounds.x + GROUPBOX_TEXT_PADDING + 2*GROUPBOX_PADDING, bounds.y - 2*GROUPBOX_PADDING - GROUPBOX_LINE_THICK, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
+        } break;
+        case FOCUSED: break; // NOTE: State not used on this control
+        case PRESSED: break; // NOTE: State not used on this control
+        case DISABLED:
+        {
+            DrawRectangle(bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x, bounds.y + bounds.height, bounds.width + GROUPBOX_LINE_THICK, GROUPBOX_LINE_THICK, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + bounds.width, bounds.y, GROUPBOX_LINE_THICK, bounds.height, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x, bounds.y, GROUPBOX_TEXT_PADDING, GROUPBOX_LINE_THICK, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangle(bounds.x + 2*GROUPBOX_TEXT_PADDING + MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), bounds.y, bounds.width - 2*GROUPBOX_TEXT_PADDING - MeasureText(text, styleGeneric[DEFAULT_TEXT_SIZE]), GROUPBOX_LINE_THICK, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_DISABLED]));
+
+            DrawText(text, bounds.x + GROUPBOX_TEXT_PADDING + 2*GROUPBOX_PADDING, bounds.y - 2*GROUPBOX_PADDING - GROUPBOX_LINE_THICK, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED]));
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+    
+    
 }
 
 // Text Box control, updates input text
@@ -1266,7 +1377,7 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
         } break;
         case FOCUSED:
         {
-            DrawRectangleRec(bounds, GetColor(style[TOGGLE_BORDER_COLOR_FOCUSED]));
+            DrawRectangleRec(bounds, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
             DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + style[TEXTBOX_BORDER_WIDTH] + bounds.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
             
@@ -1691,7 +1802,7 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
         case DISABLED:
         {
             //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[LISTVIEW_TEXT_COLOR_DISABLED]));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1902,13 +2013,18 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
         DrawRectangle(pickerSelector.x - GUICOLORPANEL_SELECTOR_THICK/2, pickerSelector.y - GUICOLORPANEL_SELECTOR_THICK/2, GUICOLORPANEL_SELECTOR_THICK, GUICOLORPANEL_SELECTOR_THICK, WHITE);
         
     }
+    else 
+    {
+        DrawRectangleGradientEx(bounds, Fade(GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]), 0.1f), BLACK, BLACK, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
+        //DrawRectangleGradientEx(bounds, Fade(BLACK, 0), BLACK, BLACK, Fade(BLACK, 0));
+    }
  
     switch (state)
     {
         case NORMAL: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL])); break;
         case FOCUSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_FOCUSED])); break;
         case PRESSED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_PRESSED])); break;
-        case DISABLED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED])); break;
+        case DISABLED: DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -1956,9 +2072,14 @@ RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
     // Draw control
     //--------------------------------------------------------------------
     // Draw alpha bar: checked background
-    for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? LIGHTGRAY : RAYWHITE);
-    for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y + CHECKER_SIZE, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? RAYWHITE : LIGHTGRAY);
-    DrawRectangleGradientH(bounds.x, bounds.y, bounds.width, bounds.height, (Color){ 255,255,255,0 }, (Color){ 0,0,0,255 });
+    if (state != DISABLED)
+    {
+        for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? LIGHTGRAY : RAYWHITE);
+        for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%(bounds.width/CHECKER_SIZE)), bounds.y + CHECKER_SIZE, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? RAYWHITE : LIGHTGRAY);
+        DrawRectangleGradientH(bounds.x, bounds.y, bounds.width, bounds.height, (Color){ 255,255,255,0 }, (Color){ 0,0,0,255 });
+    }
+    else DrawRectangleGradientH(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]), 0.1f), GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED])); 
+    
     
     switch (state)
     {
@@ -1979,8 +2100,8 @@ RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
         } break;
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
-            DrawRectangleRec(selector, GetColor(styleGeneric[DEFAULT_TEXT_COLOR_DISABLED]));
+            DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
+            DrawRectangleRec(selector, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -2047,7 +2168,7 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
     }
     else
     {
-        DrawRectangleGradientV(bounds.x, bounds.y, bounds.width, bounds.height, RAYWHITE, GRAY);
+        DrawRectangleGradientV(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]), 0.1f), GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
     }
     
     switch (state)
@@ -2071,7 +2192,7 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
         case DISABLED:
         {
             DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
-            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]));
+            DrawRectangle(selector.x, selector.y, selector.width, selector.height, GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -2093,6 +2214,8 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
 // NOTE: bounds define GuiColorPanel() size
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 {    
+    GuiControlState state = guiState;
+    
     color = GuiColorPanel(bounds, color);
     
     Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width, style[COLORPICKER_BARS_THICK] };
@@ -2112,10 +2235,19 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
     // Draw control
     //--------------------------------------------------------------------
     // Draw color selected panel
-    for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%(bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? LIGHTGRAY : RAYWHITE);
-    for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%(bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + style[COLORPICKER_BARS_PADDING] + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? RAYWHITE : LIGHTGRAY);
-    DrawRectangle(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], color);
-    DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]));
+    if (state != DISABLED)
+    {
+        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%(bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? LIGHTGRAY : RAYWHITE);
+        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%(bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + style[COLORPICKER_BARS_PADDING] + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? RAYWHITE : LIGHTGRAY);
+        DrawRectangle(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], color);
+        DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]));
+    }
+    else 
+    {
+        //DrawRectangleGradientEx((Rectangle){ bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK] }, WHITE, GRAY, BLACK, GRAY);
+        DrawRectangle(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]));
+        DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]));
+    }
     //--------------------------------------------------------------------
 
     return color;
