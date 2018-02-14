@@ -60,7 +60,7 @@
 #define CONTROL_LIST_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
 
-#define NUM_CONTROLS        15
+#define NUM_CONTROLS        14
 #define NUM_STYLES_A         4
 #define NUM_STYLES_B         8
 #define NUM_STYLES_C        12
@@ -72,7 +72,7 @@ typedef enum {
     LABEL = 0, 
     LABELBUTTON,
     BUTTON, 
-    IMAGEBUTTON,
+    //IMAGEBUTTON,
     TOGGLE, 
     TOGGLEGROUP, 
     SLIDER, 
@@ -110,7 +110,7 @@ const char *guiControlText[NUM_CONTROLS] = {
     "LABEL", 
     "LABELBUTTON",
     "BUTTON", 
-    "IMAGEBUTTON",
+    //"IMAGEBUTTON",
     "TOGGLE", 
     "TOGGLEGROUP", 
     "SLIDER", 
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
         (Rectangle){ guiPosX + 23, guiPosY + 18, 50, 10 },          // LABEL
         (Rectangle){ guiPosX + 98, guiPosY + 18, 140, 10 },         // LABELBUTTON
         (Rectangle){ guiPosX + 184, guiPosY + 250, 180, 30 },       // BUTTON
-        (Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },         // IMAGEBUTTON
+        //(Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },         // IMAGEBUTTON
         (Rectangle){ guiPosX + 20, guiPosY + 54, 60, 30 },          // TOGGLE
         (Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 },          // TOGGLEGROUP
         (Rectangle){ guiPosX + 20, guiPosY + 104, 344, 20 },        // SLIDER
@@ -256,6 +256,10 @@ int main(int argc, char *argv[])
     bool toggleLinesColor = false;
     bool toggleDefaultColor = false;
     
+    bool toggleBackgroundColorPressed = false;
+    bool toggleLinesColorPressed = false;
+    bool toggleDefaultColorPressed = false;
+    
     Vector3 colorHSV = { 0.0f, 0.0f, 0.0f };
     //--------------------------------------------------------------------------------------
     
@@ -270,13 +274,34 @@ int main(int argc, char *argv[])
             GuiLoadStyle(droppedFiles[0]);
             ClearDroppedFiles();
         }
-        
+       
+        if (toggleBackgroundColorPressed != toggleBackgroundColor) 
+        {
+            colorPickerValue = GetColor(styleGeneric[DEFAULT_BACKGROUND_COLOR]);
+        }
         if (toggleBackgroundColor)
         {
+            toggleBackgroundColorPressed = true;
+            currentSelectedControl = -1;
+            currentSelectedProperty = -1;
             styleGeneric[DEFAULT_BACKGROUND_COLOR] = ColorToInt(colorPickerValue);
         }
-        else
+        else toggleBackgroundColorPressed = false;
+        
+        if (toggleLinesColorPressed != toggleLinesColor) 
         {
+            colorPickerValue = GetColor(styleGeneric[DEFAULT_LINES_COLOR]);
+        }
+        if (toggleLinesColor)
+        {
+            toggleLinesColorPressed = true;
+            currentSelectedControl = -1;
+            currentSelectedProperty = -1;
+            styleGeneric[DEFAULT_LINES_COLOR] = ColorToInt(colorPickerValue);
+        }
+        else toggleLinesColorPressed = false;
+        
+        
         if ((currentSelectedControl != -1) && (currentSelectedProperty != -1))
         {
             if ((previousSelectedProperty != currentSelectedProperty) || (previousSelectedControl != currentSelectedControl)) saveColor = false;
@@ -289,7 +314,7 @@ int main(int argc, char *argv[])
 
             GuiSetStyleProperty(GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty), ColorToInt(colorPickerValue));
         }
-        }
+        
         
         previousSelectedProperty = currentSelectedProperty;
         previousSelectedControl = currentSelectedControl;
@@ -315,15 +340,15 @@ int main(int argc, char *argv[])
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiBackgroundColor());
             
             // Draw info bar top
-            DrawRectangle(0, 0, GetScreenWidth(), 24, GRAY);
-            DrawText("CHOOSE CONTROL", 35, 8, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
-            DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
-            DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, styleGeneric[DEFAULT_TEXT_SIZE], LIGHTGRAY);
+            DrawRectangle(0, 0, GetScreenWidth(), 24, GetColor(styleGeneric[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawText("CHOOSE CONTROL", 35, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
             
             // Draw status bar bottom
-            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, LIGHTGRAY);
-            GuiLabel((Rectangle){20, GetScreenHeight() - 16, 100, 20}, FormatText("CURRENT SELECTION: %s_%s", guiControlText[currentSelectedControl], guiStylesTextC[currentSelectedProperty]));
-            GuiLabel((Rectangle){guiPosX + 100, GetScreenHeight() - 16, 100, 20}, FormatText("SAVE STATUS: %s", guiText));
+            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, GetColor(styleGeneric[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawText(FormatText("CURRENT SELECTION: %s_%s", guiControlText[currentSelectedControl], guiStylesTextC[currentSelectedProperty]), 20, GetScreenHeight() - 16, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText(FormatText("SAVE STATUS: %s", guiText), guiPosX + 100, GetScreenHeight() - 16, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
             
             // Draw Gui controls
             currentSelectedControl = GuiListView(bounds[LISTVIEW], guiControlText, NUM_CONTROLS, currentSelectedControl);
@@ -340,7 +365,7 @@ int main(int argc, char *argv[])
                 case CHECKBOX:
                 case COLORPICKER: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 485 }, guiStylesTextB, NUM_STYLES_B, currentSelectedProperty); break;
                 case BUTTON:
-                case IMAGEBUTTON:
+                //case IMAGEBUTTON:
                 case TOGGLE: 
                 case TOGGLEGROUP: 
                 case COMBOBOX: 
@@ -360,7 +385,7 @@ int main(int argc, char *argv[])
 
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
-            if (GuiImageButtonEx(bounds[IMAGEBUTTON], texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { }
+            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { }
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
@@ -475,7 +500,7 @@ static int GetGuiStylePropertyIndex(int control, int property)
         case LABEL: guiProp = LABEL_TEXT_COLOR_NORMAL + property; break;
         case LABELBUTTON: guiProp = LABEL_TEXT_COLOR_NORMAL + property; break;
         case BUTTON: guiProp = BUTTON_BORDER_COLOR_NORMAL + property; break;
-        case IMAGEBUTTON: guiProp = BUTTON_BORDER_COLOR_NORMAL + property; break;
+        //case IMAGEBUTTON: guiProp = BUTTON_BORDER_COLOR_NORMAL + property; break;
         case TOGGLE: guiProp = TOGGLE_BORDER_COLOR_NORMAL + property; break; 
         case TOGGLEGROUP: guiProp = TOGGLE_BORDER_COLOR_NORMAL + property; break;
         case SLIDER: guiProp = SLIDER_BORDER_COLOR_NORMAL + property; break;
