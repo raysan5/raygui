@@ -36,7 +36,7 @@
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_STYLE_SAVE_LOAD
-#define RAYGUI_STYLE_DEFAULT_DARK
+#define RAYGUI_STYLE_DEFAULT_LIGHT
 #include "raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
