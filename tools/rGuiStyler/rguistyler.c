@@ -61,11 +61,10 @@
 #define CONTROL_LIST_HEIGHT      38
 #define STATUS_BAR_HEIGHT   25
 
-#define NUM_CONTROLS        14
+#define NUM_CONTROLS        13
 #define NUM_STYLES_A         4
 #define NUM_STYLES_B         8
-#define NUM_STYLES_C        12
-#define NUM_STYLES_D        14
+#define NUM_STYLES_C        14
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -76,7 +75,7 @@ typedef enum {
     BUTTON, 
     //IMAGEBUTTON,
     TOGGLE, 
-    TOGGLEGROUP, 
+    //TOGGLEGROUP, 
     SLIDER, 
     SLIDERBAR, 
     PROGRESSBAR, 
@@ -108,13 +107,19 @@ typedef enum {
 //----------------------------------------------------------------------------------
 static char currentPath[256];       // Path to current working folder
 
+static int styleBackup[NUM_PROPERTIES] = { 0 };  
+
+// NOTE: Some styles are shared by multiple controls:
+// LABEL = LABELBUTTON
+// BUTTON = IMAGEBUTTON
+// TOGGLE = TOGGLEGROUP
 const char *guiControlText[NUM_CONTROLS] = { 
     "DEFAULT", 
     "LABELBUTTON",
     "BUTTON", 
     //"IMAGEBUTTON",
     "TOGGLE", 
-    "TOGGLEGROUP", 
+    //"TOGGLEGROUP", 
     "SLIDER", 
     "SLIDERBAR", 
     "PROGRESSBAR", 
@@ -126,6 +131,7 @@ const char *guiControlText[NUM_CONTROLS] = {
     "COLORPICKER"
 };
 
+// NOTE: Used by controls: Label, LabelButton
 const char *guiStylesTextA[NUM_STYLES_A] = { 
     "TEXT_COLOR_NORMAL",
     "TEXT_COLOR_FOCUSED",
@@ -133,6 +139,7 @@ const char *guiStylesTextA[NUM_STYLES_A] = {
     "TEXT_COLOR_DISABLED"
 };
 
+//Note: Used by controls: Slider, SliderBar, ProgressBar, Checkbox, ColorPicker
 const char *guiStylesTextB[NUM_STYLES_B] = { 
     "BORDER_COLOR_NORMAL",
     "BASE_COLOR_NORMAL",
@@ -144,22 +151,8 @@ const char *guiStylesTextB[NUM_STYLES_B] = {
     "BASE_COLOR_DISABLED",
 };
 
+//Note: Used by controls: Button, ImageButton, Toggle, ToggleGroup, Spinner, ComboBox, TextBox, ListView
 const char *guiStylesTextC[NUM_STYLES_C] = { 
-    "BORDER_COLOR_NORMAL",
-    "BASE_COLOR_NORMAL",
-    "TEXT_COLOR_NORMAL",
-    "BORDER_COLOR_FOCUSED",
-    "BASE_COLOR_FOCUSED",
-    "TEXT_COLOR_FOCUSED",
-    "BORDER_COLOR_PRESSED",
-    "BASE_COLOR_PRESSED",
-    "TEXT_COLOR_PRESSED",
-    "BORDER_COLOR_DISABLED",
-    "BASE_COLOR_DISABLED",
-    "TEXT_COLOR_DISABLED"
-};
-
-const char *guiStylesTextD[NUM_STYLES_D] = { 
     "BORDER_COLOR_NORMAL",
     "BASE_COLOR_NORMAL",
     "TEXT_COLOR_NORMAL",
@@ -176,11 +169,155 @@ const char *guiStylesTextD[NUM_STYLES_D] = {
     "LINES_COLOR"
 };
 
+const char *guiPropertyText[NUM_PROPERTIES] = {
+    "LABEL_TEXT_COLOR_NORMAL",
+    "LABEL_TEXT_COLOR_FOCUSED",
+    "LABEL_TEXT_COLOR_PRESSED",
+    "LABEL_TEXT_COLOR_DISABLED",
+    "BUTTON_BORDER_WIDTH",
+    "BUTTON_BORDER_COLOR_NORMAL",
+    "BUTTON_BASE_COLOR_NORMAL",
+    "BUTTON_TEXT_COLOR_NORMAL",
+    "BUTTON_BORDER_COLOR_FOCUSED",
+    "BUTTON_BASE_COLOR_FOCUSED",
+    "BUTTON_TEXT_COLOR_FOCUSED",
+    "BUTTON_BORDER_COLOR_PRESSED",
+    "BUTTON_BASE_COLOR_PRESSED",
+    "BUTTON_TEXT_COLOR_PRESSED",
+    "BUTTON_BORDER_COLOR_DISABLED",
+    "BUTTON_BASE_COLOR_DISABLED",
+    "BUTTON_TEXT_COLOR_DISABLED",
+    "TOGGLE_BORDER_WIDTH",
+    "TOGGLE_BORDER_COLOR_NORMAL",
+    "TOGGLE_BASE_COLOR_NORMAL",
+    "TOGGLE_TEXT_COLOR_NORMAL",
+    "TOGGLE_BORDER_COLOR_FOCUSED",
+    "TOGGLE_BASE_COLOR_FOCUSED",
+    "TOGGLE_TEXT_COLOR_FOCUSED",
+    "TOGGLE_BORDER_COLOR_PRESSED",
+    "TOGGLE_BASE_COLOR_PRESSED",
+    "TOGGLE_TEXT_COLOR_PRESSED",
+    "TOGGLE_BORDER_COLOR_DISABLED",
+    "TOGGLE_BASE_COLOR_DISABLED",
+    "TOGGLE_TEXT_COLOR_DISABLED",
+    "TOGGLEGROUP_PADDING",
+    "SLIDER_BORDER_WIDTH",
+    "SLIDER_SLIDER_WIDTH",
+    "SLIDER_BORDER_COLOR_NORMAL",
+    "SLIDER_BASE_COLOR_NORMAL",
+    "SLIDER_BORDER_COLOR_FOCUSED",
+    "SLIDER_BASE_COLOR_FOCUSED",
+    "SLIDER_BORDER_COLOR_PRESSED",
+    "SLIDER_BASE_COLOR_PRESSED",
+    "SLIDER_BORDER_COLOR_DISABLED",
+    "SLIDER_BASE_COLOR_DISABLED",
+    "SLIDERBAR_INNER_PADDING",
+    "SLIDERBAR_BORDER_WIDTH",
+    "SLIDERBAR_BORDER_COLOR_NORMAL",
+    "SLIDERBAR_BASE_COLOR_NORMAL",
+    "SLIDERBAR_BORDER_COLOR_FOCUSED",
+    "SLIDERBAR_BASE_COLOR_FOCUSED",
+    "SLIDERBAR_BORDER_COLOR_PRESSED",
+    "SLIDERBAR_BASE_COLOR_PRESSED",
+    "SLIDERBAR_BORDER_COLOR_DISABLED",
+    "SLIDERBAR_BASE_COLOR_DISABLED",
+    "PROGRESSBAR_INNER_PADDING",
+    "PROGRESSBAR_BORDER_WIDTH",
+    "PROGRESSBAR_BORDER_COLOR_NORMAL",
+    "PROGRESSBAR_BASE_COLOR_NORMAL",
+    "PROGRESSBAR_BORDER_COLOR_FOCUSED",
+    "PROGRESSBAR_BASE_COLOR_FOCUSED",
+    "PROGRESSBAR_BORDER_COLOR_PRESSED",
+    "PROGRESSBAR_BASE_COLOR_PRESSED",
+    "PROGRESSBAR_BORDER_COLOR_DISABLED",
+    "PROGRESSBAR_BASE_COLOR_DISABLED",
+    "SPINNER_BUTTON_PADDING",
+    "SPINNER_BUTTONS_WIDTH",
+    "SPINNER_BORDER_COLOR_NORMAL",
+    "SPINNER_BASE_COLOR_NORMAL",
+    "SPINNER_TEXT_COLOR_NORMAL",
+    "SPINNER_BORDER_COLOR_FOCUSED",
+    "SPINNER_BASE_COLOR_FOCUSED",
+    "SPINNER_TEXT_COLOR_FOCUSED",
+    "SPINNER_BORDER_COLOR_PRESSED",
+    "SPINNER_BASE_COLOR_PRESSED",
+    "SPINNER_TEXT_COLOR_PRESSED",
+    "SPINNER_BORDER_COLOR_DISABLED",
+    "SPINNER_BASE_COLOR_DISABLED",
+    "SPINNER_TEXT_COLOR_DISABLED",
+    "COMBOBOX_BORDER_WIDTH",
+    "COMBOBOX_BUTTON_PADDING",
+    "COMBOBOX_SELECTOR_WIDTH",
+    "COMBOBOX_BORDER_COLOR_NORMAL",
+    "COMBOBOX_BASE_COLOR_NORMAL",
+    "COMBOBOX_TEXT_COLOR_NORMAL",
+    "COMBOBOX_BORDER_COLOR_FOCUSED",
+    "COMBOBOX_BASE_COLOR_FOCUSED",
+    "COMBOBOX_TEXT_COLOR_FOCUSED",
+    "COMBOBOX_BORDER_COLOR_PRESSED",
+    "COMBOBOX_BASE_COLOR_PRESSED",
+    "COMBOBOX_TEXT_COLOR_PRESSED",
+    "COMBOBOX_BORDER_COLOR_DISABLED",
+    "COMBOBOX_BASE_COLOR_DISABLED",
+    "COMBOBOX_TEXT_COLOR_DISABLED",
+    "CHECKBOX_BORDER_WIDTH",
+    "CHECKBOX_INNER_PADDING",
+    "CHECKBOX_BORDER_COLOR_NORMAL",
+    "CHECKBOX_BASE_COLOR_NORMAL",
+    "CHECKBOX_BORDER_COLOR_FOCUSED",
+    "CHECKBOX_BASE_COLOR_FOCUSED",
+    "CHECKBOX_BORDER_COLOR_PRESSED",
+    "CHECKBOX_BASE_COLOR_PRESSED",
+    "CHECKBOX_BORDER_COLOR_DISABLED",
+    "CHECKBOX_BASE_COLOR_DISABLED",
+    "TEXTBOX_BORDER_WIDTH",
+    "TEXTBOX_BORDER_COLOR_NORMAL",
+    "TEXTBOX_BASE_COLOR_NORMAL",
+    "TEXTBOX_TEXT_COLOR_NORMAL",
+    "TEXTBOX_BORDER_COLOR_FOCUSED",
+    "TEXTBOX_BASE_COLOR_FOCUSED",
+    "TEXTBOX_TEXT_COLOR_FOCUSED",
+    "TEXTBOX_BORDER_COLOR_PRESSED",
+    "TEXTBOX_BASE_COLOR_PRESSED",
+    "TEXTBOX_TEXT_COLOR_PRESSED",
+    "TEXTBOX_BORDER_COLOR_DISABLED",
+    "TEXTBOX_BASE_COLOR_DISABLED",
+    "TEXTBOX_TEXT_COLOR_DISABLED",
+    "COLORPICKER_BARS_THICK",
+    "COLORPICKER_BARS_PADDING",
+    "COLORPICKER_BORDER_COLOR_NORMAL",
+    "COLORPICKER_BASE_COLOR_NORMAL",
+    "COLORPICKER_BORDER_COLOR_FOCUSED",
+    "COLORPICKER_BASE_COLOR_FOCUSED",
+    "COLORPICKER_BORDER_COLOR_PRESSED",
+    "COLORPICKER_BASE_COLOR_PRESSED",
+    "COLORPICKER_BORDER_COLOR_DISABLED",
+    "COLORPICKER_BASE_COLOR_DISABLED",
+    "LISTVIEW_ELEMENTS_HEIGHT",
+    "LISTVIEW_ELEMENTS_PADDING",
+    "LISTVIEW_BAR_WIDTH",       
+    "LISTVIEW_BORDER_COLOR_NORMAL",
+    "LISTVIEW_BASE_COLOR_NORMAL",
+    "LISTVIEW_TEXT_COLOR_NORMAL",
+    "LISTVIEW_BORDER_COLOR_FOCUSED",
+    "LISTVIEW_BASE_COLOR_FOCUSED",
+    "LISTVIEW_TEXT_COLOR_FOCUSED",
+    "LISTVIEW_BORDER_COLOR_PRESSED",
+    "LISTVIEW_BASE_COLOR_PRESSED",
+    "LISTVIEW_TEXT_COLOR_PRESSED",
+    "LISTVIEW_BORDER_COLOR_DISABLED",
+    "LISTVIEW_BASE_COLOR_DISABLED",
+    "LISTVIEW_TEXT_COLOR_DISABLED"
+};
+
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
 static void BtnLoadStyle(void);     // Button load style function
 static void BtnSaveStyle(void);     // Button save style function
+
+static void SaveStyleRGST(const char *fileName);    //Save style in text flie
+static void LoadStyleRGST(const char *fileName);    //Load style in text file
 
 static int GetGuiStylePropertyIndex(int control, int property);
 static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color);
@@ -211,9 +348,9 @@ int main(int argc, char *argv[])
         (Rectangle){ 0 },                                           // DEFAULT
         (Rectangle){ guiPosX + 98, guiPosY + 18, 140, 10 },         // LABELBUTTON
         (Rectangle){ guiPosX + 184, guiPosY + 250, 180, 30 },       // BUTTON
-        //(Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },        // IMAGEBUTTON
+        //(Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },       // IMAGEBUTTON
         (Rectangle){ guiPosX + 20, guiPosY + 54, 60, 30 },          // TOGGLE
-        (Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 },          // TOGGLEGROUP
+        //(Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 },         // TOGGLEGROUP
         (Rectangle){ guiPosX + 20, guiPosY + 104, 344, 20 },        // SLIDER
         (Rectangle){ guiPosX + 20, guiPosY + 134, 344, 20 },        // SLIDERBAR
         (Rectangle){ guiPosX + 20, guiPosY + 164, 320, 20 },        // PROGRESSBAR    
@@ -235,6 +372,9 @@ int main(int argc, char *argv[])
     
     Texture2D texIcons = LoadTexture("resources/icons.png");
     
+    // Keep a backup for style    
+    memcpy(styleBackup, style, NUM_PROPERTIES*sizeof(int));
+    
     SetTargetFPS(60);
     //------------------------------------------------------------
 
@@ -252,11 +392,11 @@ int main(int argc, char *argv[])
     
     int spinnerValue = 28;
 
-    int comboNum = 4;
-    const char *comboText[4] = { "Image Style (.png)", "Image Style (.raw)", "Text Style (.rgst)", "Binary Style (.rgsb)" };
+    int comboNum = 2;
+    const char *comboText[4] = { "Text Style (.rgst)", "Binary Style (.rgsb)" };
     int comboActive = 0;
     
-    char guiText[32] =  "raygui_default_style.png";
+    char guiText[32] =  "raygui_style.rgst";
     
     Color colorPickerValue = RED;
     
@@ -358,7 +498,7 @@ int main(int argc, char *argv[])
             
             switch (currentSelectedControl)
             {
-                case DEFAULT: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextD, NUM_STYLES_D, currentSelectedProperty); break;
+                case DEFAULT: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextC, NUM_STYLES_C, currentSelectedProperty); break;
                 case LABELBUTTON: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextA, NUM_STYLES_A, currentSelectedProperty); break;
                 case SLIDER: 
                 case SLIDERBAR:
@@ -368,12 +508,12 @@ int main(int argc, char *argv[])
                 case BUTTON:
                 //case IMAGEBUTTON:
                 case TOGGLE: 
-                case TOGGLEGROUP: 
+                //case TOGGLEGROUP: 
                 case COMBOBOX: 
                 case TEXTBOX: 
                 case SPINNER:
                 case LISTVIEW:
-                default: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextC, NUM_STYLES_C, currentSelectedProperty); break;
+                default: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextC, NUM_STYLES_C - 2, currentSelectedProperty); break;
             }
 
             GuiEnable();
@@ -386,11 +526,11 @@ int main(int argc, char *argv[])
 
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
-            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { }
+            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { BtnLoadStyle(); }
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
-            toggleValue = GuiToggleGroup(bounds[TOGGLEGROUP], toggleGuiText, 4, toggleValue);
+            toggleValue = GuiToggleGroup((Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 }, toggleGuiText, 4, toggleValue);
             
             sliderValue = GuiSlider(bounds[SLIDER], sliderValue, 0, 100);
             
@@ -456,13 +596,11 @@ int main(int argc, char *argv[])
 static void BtnLoadStyle(void)
 {
     // Open file dialog
-    const char *filters[] = { "*.rstyle" };
+    const char *filters[] = { "*.rgst" };
 
-    const char *fileName; // = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rstyle)", 0);
+    const char *fileName = tinyfd_openFileDialog("Load raygui style text file", currentPath, 1, filters, "raygui Style Files (*.rgst)", 0);
 
-    // TODO: Load style file
-    
-    if (fileName != NULL) GuiLoadStyle(fileName);
+    if (fileName != NULL) LoadStyleRGST(fileName);
 }
 
 // Button save style function
@@ -472,17 +610,17 @@ static void BtnSaveStyle(void)
 
     // Add sample file name to currentPath
     strcpy(currrentPathFile, currentPath);
-    strcat(currrentPathFile, "mystyle.rstyle\0");
+    strcat(currrentPathFile, guiText);
 
     // Save file dialog
-    const char *filters[] = { "*.rstyle" };
-    const char *fileName; // = tinyfd_saveFileDialog("Save raygui style file", currrentPathFile, 1, filters, "raygui Style Files (*.rstyle)");
+    const char *filters[] = { "*.rgst" };
+    const char *fileName = tinyfd_saveFileDialog("Save raygui style text file", currrentPathFile, 1, filters, "raygui Style Files (*.rgst)");
 
     if (fileName != NULL)
     {
-        // TODO: Save style file (image or text or binary)
+        // TODO: Save style file (text or binary)
         
-        GuiSaveStyle(fileName);
+        SaveStyleRGST(fileName);
         fileName = "";
     }
 }
@@ -499,12 +637,12 @@ static int GetGuiStylePropertyIndex(int control, int property)
             else if (property == 13) guiProp = 1;
             else guiProp = DEFAULT_BORDER_COLOR_NORMAL + property; 
             
-        }break;
+        } break;
         case LABELBUTTON: guiProp = LABEL_TEXT_COLOR_NORMAL + property; break;
         case BUTTON: guiProp = BUTTON_BORDER_COLOR_NORMAL + property; break;
         //case IMAGEBUTTON: guiProp = BUTTON_BORDER_COLOR_NORMAL + property; break;
         case TOGGLE: guiProp = TOGGLE_BORDER_COLOR_NORMAL + property; break; 
-        case TOGGLEGROUP: guiProp = TOGGLE_BORDER_COLOR_NORMAL + property; break;
+        //case TOGGLEGROUP: guiProp = TOGGLE_BORDER_COLOR_NORMAL + property; break;
         case SLIDER: guiProp = SLIDER_BORDER_COLOR_NORMAL + property; break;
         case SLIDERBAR: guiProp = SLIDERBAR_BORDER_COLOR_NORMAL + property; break;
         case PROGRESSBAR: guiProp = PROGRESSBAR_BORDER_COLOR_NORMAL + property; break;
@@ -542,4 +680,82 @@ static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color)
     DrawRectangleLinesEx(bounds, 1, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_NORMAL]));
     
     return color;
+}
+
+static void SaveStyleRGST(const char *fileName)
+{
+    #define RGST_FILE_VERSION   "2.0"
+    
+    FILE *rgstFile = fopen(fileName, "wt");
+    int counter = 0;
+    
+    for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) counter++;
+    
+    // Write some description comments
+    fprintf(rgstFile, "#\n# rgst file (v%s) - raygui style text file generated using rGuiStyler\n#\n", RGST_FILE_VERSION);
+    fprintf(rgstFile, "# Total number of properties:     %i\n", NUM_PROPERTIES);
+    fprintf(rgstFile, "# Number of properties changed:   %i\n#\n", counter);
+    // " Num properties: %i"
+    
+    for (int i = 0; i < NUM_PROPERTIES; i++)
+    {
+        if (styleBackup[i] != style[i]) fprintf(rgstFile, "%03i 0x%08x // %s\n", i, style[i], guiPropertyText[i]);      
+    }
+
+    fclose(rgstFile);
+}
+
+static void SaveStyleRGSB(const char *fileName)
+{
+    #define RGSB_FILE_VERSION   200
+    
+    FILE *rgsbFile = fopen(fileName, "wb");
+    
+    // TODO: Write some header info
+    // id: "RGS "       - 4 bytes
+    // version: 200     - 2 bytes (int)
+    // NUM_PROPERTIES   - 2 bytes
+    // reserved         - 4 bytes
+
+    for (int i = 0; i < NUM_PROPERTIES; i++)
+    {
+        //fwrite(&i, 1, sizeof(int), rgsbFile);
+        fwrite(&style[i], 1, sizeof(int), rgsbFile);
+    }
+
+    fclose(rgsbFile);
+}
+
+static void LoadStyleRGST(const char *fileName)
+{
+    int id = 0;
+    int value = 0;
+    int counter = 0;
+    char buffer[256];
+    
+    FILE *rgstFile = fopen(fileName, "rt");
+    
+    if (rgstFile != NULL)
+    {
+        while (!feof(rgstFile))
+        {
+            fgets(buffer, 256, rgstFile);
+
+            if ((buffer[0] != '\n') && (buffer[0] != '#'))
+            {
+                sscanf(buffer, "%d 0x%x", &id, &value);
+                if (id < NUM_PROPERTIES) style[id] = value;     // Update style property
+                counter++;
+            }
+        }
+        
+        fclose(rgstFile);
+    }
+
+    TraceLog(LOG_INFO, "[raygui] Style properties loaded: %i", counter);
+}
+
+static void LoadStyleRGSB(const char *fileName)
+{
+    
 }
