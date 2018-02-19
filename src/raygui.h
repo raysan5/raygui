@@ -1273,7 +1273,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
             DrawText(FormatText("%i/%i", active + 1, count), 
                      selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
-                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
+                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
@@ -1287,7 +1287,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
             DrawText(FormatText("%i/%i", active + 1, count), 
                      selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
-                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
+                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
@@ -1301,7 +1301,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
             DrawText(FormatText("%i/%i", active + 1, count), 
                      selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
-                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
+                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
@@ -1315,7 +1315,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
             DrawText(FormatText("%i/%i", active + 1, count), 
                      selector.x + selector.width/2 - (MeasureText(FormatText("%i/%i", active + 1, count), 
                      styleGeneric[DEFAULT_TEXT_SIZE])/2), selector.y + selector.height/2 - styleGeneric[DEFAULT_TEXT_SIZE]/2, 
-                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
+                     styleGeneric[DEFAULT_TEXT_SIZE], GetColor(style[COMBOBOX_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
