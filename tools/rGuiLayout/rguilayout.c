@@ -85,19 +85,24 @@ int main()
     // Initialization
     //--------------------------------------------------------------------------------------
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "raylib tool - raygui layout editor");
+    InitWindow(screenWidth, screenHeight, "rGuiLayout - raygui layout editor");
     
     int selectedControl = -1;
-    
-    const char *list[3] = { "ONE", "TWO", "THREE" };
-    
-    bool snapMode = false;
     int selectedType = BUTTON;
-    int mouseX, mouseY;
-    
     int selectedTypeDraw = LABEL;
-    bool controlCollision = false;
-    Rectangle recDraw = { 0, 0, 100, 30 };
+
+    int mouseX, mouseY;
+    bool snapMode = false;
+    bool showGrid = true;
+    bool controlCollision = false;          // TODO: What's that?
+    bool controlDrag = false;               // TODO: What's that?
+    
+    bool textEditMode = false;
+    int saveControlSelected = -1;
+    
+    Rectangle recDraw = { 0, 0, 100, 30 };  // TODO: What's that?
+    
+    // List view required variables
     Rectangle listViewControls = { -200, 0, 140, 500 };
     int counterListViewControls = 0;
     int startPosXListViewControls = -200;
@@ -106,10 +111,8 @@ int main()
     int counterListViewControlsCounter = 0;
     int startPosXListViewControlsCounter = GetScreenWidth() + 140;
     int deltaPosXListViewControlsCounter = 0;
-    bool controlDrag = false;
-    
-    bool textEditMode = false;
-    int saveControlSelected = -1;
+
+    const char *list[3] = { "ONE", "TWO", "THREE" };
  
     const char *guiControls[14] = { 
         "LABEL", 
@@ -128,7 +131,7 @@ int main()
         "COLORPICKER"
     };
     
-    const char *guiControlsCounter[64] = { 
+    const char *guiControlsCounter[12] = { 
         "00",
         "01",
         "02",
@@ -140,63 +143,12 @@ int main()
         "08",
         "09",
         "10",
-        "11",
-        "12",
-        "13",
-        "14",
-        "15",
-        "16",
-        "17",
-        "18",
-        "19",
-        "20",
-        "21",
-        "22",
-        "23",
-        "24",
-        "25",
-        "26",
-        "27",
-        "28",
-        "29",
-        "30",
-        "31",
-        "32",
-        "33",
-        "34",
-        "35",
-        "36",
-        "37",
-        "38",
-        "39",
-        "40",
-        "41",
-        "42",
-        "43",
-        "44",
-        "45",
-        "46",
-        "47",
-        "48",
-        "49",
-        "50",
-        "51",
-        "52",
-        "53",
-        "54",
-        "55",
-        "56",
-        "57",
-        "58",
-        "59",
-        "60",
-        "61",
-        "62",
-        "63"
+        "11"
     };
     
     GuiLoadStyleImage("default_light.png");
     Texture2D texture = LoadTexture("default_light.png");
+
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -208,9 +160,11 @@ int main()
         //----------------------------------------------------------------------------------
         mouseX = GetMouseX();
         mouseY = GetMouseY();
+        
         // Updates the recDraw position
         recDraw.x = mouseX - recDraw.width/2;
         recDraw.y = mouseY - recDraw.height/2;
+        
         // Checks if the recDraw is colliding with the list of the controls
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls))controlCollision = true;
         
@@ -221,6 +175,7 @@ int main()
             deltaPosXListViewControls = 0 - startPosXListViewControls;
             counterListViewControls = 0;
         }
+        
         if (IsKeyDown(KEY_TAB))
         {
             counterListViewControls++;
@@ -247,6 +202,7 @@ int main()
             deltaPosXListViewControlsCounter = GetScreenWidth() -listViewControlsCounter.width - startPosXListViewControlsCounter;
             counterListViewControlsCounter = 0;
         }
+        
         if (IsKeyDown(KEY_LEFT_SHIFT))
         {
             counterListViewControlsCounter++;
@@ -289,20 +245,20 @@ int main()
         
         if (selectedControl != -1 && !textEditMode)
         {
-            //Disables the recDraw
+            // Disables the recDraw
             controlCollision = true;
             
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 controlDrag = true;
             }
-            else if(IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
                 controlDrag = false;
                 selectedControl = -1;
             } 
              
-            if(controlDrag)
+            if (controlDrag)
             {
                 layout[selectedControl].rec.x = mouseX - layout[selectedControl].rec.width/2;
                 layout[selectedControl].rec.y = mouseY - layout[selectedControl].rec.height/2;
@@ -432,7 +388,7 @@ int main()
         // TODO: Check if control has text to editor
         // TODO: Lock selectedControl for text editing
         
-        //Turns on textEditMode
+        // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && selectedControl != -1 && ((selectedType == LABEL) || (selectedType == BUTTON) || (selectedType == TOGGLE))) 
         {   
             textEditMode = true;
@@ -482,6 +438,8 @@ int main()
         // TODO: if (IsKeyPressed(KEY_R)) remove control anchors (reset)
             
         // TODO: Draw global app screen limits (black rectangle with black default anchor)
+        
+        if (IsKeyPressed(KEY_G)) showGrid = !showGrid;
      
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) SaveGuiLayout("test_layout.rlyt");
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) LoadGuiLayout("test_layout.rlyt");
@@ -494,7 +452,8 @@ int main()
 
             ClearBackground(RAYWHITE);
             
-            DrawGrid2D(77, 40);
+            // TODO: Review grid lines to draw depending on screen size
+            if (showGrid) DrawGrid2D(77, 40);
             
             if (selectedControl == -1)
             {
@@ -503,7 +462,6 @@ int main()
             }
 
             // Draws the recDraw of the control selected
-            if(!controlCollision)  
             switch (selectedTypeDraw)
             {
                 case LABEL: GuiLabel(recDraw, "TEXT SAMPLE"); break;
@@ -598,9 +556,7 @@ int main()
 static void DrawGrid2D(int divsX, int divsY)
 {
     int spacing = 0;
-    /*divsX = GetScreenHeight()/13;
-    divsY = GetScreenWidth()/13;
-    */
+
     // Draw vertical grid lines
     for (int i = 0; i < divsX; i++)
     {
