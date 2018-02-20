@@ -170,6 +170,23 @@ const char *guiStylesTextC[NUM_STYLES_C] = {
 };
 
 const char *guiPropertyText[NUM_PROPERTIES] = {
+    "DEFAULT_BACKGROUND_COLOR",
+    "DEFAULT_LINES_COLOR",
+    "DEFAULT_TEXT_FONT",
+    "DEFAULT_TEXT_SIZE",
+    "DEFAULT_BORDER_WIDTH",
+    "DEFAULT_BORDER_COLOR_NORMAL",
+    "DEFAULT_BASE_COLOR_NORMAL",
+    "DEFAULT_TEXT_COLOR_NORMAL",
+    "DEFAULT_BORDER_COLOR_FOCUSED",
+    "DEFAULT_BASE_COLOR_FOCUSED",
+    "DEFAULT_TEXT_COLOR_FOCUSED",
+    "DEFAULT_BORDER_COLOR_PRESSED",
+    "DEFAULT_BASE_COLOR_PRESSED",
+    "DEFAULT_TEXT_COLOR_PRESSED",
+    "DEFAULT_BORDER_COLOR_DISABLED",
+    "DEFAULT_BASE_COLOR_DISABLED",
+    "DEFAULT_TEXT_COLOR_DISABLED",
     "LABEL_TEXT_COLOR_NORMAL",
     "LABEL_TEXT_COLOR_FOCUSED",
     "LABEL_TEXT_COLOR_PRESSED",
@@ -313,11 +330,10 @@ const char *guiPropertyText[NUM_PROPERTIES] = {
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-static void BtnLoadStyle(void);     // Button load style function
-static void BtnSaveStyle(void);     // Button save style function
+static void BtnLoadStyle(void);                                 // Button load style function
+static void BtnSaveStyle(const char *defaultName, bool binary); // Button save style function
 
-static void SaveStyleRGST(const char *fileName);    //Save style in text flie
-static void LoadStyleRGST(const char *fileName);    //Load style in text file
+static void SaveStyleRGS(const char *fileName, bool binary);    // Save raygui style file (.rgs), text or binary
 
 static int GetGuiStylePropertyIndex(int control, int property);
 static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color);
@@ -393,10 +409,10 @@ int main(int argc, char *argv[])
     int spinnerValue = 28;
 
     int comboNum = 2;
-    const char *comboText[4] = { "Text Style (.rgst)", "Binary Style (.rgsb)" };
+    const char *comboText[2] = { "Style Text (.rgs)", "Style Binary (.rgs)" };
     int comboActive = 0;
     
-    char guiText[32] =  "raygui_style.rgst";
+    char guiText[32] =  "custom_style.rgs";
     
     Color colorPickerValue = RED;
     
@@ -434,11 +450,11 @@ int main(int argc, char *argv[])
             
             if (!saveColor)
             {
-                colorPickerValue = GetColor(styleGeneric[GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty)]);
+                colorPickerValue = GetColor(style[GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty)]);
                 saveColor = true;
             }
 
-            styleGeneric[GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty)] = ColorToInt(colorPickerValue);
+            style[GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty)] = ColorToInt(colorPickerValue);
             GuiUpdateStyleComplete();
         }
         else if ((currentSelectedControl != -1) && (currentSelectedProperty != -1))
@@ -479,18 +495,17 @@ int main(int argc, char *argv[])
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiBackgroundColor());
             
             // Draw info bar top
-            DrawRectangle(0, 0, GetScreenWidth(), 24, GetColor(styleGeneric[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawRectangle(0, 0, GetScreenWidth(), 24, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
             DrawRectangle(0, 24, GetScreenWidth(), 1, GuiLinesColor());
-            DrawText("CHOOSE CONTROL", 35, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
-            DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
-            DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText("CHOOSE CONTROL", 35, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+            DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
             
             // Draw status bar bottom
-            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, GetColor(styleGeneric[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
             DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 1, GuiLinesColor());
-            DrawText(FormatText("CURRENT SELECTION: %s_%s", guiControlText[currentSelectedControl], guiStylesTextC[currentSelectedProperty]), 20, GetScreenHeight() - 16, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
-            DrawText(FormatText("SAVE STATUS: %s", guiText), guiPosX + 100, GetScreenHeight() - 16, styleGeneric[DEFAULT_TEXT_SIZE], GetColor(styleGeneric[DEFAULT_TEXT_COLOR_NORMAL]));
-            
+            DrawText("rGuiStyler powered by raylib (github.com/raysan5/raylib) and raygui (github.com/raysan5/raygui)", 20, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+ 
             // Draw Gui controls
             currentSelectedControl = GuiListView(bounds[LISTVIEW], guiControlText, NUM_CONTROLS, currentSelectedControl);
             
@@ -500,19 +515,9 @@ int main(int argc, char *argv[])
             {
                 case DEFAULT: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextC, NUM_STYLES_C, currentSelectedProperty); break;
                 case LABELBUTTON: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextA, NUM_STYLES_A, currentSelectedProperty); break;
-                case SLIDER: 
-                case SLIDERBAR:
-                case PROGRESSBAR:
-                case CHECKBOX:
+                case SLIDER: case SLIDERBAR: case PROGRESSBAR: case CHECKBOX:
                 case COLORPICKER: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextB, NUM_STYLES_B, currentSelectedProperty); break;
-                case BUTTON:
-                //case IMAGEBUTTON:
-                case TOGGLE: 
-                //case TOGGLEGROUP: 
-                case COMBOBOX: 
-                case TEXTBOX: 
-                case SPINNER:
-                case LISTVIEW:
+                case BUTTON: case TOGGLE: case COMBOBOX: case TEXTBOX: case SPINNER: case LISTVIEW:
                 default: currentSelectedProperty = GuiListView((Rectangle){ 156, guiPosY + 3, 180, 563 }, guiStylesTextC, NUM_STYLES_C - 2, currentSelectedProperty); break;
             }
 
@@ -526,7 +531,8 @@ int main(int argc, char *argv[])
 
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
-            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) { BtnLoadStyle(); }
+            // Draw load style button
+            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) {  currentSelectedProperty = -1; BtnLoadStyle(); }
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
@@ -563,12 +569,12 @@ int main(int argc, char *argv[])
             
             for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ guiPosX + 303 + 20*(i%3), guiPosY +  455 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
             
-            DrawRectangleLinesEx((Rectangle){ guiPosX + 303, guiPosY +  455, 60, 80 }, 2, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_NORMAL]));
+            DrawRectangleLinesEx((Rectangle){ guiPosX + 303, guiPosY +  455, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             
             GuiEnable();
 
-            // Draw Load and Save buttons
-            if (GuiButton(bounds[BUTTON], "Save Style")) BtnSaveStyle();
+            // Draw save style button
+            if (GuiButton(bounds[BUTTON], "Save Style")) BtnSaveStyle(guiText, comboActive);
             
             // Draw selected control rectangles
             if (currentSelectedControl >= 0) DrawRectangleLinesEx((Rectangle){ bounds[currentSelectedControl].x - 2, bounds[currentSelectedControl].y -2, bounds[currentSelectedControl].width + 4, bounds[currentSelectedControl].height + 4 }, 1, RED);
@@ -596,31 +602,30 @@ int main(int argc, char *argv[])
 static void BtnLoadStyle(void)
 {
     // Open file dialog
-    const char *filters[] = { "*.rgst" };
+    const char *filters[] = { "*.rgs" };
 
-    const char *fileName = tinyfd_openFileDialog("Load raygui style text file", currentPath, 1, filters, "raygui Style Files (*.rgst)", 0);
+    const char *fileName = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rgs)", 0);
 
-    if (fileName != NULL) LoadStyleRGST(fileName);
+    if (fileName != NULL) GuiLoadStyle(fileName);
 }
 
 // Button save style function
-static void BtnSaveStyle(void)
+static void BtnSaveStyle(const char *defaultName, bool binary)
 {
     char currrentPathFile[256];
 
     // Add sample file name to currentPath
     strcpy(currrentPathFile, currentPath);
-    strcat(currrentPathFile, guiText);
+    strcat(currrentPathFile, defaultName);
 
     // Save file dialog
-    const char *filters[] = { "*.rgst" };
-    const char *fileName = tinyfd_saveFileDialog("Save raygui style text file", currrentPathFile, 1, filters, "raygui Style Files (*.rgst)");
+    const char *filters[] = { "*.rgs" };
+    const char *fileName = tinyfd_saveFileDialog("Save raygui style text file", currrentPathFile, 1, filters, "raygui Style Files (*.rgs)");
 
     if (fileName != NULL)
     {
-        // TODO: Save style file (text or binary)
-        
-        SaveStyleRGST(fileName);
+        // Save style file (text or binary)
+        SaveStyleRGS(fileName, binary);
         fileName = "";
     }
 }
@@ -677,85 +682,77 @@ static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color)
     
     // Draw color box
     DrawRectangleRec(bounds, color);
-    DrawRectangleLinesEx(bounds, 1, GetColor(styleGeneric[DEFAULT_BORDER_COLOR_NORMAL]));
+    DrawRectangleLinesEx(bounds, 1, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
     
     return color;
 }
 
-static void SaveStyleRGST(const char *fileName)
+// Save raygui style file (.rgs), text or binary
+static void SaveStyleRGS(const char *fileName, bool binary)
 {
-    #define RGST_FILE_VERSION   "2.0"
-    
-    FILE *rgstFile = fopen(fileName, "wt");
-    int counter = 0;
-    
-    for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) counter++;
-    
-    // Write some description comments
-    fprintf(rgstFile, "#\n# rgst file (v%s) - raygui style text file generated using rGuiStyler\n#\n", RGST_FILE_VERSION);
-    fprintf(rgstFile, "# Total number of properties:     %i\n", NUM_PROPERTIES);
-    fprintf(rgstFile, "# Number of properties changed:   %i\n#\n", counter);
-    // " Num properties: %i"
-    
-    for (int i = 0; i < NUM_PROPERTIES; i++)
+    if (binary)
     {
-        if (styleBackup[i] != style[i]) fprintf(rgstFile, "%03i 0x%08x // %s\n", i, style[i], guiPropertyText[i]);      
-    }
-
-    fclose(rgstFile);
-}
-
-static void SaveStyleRGSB(const char *fileName)
-{
-    #define RGSB_FILE_VERSION   200
-    
-    FILE *rgsbFile = fopen(fileName, "wb");
-    
-    // TODO: Write some header info
-    // id: "RGS "       - 4 bytes
-    // version: 200     - 2 bytes (int)
-    // NUM_PROPERTIES   - 2 bytes
-    // reserved         - 4 bytes
-
-    for (int i = 0; i < NUM_PROPERTIES; i++)
-    {
-        //fwrite(&i, 1, sizeof(int), rgsbFile);
-        fwrite(&style[i], 1, sizeof(int), rgsbFile);
-    }
-
-    fclose(rgsbFile);
-}
-
-static void LoadStyleRGST(const char *fileName)
-{
-    int id = 0;
-    int value = 0;
-    int counter = 0;
-    char buffer[256];
-    
-    FILE *rgstFile = fopen(fileName, "rt");
-    
-    if (rgstFile != NULL)
-    {
-        while (!feof(rgstFile))
-        {
-            fgets(buffer, 256, rgstFile);
-
-            if ((buffer[0] != '\n') && (buffer[0] != '#'))
-            {
-                sscanf(buffer, "%d 0x%x", &id, &value);
-                if (id < NUM_PROPERTIES) style[id] = value;     // Update style property
-                counter++;
-            }
-        }
+        #define RGS_FILE_VERSION_BINARY   200
         
-        fclose(rgstFile);
+        FILE *rgsFile = fopen(fileName, "wb");
+        
+        if (rgsFile != NULL)
+        {
+            // Write some header info (12 bytes)
+            // id: "RGS "       - 4 bytes
+            // version: 200     - 2 bytes
+            // NUM_PROPERTIES   - 2 bytes
+            // reserved         - 4 bytes
+            
+            char signature[5] = "RGS ";
+            short version = RGS_FILE_VERSION_BINARY;
+            short numProperties = NUM_PROPERTIES;
+            int reserved = 0;
+
+            fwrite(signature, 1, 4, rgsFile);
+            fwrite(&version, 1, sizeof(short), rgsFile);
+            fwrite(&numProperties, 1, sizeof(short), rgsFile);
+            fwrite(&reserved, 1, sizeof(int), rgsFile);
+            
+            short id = 0;
+            
+            for (int i = 0; i < NUM_PROPERTIES; i++)
+            {
+                if (styleBackup[i] != style[i])
+                {
+                    id = (short)i;
+                    
+                    fwrite(&id, 1, 2, rgsFile);
+                    fwrite(&style[i], 1, sizeof(int), rgsFile);
+                }
+            }
+            
+            fclose(rgsFile);
+        }
     }
+    else
+    {
+        #define RGS_FILE_VERSION_TEXT   "2.0"
+        
+        int counter = 0;
+        FILE *rgsFile = fopen(fileName, "wt");
+        
+        if (rgsFile != NULL)
+        {
+            for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) counter++;
+            
+            // Write some description comments
+            fprintf(rgsFile, "#\n# rgst file (v%s) - raygui style text file generated using rGuiStyler\n#\n", RGS_FILE_VERSION_TEXT);
+            fprintf(rgsFile, "# Total number of properties:     %i\n", NUM_PROPERTIES);
+            fprintf(rgsFile, "# Number of properties changed:   %i\n", counter);
+            fprintf(rgsFile, "# Required base default style:    %s\n#\n", "LIGHT");     // TODO: check base style
 
-    TraceLog(LOG_INFO, "[raygui] Style properties loaded: %i", counter);
-}
+            for (int i = 0; i < NUM_PROPERTIES; i++)
+            {
+                if (styleBackup[i] != style[i]) fprintf(rgsFile, "%03i 0x%08x // %s\n", i, style[i], guiPropertyText[i]);      
+            }
 
-static void LoadStyleRGSB(const char *fileName)
-{
-    
+            fclose(rgsFile);
+        }
+    }
 }
