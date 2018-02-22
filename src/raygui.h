@@ -1137,8 +1137,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int
 {
     for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, text[i], true);
-        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width, bounds.height }, text[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count, bounds.height }, text[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count, bounds.height }, text[i], false) == true) active = i;
     }
 
     return active;

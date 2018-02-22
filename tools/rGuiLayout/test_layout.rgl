@@ -1,0 +1,13 @@
+#
+# rglt file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     4
+#
+Control 000 : BUTTON Rec 341 235 100 30 Text SAMPLE TEXT Anchor Id 0
+
+Control 001 : BUTTON Rec 647 226 100 30 Text SAMPLE TEXT Anchor Id 0
+
+Control 002 : BUTTON Rec 473 512 100 30 Text SAMPLE TEXT Anchor Id 0
+
+Control 003 : BUTTON Rec 257 422 100 30 Text SAMPLE TEXT Anchor Id 0
+

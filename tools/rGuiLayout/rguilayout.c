@@ -15,6 +15,15 @@
 #define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
 #include "easings.h"
+#include "external/tinyfiledialogs.h"   // Open/Save file dialogs
+
+#if defined(_WIN32)
+    #include <direct.h>
+    #define GetCurrentDir _getcwd
+#else
+    #include <unistd.h>
+    #define GetCurrentDir getcwd
+#endif
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -64,6 +73,7 @@ typedef struct {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
+static char currentPath[256];       // Path to current working folder
 static int screenWidth = 1280;
 static int screenHeight = 720;
 
@@ -81,10 +91,10 @@ const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-static void DrawGrid2D(int divsX, int divsY);               // Draw 2d grid with horizontal and vertical lines depending on the screen size
-static void SaveGuiLayout(const char *fileName);            // Save gui layout project information
-static void LoadGuiLayout(const char *fileName);            // Load gui layout project information
-static void GenerateGuiLayoutCode(const char *fileName);    // Generate C code for gui layout
+static void DrawGrid2D(int divsX, int divsY);                   // Draw 2d grid with horizontal and vertical lines depending on the screen size
+static void SaveLayoutRGL(const char *fileName, bool binary);   // Save gui layout project information
+static void LoadLayoutRGL(const char *fileName);                // Load gui layout project information
+static void GenerateLayoutCode(const char *fileName);           // Generate C code for gui layout
 
 //----------------------------------------------------------------------------------
 // Main Entry point
@@ -107,6 +117,7 @@ int main()
     bool controlDrag = false;               // Allows the control to be moved with the mouse without detecting collision every frame
     
     bool textEditMode = false;
+    int framesCounter = 0;
     int saveControlSelected = -1;
     bool anchorMode = false;  
     
@@ -116,14 +127,14 @@ int main()
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 100, 30},            // IMAGEBUTTON
         (Rectangle){ 0, 0, 100, 30},            // TOGGLE
-        (Rectangle){ 0, 0, 80, 30},             // TOGGLEGROUP  
+        (Rectangle){ 0, 0, 240, 30},             // TOGGLEGROUP  
         (Rectangle){ 0, 0, 200, 20},            // SLIDER
         (Rectangle){ 0, 0, 200, 20},            // SLIDERBAR
         (Rectangle){ 0, 0, 200, 20},            // PROGRESSBAR
-        (Rectangle){ 0, 0, 120, 30},            // SPINNER
-        (Rectangle){ 0, 0, 120, 30},            // COMBOBOX
-        (Rectangle){ 0, 0, 30, 30},             // CHECKBOX
-        (Rectangle){ 0, 0, 80, 20},             // TEXTBOX    
+        (Rectangle){ 0, 0, 150, 30},            // SPINNER
+        (Rectangle){ 0, 0, 150, 30},            // COMBOBOX
+        (Rectangle){ 0, 0, 20, 20},             // CHECKBOX
+        (Rectangle){ 0, 0, 120, 30},             // TEXTBOX    
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -180,9 +191,15 @@ int main()
     GuiLoadStyleImage("default_light.png");
     Texture2D texture = LoadTexture("default_light.png");
     
+    // Get current directory
+    // NOTE: Current working directory could not match current executable directory
+    GetCurrentDir(currentPath, sizeof(currentPath));
+    currentPath[strlen(currentPath)] = '\\';
+    currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
+    
     // TODO: Initialize layout controls to default values
     
-
+    GuiSetStyleProperty(TOGGLEGROUP_PADDING, 5);
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -194,12 +211,6 @@ int main()
         //----------------------------------------------------------------------------------
         mouseX = GetMouseX();
         mouseY = GetMouseY();
-        
-        // Updates the defaultRec[selectedType] position
-
-        
-        defaultRec[selectedType].x = mouseX - defaultRec[selectedType].width/2;
-        defaultRec[selectedType].y = mouseY - defaultRec[selectedType].height/2;
         
         // Checks if the defaultRec[selectedType] is colliding with the list of the controls
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
@@ -334,7 +345,7 @@ int main()
             {
                 if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
                 else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
-            
+
                 if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
                 else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
             }
@@ -345,7 +356,7 @@ int main()
                     // Control modifier for a more precise sizing
                     if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width++;
                     else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width--;
-                
+
                     if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height--;
                     else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height++;
                 }
@@ -360,7 +371,7 @@ int main()
             }
             
             // Delete selected control and shift array position
-            if (IsKeyDown(KEY_BACKSPACE))
+            if (IsKeyDown(KEY_DELETE))
             {
                 for (int i = selectedControl; i < controlsCounter; i++) layout[i] = layout[i + 1];
 
@@ -387,10 +398,14 @@ int main()
             if (!CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = false;
             // Updates the selectedType with the MouseWheel
             selectedType -= GetMouseWheelMove();
-            if (selectedType < LABEL) selectedType = LABEL;
-            else if (selectedType > COLORPICKER) selectedType = COLORPICKER;
+            if (selectedType < LABEL) selectedType = COLORPICKER;
+            else if (selectedType > COLORPICKER) selectedType = LABEL;
             selectedTypeDraw = selectedType;
         }
+        
+        // Updates the defaultRec[selectedType] position
+        defaultRec[selectedType].x = mouseX - defaultRec[selectedType].width/2;
+        defaultRec[selectedType].y = mouseY - defaultRec[selectedType].height/2;
         
         // Enables or disables snapMode if not in textEditMode
         if (IsKeyPressed(KEY_S) && (!textEditMode)) snapMode = !snapMode;
@@ -436,7 +451,7 @@ int main()
             selectedControl = saveControlSelected;
             int key = GetKeyPressed();
             int keyCount = strlen(layout[selectedControl].text); // Keeps track of text length
-            
+       
             // Replaces characters with pressed keys or '\0' in case of backspace
             // NOTE: Only allow keys in range [32..125]
             if ((key >= 32) && (key <= 125) && (keyCount < 32))
@@ -449,10 +464,18 @@ int main()
                 layout[selectedControl].text[keyCount - 1] = '\0';
                 if (keyCount < 0) keyCount = 0;
             }
+            
+            // Used to show the cursor('_') in textEditMode 
+            if (keyCount < 32) framesCounter++;
+            else if (keyCount == 32) framesCounter = 21;
         }
         
         // Turns off textEditMode
-        if (textEditMode && IsKeyPressed(KEY_ENTER)) textEditMode = false;
+        if (textEditMode && IsKeyPressed(KEY_ENTER)) 
+        {
+            textEditMode = false;
+            framesCounter = 0;
+        }
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && 
@@ -474,9 +497,7 @@ int main()
                 anchorPoint[anchorCounter].position = (Vector2){ mouseX, mouseY };
                 anchorPoint[anchorCounter].bounds = (Rectangle){ anchorPoint[anchorCounter].position.x - 5, anchorPoint[anchorCounter].position.y - 5, 10, 10 };
                 anchorCounter++;
-            }
-            
-            
+            } 
         }
         else anchorMode = false;
         
@@ -486,6 +507,20 @@ int main()
             //layout[i].rec = (Rectangle){ anchorPoint[layout[i].anchorId].position.x + layout[i].ap.x - layout[i].rec.width/2, anchorPoint[layout[i].anchorId].position.y + layout[i].ap.y - layout[i].rec.height/2, layout[i].rec.width, layout[i].rec.height };
         }
        
+       // Checks the minimum size of the rec
+        if (selectedControl != -1)
+        {
+            // Sets the minimum limit of the width
+            if (layout[selectedControl].type == LABEL || layout[selectedControl].type == BUTTON || layout[selectedControl].type == TOGGLE)
+            {
+            if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]);
+            }    
+            else if (layout[selectedControl].rec.width <= 10) layout[selectedControl].rec.width = 10;
+
+            // Sets the minimum limit of the height
+            if (layout[selectedControl].rec.height <= 10) layout[selectedControl].rec.height = 10;
+        }
+        
         
         // TODO: If mouse over anchor (define default bounds) and click, start anchor line
         // TODO: On mouse up over an existing control, anchor is created (draw line for reference)
@@ -499,9 +534,34 @@ int main()
         // Shows or hides the grid if not in textEditMode
         if (IsKeyPressed(KEY_G) && (!textEditMode)) showGrid = !showGrid;
      
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) SaveGuiLayout("test_layout.rlyt");
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) LoadGuiLayout("test_layout.rlyt");
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateGuiLayoutCode("test_layout.c");
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
+        {
+            char currrentPathFile[256];
+
+            // Add sample file name to currentPath
+            strcpy(currrentPathFile, currentPath);
+            //strcat(currrentPathFile, defaultName);
+
+            // Save file dialog
+            const char *filters[] = { "*.rgl" };
+            const char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", currrentPathFile, 1, filters, "raygui Layout Files (*.rgl)");
+
+            if (fileName != NULL)
+            {
+                // Save layout file (text or binary)
+                SaveLayoutRGL("test_layout.rgl", false);
+                fileName = "";
+            }
+        }            
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O))
+        {
+            // Open file dialog
+            const char *filters[] = { "*.rgl" };
+            const char *fileName = tinyfd_openFileDialog("Load raygui layout file", currentPath, 1, filters, "raygui Layout Files (*.rgl)", 0);
+            
+            if (fileName != NULL) LoadLayoutRGL(fileName);
+        }
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateLayoutCode("test_layout.c");
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -558,6 +618,7 @@ int main()
                 }
             }
             
+           
             // Draw the list of controls
             DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
             selectedType = GuiListView(listViewControls, guiControls, 14, selectedType);
@@ -588,6 +649,15 @@ int main()
                 DrawRectangle(mouseX, mouseY - 8, 1, 17, RED);
             }
 
+            // Draws the cursor of textEditMode
+            if (textEditMode)
+            {
+               if (((framesCounter/20)%2) == 0)
+               {
+                    if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+               }
+            }
             // Debug information
             /*DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
             DrawText(FormatText("Selected type: %s", controlTypeName[selectedType]), 300, screenHeight - 20, 20, BLUE);
@@ -655,55 +725,160 @@ static void DrawGrid2D(int divsX, int divsY)
 
 // Save gui layout project information
 // NOTE: Exported as text file
-static void SaveGuiLayout(const char *fileName)
+static void SaveLayoutRGL(const char *fileName, bool binary)
 {
-    FILE *flayout = fopen(fileName, "wt");
-    
-    fprintf(flayout, "# Num Controls : %i\n\n", controlsCounter);
-    
-    for (int i = 0; i < controlsCounter; i++)
+    if (binary)
     {
-        fprintf(flayout, "# Control %03i : %s\n", i, controlTypeName[layout[i].type]);
-        fprintf(flayout, "type %i rec %i %i %i %i\n\n", layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
+        #define RGL_FILE_VERSION_BINARY 100
+        
+        FILE *flayout = fopen(fileName, "wb");
+
+        if (flayout != NULL)
+        {
+            
+            // Write some header info (12 bytes)
+            // id: "RGL "       - 4 bytes
+            // version: 100     - 2 bytes
+            // NUM_CONTROLS     - 2 bytes
+            // reserved         - 4 bytes
+            
+            char signature[5] = "RGL ";
+            short version = RGL_FILE_VERSION_BINARY;
+            short numControls = controlsCounter;
+            int reserved = 0;
+
+            fwrite(signature, 1, 4, flayout);
+            fwrite(&version, 1, sizeof(short), flayout);
+            fwrite(&numControls, 1, sizeof(short), flayout);
+            fwrite(&reserved, 1, sizeof(int), flayout);
+            
+            for (int i = 0; i < controlsCounter; i++) fwrite(&layout[i], 1, sizeof(GuiControl), flayout);
+
+            fclose(flayout);  
+        }
+
     }
-    
-    fclose(flayout);
+    else 
+    {
+        #define RGL_FILE_VERSION_TEXT "1.0"
+        
+        FILE *flayout = fopen(fileName, "wt");
+
+        if (flayout != NULL)
+        {
+             // Write some description comments
+            fprintf(flayout, "#\n# rglt file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
+            fprintf(flayout, "# Total number of controls:     %i\n#\n", controlsCounter);
+
+
+            for (int i = 0; i < controlsCounter; i++)
+            {
+
+                // fprintf(flayout, "Control %03i : %s\n", layout[i].id, controlTypeName[layout[i].type]);
+                // fprintf(flayout, "Rec %i %i %i %i\n", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
+                // fprintf(flayout, "Text %s\n", layout[i].text);
+                // fprintf(flayout, "Anchor Id %i\n\n", layout[i].anchorId);
+                fprintf(flayout, "Control %03i : %s Rec %i %i %i %i Text %s Anchor Id %i\n\n", layout[i].id, controlTypeName[layout[i].type], layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].text, layout[i].anchorId);
+            }
+
+            fclose(flayout);
+        }
+    }
 }
 
 // Import gui layout project information
 // NOTE: Imported from text file
-static void LoadGuiLayout(const char *fileName)
+static void LoadLayoutRGL(const char *fileName)
 {
-    char line[128];
-
+    char buffer[256];
+    bool tryBinary = false;
+    
     FILE *flayout = fopen(fileName, "rt");
     
-    controlsCounter = 0;
-    
-    while (!feof(flayout))
+    if (flayout != NULL)
     {
-        fgets(line, 128, flayout);
+        fgets(buffer, 256, flayout);
 
-        switch (line[0])
+        if (buffer[0] != 'R')   // Text file!
         {
-            case 'c':
+            controlsCounter = 0;
+            
+            while (!feof(flayout))
             {
-                sscanf(line, "c type %i rec %i %i %i %i", &layout[controlsCounter].type, 
-                                                          &layout[controlsCounter].rec.x, 
-                                                          &layout[controlsCounter].rec.y, 
-                                                          &layout[controlsCounter].rec.width, 
-                                                          &layout[controlsCounter].rec.height);
-                controlsCounter++;
-            } break;
-            default: break;
+                if ((buffer[0] != '\n') && (buffer[0] != '#'))
+                {
+                    sscanf(buffer, "Control %03i : %s Rec %i %i %i %i Text %s Anchor Id %i\n\n", layout[controlsCounter].id, controlTypeName[layout[controlsCounter].type], layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].text, layout[controlsCounter].anchorId);
+                    controlsCounter++;
+                }
+                fgets(buffer, 256, flayout);
+            }
+        }
+        else tryBinary = true;
+        
+        fclose(flayout);
+    }
+    
+    if (tryBinary)
+    {
+        FILE *flayout = fopen(fileName, "rb");
+    
+        if (flayout != NULL)
+        {
+            char signature[5] = "";
+            short version = 0;
+            int reserved = 0;
+
+            fread(signature, 1, 4, flayout);
+            fread(&version, 1, sizeof(short), flayout);
+            fread(&controlsCounter, 1, sizeof(short), flayout);
+            fread(&reserved, 1, sizeof(int), flayout);
+           
+            if ((signature[0] == 'R') &&
+                (signature[1] == 'G') &&
+                (signature[2] == 'L') &&
+                (signature[3] == ' '))
+            {
+                while (!feof(flayout))
+                {
+                    for (int i = 0; i < controlsCounter; i++) fread(&layout[i], 1, sizeof(GuiControl), flayout);
+                }   
+            }
+            else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
+            
+            fclose(flayout);
         }
     }
+    
+    // char line[128];
 
-    fclose(flayout);
+    // FILE *flayout = fopen(fileName, "rt");
+    
+    // controlsCounter = 0;
+    
+    // while (!feof(flayout))
+    // {
+        // fgets(line, 128, flayout);
+
+        // switch (line[0])
+        // {
+            // case 'c':
+            // {
+                // sscanf(line, "c type %i rec %i %i %i %i", &layout[controlsCounter].type, 
+                                                          // &layout[controlsCounter].rec.x, 
+                                                          // &layout[controlsCounter].rec.y, 
+                                                          // &layout[controlsCounter].rec.width, 
+                                                          // &layout[controlsCounter].rec.height);
+                // controlsCounter++;
+            // } break;
+            // default: break;
+        // }
+    // }
+
+    // fclose(flayout);
 }
 
 // Generate C code for gui layout
-static void GenerateGuiLayoutCode(const char *fileName)
+static void GenerateLayoutCode(const char *fileName)
 {
     FILE *ftool = fopen(fileName, "wt");
     
