@@ -74,8 +74,8 @@ typedef struct {
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 static char currentPath[256];       // Path to current working folder
-static int screenWidth = 1280;
-static int screenHeight = 720;
+static int screenWidth = 800;
+static int screenHeight = 600;
 
 static GuiControl layout[MAX_GUI_CONTROLS];
 static AnchorControl anchorPoint[MAX_GUI_CONTROLS];  
@@ -173,23 +173,26 @@ int main()
         "COLORPICKER"
     };
     
-    const char *guiControlsCounter[12] = { 
-        "00",
-        "01",
-        "02",
-        "03",
-        "04",
-        "05",
-        "06",
-        "07",
-        "08",
-        "09",
-        "10",
-        "11"
+    const char *guiControlsCounter[16] = { 
+        "Control 000",
+        "Control 001",
+        "Control 002",
+        "Control 003",
+        "Control 004",
+        "Control 005",
+        "Control 006",
+        "Control 007",
+        "Control 008",
+        "Control 009",
+        "Control 010",
+        "Control 011",
+        "Control 012",
+        "Control 013",
+        "Control 014",
+        "Control 015",
     };
     
-    GuiLoadStyleImage("default_light.png");
-    Texture2D texture = LoadTexture("default_light.png");
+    Texture2D texture = LoadTexture("icons.png");
     
     // Get current directory
     // NOTE: Current working directory could not match current executable directory
@@ -579,7 +582,7 @@ int main()
                 {
                     case LABEL: GuiLabel(defaultRec[selectedTypeDraw], "TEXT SAMPLE"); break;
                     case BUTTON: GuiButton(defaultRec[selectedTypeDraw], "BUTTON"); break;
-                    case IMAGEBUTTON: GuiImageButton(defaultRec[selectedTypeDraw], texture); break;
+                    case IMAGEBUTTON: GuiImageButtonEx(defaultRec[selectedTypeDraw], texture , (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, "IMAGE BUTTON"); break;
                     case TOGGLE: GuiToggleButton(defaultRec[selectedTypeDraw], "TOGGLE", false); break;
                     case TOGGLEGROUP: GuiToggleGroup(defaultRec[selectedTypeDraw], list, 3, 1); break;
                     case SLIDER: GuiSlider(defaultRec[selectedTypeDraw], 40, 0, 100); break;
@@ -602,7 +605,7 @@ int main()
                 {
                     case LABEL: GuiLabel(layout[i].rec, layout[i].text); break;
                     case BUTTON: GuiButton(layout[i].rec, layout[i].text); break;
-                    case IMAGEBUTTON: GuiImageButton(layout[i].rec, texture); break;
+                    case IMAGEBUTTON: GuiImageButtonEx(defaultRec[selectedTypeDraw], texture , (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
                     case TOGGLE: GuiToggleButton(layout[i].rec, layout[i].text, false); break;
                     case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
                     case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
