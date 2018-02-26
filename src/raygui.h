@@ -1020,33 +1020,29 @@ RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle t
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_NORMAL]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_NORMAL]));
-            DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
-            
             if (text != NULL) DrawText(text, (bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING + textWidth)/2) + texSource.width, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
+            if (texture.id > 0) DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_NORMAL]));
         } break;
         case FOCUSED:
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_FOCUSED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_FOCUSED]));
-            DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
-            
             if (text != NULL) DrawText(text, (bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING + textWidth)/2) + texSource.width, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
+            if (texture.id > 0) DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_PRESSED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_PRESSED]));
-            DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
-            
             if (text != NULL) DrawText(text, (bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING + textWidth)/2) + texSource.width, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
+            if (texture.id > 0) DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
             DrawRectangleRec(bounds, GetColor(style[BUTTON_BORDER_COLOR_DISABLED]));
             DrawRectangle(bounds.x + style[BUTTON_BORDER_WIDTH], bounds.y + style[BUTTON_BORDER_WIDTH], bounds.width - 2*style[BUTTON_BORDER_WIDTH], bounds.height - 2*style[BUTTON_BORDER_WIDTH], GetColor(style[BUTTON_BASE_COLOR_DISABLED]));
-            DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
-            
             if (text != NULL) DrawText(text, (bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING + textWidth)/2) + texSource.width, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
+            if (texture.id > 0) DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + IMAGEBUTTON_PADDING/2 + textWidth)/2, bounds.y + bounds.height/2 - texSource.height/2 }, GetColor(style[BUTTON_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
@@ -1137,8 +1133,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int
 {
     for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count, bounds.height }, text[i], true);
-        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count, bounds.height }, text[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count - style[TOGGLEGROUP_PADDING]*(count - 1), bounds.height }, text[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count - style[TOGGLEGROUP_PADDING]*(count - 1), bounds.height }, text[i], false) == true) active = i;
     }
 
     return active;
