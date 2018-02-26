@@ -80,7 +80,7 @@ static int screenHeight = 600;
 static GuiControl layout[MAX_GUI_CONTROLS];
 static AnchorControl anchorPoint[MAX_GUI_CONTROLS];  
 static int controlsCounter = 0;
-static int anchorCounter = 1;       // NOTE: anchorCounter start at 1 because the global anchor is 0
+static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
 //Rectangle defaultControlWidth[] = { };
 
@@ -119,13 +119,16 @@ int main()
     bool textEditMode = false;
     int framesCounter = 0;
     int saveControlSelected = -1;
-    bool anchorMode = false;  
+    bool anchorMode = false; 
+    int selectedAnchor = -1;
+
+    bool lockMode = false;
     
     // Used to draw the preview of selectedControl
     Rectangle defaultRec[14] = {
         (Rectangle){ 0, 0, 80, 20},             // LABEL
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
-        (Rectangle){ 0, 0, 100, 30},            // IMAGEBUTTON
+        (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
         (Rectangle){ 0, 0, 100, 30},            // TOGGLE
         (Rectangle){ 0, 0, 240, 30},             // TOGGLEGROUP  
         (Rectangle){ 0, 0, 200, 20},            // SLIDER
@@ -202,7 +205,7 @@ int main()
     
     // TODO: Initialize layout controls to default values
     
-    GuiSetStyleProperty(TOGGLEGROUP_PADDING, 5);
+    //GuiSetStyleProperty(TOGGLEGROUP_PADDING, 5);
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -247,20 +250,20 @@ int main()
         }
         
         // Toggle on the controlListViewCounter
-        if (IsKeyPressed(KEY_LEFT_SHIFT))
+        if (IsKeyPressed(KEY_LEFT_CONTROL))
         {
             startPosXListViewControlsCounter = listViewControlsCounter.x;
             deltaPosXListViewControlsCounter = GetScreenWidth() -listViewControlsCounter.width - startPosXListViewControlsCounter;
             counterListViewControlsCounter = 0;
         }
         
-        if (IsKeyDown(KEY_LEFT_SHIFT))
+        if (IsKeyDown(KEY_LEFT_CONTROL))
         {
             counterListViewControlsCounter++;
             if (counterListViewControlsCounter >= 60) counterListViewControlsCounter = 60;
             listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
         }  
-        else if (IsKeyReleased(KEY_LEFT_SHIFT))
+        else if (IsKeyReleased(KEY_LEFT_CONTROL))
         {
             startPosXListViewControlsCounter = listViewControlsCounter.x;
             deltaPosXListViewControlsCounter = GetScreenWidth() + 140 - startPosXListViewControlsCounter;
@@ -290,7 +293,7 @@ int main()
         
         for (int i = 0; i < controlsCounter; i++)
         {
-            if (controlDrag) break;
+            if (controlDrag || lockMode) break;
             if (CheckCollisionPointRec(GetMousePosition(), layout[i].rec)) 
             {
                 selectedControl = i;
@@ -299,7 +302,7 @@ int main()
             else selectedControl = -1;
         }
         
-        if (selectedControl != -1 && !textEditMode)
+        if (selectedControl != -1 && !textEditMode && !anchorMode)
         {
             // Disables the defaultRec[selectedType]
             controlCollision = true;
@@ -314,7 +317,7 @@ int main()
                 selectedControl = -1;
             } 
              
-            if (controlDrag)
+            if (controlDrag && !lockMode)
             {
                 layout[selectedControl].rec.x = mouseX - layout[selectedControl].rec.width/2;
                 layout[selectedControl].rec.y = mouseY - layout[selectedControl].rec.height/2;
@@ -482,27 +485,72 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && 
-           ((selectedType == LABEL) || (selectedType == BUTTON) || (selectedType == TOGGLE)))
+           ((selectedType == LABEL) || (selectedType == BUTTON) || (selectedType == TOGGLE) || (selectedType == IMAGEBUTTON)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
         }
         
+        if (lockMode)
+        {
+            selectedControl = saveControlSelected;
+        }
+        
+        if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedControl != -1) && !lockMode) 
+        {
+            lockMode = true;
+            saveControlSelected = selectedControl;
+        }
+        else if (IsKeyPressed(KEY_SPACE) && (selectedControl != -1))
+        {
+            lockMode = false;
+        }
+
+        
         // TODO: Create anchor points
-        if (IsKeyDown(KEY_A) && !textEditMode)  // Anchor mode creation, consider SNAP!
+        // NOTE: There is a bug if TEXTBOX is the selectedType
+        if (anchorMode)
         {
             // TODO: On mouse click anchor is created
-            selectedControl = -1;
-            anchorMode = true;
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !controlCollision)
+            //selectedControl = -1;
+            
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !controlCollision && selectedAnchor == -1 && selectedControl == -1)
             {
                 anchorPoint[anchorCounter].id = anchorCounter;
                 anchorPoint[anchorCounter].position = (Vector2){ mouseX, mouseY };
                 anchorPoint[anchorCounter].bounds = (Rectangle){ anchorPoint[anchorCounter].position.x - 5, anchorPoint[anchorCounter].position.y - 5, 10, 10 };
                 anchorCounter++;
-            } 
+            }
+            
+            for (int i = 0; i < anchorCounter; i++)
+            {
+                if (CheckCollisionPointRec(GetMousePosition(), anchorPoint[i].bounds)) 
+                {
+                    selectedAnchor = i;
+                    break;
+                }
+                else selectedAnchor = -1;
+            }  
+            
+            if (selectedAnchor != -1 && selectedAnchor != 0)
+            {
+                if (IsKeyDown(KEY_DELETE))
+                {
+                    for (int i = selectedAnchor; i < anchorCounter; i++) anchorPoint[i] = anchorPoint[i + 1];
+
+                    anchorCounter--;
+                    selectedAnchor = -1;
+                }
+            }
         }
-        else anchorMode = false;
+        
+        if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && !anchorMode)  // Anchor mode creation, consider SNAP!
+        {
+            anchorMode = true;
+            
+        }
+        else if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && anchorMode) anchorMode = false;
+        
         
         // Updates the position of the control when it has an anchor point
         for (int i = 0; i < controlsCounter; i++)
@@ -516,14 +564,21 @@ int main()
             // Sets the minimum limit of the width
             if (layout[selectedControl].type == LABEL || layout[selectedControl].type == BUTTON || layout[selectedControl].type == TOGGLE)
             {
-            if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]);
-            }    
-            else if (layout[selectedControl].rec.width <= 10) layout[selectedControl].rec.width = 10;
+                if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]);
+            }
+            if (layout[selectedControl].type == IMAGEBUTTON)
+            {
+                if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3 + 5;
+            }
+            else if (layout[selectedControl].rec.width <= 20) layout[selectedControl].rec.width = 20;
 
             // Sets the minimum limit of the height
-            if (layout[selectedControl].rec.height <= 10) layout[selectedControl].rec.height = 10;
+            if (layout[selectedControl].type == IMAGEBUTTON) 
+            { 
+                if (layout[selectedControl].rec.height <= texture.height/6 + 5) layout[selectedControl].rec.height = texture.height/6 + 5;
+            }
+            else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
-        
         
         // TODO: If mouse over anchor (define default bounds) and click, start anchor line
         // TODO: On mouse up over an existing control, anchor is created (draw line for reference)
@@ -552,7 +607,7 @@ int main()
             if (fileName != NULL)
             {
                 // Save layout file (text or binary)
-                SaveLayoutRGL("test_layout.rgl", false);
+                SaveLayoutRGL("test_layout.rgl", true);
                 fileName = "";
             }
         }            
@@ -576,7 +631,7 @@ int main()
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
            
             // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1)
+            if (selectedControl == -1 && !anchorMode)
             {
                 switch (selectedTypeDraw)
                 {
@@ -605,7 +660,7 @@ int main()
                 {
                     case LABEL: GuiLabel(layout[i].rec, layout[i].text); break;
                     case BUTTON: GuiButton(layout[i].rec, layout[i].text); break;
-                    case IMAGEBUTTON: GuiImageButtonEx(defaultRec[selectedTypeDraw], texture , (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
+                    case IMAGEBUTTON: GuiImageButtonEx(layout[i].rec, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
                     case TOGGLE: GuiToggleButton(layout[i].rec, layout[i].text, false); break;
                     case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
                     case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
@@ -614,7 +669,7 @@ int main()
                     case SPINNER: GuiSpinner(layout[i].rec, 40, 0, 100); break;
                     case COMBOBOX: GuiComboBox(layout[i].rec, list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(layout[i].rec, false); break;
-                    case TEXTBOX: GuiTextBox(layout[i].rec, "test text", 32); break;
+                    case TEXTBOX: GuiTextBox(layout[i].rec, layout[i].text, 32); break;
                     case LISTVIEW: GuiListView(layout[i].rec, guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker(layout[i].rec, RED); break;
                     default: break;
@@ -628,7 +683,7 @@ int main()
             
             // Draw the list of controlsCounter
             DrawRectangleRec(listViewControlsCounter, Fade(WHITE, 0.7f));
-            GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, -1);
+            GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, selectedControl);
             
             // Draw the global anchorPoint
             DrawRectangleRec(anchorPoint[0].bounds, Fade(BLACK, 0.5f));
@@ -658,6 +713,7 @@ int main()
                if (((framesCounter/20)%2) == 0)
                {
                     if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == IMAGEBUTTON) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
@@ -674,13 +730,13 @@ int main()
             // Draw status bar bottom with debug information
             DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, LIGHTGRAY);
             GuiLabel((Rectangle){20, GetScreenHeight() - 16, 100, 20}, FormatText("Controls count: %i", controlsCounter));
-            GuiLabel((Rectangle){150, GetScreenHeight() - 16, 100, 20}, FormatText("Selected type: %s", controlTypeName[selectedType]));
-            if (snapMode) GuiLabel((Rectangle){615, GetScreenHeight() - 16, 100, 20}, "SNAP ON");
-            if (selectedControl != -1) GuiLabel((Rectangle){475, GetScreenHeight() - 16, 100, 20}, FormatText("rec: (%i, %i, %i, %i)", 
-                                                layout[selectedControl].rec.x, layout[selectedControl].rec.y, 
-                                                layout[selectedControl].rec.width, layout[selectedControl].rec.height));
-            GuiLabel((Rectangle){350, GetScreenHeight() - 16, 100, 20}, FormatText("mouse: (%i, %i)", mouseX, mouseY));
-
+            GuiLabel((Rectangle){125, GetScreenHeight() - 16, 100, 20}, FormatText("|  Mouse: (%i, %i)", mouseX, mouseY));
+            GuiLabel((Rectangle){230, GetScreenHeight() - 16, 100, 20}, FormatText("|  Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height));
+            GuiLabel((Rectangle){590, GetScreenHeight() - 16, 100, 20}, "|");
+            if (snapMode) DrawText("SNAP ON", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], RED);
+            else DrawText("SNAP OFF", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
+            if (anchorMode )GuiLabel((Rectangle){20, GetScreenHeight() - 32, 100, 20}, FormatText("Anchor Mode ON   | Anchors count: %i  |  Selected Anchor: %i", anchorCounter, selectedAnchor));
+            else GuiLabel((Rectangle){20, GetScreenHeight() - 32, 100, 20}, FormatText("Anchor Mode OFF   | Anchors count: %i  |  Selected Anchor: %i", anchorCounter, selectedAnchor));
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -734,9 +790,9 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
     {
         #define RGL_FILE_VERSION_BINARY 100
         
-        FILE *flayout = fopen(fileName, "wb");
+        FILE *rglFile = fopen(fileName, "wb");
 
-        if (flayout != NULL)
+        if (rglFile != NULL)
         {
             
             // Write some header info (12 bytes)
@@ -750,14 +806,14 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             short numControls = controlsCounter;
             int reserved = 0;
 
-            fwrite(signature, 1, 4, flayout);
-            fwrite(&version, 1, sizeof(short), flayout);
-            fwrite(&numControls, 1, sizeof(short), flayout);
-            fwrite(&reserved, 1, sizeof(int), flayout);
+            fwrite(signature, 1, 4, rglFile);
+            fwrite(&version, 1, sizeof(short), rglFile);
+            fwrite(&numControls, 1, sizeof(short), rglFile);
+            fwrite(&reserved, 1, sizeof(int), rglFile);
             
-            for (int i = 0; i < controlsCounter; i++) fwrite(&layout[i], 1, sizeof(GuiControl), flayout);
+            for (int i = 0; i < controlsCounter; i++) fwrite(&layout[i], 1, sizeof(GuiControl), rglFile);
 
-            fclose(flayout);  
+            fclose(rglFile);  
         }
 
     }
@@ -765,26 +821,26 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
     {
         #define RGL_FILE_VERSION_TEXT "1.0"
         
-        FILE *flayout = fopen(fileName, "wt");
+        FILE *rglFile = fopen(fileName, "wt");
 
-        if (flayout != NULL)
+        if (rglFile != NULL)
         {
              // Write some description comments
-            fprintf(flayout, "#\n# rglt file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
-            fprintf(flayout, "# Total number of controls:     %i\n#\n", controlsCounter);
-
+            fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
+            fprintf(rglFile, "# Total number of controls:     %i\n", controlsCounter);
+            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <anchor_id> <text>\n#\n", controlsCounter);
 
             for (int i = 0; i < controlsCounter; i++)
             {
 
-                // fprintf(flayout, "Control %03i : %s\n", layout[i].id, controlTypeName[layout[i].type]);
-                // fprintf(flayout, "Rec %i %i %i %i\n", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
-                // fprintf(flayout, "Text %s\n", layout[i].text);
-                // fprintf(flayout, "Anchor Id %i\n\n", layout[i].anchorId);
-                fprintf(flayout, "Control %03i : %s Rec %i %i %i %i Text %s Anchor Id %i\n\n", layout[i].id, controlTypeName[layout[i].type], layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].text, layout[i].anchorId);
+                // fprintf(rglFile, "Control %03i : %s\n", layout[i].id, controlTypeName[layout[i].type]);
+                // fprintf(rglFile, "Rec %i %i %i %i\n", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
+                // fprintf(rglFile, "Text %s\n", layout[i].text);
+                // fprintf(rglFile, "Anchor Id %i\n\n", layout[i].anchorId);
+                fprintf(rglFile, "c %03i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].anchorId, layout[i].text);
             }
 
-            fclose(flayout);
+            fclose(rglFile);
         }
     }
 }
@@ -796,71 +852,73 @@ static void LoadLayoutRGL(const char *fileName)
     char buffer[256];
     bool tryBinary = false;
     
-    FILE *flayout = fopen(fileName, "rt");
+    FILE *rglFile = fopen(fileName, "rt");
     
-    if (flayout != NULL)
+    if (rglFile != NULL)
     {
-        fgets(buffer, 256, flayout);
+        fgets(buffer, 256, rglFile);
 
         if (buffer[0] != 'R')   // Text file!
         {
             controlsCounter = 0;
             
-            while (!feof(flayout))
+            while (!feof(rglFile))
             {
                 if ((buffer[0] != '\n') && (buffer[0] != '#'))
                 {
-                    sscanf(buffer, "Control %03i : %s Rec %i %i %i %i Text %s Anchor Id %i\n\n", layout[controlsCounter].id, controlTypeName[layout[controlsCounter].type], layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].text, layout[controlsCounter].anchorId);
+                    sscanf(buffer, "c %d %i %i %i %i %i %i %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &layout[controlsCounter].anchorId, layout[controlsCounter].text);
+                    printf("c %d %i %i %i %i %i %i %s\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].anchorId, layout[controlsCounter].text);
+                    
                     controlsCounter++;
                 }
-                fgets(buffer, 256, flayout);
+                fgets(buffer, 256, rglFile);
             }
         }
         else tryBinary = true;
         
-        fclose(flayout);
+        fclose(rglFile);
     }
     
     if (tryBinary)
     {
-        FILE *flayout = fopen(fileName, "rb");
+        FILE *rglFile = fopen(fileName, "rb");
     
-        if (flayout != NULL)
+        if (rglFile != NULL)
         {
             char signature[5] = "";
             short version = 0;
             int reserved = 0;
 
-            fread(signature, 1, 4, flayout);
-            fread(&version, 1, sizeof(short), flayout);
-            fread(&controlsCounter, 1, sizeof(short), flayout);
-            fread(&reserved, 1, sizeof(int), flayout);
+            fread(signature, 1, 4, rglFile);
+            fread(&version, 1, sizeof(short), rglFile);
+            fread(&controlsCounter, 1, sizeof(short), rglFile);
+            fread(&reserved, 1, sizeof(int), rglFile);
            
             if ((signature[0] == 'R') &&
                 (signature[1] == 'G') &&
                 (signature[2] == 'L') &&
                 (signature[3] == ' '))
             {
-                while (!feof(flayout))
+                while (!feof(rglFile))
                 {
-                    for (int i = 0; i < controlsCounter; i++) fread(&layout[i], 1, sizeof(GuiControl), flayout);
+                    for (int i = 0; i < controlsCounter; i++) fread(&layout[i], 1, sizeof(GuiControl), rglFile);
                 }   
             }
             else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
             
-            fclose(flayout);
+            fclose(rglFile);
         }
     }
     
     // char line[128];
 
-    // FILE *flayout = fopen(fileName, "rt");
+    // FILE *rglFile = fopen(fileName, "rt");
     
     // controlsCounter = 0;
     
-    // while (!feof(flayout))
+    // while (!feof(rglFile))
     // {
-        // fgets(line, 128, flayout);
+        // fgets(line, 128, rglFile);
 
         // switch (line[0])
         // {
@@ -877,12 +935,17 @@ static void LoadLayoutRGL(const char *fileName)
         // }
     // }
 
-    // fclose(flayout);
+    // fclose(rglFile);
 }
 
 // Generate C code for gui layout
 static void GenerateLayoutCode(const char *fileName)
 {
+    #define RGL_TOOL_NAME           "tool_name"
+    #define RGL_TOOL_DESCRIPTION    "tool_name"
+    #define RGL_TOOL_AUTHOR         "tool_name"
+    #define RGL_TOOL_YEAR           "tool_name"
+    
     FILE *ftool = fopen(fileName, "wt");
     
     fprintf(ftool, "/*******************************************************************************************\n");
