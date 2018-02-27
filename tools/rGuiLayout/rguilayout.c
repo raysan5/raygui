@@ -329,8 +329,8 @@ int main()
              
             if (controlDrag && !lockMode)
             {
-                layout[selectedControl].rec.x = mouseX - layout[selectedControl].rec.width/2;
-                layout[selectedControl].rec.y = mouseY - layout[selectedControl].rec.height/2;
+                layout[selectedControl].rec.x = mouseX - layout[selectedControl].rec.width/2 - layout[selectedControl].ap->x;
+                layout[selectedControl].rec.y = mouseY - layout[selectedControl].rec.height/2 - layout[selectedControl].ap->y;
                 
                 // Snap to grid position and size
                 if (snapMode)
@@ -537,18 +537,21 @@ int main()
             
             if (selectedAnchor > 0)
             {
-                if (IsKeyDown(KEY_DELETE))
+                // Unlinks and deletes the selected anchor point
+                if (IsKeyPressed(KEY_DELETE))
                 {
-                    for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
+                    for (int i = 0; i < controlsCounter; i++)
                     {
-                        if (i == selectedAnchor)
+                        if (layout[i].ap->id == selectedAnchor) 
                         {
-                            anchors[i].x = 0;
-                            anchors[i].y = 0;
-                            anchors[i].enabled = false;
-                            break;
+                            layout[i].rec.x += layout[i].ap->x;
+                            layout[i].rec.y += layout[i].ap->y;
+                            layout[i].ap = &anchors[0];
                         }
-                    }          
+                    }
+                    anchors[selectedAnchor].x = 0;
+                    anchors[selectedAnchor].y = 0;
+                    anchors[selectedAnchor].enabled = false;         
                 }
                 
                 if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) controlDrag = true;
@@ -573,8 +576,10 @@ int main()
                 
                 if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
                 {
-                    if (selectedControl != -1 && !lockMode)
+                    if (selectedControl != -1 && !lockMode /*&& (layout[selectedControl].ap != &anchors[linkedAnchor])*/)
                     {
+                        layout[selectedControl].rec.x += layout[selectedControl].ap->x;
+                        layout[selectedControl].rec.y += layout[selectedControl].ap->y;
                         layout[selectedControl].ap = &anchors[linkedAnchor];
                         layout[selectedControl].rec.x -= anchors[linkedAnchor].x;
                         layout[selectedControl].rec.y -= anchors[linkedAnchor].y;
@@ -711,7 +716,7 @@ int main()
                 
                 if (layout[i].ap->id > 0) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
                 // Draw Control anchor information
-                //DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
+                // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
            
@@ -729,14 +734,15 @@ int main()
             //DrawLine(anchors[0].position.x, anchors[0].position.y - 15, anchors[0].position.x, anchors[0].position.y + 15, BLACK);
             
             // Draw the anchorPoints
-            for (int i = 1; i < 8; i++)
+            for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
-                DrawCircle(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
-                DrawLine(anchors[i].x - 8, anchors[i].y, anchors[i].x + 8, anchors[i].y, RED);
-                DrawLine(anchors[i].x, anchors[i].y - 8, anchors[i].x, anchors[i].y + 8, RED);
+                if (anchors[i].id == selectedAnchor) DrawCircle(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
+                else DrawCircleLines(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
+                DrawLine(anchors[i].x - anchors[i].radius - 5, anchors[i].y, anchors[i].x + anchors[i].radius + 5, anchors[i].y, RED);
+                DrawLine(anchors[i].x, anchors[i].y - anchors[i].radius - 5, anchors[i].x, anchors[i].y + anchors[i].radius + 5, RED);
             }
             
-            if ((selectedControl != -1) && (selectedControl < controlsCounter)) DrawRectangleRec(layout[selectedControl].rec, Fade(RED, 0.5f));
+            if ((selectedControl != -1) && (selectedControl < controlsCounter)) DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
              
             if (selectedControl == -1)
             {
@@ -851,7 +857,12 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             fwrite(&numControls, 1, sizeof(short), rglFile);
             fwrite(&reserved, 1, sizeof(int), rglFile);
             
-            for (int i = 0; i < controlsCounter; i++) fwrite(&layout[i], 1, sizeof(GuiControl), rglFile);
+            for (int i = 0; i < controlsCounter; i++) 
+            {
+                // TODO: Export data in independent way
+                fwrite(&layout[i], 1, sizeof(GuiControl), rglFile);
+                // TODO: Export anchor id and position
+            }
 
             fclose(rglFile);  
         }
@@ -868,7 +879,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
              // Write some description comments
             fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
             fprintf(rglFile, "# Total number of controls:     %i\n", controlsCounter);
-            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <anchor_id> <text>\n#\n", controlsCounter);
+            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <anchor_id> <anchor_pos> <text>\n#\n", controlsCounter);
 
             for (int i = 0; i < controlsCounter; i++)
             {
