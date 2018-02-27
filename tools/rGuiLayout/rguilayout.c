@@ -29,6 +29,7 @@
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #define MAX_GUI_CONTROLS    64          // Maximum number of gui controls
+#define MAX_ANCHOR_POINTS    8          // Maximum number of anchor points
 
 #define GRID_LINE_SPACING   10          // Grid line spacing in pixels
 #define GRID_ALPHA          0.1f        // Grid lines alpha amount
@@ -53,22 +54,25 @@ typedef enum {
     COLORPICKER
 } GuiControlType;
 
+// Anchor point type
+typedef struct {
+    int id;
+    int x;
+    int y;
+    float radius;
+    bool enabled;
+} AnchorPoint;
+
 // Gui control type
 typedef struct {
     int id;
     int type;
     Rectangle rec;
     char text[32];
-    int anchorId;
-    Vector2 ap;
+    //int anchorId;
+    AnchorPoint *ap;
 } GuiControl;
 
-// Anchor control type
-typedef struct {
-    int id;
-    Vector2 position;
-    Rectangle bounds;
-} AnchorControl;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -78,11 +82,9 @@ static int screenWidth = 800;
 static int screenHeight = 600;
 
 static GuiControl layout[MAX_GUI_CONTROLS];
-static AnchorControl anchorPoint[MAX_GUI_CONTROLS];  
+static AnchorPoint anchors[MAX_ANCHOR_POINTS];  
 static int controlsCounter = 0;
 static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
-
-//Rectangle defaultControlWidth[] = { };
 
 const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "LISTVIEW", "COLORPICKER" };
 const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "ListView", "ColorPicker" };
@@ -119,8 +121,10 @@ int main()
     bool textEditMode = false;
     int framesCounter = 0;
     int saveControlSelected = -1;
-    bool anchorMode = false; 
+    bool anchorMode = false;
+    bool anchorLinkMode = false;
     int selectedAnchor = -1;
+    int linkedAnchor = -1;
 
     bool lockMode = false;
     
@@ -130,14 +134,14 @@ int main()
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
         (Rectangle){ 0, 0, 100, 30},            // TOGGLE
-        (Rectangle){ 0, 0, 240, 30},             // TOGGLEGROUP  
+        (Rectangle){ 0, 0, 240, 30},            // TOGGLEGROUP  
         (Rectangle){ 0, 0, 200, 20},            // SLIDER
         (Rectangle){ 0, 0, 200, 20},            // SLIDERBAR
         (Rectangle){ 0, 0, 200, 20},            // PROGRESSBAR
         (Rectangle){ 0, 0, 150, 30},            // SPINNER
         (Rectangle){ 0, 0, 150, 30},            // COMBOBOX
         (Rectangle){ 0, 0, 20, 20},             // CHECKBOX
-        (Rectangle){ 0, 0, 120, 30},             // TEXTBOX    
+        (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -151,11 +155,6 @@ int main()
     int counterListViewControlsCounter = 0;
     int startPosXListViewControlsCounter = GetScreenWidth() + 140;
     int deltaPosXListViewControlsCounter = 0;
-    
-    // Defines anchorPoint parent(0, 0)
-    anchorPoint[0].position = (Vector2){ 0, 0 };
-    anchorPoint[0].id = 0;
-    anchorPoint[0].bounds = (Rectangle){ anchorPoint[0].position.x - 10, anchorPoint[0].position.y - 10, 20, 20 };
 
     const char *list[3] = { "ONE", "TWO", "THREE" };
  
@@ -203,7 +202,17 @@ int main()
     currentPath[strlen(currentPath)] = '\\';
     currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
     
-    // TODO: Initialize layout controls to default values
+    // Initialize anchor points to default values
+    for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
+    {
+        anchors[i].id = i;
+        anchors[i].x = 0;
+        anchors[i].y = 0;
+        anchors[i].radius = 20;
+        anchors[i].enabled = false;
+    }
+
+    anchors[0].enabled = true;       // Enable anchors parent (0, 0)
     
     //GuiSetStyleProperty(TOGGLEGROUP_PADDING, 5);
     
@@ -217,6 +226,9 @@ int main()
         //----------------------------------------------------------------------------------
         mouseX = GetMouseX();
         mouseY = GetMouseY();
+        
+        // Enables or disables snapMode if not in textEditMode
+        if (IsKeyPressed(KEY_S) && (!textEditMode)) snapMode = !snapMode;
         
         // Checks if the defaultRec[selectedType] is colliding with the list of the controls
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
@@ -281,20 +293,18 @@ int main()
             // Add new control (button)
             layout[controlsCounter].id = controlsCounter;
             layout[controlsCounter].type = selectedType;
-            layout[controlsCounter].anchorId = anchorPoint[0].id;                   // Sets the anchorId to the global anchorPoint
-            layout[controlsCounter].ap.x = mouseX - anchorPoint[0].position.x;      // Gets the distance between anchorPoint and control in X
-            layout[controlsCounter].ap.y = mouseY - anchorPoint[0].position.y;      // Gets the distance between anchorPoint and control in Y
-            // Defines the control rectangle in reference with the anchorPoint
-            layout[controlsCounter].rec = (Rectangle){ anchorPoint[layout[controlsCounter].anchorId].position.x + layout[controlsCounter].ap.x - layout[controlsCounter].rec.width/2, anchorPoint[layout[controlsCounter].anchorId].position.y + layout[controlsCounter].ap.y - layout[controlsCounter].rec.height/2, defaultRec[selectedType].width, defaultRec[selectedType].height };
+            layout[controlsCounter].rec = (Rectangle){  mouseX - defaultRec[selectedType].width/2, mouseY - defaultRec[selectedType].height/2, defaultRec[selectedType].width, defaultRec[selectedType].height };
             strcpy(layout[controlsCounter].text, "SAMPLE TEXT\0");
+            layout[controlsCounter].ap = &anchors[0];        // Default anchor point (0, 0)
             
             controlsCounter++;
         }
         
+        // Check selected control (on mouse hover)
         for (int i = 0; i < controlsCounter; i++)
         {
             if (controlDrag || lockMode) break;
-            if (CheckCollisionPointRec(GetMousePosition(), layout[i].rec)) 
+            if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height })) 
             {
                 selectedControl = i;
                 break;
@@ -387,35 +397,23 @@ int main()
         }
         else
         {
-            /*
-            if (IsKeyPressed(KEY_LEFT))
-            {
-                selectedType--;
-                if (selectedType < LABEL) selectedType = LABEL;
-            }
-            else if (IsKeyPressed(KEY_RIGHT))
-            {
-                selectedType++;
-                if (selectedType > TEXTBOX) selectedType = TEXTBOX;
-            }
-            */
-            //Enables the defaultRec[selectedType]
+            // Check mouse hover a list view
             if (!CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = false;
             if (!CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = false;
+            
             // Updates the selectedType with the MouseWheel
             selectedType -= GetMouseWheelMove();
+            
             if (selectedType < LABEL) selectedType = COLORPICKER;
             else if (selectedType > COLORPICKER) selectedType = LABEL;
+            
             selectedTypeDraw = selectedType;
         }
         
         // Updates the defaultRec[selectedType] position
         defaultRec[selectedType].x = mouseX - defaultRec[selectedType].width/2;
         defaultRec[selectedType].y = mouseY - defaultRec[selectedType].height/2;
-        
-        // Enables or disables snapMode if not in textEditMode
-        if (IsKeyPressed(KEY_S) && (!textEditMode)) snapMode = !snapMode;
-        
+
         // Mouse snap
         // NOTE: Snap point changes when GRID_LINE_SPACING/2 has been surpassed in X and Y
         if ((snapMode) && (selectedControl == -1))
@@ -484,19 +482,20 @@ int main()
         }
         
         // Turns on textEditMode
-        if (IsKeyPressed(KEY_T) && (selectedControl != -1) && 
+        if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
            ((selectedType == LABEL) || (selectedType == BUTTON) || (selectedType == TOGGLE) || (selectedType == IMAGEBUTTON)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
         }
         
+        // Selected control lock logic
         if (lockMode)
         {
             selectedControl = saveControlSelected;
         }
         
-        if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedControl != -1) && !lockMode) 
+        if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedControl != -1) && !lockMode && !anchorMode) 
         {
             lockMode = true;
             saveControlSelected = selectedControl;
@@ -506,25 +505,29 @@ int main()
             lockMode = false;
         }
 
-        
-        // TODO: Create anchor points
-        // NOTE: There is a bug if TEXTBOX is the selectedType
+        // Create anchor points
         if (anchorMode)
         {
-            // TODO: On mouse click anchor is created
-            //selectedControl = -1;
-            
+            // On mouse click anchor is created
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !controlCollision && selectedAnchor == -1 && selectedControl == -1)
             {
-                anchorPoint[anchorCounter].id = anchorCounter;
-                anchorPoint[anchorCounter].position = (Vector2){ mouseX, mouseY };
-                anchorPoint[anchorCounter].bounds = (Rectangle){ anchorPoint[anchorCounter].position.x - 5, anchorPoint[anchorCounter].position.y - 5, 10, 10 };
-                anchorCounter++;
+                for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
+                {
+                    if (!anchors[i].enabled)
+                    {
+                        anchors[i].x = mouseX;
+                        anchors[i].y = mouseY;
+                        anchors[i].enabled = true;
+                        break;
+                    }
+                }
             }
             
-            for (int i = 0; i < anchorCounter; i++)
+            for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
-                if (CheckCollisionPointRec(GetMousePosition(), anchorPoint[i].bounds)) 
+                if (anchorLinkMode || controlDrag) break;
+                
+                if (CheckCollisionPointCircle(GetMousePosition(), (Vector2){ anchors[i].x, anchors[i].y }, anchors[i].radius))
                 {
                     selectedAnchor = i;
                     break;
@@ -532,33 +535,62 @@ int main()
                 else selectedAnchor = -1;
             }  
             
-            if (selectedAnchor != -1 && selectedAnchor != 0)
+            if (selectedAnchor > 0)
             {
                 if (IsKeyDown(KEY_DELETE))
                 {
-                    for (int i = selectedAnchor; i < anchorCounter; i++) anchorPoint[i] = anchorPoint[i + 1];
-
-                    anchorCounter--;
+                    for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
+                    {
+                        if (i == selectedAnchor)
+                        {
+                            anchors[i].x = 0;
+                            anchors[i].y = 0;
+                            anchors[i].enabled = false;
+                            break;
+                        }
+                    }          
+                }
+                
+                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) controlDrag = true;
+                
+                if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
+                {                   
+                    controlDrag = false;
                     selectedAnchor = -1;
+                }
+                
+                if (controlDrag)
+                {
+                    anchors[selectedAnchor].x = mouseX;
+                    anchors[selectedAnchor].y = mouseY;
+                }
+
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    linkedAnchor = selectedAnchor;
+                    anchorLinkMode = true;
+                }
+                
+                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+                {
+                    if (selectedControl != -1 && !lockMode)
+                    {
+                        layout[selectedControl].ap = &anchors[linkedAnchor];
+                        layout[selectedControl].rec.x -= anchors[linkedAnchor].x;
+                        layout[selectedControl].rec.y -= anchors[linkedAnchor].y;
+                    }
+
+                    anchorLinkMode = false;                    
                 }
             }
         }
         
-        if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && !anchorMode)  // Anchor mode creation, consider SNAP!
-        {
-            anchorMode = true;
-            
-        }
+        
+        // Enable anchor mode editing
+        if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && !anchorMode) anchorMode = true;
         else if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && anchorMode) anchorMode = false;
         
-        
-        // Updates the position of the control when it has an anchor point
-        for (int i = 0; i < controlsCounter; i++)
-        {
-            //layout[i].rec = (Rectangle){ anchorPoint[layout[i].anchorId].position.x + layout[i].ap.x - layout[i].rec.width/2, anchorPoint[layout[i].anchorId].position.y + layout[i].ap.y - layout[i].rec.height/2, layout[i].rec.width, layout[i].rec.height };
-        }
-       
-       // Checks the minimum size of the rec
+        // Checks the minimum size of the rec
         if (selectedControl != -1)
         {
             // Sets the minimum limit of the width
@@ -607,10 +639,11 @@ int main()
             if (fileName != NULL)
             {
                 // Save layout file (text or binary)
-                SaveLayoutRGL("test_layout.rgl", true);
+                SaveLayoutRGL("test_layout.rgl", false);
                 fileName = "";
             }
-        }            
+        }
+        
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O))
         {
             // Open file dialog
@@ -619,6 +652,7 @@ int main()
             
             if (fileName != NULL) LoadLayoutRGL(fileName);
         }
+        
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateLayoutCode("test_layout.c");
         //----------------------------------------------------------------------------------
 
@@ -659,7 +693,7 @@ int main()
                 switch (layout[i].type)
                 {
                     case LABEL: GuiLabel(layout[i].rec, layout[i].text); break;
-                    case BUTTON: GuiButton(layout[i].rec, layout[i].text); break;
+                    case BUTTON: GuiButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case IMAGEBUTTON: GuiImageButtonEx(layout[i].rec, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
                     case TOGGLE: GuiToggleButton(layout[i].rec, layout[i].text, false); break;
                     case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
@@ -674,6 +708,10 @@ int main()
                     case COLORPICKER: GuiColorPicker(layout[i].rec, RED); break;
                     default: break;
                 }
+                
+                if (layout[i].ap->id > 0) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
+                // Draw Control anchor information
+                //DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
            
@@ -685,18 +723,17 @@ int main()
             DrawRectangleRec(listViewControlsCounter, Fade(WHITE, 0.7f));
             GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, selectedControl);
             
-            // Draw the global anchorPoint
-            DrawRectangleRec(anchorPoint[0].bounds, Fade(BLACK, 0.5f));
-            DrawLine(anchorPoint[0].position.x - 15, anchorPoint[0].position.y, anchorPoint[0].position.x + 15, anchorPoint[0].position.y, BLACK);
-            DrawLine(anchorPoint[0].position.x, anchorPoint[0].position.y - 15, anchorPoint[0].position.x, anchorPoint[0].position.y + 15, BLACK);
+            // Draw the global anchors
+            //DrawRectangleRec(anchors[0].bounds, Fade(BLACK, 0.5f));
+            //DrawLine(anchors[0].position.x - 15, anchors[0].position.y, anchors[0].position.x + 15, anchors[0].position.y, BLACK);
+            //DrawLine(anchors[0].position.x, anchors[0].position.y - 15, anchors[0].position.x, anchors[0].position.y + 15, BLACK);
             
             // Draw the anchorPoints
-            for (int i = 1; i < anchorCounter; i++)
+            for (int i = 1; i < 8; i++)
             {
-                DrawRectangleRec(anchorPoint[i].bounds, Fade(RED, 0.5f));
-                DrawLine(anchorPoint[i].position.x - 8, anchorPoint[i].position.y, anchorPoint[i].position.x + 8, anchorPoint[i].position.y, RED);
-                DrawLine(anchorPoint[i].position.x, anchorPoint[i].position.y - 8, anchorPoint[i].position.x, anchorPoint[i].position.y + 8, RED);
-                
+                DrawCircle(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
+                DrawLine(anchors[i].x - 8, anchors[i].y, anchors[i].x + 8, anchors[i].y, RED);
+                DrawLine(anchors[i].x, anchors[i].y - 8, anchors[i].x, anchors[i].y + 8, RED);
             }
             
             if ((selectedControl != -1) && (selectedControl < controlsCounter)) DrawRectangleRec(layout[selectedControl].rec, Fade(RED, 0.5f));
@@ -717,6 +754,9 @@ int main()
                     else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
+            
+            if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
+            
             // Debug information
             /*DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
             DrawText(FormatText("Selected type: %s", controlTypeName[selectedType]), 300, screenHeight - 20, 20, BLUE);
@@ -735,8 +775,8 @@ int main()
             GuiLabel((Rectangle){590, GetScreenHeight() - 16, 100, 20}, "|");
             if (snapMode) DrawText("SNAP ON", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], RED);
             else DrawText("SNAP OFF", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
-            if (anchorMode )GuiLabel((Rectangle){20, GetScreenHeight() - 32, 100, 20}, FormatText("Anchor Mode ON   | Anchors count: %i  |  Selected Anchor: %i", anchorCounter, selectedAnchor));
-            else GuiLabel((Rectangle){20, GetScreenHeight() - 32, 100, 20}, FormatText("Anchor Mode OFF   | Anchors count: %i  |  Selected Anchor: %i", anchorCounter, selectedAnchor));
+            if (anchorMode )GuiLabel((Rectangle){20, GetScreenHeight() - 34, 100, 20}, FormatText("Anchor Mode ON   | Anchors count: %i  |  Selected Anchor: %i  |  Linked Anchor: %i", anchorCounter, selectedAnchor, linkedAnchor));
+            else GuiLabel((Rectangle){20, GetScreenHeight() - 34, 100, 20}, FormatText("Anchor Mode OFF   | Anchors count: %i  |  Selected Anchor: %i  |  Linked Anchor: %i", anchorCounter, selectedAnchor, linkedAnchor));
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -837,7 +877,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
                 // fprintf(rglFile, "Rec %i %i %i %i\n", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
                 // fprintf(rglFile, "Text %s\n", layout[i].text);
                 // fprintf(rglFile, "Anchor Id %i\n\n", layout[i].anchorId);
-                fprintf(rglFile, "c %03i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].anchorId, layout[i].text);
+                fprintf(rglFile, "c %03i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, 0, layout[i].text);
             }
 
             fclose(rglFile);
@@ -851,6 +891,8 @@ static void LoadLayoutRGL(const char *fileName)
 {
     char buffer[256];
     bool tryBinary = false;
+    
+    int anchorId;       // TODO: Review!!!
     
     FILE *rglFile = fopen(fileName, "rt");
     
@@ -866,8 +908,8 @@ static void LoadLayoutRGL(const char *fileName)
             {
                 if ((buffer[0] != '\n') && (buffer[0] != '#'))
                 {
-                    sscanf(buffer, "c %d %i %i %i %i %i %i %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &layout[controlsCounter].anchorId, layout[controlsCounter].text);
-                    printf("c %d %i %i %i %i %i %i %s\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].anchorId, layout[controlsCounter].text);
+                    sscanf(buffer, "c %d %i %i %i %i %i %i %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &anchorId, layout[controlsCounter].text);
+                    printf("c %d %i %i %i %i %i %i %s\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, anchorId, layout[controlsCounter].text);
                     
                     controlsCounter++;
                 }
