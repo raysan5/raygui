@@ -69,7 +69,6 @@ typedef struct {
     int type;
     Rectangle rec;
     char text[32];
-    //int anchorId;
     AnchorPoint *ap;
 } GuiControl;
 
@@ -394,6 +393,14 @@ int main()
                 controlsCounter--;
                 selectedControl = -1;
             }
+            
+            // Unlinks the control selected from its current anchor
+            if(IsKeyPressed(KEY_R))
+            {
+                layout[selectedControl].rec.x += layout[selectedControl].ap->x;
+                layout[selectedControl].rec.y += layout[selectedControl].ap->y;
+                layout[selectedControl].ap = &anchors[0];
+            }
         }
         else
         {
@@ -505,7 +512,25 @@ int main()
             lockMode = false;
         }
 
-        // Create anchor points
+        // Checks if mouse is over an anchor
+        for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
+        {
+            if (anchorLinkMode || controlDrag) break;
+            
+            if (CheckCollisionPointCircle(GetMousePosition(), (Vector2){ anchors[i].x, anchors[i].y }, anchors[i].radius))
+            {
+                selectedAnchor = i;
+                anchorMode = true;
+                break;
+            }
+            else 
+            {
+                selectedAnchor = -1;
+                if (!IsKeyDown(KEY_A)) anchorMode = false;
+            }
+        }  
+            
+        // Create and edit anchor points
         if (anchorMode)
         {
             // On mouse click anchor is created
@@ -518,23 +543,12 @@ int main()
                         anchors[i].x = mouseX;
                         anchors[i].y = mouseY;
                         anchors[i].enabled = true;
+                        anchorMode = false;
                         break;
                     }
                 }
             }
-            
-            for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
-            {
-                if (anchorLinkMode || controlDrag) break;
-                
-                if (CheckCollisionPointCircle(GetMousePosition(), (Vector2){ anchors[i].x, anchors[i].y }, anchors[i].radius))
-                {
-                    selectedAnchor = i;
-                    break;
-                }
-                else selectedAnchor = -1;
-            }  
-            
+
             if (selectedAnchor > 0)
             {
                 // Unlinks and deletes the selected anchor point
@@ -551,30 +565,36 @@ int main()
                     }
                     anchors[selectedAnchor].x = 0;
                     anchors[selectedAnchor].y = 0;
-                    anchors[selectedAnchor].enabled = false;         
+                    anchors[selectedAnchor].enabled = false;
+                    anchorMode = false;
                 }
                 
-                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) controlDrag = true;
+                // Allows to drag an anchor without losing collision
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) controlDrag = true;
                 
-                if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
+                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
                 {                   
                     controlDrag = false;
                     selectedAnchor = -1;
+                    anchorMode = false;
                 }
                 
+                // Moves the anchor to the mouse position
                 if (controlDrag)
                 {
                     anchors[selectedAnchor].x = mouseX;
                     anchors[selectedAnchor].y = mouseY;
                 }
-
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                
+                // Enables the linking between anchor and control
+                if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
                 {
                     linkedAnchor = selectedAnchor;
                     anchorLinkMode = true;
                 }
                 
-                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+                // Links the selected control to the current anchor
+                if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
                 {
                     if (selectedControl != -1 && !lockMode /*&& (layout[selectedControl].ap != &anchors[linkedAnchor])*/)
                     {
@@ -584,17 +604,17 @@ int main()
                         layout[selectedControl].rec.x -= anchors[linkedAnchor].x;
                         layout[selectedControl].rec.y -= anchors[linkedAnchor].y;
                     }
-
-                    anchorLinkMode = false;                    
+                    
+                    anchorLinkMode = false;  
+                    anchorMode = false;                    
                 }
             }
         }
         
         
         // Enable anchor mode editing
-        if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && !anchorMode) anchorMode = true;
-        else if (IsKeyPressed(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX) && anchorMode) anchorMode = false;
-        
+        if (IsKeyDown(KEY_A) && !textEditMode && (layout[selectedControl].type != TEXTBOX)) anchorMode = true;
+
         // Checks the minimum size of the rec
         if (selectedControl != -1)
         {
@@ -616,11 +636,6 @@ int main()
             }
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
-        
-        // TODO: If mouse over anchor (define default bounds) and click, start anchor line
-        // TODO: On mouse up over an existing control, anchor is created (draw line for reference)
-        // TODO: On anchor line created, control (x, y) will be (x - ap, y - ap), and anchorId will be saved
-        // TODO: When create new anchor (anchorId++)
         
         // TODO: if (IsKeyPressed(KEY_R)) remove control anchors (reset)
             
@@ -644,7 +659,7 @@ int main()
             if (fileName != NULL)
             {
                 // Save layout file (text or binary)
-                SaveLayoutRGL("test_layout.rgl", false);
+                SaveLayoutRGL("test_layout.rgl", true);
                 fileName = "";
             }
         }
@@ -697,24 +712,24 @@ int main()
                 // Draws the Controls when placed on the grid.
                 switch (layout[i].type)
                 {
-                    case LABEL: GuiLabel(layout[i].rec, layout[i].text); break;
+                    case LABEL: GuiLabel((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case BUTTON: GuiButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case IMAGEBUTTON: GuiImageButtonEx(layout[i].rec, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
-                    case TOGGLE: GuiToggleButton(layout[i].rec, layout[i].text, false); break;
-                    case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, list, 3, 1); break;
-                    case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
-                    case SLIDERBAR: GuiSliderBar(layout[i].rec, 40, 0, 100); break;
-                    case PROGRESSBAR: GuiProgressBar(layout[i].rec, 40, 0, 100); break;
-                    case SPINNER: GuiSpinner(layout[i].rec, 40, 0, 100); break;
-                    case COMBOBOX: GuiComboBox(layout[i].rec, list, 3, 1); break;
-                    case CHECKBOX: GuiCheckBox(layout[i].rec, false); break;
-                    case TEXTBOX: GuiTextBox(layout[i].rec, layout[i].text, 32); break;
-                    case LISTVIEW: GuiListView(layout[i].rec, guiControls, 14, 1); break;
-                    case COLORPICKER: GuiColorPicker(layout[i].rec, RED); break;
+                    case IMAGEBUTTON: GuiImageButtonEx((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
+                    case TOGGLE: GuiToggleButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, false); break;
+                    case TOGGLEGROUP: GuiToggleGroup((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
+                    case SLIDER: GuiSlider((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                    case SLIDERBAR: GuiSliderBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                    case PROGRESSBAR: GuiProgressBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                    case SPINNER: GuiSpinner((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                    case COMBOBOX: GuiComboBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
+                    case CHECKBOX: GuiCheckBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, false); break;
+                    case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
+                    case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
+                    case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
                     default: break;
                 }
-                
-                if (layout[i].ap->id > 0) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
+
+                if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
                 // Draw Control anchor information
                 // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
@@ -728,26 +743,35 @@ int main()
             DrawRectangleRec(listViewControlsCounter, Fade(WHITE, 0.7f));
             GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, selectedControl);
             
-            // Draw the global anchors
-            //DrawRectangleRec(anchors[0].bounds, Fade(BLACK, 0.5f));
-            //DrawLine(anchors[0].position.x - 15, anchors[0].position.y, anchors[0].position.x + 15, anchors[0].position.y, BLACK);
-            //DrawLine(anchors[0].position.x, anchors[0].position.y - 15, anchors[0].position.x, anchors[0].position.y + 15, BLACK);
-            
             // Draw the anchorPoints
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
                 if (anchors[i].id == selectedAnchor) DrawCircle(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
                 else DrawCircleLines(anchors[i].x, anchors[i].y, anchors[i].radius, Fade(RED, 0.5f));
-                DrawLine(anchors[i].x - anchors[i].radius - 5, anchors[i].y, anchors[i].x + anchors[i].radius + 5, anchors[i].y, RED);
-                DrawLine(anchors[i].x, anchors[i].y - anchors[i].radius - 5, anchors[i].x, anchors[i].y + anchors[i].radius + 5, RED);
+                DrawRectangle(anchors[i].x - anchors[i].radius - 5, anchors[i].y, anchors[i].radius*2 + 10, 1, RED);
+                DrawRectangle(anchors[i].x, anchors[i].y - anchors[i].radius - 5, 1, anchors[i].radius*2 + 10, RED);
             }
             
-            if ((selectedControl != -1) && (selectedControl < controlsCounter)) DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
+            if ((selectedControl != -1) && (selectedControl < controlsCounter))
+            {
+                
+                DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
+                if (layout[selectedControl].ap->id > 0) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
+            }
              
             if (selectedControl == -1)
             {
-                DrawRectangle(mouseX - 8, mouseY, 17, 1, RED);
-                DrawRectangle(mouseX, mouseY - 8, 1, 17, RED);
+                if (anchorMode)
+                {
+                    DrawCircleLines(mouseX, mouseY, anchors[0].radius, Fade(RED, 0.5f));
+                    DrawRectangle(mouseX - anchors[0].radius - 5, mouseY, anchors[0].radius*2 + 10, 1, RED);
+                    DrawRectangle(mouseX, mouseY - anchors[0].radius - 5, 1, anchors[0].radius*2 + 10, RED);
+                }
+                else 
+                {
+                    DrawRectangle(mouseX - 8, mouseY, 17, 1, RED);
+                    DrawRectangle(mouseX, mouseY - 8, 1, 17, RED);
+                }
             }
 
             // Draws the cursor of textEditMode
@@ -857,16 +881,37 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             fwrite(&numControls, 1, sizeof(short), rglFile);
             fwrite(&reserved, 1, sizeof(int), rglFile);
             
+            // Export anchors data
+            for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
+            {
+                fwrite(&anchors[i].id, 1, sizeof(int), rglFile);
+                fwrite(&anchors[i].x, 1, sizeof(int), rglFile);
+                fwrite(&anchors[i].y, 1, sizeof(int), rglFile);
+                fwrite(&anchors[i].radius, 1, sizeof(float), rglFile);
+            }
+            
             for (int i = 0; i < controlsCounter; i++) 
             {
-                // TODO: Export data in independent way
-                fwrite(&layout[i], 1, sizeof(GuiControl), rglFile);
-                // TODO: Export anchor id and position
+                // Export data in independent way
+                printf("Writing %i\n", i);
+                printf("Id: %i\n", layout[i].id);
+                printf("Type: %i\n", layout[i].type);
+                printf("X: %i\n", layout[i].rec.x);
+                printf("Y: %i\n", layout[i].rec.y);
+                printf("Width: %i\n", layout[i].rec.width);
+                printf("Height: %i\n", layout[i].rec.height);
+                //printf("Text: %s\n", layout[i].text);
+                fwrite(&layout[i].id, 1, sizeof(int), rglFile);
+                fwrite(&layout[i].type, 1, sizeof(int), rglFile);
+                fwrite(&layout[i].rec.x, 1, sizeof(int), rglFile);
+                fwrite(&layout[i].rec.y, 1, sizeof(int), rglFile);
+                fwrite(&layout[i].rec.width, 1, sizeof(int), rglFile);
+                fwrite(&layout[i].rec.height, 1, sizeof(int), rglFile);
+                //fwrite(layout[i].text, 1, 32, rglFile);
             }
 
             fclose(rglFile);  
         }
-
     }
     else 
     {
@@ -883,11 +928,6 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
 
             for (int i = 0; i < controlsCounter; i++)
             {
-
-                // fprintf(rglFile, "Control %03i : %s\n", layout[i].id, controlTypeName[layout[i].type]);
-                // fprintf(rglFile, "Rec %i %i %i %i\n", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
-                // fprintf(rglFile, "Text %s\n", layout[i].text);
-                // fprintf(rglFile, "Anchor Id %i\n\n", layout[i].anchorId);
                 fprintf(rglFile, "c %03i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, 0, layout[i].text);
             }
 
@@ -941,6 +981,7 @@ static void LoadLayoutRGL(const char *fileName)
             char signature[5] = "";
             short version = 0;
             int reserved = 0;
+            int counter = 0;
 
             fread(signature, 1, 4, rglFile);
             fread(&version, 1, sizeof(short), rglFile);
@@ -952,9 +993,61 @@ static void LoadLayoutRGL(const char *fileName)
                 (signature[2] == 'L') &&
                 (signature[3] == ' '))
             {
+                // Import anchors data
+                for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
+                {
+                    fread(&anchors[i].id, 1, sizeof(int), rglFile);
+                    fread(&anchors[i].x, 1, sizeof(int), rglFile);
+                    fread(&anchors[i].y, 1, sizeof(int), rglFile);
+                    fread(&anchors[i].radius, 1, sizeof(float), rglFile);
+                }
+                    
                 while (!feof(rglFile))
                 {
-                    for (int i = 0; i < controlsCounter; i++) fread(&layout[i], 1, sizeof(GuiControl), rglFile);
+                    /*for (int i = 0; i < controlsCounter; i++)
+                    {
+                        // Import data in independent way
+                        fread(&layout[i].id, 1, sizeof(int), rglFile);
+                        fread(&layout[i].type, 1, sizeof(int), rglFile);
+                        fread(&layout[i].rec.x, 1, sizeof(int), rglFile);
+                        fread(&layout[i].rec.y, 1, sizeof(int), rglFile);
+                        fread(&layout[i].rec.width, 1, sizeof(int), rglFile);
+                        fread(&layout[i].rec.height, 1, sizeof(int), rglFile);
+                        fread(layout[i].text, 1, 32, rglFile);
+                        printf("Reading %i\n", i);
+                        printf("Id: %i\n", layout[i].id);
+                        printf("Type: %i\n", layout[i].type);
+                        printf("X: %i\n", layout[i].rec.x);
+                        printf("Y: %i\n", layout[i].rec.y);
+                        printf("Width: %i\n", layout[i].rec.width);
+                        printf("Height: %i\n", layout[i].rec.height);
+                        printf("Text: %s\n", layout[i].text);
+                        // Import anchor id and position
+                        // fread(&layout[i].ap->id, 1, sizeof(int), rglFile);
+                        // fread(&layout[i].ap->x, 1, sizeof(int), rglFile);
+                        // fread(&layout[i].ap->y, 1, sizeof(int), rglFile);
+                    }*/
+                    if (counter < controlsCounter)
+                    {
+                        fread(&layout[counter].id, 1, sizeof(int), rglFile);
+                        fread(&layout[counter].type, 1, sizeof(int), rglFile);
+                        fread(&layout[counter].rec.x, 1, sizeof(int), rglFile);
+                        fread(&layout[counter].rec.y, 1, sizeof(int), rglFile);
+                        fread(&layout[counter].rec.width, 1, sizeof(int), rglFile);
+                        fread(&layout[counter].rec.height, 1, sizeof(int), rglFile);
+                        //fread(layout[counter].text, 1, 32, rglFile);
+                        printf("Reading %i\n", counter);
+                        printf("Id: %i\n", layout[counter].id);
+                        printf("Type: %i\n", layout[counter].type);
+                        printf("X: %i\n", layout[counter].rec.x);
+                        printf("Y: %i\n", layout[counter].rec.y);
+                        printf("Width: %i\n", layout[counter].rec.width);
+                        printf("Height: %i\n", layout[counter].rec.height);
+                        //printf("Text: %s\n", layout[counter].text);
+                        
+                        counter++;
+                    }
+                    else break;
                 }   
             }
             else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
