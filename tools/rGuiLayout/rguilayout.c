@@ -490,7 +490,7 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
-           ((selectedType == LABEL) || (selectedType == BUTTON) || (selectedType == TOGGLE) || (selectedType == IMAGEBUTTON)))
+           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
@@ -637,7 +637,7 @@ int main()
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
         
-        // TODO: if (IsKeyPressed(KEY_R)) remove control anchors (reset)
+
             
         // TODO: Draw global app screen limits (black rectangle with black default anchor)
         
@@ -813,7 +813,8 @@ int main()
     }
 
     // De-Initialization
-    //--------------------------------------------------------------------------------------   
+    //--------------------------------------------------------------------------------------
+    UnloadTexture(texture);    
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
@@ -881,15 +882,8 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             fwrite(&numControls, 1, sizeof(short), rglFile);
             fwrite(&reserved, 1, sizeof(int), rglFile);
             
-            // Export anchors data
-            for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
-            {
-                fwrite(&anchors[i].id, 1, sizeof(int), rglFile);
-                fwrite(&anchors[i].x, 1, sizeof(int), rglFile);
-                fwrite(&anchors[i].y, 1, sizeof(int), rglFile);
-                fwrite(&anchors[i].radius, 1, sizeof(float), rglFile);
-            }
-            
+
+
             for (int i = 0; i < controlsCounter; i++) 
             {
                 // Export data in independent way
@@ -900,14 +894,16 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
                 printf("Y: %i\n", layout[i].rec.y);
                 printf("Width: %i\n", layout[i].rec.width);
                 printf("Height: %i\n", layout[i].rec.height);
-                //printf("Text: %s\n", layout[i].text);
+                printf("Text: %s\n", layout[i].text);
                 fwrite(&layout[i].id, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].type, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].rec.x, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].rec.y, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].rec.width, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].rec.height, 1, sizeof(int), rglFile);
-                //fwrite(layout[i].text, 1, 32, rglFile);
+                fwrite(&layout[i].text, 1, 32, rglFile);
+                
+                // TODO: Export anchors data
             }
 
             fclose(rglFile);  
@@ -924,11 +920,11 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
              // Write some description comments
             fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
             fprintf(rglFile, "# Total number of controls:     %i\n", controlsCounter);
-            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <anchor_id> <anchor_pos> <text>\n#\n", controlsCounter);
+            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <text> <anchor_id> <anchor_pos>\n#\n");
 
             for (int i = 0; i < controlsCounter; i++)
             {
-                fprintf(rglFile, "c %03i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, 0, layout[i].text);
+                fprintf(rglFile, "c %03i %i %i %i %i %i %i %i %i %s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].ap->id, layout[i].ap->x, layout[i].ap->y, layout[i].text);
             }
 
             fclose(rglFile);
@@ -943,7 +939,9 @@ static void LoadLayoutRGL(const char *fileName)
     char buffer[256];
     bool tryBinary = false;
     
-    int anchorId;       // TODO: Review!!!
+    int anchorId = 0;       // TODO: Review!!!
+    int anchorX = 0;
+    int anchorY = 0;
     
     FILE *rglFile = fopen(fileName, "rt");
     
@@ -959,8 +957,8 @@ static void LoadLayoutRGL(const char *fileName)
             {
                 if ((buffer[0] != '\n') && (buffer[0] != '#'))
                 {
-                    sscanf(buffer, "c %d %i %i %i %i %i %i %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &anchorId, layout[controlsCounter].text);
-                    printf("c %d %i %i %i %i %i %i %s\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, anchorId, layout[controlsCounter].text);
+                    sscanf(buffer, "c %d %i %i %i %i %i %d %d %d %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &anchorId, &anchorX, &anchorY, layout[controlsCounter].text);
+                    printf("c %d %i %i %i %i %i %s %i %i %i\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].text, anchorId, anchorX, anchorY);
                     
                     controlsCounter++;
                 }
@@ -993,18 +991,10 @@ static void LoadLayoutRGL(const char *fileName)
                 (signature[2] == 'L') &&
                 (signature[3] == ' '))
             {
-                // Import anchors data
-                for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
-                {
-                    fread(&anchors[i].id, 1, sizeof(int), rglFile);
-                    fread(&anchors[i].x, 1, sizeof(int), rglFile);
-                    fread(&anchors[i].y, 1, sizeof(int), rglFile);
-                    fread(&anchors[i].radius, 1, sizeof(float), rglFile);
-                }
-                    
+                 
                 while (!feof(rglFile))
                 {
-                    /*for (int i = 0; i < controlsCounter; i++)
+                    for (int i = 0; i < controlsCounter; i++)
                     {
                         // Import data in independent way
                         fread(&layout[i].id, 1, sizeof(int), rglFile);
@@ -1013,7 +1003,7 @@ static void LoadLayoutRGL(const char *fileName)
                         fread(&layout[i].rec.y, 1, sizeof(int), rglFile);
                         fread(&layout[i].rec.width, 1, sizeof(int), rglFile);
                         fread(&layout[i].rec.height, 1, sizeof(int), rglFile);
-                        fread(layout[i].text, 1, 32, rglFile);
+                        fread(&layout[i].text, 1, 32, rglFile);
                         printf("Reading %i\n", i);
                         printf("Id: %i\n", layout[i].id);
                         printf("Type: %i\n", layout[i].type);
@@ -1022,32 +1012,13 @@ static void LoadLayoutRGL(const char *fileName)
                         printf("Width: %i\n", layout[i].rec.width);
                         printf("Height: %i\n", layout[i].rec.height);
                         printf("Text: %s\n", layout[i].text);
+                    }
+                     /*
                         // Import anchor id and position
                         // fread(&layout[i].ap->id, 1, sizeof(int), rglFile);
                         // fread(&layout[i].ap->x, 1, sizeof(int), rglFile);
                         // fread(&layout[i].ap->y, 1, sizeof(int), rglFile);
-                    }*/
-                    if (counter < controlsCounter)
-                    {
-                        fread(&layout[counter].id, 1, sizeof(int), rglFile);
-                        fread(&layout[counter].type, 1, sizeof(int), rglFile);
-                        fread(&layout[counter].rec.x, 1, sizeof(int), rglFile);
-                        fread(&layout[counter].rec.y, 1, sizeof(int), rglFile);
-                        fread(&layout[counter].rec.width, 1, sizeof(int), rglFile);
-                        fread(&layout[counter].rec.height, 1, sizeof(int), rglFile);
-                        //fread(layout[counter].text, 1, 32, rglFile);
-                        printf("Reading %i\n", counter);
-                        printf("Id: %i\n", layout[counter].id);
-                        printf("Type: %i\n", layout[counter].type);
-                        printf("X: %i\n", layout[counter].rec.x);
-                        printf("Y: %i\n", layout[counter].rec.y);
-                        printf("Width: %i\n", layout[counter].rec.width);
-                        printf("Height: %i\n", layout[counter].rec.height);
-                        //printf("Text: %s\n", layout[counter].text);
-                        
-                        counter++;
-                    }
-                    else break;
+                    */
                 }   
             }
             else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
@@ -1110,7 +1081,11 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "// Controls Functions Declaration\n");
     fprintf(ftool, "//----------------------------------------------------------------------------------\n");
     
-    for (int i = 0; i < controlsCounter; i++) if (layout[i].type == BUTTON) fprintf(ftool, "static void Button%03i();\n", i);
+    for (int i = 0; i < controlsCounter; i++) 
+    {
+        if (layout[i].type == BUTTON) fprintf(ftool, "static void Button%03i();\n", i);
+        if (layout[i].type == IMAGEBUTTON) fprintf(ftool, "static void ImageButton%03i();\n", i);
+    }
 
     fprintf(ftool, "\n");
     fprintf(ftool, "//------------------------------------------------------------------------------------\n");
@@ -1123,6 +1098,43 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "    int screenWidth = %i;\n", screenWidth);
     fprintf(ftool, "    int screenHeight = %i;\n\n", screenHeight);
     fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"rFXGen\");\n\n");
+    
+    fprintf(ftool, "    // Needed variables\n");
+    // Define texture for IMAGEBUTTON
+    fprintf(ftool, "    Texture2D texture = LoadTexture(\"icons.png\");\n\n");
+    // Define controls variables
+    for (int i = 0; i < controlsCounter; i++)
+    {
+        switch (layout[i].type)
+        {
+            // Bools
+            case TOGGLE: 
+            case CHECKBOX: fprintf(ftool, "    bool %s%03i = false;\n", controlTypeNameShort[layout[i].type], i); break;
+            
+            // Floats
+            case SLIDER: 
+            case SLIDERBAR: 
+            case PROGRESSBAR:
+            {
+                fprintf(ftool, "    float %svalue%03i = 50.0f;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    float %sminValue%03i = 0.0f;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    float %smaxValue%03i = 100.0f;\n", controlTypeNameShort[layout[i].type], i);
+            }            
+            break;
+            // Ints
+            case SPINNER:
+            {
+                fprintf(ftool, "    int %svalue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    int %sminValue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    int %smaxValue%03i = 100;\n", controlTypeNameShort[layout[i].type], i);
+            }     
+            break; 
+            case COLORPICKER: fprintf(ftool, "    Color %scolor%03i;\n", controlTypeNameShort[layout[i].type], i);
+            default: break;
+        }
+    }
+    
+    fprintf(ftool, "\n");
     
     // Define controls rectangles
     fprintf(ftool, "    Rectangle layoutRecs[%i] = {\n", controlsCounter);
@@ -1147,26 +1159,28 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "        // Draw\n");
     fprintf(ftool, "        //----------------------------------------------------------------------------------\n");
     fprintf(ftool, "        BeginDrawing();\n\n");
-    fprintf(ftool, "            ClearBackground(GuiBackground());\n\n");
+    fprintf(ftool, "            ClearBackground(GuiBackgroundColor());\n\n");
 
     // Draw all controls
     for (int i = 0; i < controlsCounter; i++)
     {
         switch (layout[i].type)
         {
-            case LABEL: fprintf(ftool, "            GuiLabel(layoutRecs[%i], \"TEXT SAMPLE\");\n\n", i); break;
-            case BUTTON: fprintf(ftool, "            if (GuiButton(layoutRecs[%i], \"BUTTON\")) Button%03i(); \n\n", i, i); break;
-            /*
-            case TOGGLE: GuiToggleButton(layout[i].rec, \"TOGGLE\", false); break;
-            case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, 3, list, 1); break;
-            case SLIDER: GuiSlider(layout[i].rec, 40, 0, 100); break;
-            case SLIDERBAR: GuiSliderBar(layout[i].rec, 40, 0, 100); break;
-            case PROGRESSBAR: GuiProgressBar(layout[i].rec, 40); break;
-            case SPINNER: GuiSpinner(layout[i].rec, 40, 0, 100); break;
-            case COMBOBOX: GuiComboBox(layout[i].rec, 3, list, 1); break;
-            case CHECKBOX: GuiCheckBox(layout[i].rec, \"CHECKBOX\", false); break;
-            case TEXTBOX: GuiTextBox(layout[i].rec, \"test text\"); break;
-            */
+            case LABEL: fprintf(ftool, "            GuiLabel(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
+            case BUTTON: fprintf(ftool, "            if (GuiButton(layoutRecs[%i], \"%s\")) Button%03i(); \n\n", i, layout[i].text, i); break;
+            case IMAGEBUTTON: fprintf(ftool, "            if (GuiImageButtonEx(layoutRecs[%i], texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, \"%s\")) ImageButton%03i(); \n\n", i, layout[i].text, i); break;
+            
+            case TOGGLE: fprintf(ftool, "            %s%03i = GuiToggleButton(layoutRecs[%i], \"%s\", %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, layout[i].text, controlTypeNameShort[layout[i].type], i); break;
+            // case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, 3, list, 1); break;
+            case SLIDER: fprintf(ftool, "            %svalue%03i = GuiSlider(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case SLIDERBAR: fprintf(ftool, "            %svalue%03i = GuiSliderBar(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case PROGRESSBAR: fprintf(ftool, "            %svalue%03i = GuiProgressBar(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case SPINNER: fprintf(ftool, "            %svalue%03i = GuiSpinner(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            // case COMBOBOX: GuiComboBox(layout[i].rec, 3, list, 1); break;
+            case CHECKBOX: fprintf(ftool, "            %s%03i = GuiCheckBox(layoutRecs[%i], %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
+            // case TEXTBOX: GuiTextBox(layout[i].rec, \"test text\"); break;
+            case COLORPICKER: fprintf(ftool, "            %scolor%03i = GuiColorPicker(layoutRecs[%i], %scolor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
+            
             default: break;
         }
     }
@@ -1176,6 +1190,7 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "    }\n\n");
     fprintf(ftool, "    // De-Initialization\n");
     fprintf(ftool, "    //--------------------------------------------------------------------------------------\n");
+    fprintf(ftool, "    UnloadTexture(texture);\n");
     fprintf(ftool, "    CloseWindow();        // Close window and OpenGL context\n");
     fprintf(ftool, "    //--------------------------------------------------------------------------------------\n\n");
     fprintf(ftool, "    return 0;\n");
@@ -1186,8 +1201,13 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "//------------------------------------------------------------------------------------\n");
     
     for (int i = 0; i < controlsCounter; i++)
+    {
         if (layout[i].type == BUTTON)
             fprintf(ftool, "static void Button%03i()\n{\n    // TODO: Implement control logic\n}\n\n", i);
+        
+        if (layout[i].type == IMAGEBUTTON)
+            fprintf(ftool, "static void ImageButton%03i()\n{\n    // TODO: Implement control logic\n}\n\n", i);
+    }
 
     fclose(ftool);
 }
