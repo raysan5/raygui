@@ -17,6 +17,8 @@
 #include "easings.h"
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
 
+#include <stdlib.h>
+
 #if defined(_WIN32)
     #include <direct.h>
     #define GetCurrentDir _getcwd
@@ -68,7 +70,7 @@ typedef struct {
     int id;
     int type;
     Rectangle rec;
-    char text[32];
+    unsigned char *text;
     AnchorPoint *ap;
 } GuiControl;
 
@@ -80,8 +82,8 @@ static char currentPath[256];       // Path to current working folder
 static int screenWidth = 800;
 static int screenHeight = 600;
 
-static GuiControl layout[MAX_GUI_CONTROLS];
-static AnchorPoint anchors[MAX_ANCHOR_POINTS];  
+static GuiControl layout[MAX_GUI_CONTROLS] = { 0 };
+static AnchorPoint anchors[MAX_ANCHOR_POINTS];
 static int controlsCounter = 0;
 static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
@@ -107,6 +109,16 @@ int main()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiLayout - raygui layout editor");
     
+    // Initialize layout data
+    for (int i = 0; i < MAX_GUI_CONTROLS; i++)
+    {
+        layout[i].id = 0;
+        layout[i].type = 0;
+        layout[i].rec = (Rectangle){ 0, 0, 0, 0 };
+        layout[i].text = (unsigned char *)malloc(32);// strcpy(layout[i].text, "SAMPLE TEXT\0");
+        layout[i].ap = NULL;
+    }
+    
     int selectedControl = -1;
     int selectedType = BUTTON;
     int selectedTypeDraw = LABEL;
@@ -120,6 +132,7 @@ int main()
     bool textEditMode = false;
     int framesCounter = 0;
     int saveControlSelected = -1;
+    char previewText[8] = "TEXTBOX";
     bool anchorMode = false;
     bool anchorLinkMode = false;
     int selectedAnchor = -1;
@@ -261,20 +274,20 @@ int main()
         }
         
         // Toggle on the controlListViewCounter
-        if (IsKeyPressed(KEY_LEFT_CONTROL))
+        if (IsKeyPressed(KEY_W))
         {
             startPosXListViewControlsCounter = listViewControlsCounter.x;
             deltaPosXListViewControlsCounter = GetScreenWidth() -listViewControlsCounter.width - startPosXListViewControlsCounter;
             counterListViewControlsCounter = 0;
         }
         
-        if (IsKeyDown(KEY_LEFT_CONTROL))
+        if (IsKeyDown(KEY_W))
         {
             counterListViewControlsCounter++;
             if (counterListViewControlsCounter >= 60) counterListViewControlsCounter = 60;
             listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
         }  
-        else if (IsKeyReleased(KEY_LEFT_CONTROL))
+        else if (IsKeyReleased(KEY_W))
         {
             startPosXListViewControlsCounter = listViewControlsCounter.x;
             deltaPosXListViewControlsCounter = GetScreenWidth() + 140 - startPosXListViewControlsCounter;
@@ -386,7 +399,7 @@ int main()
             }
             
             // Delete selected control and shift array position
-            if (IsKeyDown(KEY_DELETE))
+            if (IsKeyPressed(KEY_DELETE))
             {
                 for (int i = selectedControl; i < controlsCounter; i++) layout[i] = layout[i + 1];
 
@@ -700,7 +713,7 @@ int main()
                     case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 40, 0, 100); break;
                     case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
-                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], "test text", 32); break;
+                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
                     case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
                     default: break;
@@ -734,7 +747,6 @@ int main()
                 // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
-           
             // Draw the list of controls
             DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
             selectedType = GuiListView(listViewControls, guiControls, 14, selectedType);
@@ -759,7 +771,7 @@ int main()
                 if (layout[selectedControl].ap->id > 0) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
             }
              
-            if (selectedControl == -1)
+            if ((selectedControl == -1)  && (selectedAnchor == -1))
             {
                 if (anchorMode)
                 {
@@ -881,27 +893,14 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             fwrite(&version, 1, sizeof(short), rglFile);
             fwrite(&numControls, 1, sizeof(short), rglFile);
             fwrite(&reserved, 1, sizeof(int), rglFile);
-            
-
 
             for (int i = 0; i < controlsCounter; i++) 
             {
                 // Export data in independent way
-                printf("Writing %i\n", i);
-                printf("Id: %i\n", layout[i].id);
-                printf("Type: %i\n", layout[i].type);
-                printf("X: %i\n", layout[i].rec.x);
-                printf("Y: %i\n", layout[i].rec.y);
-                printf("Width: %i\n", layout[i].rec.width);
-                printf("Height: %i\n", layout[i].rec.height);
-                printf("Text: %s\n", layout[i].text);
                 fwrite(&layout[i].id, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].type, 1, sizeof(int), rglFile);
-                fwrite(&layout[i].rec.x, 1, sizeof(int), rglFile);
-                fwrite(&layout[i].rec.y, 1, sizeof(int), rglFile);
-                fwrite(&layout[i].rec.width, 1, sizeof(int), rglFile);
-                fwrite(&layout[i].rec.height, 1, sizeof(int), rglFile);
-                fwrite(&layout[i].text, 1, 32, rglFile);
+                fwrite(&layout[i].rec, 1, sizeof(Rectangle), rglFile);
+                fwrite(layout[i].text, 1, 32, rglFile);
                 
                 // TODO: Export anchors data
             }
@@ -942,7 +941,7 @@ static void LoadLayoutRGL(const char *fileName)
     int anchorId = 0;       // TODO: Review!!!
     int anchorX = 0;
     int anchorY = 0;
-    
+
     FILE *rglFile = fopen(fileName, "rt");
     
     if (rglFile != NULL)
@@ -985,41 +984,30 @@ static void LoadLayoutRGL(const char *fileName)
             fread(&version, 1, sizeof(short), rglFile);
             fread(&controlsCounter, 1, sizeof(short), rglFile);
             fread(&reserved, 1, sizeof(int), rglFile);
+            
+            printf("[READ] Controls counter: %i\n", controlsCounter);
            
             if ((signature[0] == 'R') &&
                 (signature[1] == 'G') &&
                 (signature[2] == 'L') &&
                 (signature[3] == ' '))
             {
-                 
-                while (!feof(rglFile))
+                for (int i = 0; i < controlsCounter; i++)
                 {
-                    for (int i = 0; i < controlsCounter; i++)
-                    {
-                        // Import data in independent way
-                        fread(&layout[i].id, 1, sizeof(int), rglFile);
-                        fread(&layout[i].type, 1, sizeof(int), rglFile);
-                        fread(&layout[i].rec.x, 1, sizeof(int), rglFile);
-                        fread(&layout[i].rec.y, 1, sizeof(int), rglFile);
-                        fread(&layout[i].rec.width, 1, sizeof(int), rglFile);
-                        fread(&layout[i].rec.height, 1, sizeof(int), rglFile);
-                        fread(&layout[i].text, 1, 32, rglFile);
-                        printf("Reading %i\n", i);
-                        printf("Id: %i\n", layout[i].id);
-                        printf("Type: %i\n", layout[i].type);
-                        printf("X: %i\n", layout[i].rec.x);
-                        printf("Y: %i\n", layout[i].rec.y);
-                        printf("Width: %i\n", layout[i].rec.width);
-                        printf("Height: %i\n", layout[i].rec.height);
-                        printf("Text: %s\n", layout[i].text);
-                    }
-                     /*
-                        // Import anchor id and position
-                        // fread(&layout[i].ap->id, 1, sizeof(int), rglFile);
-                        // fread(&layout[i].ap->x, 1, sizeof(int), rglFile);
-                        // fread(&layout[i].ap->y, 1, sizeof(int), rglFile);
+                    // Import data in independent way
+                    fread(&layout[i].id, 1, sizeof(int), rglFile);
+                    fread(&layout[i].type, 1, sizeof(int), rglFile);
+                    fread(&layout[i].rec, 1, sizeof(Rectangle), rglFile);
+                    fread(layout[i].text, 1, 32, rglFile);
+                    /*
+                    // Import anchor id and position
+                    // fread(&layout[i].ap->id, 1, sizeof(int), rglFile);
+                    // fread(&layout[i].ap->x, 1, sizeof(int), rglFile);
+                    // fread(&layout[i].ap->y, 1, sizeof(int), rglFile);
                     */
-                }   
+
+                    printf("[READ] Controls info: id-%i type-%i rec-%i,%i,%i,%i text-%s\n", layout[i].id, layout[i].type, layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height, layout[i].text);
+                }
             }
             else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
             
@@ -1027,51 +1015,26 @@ static void LoadLayoutRGL(const char *fileName)
         }
     }
     
-    // char line[128];
-
-    // FILE *rglFile = fopen(fileName, "rt");
-    
-    // controlsCounter = 0;
-    
-    // while (!feof(rglFile))
-    // {
-        // fgets(line, 128, rglFile);
-
-        // switch (line[0])
-        // {
-            // case 'c':
-            // {
-                // sscanf(line, "c type %i rec %i %i %i %i", &layout[controlsCounter].type, 
-                                                          // &layout[controlsCounter].rec.x, 
-                                                          // &layout[controlsCounter].rec.y, 
-                                                          // &layout[controlsCounter].rec.width, 
-                                                          // &layout[controlsCounter].rec.height);
-                // controlsCounter++;
-            // } break;
-            // default: break;
-        // }
-    // }
-
-    // fclose(rglFile);
+    printf("[READ] Layout data loaded successfully!\n");
 }
 
 // Generate C code for gui layout
 static void GenerateLayoutCode(const char *fileName)
 {
-    #define RGL_TOOL_NAME           "tool_name"
+    #define RGL_TOOL_NAME           "rGuiLayout"
     #define RGL_TOOL_DESCRIPTION    "tool_name"
     #define RGL_TOOL_AUTHOR         "tool_name"
-    #define RGL_TOOL_YEAR           "tool_name"
+    #define RGL_TOOL_YEAR           "2018"
     
     FILE *ftool = fopen(fileName, "wt");
     
     fprintf(ftool, "/*******************************************************************************************\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   $(tool_name) - $(tool_description)\n");
+    fprintf(ftool, "*   $(RGL_TOOL_NAME) - $(RGL_TOOL_DESCRIPTION)\n");
     fprintf(ftool, "*\n");
     fprintf(ftool, "*   LICENSE: zlib/libpng\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   Copyright (c) $(year) $(author)\n");
+    fprintf(ftool, "*   Copyright (c) $(RGL_TOOL_YEAR) $(RGL_TOOL_AUTHOR)\n");
     fprintf(ftool, "*\n");
     fprintf(ftool, "**********************************************************************************************/\n\n");
     fprintf(ftool, "#include \"raylib.h\"\n\n");
@@ -1109,27 +1072,60 @@ static void GenerateLayoutCode(const char *fileName)
         {
             // Bools
             case TOGGLE: 
-            case CHECKBOX: fprintf(ftool, "    bool %s%03i = false;\n", controlTypeNameShort[layout[i].type], i); break;
+            case CHECKBOX: 
+            {
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    bool %s%03i = false;\n", controlTypeNameShort[layout[i].type], i);
+            }
+            break;
+            
+            case COMBOBOX:
+            case LISTVIEW:
+            case TOGGLEGROUP:
+            {
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    int %sCount%03i = 3;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    int %sActive%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    const char *%sList%03i[3] = { \"ONE\", \"TWO\", \"THREE\" };\n", controlTypeNameShort[layout[i].type], i);
+            }
+            break;
             
             // Floats
             case SLIDER: 
             case SLIDERBAR: 
             case PROGRESSBAR:
             {
-                fprintf(ftool, "    float %svalue%03i = 50.0f;\n", controlTypeNameShort[layout[i].type], i);
-                fprintf(ftool, "    float %sminValue%03i = 0.0f;\n", controlTypeNameShort[layout[i].type], i);
-                fprintf(ftool, "    float %smaxValue%03i = 100.0f;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    float %sValue%03i = 50.0f;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    float %sMinValue%03i = 0.0f;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    float %sMaxValue%03i = 100.0f;\n", controlTypeNameShort[layout[i].type], i);
             }            
             break;
+            
             // Ints
             case SPINNER:
             {
-                fprintf(ftool, "    int %svalue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
-                fprintf(ftool, "    int %sminValue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
-                fprintf(ftool, "    int %smaxValue%03i = 100;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    int %sValue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    int %sMinValue%03i = 0;\n", controlTypeNameShort[layout[i].type], i);
+                fprintf(ftool, "    int %sMaxValue%03i = 100;\n", controlTypeNameShort[layout[i].type], i);
             }     
-            break; 
-            case COLORPICKER: fprintf(ftool, "    Color %scolor%03i;\n", controlTypeNameShort[layout[i].type], i);
+            break;
+            
+            // Colors
+            case COLORPICKER:
+            {
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    Color %sColor%03i;\n", controlTypeNameShort[layout[i].type], i);
+            }
+            break;
+            
+            case TEXTBOX:
+            {
+                fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
+                fprintf(ftool, "    char %s%03i[32] = \"%s\";\n", controlTypeNameShort[layout[i].type], i, layout[i].text);        
+                fprintf(ftool, "    int %sSize%03i = 32;\n", controlTypeNameShort[layout[i].type], i);        
+            }
             default: break;
         }
     }
@@ -1141,10 +1137,10 @@ static void GenerateLayoutCode(const char *fileName)
     
     for (int i = 0; i < controlsCounter; i++)
     {
-        fprintf(ftool, "        (Rectangle){ %i, %i, %i, %i }", layout[i].rec.x, layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
+        fprintf(ftool, "        (Rectangle){ %i, %i, %i, %i }", (layout[i].rec.x + layout[i].ap->x), (layout[i].rec.y + layout[i].ap->y), layout[i].rec.width, layout[i].rec.height);
         
-        if (i == controlsCounter - 1) fprintf(ftool, "  // %s %03i\n    };\n\n", controlTypeName[layout[i].type], i);
-        else fprintf(ftool, ",  // %s %03i\n", controlTypeName[layout[i].type], i);
+        if (i == controlsCounter - 1) fprintf(ftool, "\t\t// %s %03i\n    };\n\n", controlTypeName[layout[i].type], i);
+        else fprintf(ftool, ",\t\t// %s %03i\n", controlTypeName[layout[i].type], i);
     }
 
     fprintf(ftool, "    SetTargetFPS(60);\n");
@@ -1166,20 +1162,20 @@ static void GenerateLayoutCode(const char *fileName)
     {
         switch (layout[i].type)
         {
-            case LABEL: fprintf(ftool, "            GuiLabel(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
-            case BUTTON: fprintf(ftool, "            if (GuiButton(layoutRecs[%i], \"%s\")) Button%03i(); \n\n", i, layout[i].text, i); break;
-            case IMAGEBUTTON: fprintf(ftool, "            if (GuiImageButtonEx(layoutRecs[%i], texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, \"%s\")) ImageButton%03i(); \n\n", i, layout[i].text, i); break;
-            
-            case TOGGLE: fprintf(ftool, "            %s%03i = GuiToggleButton(layoutRecs[%i], \"%s\", %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, layout[i].text, controlTypeNameShort[layout[i].type], i); break;
-            // case TOGGLEGROUP: GuiToggleGroup(layout[i].rec, 3, list, 1); break;
-            case SLIDER: fprintf(ftool, "            %svalue%03i = GuiSlider(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
-            case SLIDERBAR: fprintf(ftool, "            %svalue%03i = GuiSliderBar(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
-            case PROGRESSBAR: fprintf(ftool, "            %svalue%03i = GuiProgressBar(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
-            case SPINNER: fprintf(ftool, "            %svalue%03i = GuiSpinner(layoutRecs[%i], %svalue%03i, %sminValue%03i, %smaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
-            // case COMBOBOX: GuiComboBox(layout[i].rec, 3, list, 1); break;
-            case CHECKBOX: fprintf(ftool, "            %s%03i = GuiCheckBox(layoutRecs[%i], %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
-            // case TEXTBOX: GuiTextBox(layout[i].rec, \"test text\"); break;
-            case COLORPICKER: fprintf(ftool, "            %scolor%03i = GuiColorPicker(layoutRecs[%i], %scolor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
+            case LABEL: fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
+            case BUTTON: fprintf(ftool, "\t\t\tif (GuiButton(layoutRecs[%i], \"%s\")) Button%03i(); \n\n", i, layout[i].text, i); break;
+            case IMAGEBUTTON: fprintf(ftool, "\t\t\tif (GuiImageButtonEx(layoutRecs[%i], texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, \"%s\")) ImageButton%03i(); \n\n", i, layout[i].text, i); break;
+            case TOGGLE: fprintf(ftool, "\t\t\t%s%03i = GuiToggleButton(layoutRecs[%i], \"%s\", %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, layout[i].text, controlTypeNameShort[layout[i].type], i); break;
+            case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive%03i = GuiToggleGroup(layoutRecs[%i], %sList%03i, %sCount%03i, %sActive%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case SLIDER: fprintf(ftool, "\t\t\t%sValue%03i = GuiSlider(layoutRecs[%i], %sValue%03i, %sMinValue%03i, %sMaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue%03i = GuiSliderBar(layoutRecs[%i], %sValue%03i, %sMinValue%03i, %sMaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue%03i = GuiProgressBar(layoutRecs[%i], %sValue%03i, %sMinValue%03i, %sMaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case SPINNER: fprintf(ftool, "\t\t\t%sValue%03i = GuiSpinner(layoutRecs[%i], %sValue%03i, %sMinValue%03i, %sMaxValue%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case COMBOBOX: fprintf(ftool, "\t\t\t%sActive%03i = GuiComboBox(layoutRecs[%i],  %sList%03i, %sCount%03i, %sActive%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case CHECKBOX: fprintf(ftool, "\t\t\t%s%03i = GuiCheckBox(layoutRecs[%i], %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
+            case LISTVIEW: fprintf(ftool, "\t\t\t%sActive%03i = GuiListView(layoutRecs[%i], %sList%03i, %sCount%03i, %sActive%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s%03i, %sSize%03i);\n\n", i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case COLORPICKER: fprintf(ftool, "\t\t\t%sColor%03i = GuiColorPicker(layoutRecs[%i], %sColor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
             
             default: break;
         }
