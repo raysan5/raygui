@@ -1133,8 +1133,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int
 {
     for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count - style[TOGGLEGROUP_PADDING]*(count - 1), bounds.height }, text[i], true);
-        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, bounds.width/count - style[TOGGLEGROUP_PADDING]*(count - 1), bounds.height }, text[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], false) == true) active = i;
     }
 
     return active;
@@ -2484,13 +2484,13 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 (signature[2] == 'S') &&
                 (signature[3] == ' '))
             {
-                while (!feof(rgsFile))
+                for (int i = 0; i < numProperties; i++)
                 {
                     fread(&id, 1, sizeof(short), rgsFile);
                     fread(&value, 1, sizeof(int), rgsFile);
                     if (id < NUM_PROPERTIES) style[id] = value;
                     counter++;
-                }   
+                }
             }
             else TraceLog(LOG_WARNING, "[raygui] Invalid style properties file");
             
