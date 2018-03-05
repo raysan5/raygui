@@ -536,7 +536,7 @@ int main(int argc, char *argv[])
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
-            toggleValue = GuiToggleGroup((Rectangle){ guiPosX + 98, guiPosY + 54, 65, 30 }, toggleGuiText, 4, toggleValue);
+            toggleValue = GuiToggleGroup((Rectangle){ guiPosX + 98, guiPosY + 54, 263, 30 }, toggleGuiText, 4, toggleValue);
             
             sliderValue = GuiSlider(bounds[SLIDER], sliderValue, 0, 100);
             
