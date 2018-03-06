@@ -376,6 +376,15 @@ int main()
 
                 if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
                 else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                
+                int offsetX = layout[selectedControl].rec.width%GRID_LINE_SPACING;
+                int offsetY = layout[selectedControl].rec.height%GRID_LINE_SPACING;
+                
+                if (offsetX >= GRID_LINE_SPACING/2) layout[selectedControl].rec.width += (GRID_LINE_SPACING - offsetX);
+                else layout[selectedControl].rec.width -= offsetX;
+                
+                if (offsetY >= GRID_LINE_SPACING/2) layout[selectedControl].rec.height += (GRID_LINE_SPACING - offsetY);
+                else layout[selectedControl].rec.height -= offsetY;
             }
             else
             {
@@ -1030,11 +1039,11 @@ static void GenerateLayoutCode(const char *fileName)
     
     fprintf(ftool, "/*******************************************************************************************\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   $(RGL_TOOL_NAME) - $(RGL_TOOL_DESCRIPTION)\n");
+    fprintf(ftool, "*   %s - %s\n", RGL_TOOL_NAME, RGL_TOOL_DESCRIPTION);
     fprintf(ftool, "*\n");
     fprintf(ftool, "*   LICENSE: zlib/libpng\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   Copyright (c) $(RGL_TOOL_YEAR) $(RGL_TOOL_AUTHOR)\n");
+    fprintf(ftool, "*   Copyright (c) %s %s\n", RGL_TOOL_YEAR, RGL_TOOL_AUTHOR);
     fprintf(ftool, "*\n");
     fprintf(ftool, "**********************************************************************************************/\n\n");
     fprintf(ftool, "#include \"raylib.h\"\n\n");
