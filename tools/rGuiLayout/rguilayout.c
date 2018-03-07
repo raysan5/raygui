@@ -1142,6 +1142,7 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "\n");
     
     // Define controls rectangles
+    fprintf(ftool, "    // Define controls rectangles\n");
     fprintf(ftool, "    Rectangle layoutRecs[%i] = {\n", controlsCounter);
     
     for (int i = 0; i < controlsCounter; i++)
@@ -1166,6 +1167,8 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "        BeginDrawing();\n\n");
     fprintf(ftool, "            ClearBackground(GuiBackgroundColor());\n\n");
 
+    fprintf(ftool, "\t\t\t// Draw all controls\n");
+    
     // Draw all controls
     for (int i = 0; i < controlsCounter; i++)
     {
