@@ -930,10 +930,8 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
 
-    //if (bounds.width < textWidth) bounds.width = textWidth;
-    //if (bounds.height < textHeight) bounds.height = textHeight;
-    bounds.width = textWidth;
-    bounds.height = textHeight;
+    if (bounds.width < textWidth) bounds.width = textWidth;
+    if (bounds.height < textHeight) bounds.height = textHeight;
 
     // Update control
     //--------------------------------------------------------------------
