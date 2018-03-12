@@ -495,17 +495,16 @@ int main(int argc, char *argv[])
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiBackgroundColor());
             
             // Draw info bar top
-            DrawRectangle(0, 0, GetScreenWidth(), 24, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
-            DrawRectangle(0, 24, GetScreenWidth(), 1, GuiLinesColor());
-            DrawText("CHOOSE CONTROL", 35, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
-            DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
-            DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+            GuiStatusBar((Rectangle){ 0, 0, GetScreenWidth(), 24 }, "CHOOSE CONTROL     >      CHOOSE PROPERTY STYLE      >                            STYLE VIEWER", 35);
+            // DrawRectangle(0, 0, GetScreenWidth(), 24, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+            // DrawRectangle(0, 24, GetScreenWidth(), 1, GuiLinesColor());
+            // DrawText("CHOOSE CONTROL", 35, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+            // DrawText(">      CHOOSE PROPERTY STYLE", 152, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+            // DrawText(">                            STYLE VIEWER", guiPosX + 10, 8, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
             
             // Draw status bar bottom
-            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
-            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 1, GuiLinesColor());
-            DrawText("rGuiStyler powered by raylib (github.com/raysan5/raylib) and raygui (github.com/raysan5/raygui)", 20, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
- 
+            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, GetScreenWidth(), 24 }, "rGuiStyler powered by raylib (github.com/raysan5/raylib) and raygui (github.com/raysan5/raygui)", 10);
+
             // Draw Gui controls
             currentSelectedControl = GuiListView(bounds[LISTVIEW], guiControlText, NUM_CONTROLS, currentSelectedControl);
             
