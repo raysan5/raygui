@@ -348,6 +348,7 @@ RAYGUIDEF Color GuiLinesColor(void);                                    // Get l
 RAYGUIDEF Color GuiTextColor(void);                                     // Get text color for normal state
 
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
+RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
@@ -857,6 +858,43 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
     }
     //--------------------------------------------------------------------
 }
+
+// Status Bar control
+RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
+{
+    #define STATUSBAR_THICK 1
+    
+    GuiControlState state = guiState;
+
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
+
+    if (bounds.width < textWidth + offsetX) bounds.width = textWidth + offsetX;
+    if (bounds.height < textHeight) bounds.height = textHeight;
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL: 
+        case FOCUSED:
+        case PRESSED:
+        {
+            DrawRectangleRec(bounds, GuiLinesColor());
+            DrawRectangleRec((Rectangle){ bounds.x + STATUSBAR_THICK, bounds.y + STATUSBAR_THICK, bounds.width - STATUSBAR_THICK*2, bounds.height - STATUSBAR_THICK*2 }, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawText(text, bounds.x + offsetX, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));         
+        } break;   
+        case DISABLED:
+        {
+            DrawRectangleRec(bounds, GuiLinesColor());
+            DrawRectangleRec((Rectangle){ bounds.x + STATUSBAR_THICK, bounds.y + STATUSBAR_THICK, bounds.width - STATUSBAR_THICK*2, bounds.height - STATUSBAR_THICK*2 }, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
+            DrawText(text, bounds.x + offsetX, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));         
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+}
+
 
 // Button control, returns true when clicked
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
