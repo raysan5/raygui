@@ -819,15 +819,11 @@ int main()
             DrawText(FormatText("mouse: (%i, %i)", mouseX, mouseY), 700, screenHeight - 40, 10, RED);
             */
             // Draw status bar bottom with debug information
-            DrawRectangle(0, GetScreenHeight() - 24, GetScreenWidth(), 24, LIGHTGRAY);
-            GuiLabel((Rectangle){20, GetScreenHeight() - 16, 100, 20}, FormatText("Controls count: %i", controlsCounter));
-            GuiLabel((Rectangle){125, GetScreenHeight() - 16, 100, 20}, FormatText("|  Mouse: (%i, %i)", mouseX, mouseY));
-            GuiLabel((Rectangle){230, GetScreenHeight() - 16, 100, 20}, FormatText("|  Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height));
-            GuiLabel((Rectangle){590, GetScreenHeight() - 16, 100, 20}, "|");
-            if (snapMode) DrawText("SNAP ON", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], RED);
-            else DrawText("SNAP OFF", 600, GetScreenHeight() - 16, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL]));
-            if (anchorMode )GuiLabel((Rectangle){20, GetScreenHeight() - 34, 100, 20}, FormatText("Anchor Mode ON   | Anchors count: %i  |  Selected Anchor: %i  |  Linked Anchor: %i", anchorCounter, selectedAnchor, linkedAnchor));
-            else GuiLabel((Rectangle){20, GetScreenHeight() - 34, 100, 20}, FormatText("Anchor Mode OFF   | Anchors count: %i  |  Selected Anchor: %i  |  Linked Anchor: %i", anchorCounter, selectedAnchor, linkedAnchor));
+            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
+            GuiStatusBar((Rectangle){ 125, GetScreenHeight() - 24, 125, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
+            GuiStatusBar((Rectangle){ 350, GetScreenHeight() - 24, GetScreenWidth() - 350, 24}, FormatText("Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
+            if (snapMode) GuiStatusBar((Rectangle){ 250, GetScreenHeight() - 24, 100, 24}, "SNAP ON", 10);
+            else GuiStatusBar((Rectangle){ 250, GetScreenHeight() - 24, 100, 24}, "SNAP OFF", 10);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
