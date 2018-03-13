@@ -1068,6 +1068,24 @@ static void GenerateLayoutCode(const char *fileName)
     fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"rFXGen\");\n\n");
     
     fprintf(ftool, "    // Needed variables\n");
+    fprintf(ftool, "    // Anchor points\n");
+    fprintf(ftool, "    Vector2 %s%02i = { 0, 0 };\n", "anchor", 0);
+
+    for(int i = 1; i < MAX_ANCHOR_POINTS; i++)
+    {
+        if (anchors[i].x != 0 && anchors[i].y != 0)
+        {
+            for (int j = 0; j < controlsCounter; j++)
+            {
+                if(layout[j].ap->id == anchors[i].id)
+                {
+                    fprintf(ftool, "    Vector2 %s%02i = { %i, %i };\n", "anchor", i, anchors[i].x, anchors[i].y);
+                    break;
+                }
+            }
+            
+        }
+    }
     // Define texture for IMAGEBUTTON
     fprintf(ftool, "    Texture2D texture = LoadTexture(\"icons.png\");\n\n");
     // Define controls variables
@@ -1143,7 +1161,7 @@ static void GenerateLayoutCode(const char *fileName)
     
     for (int i = 0; i < controlsCounter; i++)
     {
-        fprintf(ftool, "        (Rectangle){ %i, %i, %i, %i }", (layout[i].rec.x + layout[i].ap->x), (layout[i].rec.y + layout[i].ap->y), layout[i].rec.width, layout[i].rec.height);
+        fprintf(ftool, "        (Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }", "anchor", layout[i].ap->id, ".x", layout[i].rec.x, "anchor", layout[i].ap->id, ".y", layout[i].rec.y, layout[i].rec.width, layout[i].rec.height);
         
         if (i == controlsCounter - 1) fprintf(ftool, "\t\t// %s %03i\n    };\n\n", controlTypeName[layout[i].type], i);
         else fprintf(ftool, ",\t\t// %s %03i\n", controlTypeName[layout[i].type], i);
