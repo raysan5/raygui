@@ -73,8 +73,6 @@ int main(int argc, char *argv[0])
 
             ClearBackground(RAYWHITE);
             
-            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(LIGHTGRAY, 0.5f));
-          
             GuiGroupBox(panel, "Image export options");
             //Draw file format options
             GuiLabel((Rectangle){ guiPosX, guiPosY + 20, 0, 0 }, FormatText("File format"));

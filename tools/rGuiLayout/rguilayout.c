@@ -52,6 +52,7 @@ typedef enum {
     COMBOBOX, 
     CHECKBOX, 
     TEXTBOX,
+    GROUPBOX,
     LISTVIEW,
     COLORPICKER
 } GuiControlType;
@@ -87,9 +88,9 @@ static AnchorPoint anchors[MAX_ANCHOR_POINTS];
 static int controlsCounter = 0;
 static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
-const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "LISTVIEW", "COLORPICKER" };
-const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "ListView", "ColorPicker" };
-const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "lstvw", "clrpckr" };
+const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "LISTVIEW", "COLORPICKER" };
+const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "ListView", "ColorPicker" };
+const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "lstvw", "clrpckr" };
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -141,7 +142,7 @@ int main()
     bool lockMode = false;
     
     // Used to draw the preview of selectedControl
-    Rectangle defaultRec[14] = {
+    Rectangle defaultRec[15] = {
         (Rectangle){ 0, 0, 80, 20},             // LABEL
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
@@ -154,6 +155,7 @@ int main()
         (Rectangle){ 0, 0, 150, 30},            // COMBOBOX
         (Rectangle){ 0, 0, 20, 20},             // CHECKBOX
         (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
+        (Rectangle){ 0, 0, 120, 40},            // GroupBox    
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -170,7 +172,7 @@ int main()
 
     const char *list[3] = { "ONE", "TWO", "THREE" };
  
-    const char *guiControls[14] = { 
+    const char *guiControls[15] = { 
         "LABEL", 
         "BUTTON", 
         "IMAGEBUTTON",
@@ -183,6 +185,7 @@ int main()
         "COMBOBOX", 
         "CHECKBOX", 
         "TEXTBOX",
+        "GROUPBOX",
         "LISTVIEW",
         "COLORPICKER"
     };
@@ -512,7 +515,7 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
-           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON)))
+           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
@@ -723,6 +726,7 @@ int main()
                     case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
                     case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
+                    case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
                     case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
                     default: break;
@@ -746,6 +750,7 @@ int main()
                     case COMBOBOX: GuiComboBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, false); break;
                     case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
+                    case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
                     default: break;
@@ -802,6 +807,7 @@ int main()
                {
                     if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout[selectedControl].type == IMAGEBUTTON) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == GROUPBOX) DrawText("|", layout[selectedControl].rec.x + 15 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
@@ -1142,7 +1148,7 @@ static void GenerateLayoutCode(const char *fileName)
                 fprintf(ftool, "    Color %sColor%03i;\n", controlTypeNameShort[layout[i].type], i);
             }
             break;
-            
+
             case TEXTBOX:
             {
                 fprintf(ftool, "    // %s%03i variables\n", controlTypeName[layout[i].type], i);
@@ -1201,6 +1207,7 @@ static void GenerateLayoutCode(const char *fileName)
             case CHECKBOX: fprintf(ftool, "\t\t\t%s%03i = GuiCheckBox(layoutRecs[%i], %s%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
             case LISTVIEW: fprintf(ftool, "\t\t\t%sActive%03i = GuiListView(layoutRecs[%i], %sList%03i, %sCount%03i, %sActive%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
             case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s%03i, %sSize%03i);\n\n", i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
+            case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
             case COLORPICKER: fprintf(ftool, "\t\t\t%sColor%03i = GuiColorPicker(layoutRecs[%i], %sColor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
             
             default: break;
