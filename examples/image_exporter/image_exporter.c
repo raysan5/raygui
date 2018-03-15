@@ -32,13 +32,13 @@ int main(int argc, char *argv[0])
     int guiHeight = 30;
     int guiWidth = 150;
     
-    Rectangle panel = { SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 - 110, 260, 220 };
+    Rectangle panel = { SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 - 110, 260, 230 };
     
     int guiPosX = panel.x + 10;
-    int guiPosY = panel.y + 10;
+    int guiPosY = panel.y + 20;
    
     
-    int formatNum = 4;
+    int formatNum = 3;
     int formatActive = 0;
     int pixelNum = 8;
     int pixelActive = 0;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[0])
     bool toggleGreen = true;
     bool toggleBlue = true;
     bool toggleAlpha = true;
-    const char *formatText[4] = { "PNG", "RAW", "CODE (.c)" ,"CODE (.h)" };
+    const char *formatText[3] = { "PNG", "RAW", "CODE (.c/.h)"};
     const char *formatPixel[8] = { "R8G8B8A8", "R8", "R5G5B5A1" ,"R5G6B5", "R8A8", "R16G16B16", "R4G4B4A4", "R2D2C3P0" };
     char fileNameText[32] = "Untitled"; 
     //const char *formatChannels[4] = { "R", "G", "B" ,"A" };
@@ -73,7 +73,9 @@ int main(int argc, char *argv[0])
 
             ClearBackground(RAYWHITE);
             
-            GuiGroupBox(panel, "Image export options");
+            GuiDisable();
+            GuiWindowBox(panel, "Image export options");
+            GuiEnable();
             //Draw file format options
             GuiLabel((Rectangle){ guiPosX, guiPosY + 20, 0, 0 }, FormatText("File format"));
             formatActive = GuiComboBox((Rectangle){ guiPosX + 90, guiPosY + 10, guiWidth, guiHeight },formatText,formatNum,formatActive);
@@ -97,7 +99,7 @@ int main(int argc, char *argv[0])
             //Draw export image button
             if(GuiButton((Rectangle){ guiPosX, guiPosY + 170, guiWidth + 90, guiHeight }, "Export Image")){} // Call function
             
-            dropdownTest = GuiDropdownBox((Rectangle){ 10, 10, 200, 20 }, formatText, 4, dropdownTest);
+            dropdownTest = GuiDropdownBox((Rectangle){ 10, 10, 200, 20 }, formatText, formatNum, dropdownTest);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
