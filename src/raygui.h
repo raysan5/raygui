@@ -349,6 +349,7 @@ RAYGUIDEF Color GuiTextColor(void);                                     // Get t
 
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
+RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                                        // Window Box control, shows a window that can be closed
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
@@ -895,6 +896,76 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
     //--------------------------------------------------------------------
 }
 
+// Window Box control
+RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
+{
+    bool clicked = false;
+    GuiControlState state = guiState;
+
+    int offsetX = 10;
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
+
+    if (bounds.width < textWidth + offsetX) bounds.width = textWidth + offsetX;
+    if (bounds.height < textHeight) bounds.height = textHeight;
+    Rectangle statusBar = { bounds.x, bounds.y, bounds.width, 24 };
+    if (bounds.height < 48) bounds.height = 48;
+    
+    // Update control
+    //--------------------------------------------------------------------
+    
+    Vector2 mousePoint = GetMousePosition();
+
+    // Check button state
+    if (CheckCollisionPointRec(mousePoint, (Rectangle){statusBar.x + statusBar.width - 18, statusBar.y, 18, statusBar.height }))
+    {
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+        else state = FOCUSED;
+    }
+    
+    //--------------------------------------------------------------------
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            GuiStatusBar(statusBar, text, offsetX);
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+        } break;   
+        case FOCUSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            GuiStatusBar(statusBar, text, offsetX);
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));            
+        } break;   
+        case PRESSED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            GuiStatusBar(statusBar, text, offsetX); 
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));            
+        } break;   
+        case DISABLED:
+        {
+            DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
+            DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            GuiStatusBar(statusBar, text, offsetX);
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));   
+        } break;
+        default: break;
+    }
+    
+    GuiLabelButton((Rectangle){statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, 0, 0 }, "x");
+    //--------------------------------------------------------------------
+    return clicked;
+}
+
 
 // Button control, returns true when clicked
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
@@ -1430,7 +1501,7 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 {
     #define GROUPBOX_LINE_THICK    1
     #define GROUPBOX_TEXT_PADDING 10
-    #define GROUPBOX_PADDING 2
+    #define GROUPBOX_PADDING       2
     
     GuiControlState state = guiState;
     
