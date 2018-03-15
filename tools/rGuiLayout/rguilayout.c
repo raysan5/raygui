@@ -53,6 +53,7 @@ typedef enum {
     CHECKBOX, 
     TEXTBOX,
     GROUPBOX,
+    WINDOWBOX,
     LISTVIEW,
     COLORPICKER
 } GuiControlType;
@@ -88,9 +89,9 @@ static AnchorPoint anchors[MAX_ANCHOR_POINTS];
 static int controlsCounter = 0;
 static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
-const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "LISTVIEW", "COLORPICKER" };
-const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "ListView", "ColorPicker" };
-const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "lstvw", "clrpckr" };
+const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "WINDOWBOX", "LISTVIEW", "COLORPICKER" };
+const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "WindowBox", "ListView", "ColorPicker" };
+const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "wdwbox", "lstvw", "clrpckr" };
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -140,9 +141,10 @@ int main()
     int linkedAnchor = -1;
 
     bool lockMode = false;
+    bool helpMode = false;
     
     // Used to draw the preview of selectedControl
-    Rectangle defaultRec[15] = {
+    Rectangle defaultRec[16] = {
         (Rectangle){ 0, 0, 80, 20},             // LABEL
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
@@ -155,7 +157,8 @@ int main()
         (Rectangle){ 0, 0, 150, 30},            // COMBOBOX
         (Rectangle){ 0, 0, 20, 20},             // CHECKBOX
         (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
-        (Rectangle){ 0, 0, 120, 40},            // GroupBox    
+        (Rectangle){ 0, 0, 120, 40},            // GROUPBOX    
+        (Rectangle){ 0, 0, 120, 48},            // WINDOWBOX    
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -172,7 +175,7 @@ int main()
 
     const char *list[3] = { "ONE", "TWO", "THREE" };
  
-    const char *guiControls[15] = { 
+    const char *guiControls[16] = { 
         "LABEL", 
         "BUTTON", 
         "IMAGEBUTTON",
@@ -186,6 +189,7 @@ int main()
         "CHECKBOX", 
         "TEXTBOX",
         "GROUPBOX",
+        "WINDOWBOX",
         "LISTVIEW",
         "COLORPICKER"
     };
@@ -250,7 +254,7 @@ int main()
         else if (CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = true;
         
         // Toggle on the controlListView
-        if (IsKeyPressed(KEY_TAB))
+        /*if (IsKeyPressed(KEY_TAB))
         {
             startPosXListViewControls = listViewControls.x;
             deltaPosXListViewControls = 0 - startPosXListViewControls;
@@ -302,7 +306,7 @@ int main()
             if (counterListViewControlsCounter >= 60) counterListViewControlsCounter = 60;
             listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
         }
-        
+        */
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode)
         {
             // Add new control (button)
@@ -319,7 +323,12 @@ int main()
         for (int i = 0; i < controlsCounter; i++)
         {
             if (controlDrag || lockMode) break;
-            if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height })) 
+            if ((layout[i].type == WINDOWBOX) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, 24 })))
+            {
+                selectedControl = i;
+                break;
+            }
+            else if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }) && layout[i].type != WINDOWBOX) 
             {
                 selectedControl = i;
                 break;
@@ -374,11 +383,25 @@ int main()
             
             if (snapMode)
             {
-                if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
-                else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
+                if (IsKeyDown(KEY_LEFT_ALT))
+                {
+                    // Control modifier of position
+                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x += GRID_LINE_SPACING;
+                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x -= GRID_LINE_SPACING;
+                    
+                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y -= GRID_LINE_SPACING;
+                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y += GRID_LINE_SPACING;
+                }
+                else 
+                {
+                    // Control modifier of width and height
+                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
+                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
 
-                if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
-                else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
+                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                }
+                
                 
                 int offsetX = layout[selectedControl].rec.width%GRID_LINE_SPACING;
                 int offsetY = layout[selectedControl].rec.height%GRID_LINE_SPACING;
@@ -389,6 +412,7 @@ int main()
                 if (offsetY >= GRID_LINE_SPACING/2) layout[selectedControl].rec.height += (GRID_LINE_SPACING - offsetY);
                 else layout[selectedControl].rec.height -= offsetY;
             }
+            
             else
             {
                 if (IsKeyDown(KEY_LEFT_CONTROL))
@@ -399,6 +423,15 @@ int main()
 
                     if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height--;
                     else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height++;
+                }
+                else if (IsKeyDown(KEY_LEFT_ALT))
+                {
+                    // Control modifier of position 
+                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x ++;
+                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x --;
+                    
+                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y --;
+                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y ++;
                 }
                 else
                 {
@@ -515,11 +548,13 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
-           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX)))
+           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX) || (layout[selectedControl].type == WINDOWBOX)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
         }
+        
+        if (IsKeyPressed(KEY_H)) helpMode = !helpMode;
         
         // Selected control lock logic
         if (lockMode)
@@ -644,20 +679,30 @@ int main()
         if (selectedControl != -1)
         {
             // Sets the minimum limit of the width
-            if (layout[selectedControl].type == LABEL || layout[selectedControl].type == BUTTON || layout[selectedControl].type == TOGGLE)
+            if (layout[selectedControl].type == LABEL || layout[selectedControl].type == BUTTON || layout[selectedControl].type == TOGGLE || layout[selectedControl].type == TEXTBOX)
             {
                 if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]);
             }
-            if (layout[selectedControl].type == IMAGEBUTTON)
+            else if (layout[selectedControl].type == IMAGEBUTTON)
             {
                 if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3 + 5;
             }
+            else if (layout[selectedControl].type == WINDOWBOX || layout[selectedControl].type == GROUPBOX) 
+            {
+                if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]) + 31) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 31;
+            }
             else if (layout[selectedControl].rec.width <= 20) layout[selectedControl].rec.width = 20;
+            
+            
 
             // Sets the minimum limit of the height
             if (layout[selectedControl].type == IMAGEBUTTON) 
             { 
                 if (layout[selectedControl].rec.height <= texture.height/6 + 5) layout[selectedControl].rec.height = texture.height/6 + 5;
+            }
+            else if (layout[selectedControl].type == WINDOWBOX) 
+            { 
+                if (layout[selectedControl].rec.height < 48) layout[selectedControl].rec.height = 48;
             }
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
@@ -727,6 +772,7 @@ int main()
                     case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
                     case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
                     case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
+                    case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
                     case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
                     default: break;
@@ -751,6 +797,7 @@ int main()
                     case CHECKBOX: GuiCheckBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, false); break;
                     case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
                     case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                    case WINDOWBOX: GuiWindowBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
                     default: break;
@@ -762,12 +809,13 @@ int main()
             }
             
             // Draw the list of controls
-            DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
+            /*DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
             selectedType = GuiListView(listViewControls, guiControls, 14, selectedType);
             
             // Draw the list of controlsCounter
             DrawRectangleRec(listViewControlsCounter, Fade(WHITE, 0.7f));
             GuiListView(listViewControlsCounter, guiControlsCounter, controlsCounter, selectedControl);
+            */
             
             // Draw the anchorPoints
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
@@ -808,12 +856,31 @@ int main()
                     if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout[selectedControl].type == IMAGEBUTTON) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout[selectedControl].type == GROUPBOX) DrawText("|", layout[selectedControl].rec.x + 15 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == WINDOWBOX) DrawText("|", layout[selectedControl].rec.x + 10 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
             
             if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
             
+            if (helpMode)
+            {
+                DrawRectangleRec((Rectangle){ 20, 20, 260, 270 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+                GuiGroupBox((Rectangle){ 20, 20, 260, 270 }, "Shortcuts");
+                GuiLabel((Rectangle){ 30, 30, 0, 0 }, "G - Show/hide grid");
+                GuiLabel((Rectangle){ 30, 50, 0, 0 }, "S - Toggle snap");
+                GuiLabel((Rectangle){ 30, 70, 0, 0 }, "A - Anchor mode");
+                GuiLabel((Rectangle){ 30, 90, 0, 0 }, "Space - Lock/unlock control");
+                GuiLabel((Rectangle){ 30, 110, 0, 0 }, "T - Enter text mode(if possible)");
+                GuiLabel((Rectangle){ 30, 130, 0, 0 }, "Enter - Exit text mode");
+                GuiLabel((Rectangle){ 30, 150, 0, 0 }, "Delete - Delete a control");
+                GuiLabel((Rectangle){ 30, 170, 0, 0 }, "Arrows - Modify width/height");
+                GuiLabel((Rectangle){ 30, 190, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
+                GuiLabel((Rectangle){ 30, 210, 0, 0 }, "L. Alt + Arrows - Modify position");
+                GuiLabel((Rectangle){ 30, 230, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
+                GuiLabel((Rectangle){ 30, 250, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
+                GuiLabel((Rectangle){ 30, 270, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
+            }
             // Debug information
             /*DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
             DrawText(FormatText("Selected type: %s", controlTypeName[selectedType]), 300, screenHeight - 20, 20, BLUE);
@@ -826,10 +893,11 @@ int main()
             */
             // Draw status bar bottom with debug information
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
-            GuiStatusBar((Rectangle){ 125, GetScreenHeight() - 24, 125, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
-            GuiStatusBar((Rectangle){ 350, GetScreenHeight() - 24, GetScreenWidth() - 350, 24}, FormatText("Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
-            if (snapMode) GuiStatusBar((Rectangle){ 250, GetScreenHeight() - 24, 100, 24}, "SNAP ON", 10);
-            else GuiStatusBar((Rectangle){ 250, GetScreenHeight() - 24, 100, 24}, "SNAP OFF", 10);
+            GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 126, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
+            if (snapMode) GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP ON", 10);
+            else GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP OFF", 10);
+            GuiStatusBar((Rectangle){ 329, GetScreenHeight() - 24, 80, 24}, "H - Help", 10);
+            GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, FormatText("Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -1208,6 +1276,7 @@ static void GenerateLayoutCode(const char *fileName)
             case LISTVIEW: fprintf(ftool, "\t\t\t%sActive%03i = GuiListView(layoutRecs[%i], %sList%03i, %sCount%03i, %sActive%03i); \n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
             case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s%03i, %sSize%03i);\n\n", i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
             case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
+            case WINDOWBOX: fprintf(ftool, "\t\t\tGuiWindowBox(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
             case COLORPICKER: fprintf(ftool, "\t\t\t%sColor%03i = GuiColorPicker(layoutRecs[%i], %sColor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
             
             default: break;
