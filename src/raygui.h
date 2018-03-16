@@ -887,7 +887,7 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
         } break;   
         case DISABLED:
         {
-            DrawRectangleRec(bounds, GuiLinesColor());
+            DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
             DrawRectangleRec((Rectangle){ bounds.x + STATUSBAR_THICK, bounds.y + STATUSBAR_THICK, bounds.width - STATUSBAR_THICK*2, bounds.height - STATUSBAR_THICK*2 }, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
             DrawText(text, bounds.x + offsetX, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));         
         } break;
@@ -1424,7 +1424,8 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
 // Dropdown Box control, returns selected item
 RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active)
 {
-    #define DROPDOWNBOX_PADDING 1
+    #define DROPDOWNBOX_PADDING                 1
+    #define DROPDOWNBOX_ARROW_RIGHT_PADDING    16
     
     GuiControlState state = guiState;
     bool dropActive = false;
@@ -1434,6 +1435,8 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
 
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
+    
+    int boundsHeight0 = bounds.height;
     
     // Update control
     //--------------------------------------------------------------------
@@ -1469,10 +1472,22 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     switch (state)
     {
         case NORMAL:
+        {
+            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+            
+            DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 10, bounds.y + boundsHeight0/2 - 2 }, GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+        } break;
         case FOCUSED:
         {
             if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
+            
+            DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 10, bounds.y + boundsHeight0/2 - 2 }, GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]));
         } break;
         case PRESSED:
         {
@@ -1485,10 +1500,17 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
                 GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height/(count + 1)*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height/(count + 1) - DROPDOWNBOX_PADDING }, text[i], false);
             }
             
+            DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 10, bounds.y + boundsHeight0/2 - 2 }, GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
         } break;
         case DISABLED:
         {
             GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], false);
+            
+            DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
+                         (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 10, bounds.y + boundsHeight0/2 - 2 }, GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
     }
