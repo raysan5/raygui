@@ -350,6 +350,7 @@ RAYGUIDEF Color GuiTextColor(void);                                     // Get t
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                                        // Window Box control, shows a window that can be closed
+RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
@@ -899,6 +900,8 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
 // Window Box control
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 {
+    #define WINDOWBOX_PADDING 2
+    
     bool clicked = false;
     GuiControlState state = guiState;
 
@@ -906,24 +909,24 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
 
-    if (bounds.width < textWidth + offsetX) bounds.width = textWidth + offsetX;
-    if (bounds.height < textHeight) bounds.height = textHeight;
+    if (bounds.width < textWidth + offsetX*2 + 16) bounds.width = textWidth + offsetX*2 + 16;
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, 24 };
     if (bounds.height < 48) bounds.height = 48;
     
     // Update control
     //--------------------------------------------------------------------
-    
-    Vector2 mousePoint = GetMousePosition();
-
-    // Check button state
-    if (CheckCollisionPointRec(mousePoint, (Rectangle){statusBar.x + statusBar.width - 18, statusBar.y, 18, statusBar.height }))
+    if (state != DISABLED)
     {
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
-        else state = FOCUSED;
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, (Rectangle){statusBar.x + statusBar.width - 18, statusBar.y, 18, statusBar.height }))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else state = FOCUSED;
+        }
     }
-    
     //--------------------------------------------------------------------
     
     // Draw control
@@ -935,21 +938,24 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
             DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
             GuiStatusBar(statusBar, text, offsetX);
-            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27 + WINDOWBOX_PADDING*2, statusBar.y + 1 + WINDOWBOX_PADDING, 25 - WINDOWBOX_PADDING*3, statusBar.height - 2 - WINDOWBOX_PADDING*2}, GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+            DrawText("x", statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
         } break;   
         case FOCUSED:
         {
             DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
             GuiStatusBar(statusBar, text, offsetX);
-            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));            
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27 + WINDOWBOX_PADDING*2, statusBar.y + 1 + WINDOWBOX_PADDING, 25 - WINDOWBOX_PADDING*3, statusBar.height - 2 - WINDOWBOX_PADDING*2}, GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));           
+            DrawText("x", statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]));
         } break;   
         case PRESSED:
         {
             DrawRectangleRec(bounds, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
             GuiStatusBar(statusBar, text, offsetX); 
-            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));            
+            DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27 + WINDOWBOX_PADDING*2, statusBar.y + 1 + WINDOWBOX_PADDING, 25 - WINDOWBOX_PADDING*3, statusBar.height - 2 - WINDOWBOX_PADDING*2}, GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));           
+            DrawText("x", statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
         } break;   
         case DISABLED:
         {
@@ -957,15 +963,50 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
             DrawRectangleRec((Rectangle){ bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height -2 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
             GuiStatusBar(statusBar, text, offsetX);
             DrawRectangleRec((Rectangle){statusBar.x + statusBar.width - 27, statusBar.y + 1, 25, statusBar.height - 2}, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));   
-        } break;
+            DrawText("x", statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));
+       } break;
         default: break;
     }
     
-    GuiLabelButton((Rectangle){statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - style[DEFAULT_TEXT_SIZE]/2, 0, 0 }, "x");
     //--------------------------------------------------------------------
     return clicked;
 }
 
+// Message Box control
+RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message)
+{
+    #define BUTTON_HEIGHT 26
+    #define BUTTON_PADDING 10
+    #define STATUSBAR_BUTTON 16
+    #define STATUSBAR_HEIGHT 24
+    GuiControlState state = guiState;
+    bool clicked = false;
+
+    Vector2 textSize = MeasureTextEx(GetDefaultFont(), windowTitle, style[DEFAULT_TEXT_SIZE], 1);
+    int offsetX = 20;
+    /*int textWidth = MeasureText(windowTitle, style[DEFAULT_TEXT_SIZE]);
+    int textHeight = style[DEFAULT_TEXT_SIZE];
+    */
+
+    if (bounds.width < textSize.x + offsetX + STATUSBAR_BUTTON) bounds.width = textSize.x + offsetX + STATUSBAR_BUTTON;
+    
+    textSize = MeasureTextEx(GetDefaultFont(), message, style[DEFAULT_TEXT_SIZE], 1);
+    if (bounds.width < textSize.x + offsetX) bounds.width = textSize.x + offsetX;
+
+    if (bounds.height < (BUTTON_HEIGHT + BUTTON_PADDING*2 + STATUSBAR_HEIGHT + STATUSBAR_BUTTON + textSize.y)) bounds.height = (BUTTON_HEIGHT + BUTTON_PADDING*2 + STATUSBAR_HEIGHT + STATUSBAR_BUTTON + textSize.y);
+    
+    Rectangle buttonBounds = { bounds.x + BUTTON_PADDING, bounds.y + bounds.height - BUTTON_PADDING - BUTTON_HEIGHT, bounds.width - BUTTON_PADDING*2, BUTTON_HEIGHT };
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    clicked = GuiWindowBox(bounds, windowTitle);
+    GuiLabel((Rectangle){ bounds.x + bounds.width/2 - textSize.x/2, bounds.y + (STATUSBAR_HEIGHT - BUTTON_HEIGHT - BUTTON_PADDING)/2 + bounds.height/2 - textSize.y/2, 0, 0 }, message);
+    
+    clicked = GuiButton(buttonBounds, "OK");
+    //--------------------------------------------------------------------
+    
+    return clicked;
+}
 
 // Button control, returns true when clicked
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
@@ -1429,6 +1470,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     
     GuiControlState state = guiState;
     bool dropActive = false;
+    static bool clicked = false;
    
     int textWidth = MeasureText(text[active], style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
@@ -1444,7 +1486,13 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     {
         Vector2 mousePoint = GetMousePosition();
         
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePoint, bounds))
+        {
+            clicked = true;
+        }
+        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = false;
+        
+        if (clicked)
         {
             bounds.height *= (count + 1);
             dropActive = true;
@@ -1495,10 +1543,14 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
             if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
 
-            for(int i = 0; i < count; i++)
+            if (clicked)
             {
-                GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height/(count + 1)*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height/(count + 1) - DROPDOWNBOX_PADDING }, text[i], false);
+                for(int i = 0; i < count; i++)
+                {
+                    GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height/(count + 1)*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height/(count + 1) - DROPDOWNBOX_PADDING }, text[i], false);
+                }
             }
+            
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
@@ -1988,7 +2040,6 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
     if (bounds.width < textWidth) bounds.width = textWidth + GUILISTELEMENT_PADDING*2;
     if (bounds.height < textHeight) bounds.height = textHeight;
     
-    
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
@@ -2023,7 +2074,6 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
             }
             else
             {
-                //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[TOGGLE_BORDER_COLOR_NORMAL]));
                 DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_NORMAL]));
             }
         } break;
@@ -2041,7 +2091,6 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
         } break;
         case DISABLED:
         {
-            //DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LISTVIEW_TEXT_COLOR_DISABLED]));
         } break;
         default: break;
@@ -2051,13 +2100,11 @@ RAYGUIDEF bool GuiListElement(Rectangle bounds, const char *text, bool active)
     return active;
 }
 
-// List View control, returns selected list element index
-RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active) // int *startIndex)
+// List View control, returns selected list element index  // int *startIndex)
+RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active)
 {
     #define LISTVIEW_LINE_THICK       1
     
-    // TODO: Implement list view with scrolling bars and selectable elements (hover/press)
-
     GuiControlState state = guiState;
     
     static int startIndex = 0;
@@ -2097,26 +2144,20 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         
         if (count*style[LISTVIEW_ELEMENTS_HEIGHT] <= bounds.height) startIndex = 0;
         
-        
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
             {
-                
                 //active += 1;
                 //if (active >= count) active = 0;
             }
             else state = FOCUSED;
         }
         
-        
         //(maxIndexCount + indexOffset) > count) ? count : (maxIndexCount + indexOffset)
-        
         //if (maxIndexCount + indexOffset) > count) return count;
         //else return (maxIndexCount + indexOffset);
-        
-
     }
     //--------------------------------------------------------------------
 
@@ -2144,9 +2185,6 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         float newHeight = (float)(endIndex - startIndex)*(float)(style[LISTVIEW_ELEMENTS_HEIGHT]/2)/(float)(endIndex - startIndex);
         barHeight = (float)bounds.height - (float)((count - (endIndex - startIndex))*newHeight);
     }
-       
-    //DrawText(FormatText("MAX INDEX: %i", endIndex), 200, 60, 20, RED);
-    //DrawText(FormatText("INDEX OFFSET: %i", startIndex), 200, 120, 20, RED);
     
     switch (state)
     {
@@ -2156,7 +2194,6 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
             else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]));
             
             DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_NORMAL]));
-            
         } break;
         case FOCUSED:
         {
@@ -2164,7 +2201,6 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
             else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]));
             
             DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]));
-            
         } break;
         case PRESSED:
         {
@@ -2172,7 +2208,6 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
             else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]));
             
             DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]));
-            
         } break;
         case DISABLED:
         {
