@@ -54,6 +54,7 @@ typedef enum {
     TEXTBOX,
     GROUPBOX,
     WINDOWBOX,
+    STATUSBAR,
     LISTVIEW,
     COLORPICKER
 } GuiControlType;
@@ -89,9 +90,9 @@ static AnchorPoint anchors[MAX_ANCHOR_POINTS];
 static int controlsCounter = 0;
 static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
-const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "WINDOWBOX", "LISTVIEW", "COLORPICKER" };
-const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "WindowBox", "ListView", "ColorPicker" };
-const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "wdwbox", "lstvw", "clrpckr" };
+const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "WINDOWBOX", "STATUSBAR", "LISTVIEW", "COLORPICKER" };
+const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "WindowBox", "StatusBar", "ListView", "ColorPicker" };
+const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "wdwbox", "stsb", "lstvw", "clrpckr" };
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -144,7 +145,7 @@ int main()
     bool helpMode = false;
     
     // Used to draw the preview of selectedControl
-    Rectangle defaultRec[16] = {
+    Rectangle defaultRec[17] = {
         (Rectangle){ 0, 0, 80, 20},             // LABEL
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
@@ -159,6 +160,7 @@ int main()
         (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
         (Rectangle){ 0, 0, 120, 40},            // GROUPBOX    
         (Rectangle){ 0, 0, 120, 48},            // WINDOWBOX    
+        (Rectangle){ 0, 0, 200, 30},            // STATUSBAR
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -175,7 +177,7 @@ int main()
 
     const char *list[3] = { "ONE", "TWO", "THREE" };
  
-    const char *guiControls[16] = { 
+    const char *guiControls[17] = { 
         "LABEL", 
         "BUTTON", 
         "IMAGEBUTTON",
@@ -190,6 +192,7 @@ int main()
         "TEXTBOX",
         "GROUPBOX",
         "WINDOWBOX",
+        "STATUSBAR",
         "LISTVIEW",
         "COLORPICKER"
     };
@@ -214,6 +217,7 @@ int main()
     };
     
     Texture2D texture = LoadTexture("icons.png");
+    //Texture2D rfxgenLayout = LoadTexture("screenshot000.png");
     
     // Get current directory
     // NOTE: Current working directory could not match current executable directory
@@ -548,13 +552,13 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
-           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX) || (layout[selectedControl].type == WINDOWBOX)))
+           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX) || (layout[selectedControl].type == WINDOWBOX) || (layout[selectedControl].type == STATUSBAR)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
         }
         
-        if (IsKeyPressed(KEY_H)) helpMode = !helpMode;
+        if (IsKeyPressed(KEY_H) && !textEditMode) helpMode = !helpMode;
         
         // Selected control lock logic
         if (lockMode)
@@ -687,9 +691,13 @@ int main()
             {
                 if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + texture.width/3 + 5;
             }
-            else if (layout[selectedControl].type == WINDOWBOX || layout[selectedControl].type == GROUPBOX) 
+            else if (layout[selectedControl].type == WINDOWBOX || layout[selectedControl].type == GROUPBOX || layout[selectedControl].type == STATUSBAR) 
             {
                 if (layout[selectedControl].rec.width <  MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]) + 31) layout[selectedControl].rec.width = MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 31;
+            }
+            else if (layout[selectedControl].type == CHECKBOX)
+            {
+                if (layout[selectedControl].rec.width <= 10) layout[selectedControl].rec.width = 10;
             }
             else if (layout[selectedControl].rec.width <= 20) layout[selectedControl].rec.width = 20;
             
@@ -703,6 +711,10 @@ int main()
             else if (layout[selectedControl].type == WINDOWBOX) 
             { 
                 if (layout[selectedControl].rec.height < 48) layout[selectedControl].rec.height = 48;
+            }
+            else if (layout[selectedControl].type == PROGRESSBAR || layout[selectedControl].type == SLIDER || layout[selectedControl].type == SLIDERBAR || layout[selectedControl].type == CHECKBOX)
+            {
+                if (layout[selectedControl].rec.height <= 10 ) layout[selectedControl].rec.height = 10;
             }
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
@@ -753,6 +765,8 @@ int main()
             ClearBackground(RAYWHITE);
             
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
+            
+            DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
            
             // Draws the defaultRec[selectedType] of the control selected
             if (selectedControl == -1 && !anchorMode)
@@ -773,6 +787,7 @@ int main()
                     case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
                     case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
                     case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
+                    case STATUSBAR: GuiStatusBar(defaultRec[selectedTypeDraw], "STATUS BAR", 15); break;
                     case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
                     default: break;
@@ -798,6 +813,7 @@ int main()
                     case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
                     case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case WINDOWBOX: GuiWindowBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                    case STATUSBAR: GuiStatusBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 15); break;
                     case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
                     default: break;
@@ -853,11 +869,12 @@ int main()
             {
                if (((framesCounter/20)%2) == 0)
                {
-                    if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else if (layout[selectedControl].type == IMAGEBUTTON) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else if (layout[selectedControl].type == GROUPBOX) DrawText("|", layout[selectedControl].rec.x + 15 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else if (layout[selectedControl].type == WINDOWBOX) DrawText("|", layout[selectedControl].rec.x + 10 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    if (layout[selectedControl].type == LABEL) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout[selectedControl].rec.y + layout[selectedControl].ap->y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == IMAGEBUTTON) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout[selectedControl].rec.y + layout[selectedControl].ap->y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == GROUPBOX) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + 15 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y + layout[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == WINDOWBOX) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + 10 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y + layout[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout[selectedControl].type == STATUSBAR) DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + 15 + MeasureText(layout[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout[selectedControl].rec.y + layout[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].ap->y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
             
