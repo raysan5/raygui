@@ -22,7 +22,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define MAX_GUI_CONTROLS    64          // Maximum number of gui controls
+#define MAX_GUI_CONTROLS   256          // Maximum number of gui controls
 #define MAX_ANCHOR_POINTS    8          // Maximum number of anchor points
 
 #define GRID_LINE_SPACING   10          // Grid line spacing in pixels
@@ -199,7 +199,7 @@ int main()
     };
     
     Texture2D texture = LoadTexture("icons.png");
-    //Texture2D rfxgenLayout = LoadTexture("screenshot000.png");
+    //Texture2D rfxgenLayout = LoadTexture("screenshot001.png");
     
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
@@ -705,13 +705,24 @@ int main()
             }
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
-        
-
-            
+  
         // TODO: Draw global app screen limits (black rectangle with black default anchor)
         
         // Shows or hides the grid if not in textEditMode
         if (IsKeyPressed(KEY_G) && (!textEditMode)) showGrid = !showGrid;
+        
+        // Duplicate selected control
+        if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_D)) && (selectedControl != -1) && !anchorMode)
+        {
+            // Add a copy of selected control 
+            layout[controlsCounter].id = controlsCounter;
+            layout[controlsCounter].type = layout[selectedControl].type;
+            layout[controlsCounter].rec = layout[selectedControl].rec;
+            strcpy(layout[controlsCounter].text, layout[selectedControl].text);
+            layout[controlsCounter].ap = layout[selectedControl].ap;            // Default anchor point (0, 0)
+            
+            controlsCounter++;
+        }
      
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S))
         {
@@ -743,7 +754,7 @@ int main()
             {
                 LoadLayoutRGL(fileName);
                 
-                // Setup by default some anchor value because logic is always trying to access layout[i].ap->id 
+                // Setup by default some anchor value because logic is always trying to access layout[i].ap->id
                 // if layout[i].ap == NULL, program crashes
                 for (int i = 0; i < controlsCounter; i++) layout[i].ap = &anchors[0];
             }
@@ -876,8 +887,8 @@ int main()
             
             if (helpMode)
             {
-                DrawRectangleRec((Rectangle){ 20, 20, 260, 270 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-                GuiGroupBox((Rectangle){ 20, 20, 260, 270 }, "Shortcuts");
+                DrawRectangleRec((Rectangle){ 20, 20, 260, 290 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+                GuiGroupBox((Rectangle){ 20, 20, 260, 290 }, "Shortcuts");
                 GuiLabel((Rectangle){ 30, 30, 0, 0 }, "G - Show/hide grid");
                 GuiLabel((Rectangle){ 30, 50, 0, 0 }, "S - Toggle snap");
                 GuiLabel((Rectangle){ 30, 70, 0, 0 }, "A - Anchor mode");
@@ -891,6 +902,7 @@ int main()
                 GuiLabel((Rectangle){ 30, 230, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
                 GuiLabel((Rectangle){ 30, 250, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
                 GuiLabel((Rectangle){ 30, 270, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
+                GuiLabel((Rectangle){ 30, 290, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
             }
             
             // Draw status bar bottom with debug information
@@ -908,6 +920,7 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadTexture(texture);
+    //UnloadTexture(rfxgenLayout);
     
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -983,6 +996,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
                 fwrite(&layout[i].type, 1, sizeof(int), rglFile);
                 fwrite(&layout[i].rec, 1, sizeof(Rectangle), rglFile);
                 fwrite(layout[i].text, 1, 32, rglFile);
+                
                 
                 // TODO: Export anchors data
             }
