@@ -12,20 +12,12 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
+
 #include "easings.h"
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
 
 #include <stdlib.h>
-
-#if defined(_WIN32)
-    #include <direct.h>
-    #define GetCurrentDir _getcwd
-#else
-    #include <unistd.h>
-    #define GetCurrentDir getcwd
-#endif
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -111,17 +103,7 @@ int main()
     //--------------------------------------------------------------------------------------
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiLayout - raygui layout editor");
-    
-    // Initialize layout data
-    for (int i = 0; i < MAX_GUI_CONTROLS; i++)
-    {
-        layout[i].id = 0;
-        layout[i].type = 0;
-        layout[i].rec = (Rectangle){ 0, 0, 0, 0 };
-        layout[i].text = (unsigned char *)malloc(32);// strcpy(layout[i].text, "SAMPLE TEXT\0");
-        layout[i].ap = NULL;
-    }
-    
+       
     int selectedControl = -1;
     int selectedType = BUTTON;
     int selectedTypeDraw = LABEL;
@@ -219,12 +201,6 @@ int main()
     Texture2D texture = LoadTexture("icons.png");
     //Texture2D rfxgenLayout = LoadTexture("screenshot000.png");
     
-    // Get current directory
-    // NOTE: Current working directory could not match current executable directory
-    GetCurrentDir(currentPath, sizeof(currentPath));
-    currentPath[strlen(currentPath)] = '\\';
-    currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
-    
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
     {
@@ -235,9 +211,18 @@ int main()
         anchors[i].enabled = false;
     }
 
-    anchors[0].enabled = true;       // Enable anchors parent (0, 0)
+    anchors[0].enabled = true;      // Enable anchors parent (0, 0)
     
-    //GuiSetStyleProperty(TOGGLEGROUP_PADDING, 5);
+    // Initialize layout data
+    for (int i = 0; i < MAX_GUI_CONTROLS; i++)
+    {
+        layout[i].id = 0;
+        layout[i].type = 0;
+        layout[i].rec = (Rectangle){ 0, 0, 0, 0 };
+        layout[i].text = (unsigned char *)malloc(32);
+        strcpy(layout[i].text, "SAMPLE TEXT\0");
+        layout[i].ap = &anchors[0];  // By default, set parent anchor
+    }
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -257,8 +242,9 @@ int main()
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
         else if (CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = true;
         
+        /*
         // Toggle on the controlListView
-        /*if (IsKeyPressed(KEY_TAB))
+        if (IsKeyPressed(KEY_TAB))
         {
             startPosXListViewControls = listViewControls.x;
             deltaPosXListViewControls = 0 - startPosXListViewControls;
@@ -311,6 +297,7 @@ int main()
             listViewControlsCounter.x = (int)EaseCubicInOut(counterListViewControlsCounter, startPosXListViewControlsCounter, deltaPosXListViewControlsCounter, 60);
         }
         */
+        
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode)
         {
             // Add new control (button)
@@ -752,7 +739,14 @@ int main()
             const char *filters[] = { "*.rgl" };
             const char *fileName = tinyfd_openFileDialog("Load raygui layout file", currentPath, 1, filters, "raygui Layout Files (*.rgl)", 0);
             
-            if (fileName != NULL) LoadLayoutRGL(fileName);
+            if (fileName != NULL) 
+            {
+                LoadLayoutRGL(fileName);
+                
+                // Setup by default some anchor value because logic is always trying to access layout[i].ap->id 
+                // if layout[i].ap == NULL, program crashes
+                for (int i = 0; i < controlsCounter; i++) layout[i].ap = &anchors[0];
+            }
         }
         
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateLayoutCode("test_layout.c");
@@ -766,7 +760,7 @@ int main()
             
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
             
-            DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
+            //DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
            
             // Draws the defaultRec[selectedType] of the control selected
             if (selectedControl == -1 && !anchorMode)
@@ -824,8 +818,9 @@ int main()
                 // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
+            /*
             // Draw the list of controls
-            /*DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
+            DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
             selectedType = GuiListView(listViewControls, guiControls, 14, selectedType);
             
             // Draw the list of controlsCounter
@@ -844,7 +839,6 @@ int main()
             
             if ((selectedControl != -1) && (selectedControl < controlsCounter))
             {
-                
                 DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
                 if (layout[selectedControl].ap->id > 0) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
             }
@@ -877,7 +871,7 @@ int main()
                     else DrawText("|", layout[selectedControl].rec.x + layout[selectedControl].ap->x + layout[selectedControl].rec.width/2 + MeasureText(layout[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout[selectedControl].rec.y + layout[selectedControl].ap->y + layout[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
-            
+
             if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
             
             if (helpMode)
@@ -898,16 +892,7 @@ int main()
                 GuiLabel((Rectangle){ 30, 250, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
                 GuiLabel((Rectangle){ 30, 270, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
             }
-            // Debug information
-            /*DrawText(FormatText("Controls count: %i", controlsCounter), 10, screenHeight - 20, 20, BLUE);
-            DrawText(FormatText("Selected type: %s", controlTypeName[selectedType]), 300, screenHeight - 20, 20, BLUE);
-            if (snapMode) DrawText("SNAP ON", 700, screenHeight - 20, 20, RED);
-            if (selectedControl != -1) DrawText(FormatText("rec: (%i, %i, %i, %i)", 
-                                                layout[selectedControl].rec.x, layout[selectedControl].rec.y, 
-                                                layout[selectedControl].rec.width, layout[selectedControl].rec.height), 
-                                                10, screenHeight - 40, 10, DARKGREEN);
-            DrawText(FormatText("mouse: (%i, %i)", mouseX, mouseY), 700, screenHeight - 40, 10, RED);
-            */
+            
             // Draw status bar bottom with debug information
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 126, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
@@ -922,7 +907,8 @@ int main()
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(texture);    
+    UnloadTexture(texture);
+    
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
