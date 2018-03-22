@@ -1,0 +1,23 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     8
+# Anchor info: a <id> <posx> <posy> <enabled>
+# Control info: c <id> <type> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 0 0 0
+a 002 0 0 0
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 13 24 15 220 161 0 Image Export Options
+c 001 9 102 47 130 20 0 
+c 002 9 102 77 130 20 0 SAMPLE TEXT
+c 003 11 102 107 131 22 0 Untitled
+c 004 1 35 139 200 30 0 Export Image
+c 005 0 35 53 60 20 0 File format
+c 006 0 35 83 61 20 0 Pixel format
+c 007 0 35 113 50 20 0 File name
