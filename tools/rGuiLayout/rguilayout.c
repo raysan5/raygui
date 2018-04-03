@@ -12,6 +12,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
+#define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
 
 #include "easings.h"
@@ -48,6 +49,7 @@ typedef enum {
     TEXTBOX,
     GROUPBOX,
     WINDOWBOX,
+    DUMMYREC,
     STATUSBAR,
     LISTVIEW,
     COLORPICKER
@@ -80,11 +82,10 @@ static int screenHeight = 600;
 static GuiControl layout[MAX_GUI_CONTROLS] = { 0 };
 static AnchorPoint anchors[MAX_ANCHOR_POINTS];
 static int controlsCounter = 0;
-static int anchorCounter = 1;       // NOTE: anchorCounter starts at 1 because the global anchor is 0
 
-const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "WINDOWBOX", "STATUSBAR", "LISTVIEW", "COLORPICKER" };
-const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "WindowBox", "StatusBar", "ListView", "ColorPicker" };
-const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "wdwbox", "stsb", "lstvw", "clrpckr" };
+const char *controlTypeName[] = { "LABEL", "BUTTON", "IMAGEBUTTON", "TOGGLE", "TOGGLEGROUP", "SLIDER", "SLIDERBAR", "PROGRESSBAR", "SPINNER", "COMBOBOX", "CHECKBOX", "TEXTBOX", "GROUPBOX", "WINDOWBOX", "DUMMYREC", "STATUSBAR", "LISTVIEW", "COLORPICKER" };
+const char *controlTypeNameLow[] = { "Label", "Button", "ImageButton", "Toggle", "ToggleGroup", "Slider", "SliderBar", "ProgressBar", "Spinner", "ComboBox", "CheckBox", "TextBox", "GroupBox", "WindowBox", "DummyRec", "StatusBar", "ListView", "ColorPicker" };
+const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "sldr", "sldrb", "prgssb", "spnr", "combox", "chkbox", "txtbox", "grpbox", "wdwbox", "dmyrc", "stsb", "lstvw", "clrpckr" };
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -126,8 +127,11 @@ int main()
     bool lockMode = false;
     bool helpMode = false;
     
+    int fileCount = 0;
+    char **droppedFiles = { 0 };
+    
     // Used to draw the preview of selectedControl
-    Rectangle defaultRec[17] = {
+    Rectangle defaultRec[18] = {
         (Rectangle){ 0, 0, 80, 20},             // LABEL
         (Rectangle){ 0, 0, 100, 30},            // BUTTON
         (Rectangle){ 0, 0, 120, 40},            // IMAGEBUTTON
@@ -142,6 +146,7 @@ int main()
         (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
         (Rectangle){ 0, 0, 120, 40},            // GROUPBOX    
         (Rectangle){ 0, 0, 120, 48},            // WINDOWBOX    
+        (Rectangle){ 0, 0, 100, 100},           // DUMMYREC    
         (Rectangle){ 0, 0, 200, 30},            // STATUSBAR
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
@@ -159,7 +164,7 @@ int main()
 
     const char *list[3] = { "ONE", "TWO", "THREE" };
  
-    const char *guiControls[17] = { 
+    const char *guiControls[18] = { 
         "LABEL", 
         "BUTTON", 
         "IMAGEBUTTON",
@@ -174,6 +179,7 @@ int main()
         "TEXTBOX",
         "GROUPBOX",
         "WINDOWBOX",
+        "DUMMYREC",
         "STATUSBAR",
         "LISTVIEW",
         "COLORPICKER"
@@ -199,7 +205,7 @@ int main()
     };
     
     Texture2D texture = LoadTexture("icons.png");
-    //Texture2D rfxgenLayout = LoadTexture("screenshot001.png");
+    Texture2D rfxgenLayout = LoadTexture("screenshot001.png");
     
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
@@ -306,6 +312,27 @@ int main()
             strcpy(layout[controlsCounter].text, "SAMPLE TEXT");
             layout[controlsCounter].ap = &anchors[0];        // Default anchor point (0, 0)
             
+            for (int i = 0; i < controlsCounter; i++)
+            {
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }) && layout[i].type == WINDOWBOX) layout[controlsCounter].ap =layout[i].ap;
+            }
+            if(layout[controlsCounter].type == WINDOWBOX)
+            {
+                for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
+                {
+                    if (!anchors[i].enabled)
+                    {
+                        anchors[i].x = layout[controlsCounter].rec.x;
+                        anchors[i].y = layout[controlsCounter].rec.y;
+                        anchors[i].enabled = true;
+                        layout[controlsCounter].ap = &anchors[i];
+                        break;
+                    }
+                }
+            }
+                             
+            layout[controlsCounter].rec.x -= layout[controlsCounter].ap->x;
+            layout[controlsCounter].rec.y -= layout[controlsCounter].ap->y;
             controlsCounter++;
         }
         
@@ -553,7 +580,7 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
-           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX) || (layout[selectedControl].type == WINDOWBOX) || (layout[selectedControl].type == STATUSBAR)))
+           ((layout[selectedControl].type == LABEL) || (layout[selectedControl].type == BUTTON) || (layout[selectedControl].type == TOGGLE) || (layout[selectedControl].type == IMAGEBUTTON) || (layout[selectedControl].type == GROUPBOX) || (layout[selectedControl].type == WINDOWBOX) || (layout[selectedControl].type == STATUSBAR) || (layout[selectedControl].type == DUMMYREC)))
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
@@ -702,8 +729,6 @@ int main()
             }
             else if (layout[selectedControl].rec.width <= 20) layout[selectedControl].rec.width = 20;
             
-            
-
             // Sets the minimum limit of the height
             if (layout[selectedControl].type == IMAGEBUTTON) 
             { 
@@ -724,6 +749,18 @@ int main()
         
         // Shows or hides the grid if not in textEditMode
         if (IsKeyPressed(KEY_G) && (!textEditMode)) showGrid = !showGrid;
+        
+        if (IsFileDropped())
+        {
+            char name[256]; 
+            droppedFiles = GetDroppedFiles(&fileCount);
+            strcpy(name, droppedFiles[0]);
+            
+            if (IsFileExtension(name, ".rgl")) LoadLayoutRGL(name);
+            else if (IsFileExtension(name, ".rgs")) GuiLoadStyle(name);
+
+            ClearDroppedFiles();
+        }
         
         // Duplicate selected control
         if ((IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_D)) && (selectedControl != -1) && !anchorMode)
@@ -775,34 +812,8 @@ int main()
             
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
             
-            //DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
-           
-            // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1 && !anchorMode)
-            {
-                switch (selectedTypeDraw)
-                {
-                    case LABEL: GuiLabel(defaultRec[selectedTypeDraw], "TEXT SAMPLE"); break;
-                    case BUTTON: GuiButton(defaultRec[selectedTypeDraw], "BUTTON"); break;
-                    case IMAGEBUTTON: GuiImageButtonEx(defaultRec[selectedTypeDraw], texture , (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, "IMAGE BUTTON"); break;
-                    case TOGGLE: GuiToggleButton(defaultRec[selectedTypeDraw], "TOGGLE", false); break;
-                    case TOGGLEGROUP: GuiToggleGroup(defaultRec[selectedTypeDraw], list, 3, 1); break;
-                    case SLIDER: GuiSlider(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case SLIDERBAR: GuiSliderBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case PROGRESSBAR: GuiProgressBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
-                    case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
-                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
-                    case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
-                    case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
-                    case STATUSBAR: GuiStatusBar(defaultRec[selectedTypeDraw], "STATUS BAR", 15); break;
-                    case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
-                    case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
-                    default: break;
-                }
-            }
-            
+            DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
+
             for (int i = 0; i < controlsCounter; i++)
             {
                 // Draws the Controls when placed on the grid.
@@ -822,6 +833,7 @@ int main()
                     case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
                     case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case WINDOWBOX: GuiWindowBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                    case DUMMYREC: GuiDummyRec((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
                     case STATUSBAR: GuiStatusBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 15); break;
                     case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
                     case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
@@ -831,6 +843,33 @@ int main()
                 if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
                 // Draw Control anchor information
                 // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
+            }
+            
+            // Draws the defaultRec[selectedType] of the control selected
+            if (selectedControl == -1 && !anchorMode)
+            {
+                switch (selectedTypeDraw)
+                {
+                    case LABEL: GuiLabel(defaultRec[selectedTypeDraw], "TEXT SAMPLE"); break;
+                    case BUTTON: GuiButton(defaultRec[selectedTypeDraw], "BUTTON"); break;
+                    case IMAGEBUTTON: GuiImageButtonEx(defaultRec[selectedTypeDraw], texture , (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, "IMAGE BUTTON"); break;
+                    case TOGGLE: GuiToggleButton(defaultRec[selectedTypeDraw], "TOGGLE", false); break;
+                    case TOGGLEGROUP: GuiToggleGroup(defaultRec[selectedTypeDraw], list, 3, 1); break;
+                    case SLIDER: GuiSlider(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case SLIDERBAR: GuiSliderBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case PROGRESSBAR: GuiProgressBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
+                    case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
+                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
+                    case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
+                    case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
+                    case DUMMYREC: GuiDummyRec(defaultRec[selectedTypeDraw], "DUMMY REC"); break;
+                    case STATUSBAR: GuiStatusBar(defaultRec[selectedTypeDraw], "STATUS BAR", 15); break;
+                    case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], guiControls, 14, 1); break;
+                    case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
+                    default: break;
+                }
             }
             
             /*
@@ -926,7 +965,7 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadTexture(texture);
-    //UnloadTexture(rfxgenLayout);
+    UnloadTexture(rfxgenLayout);
     
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -1055,6 +1094,7 @@ static void LoadLayoutRGL(const char *fileName)
     int anchorId = 0;       // TODO: Review!!!
     int anchorX = 0;
     int anchorY = 0;
+    int anchorCounter = 0;
 
     FILE *rglFile = fopen(fileName, "rt");
     
@@ -1068,11 +1108,18 @@ static void LoadLayoutRGL(const char *fileName)
             
             while (!feof(rglFile))
             {
-                if ((buffer[0] != '\n') && (buffer[0] != '#'))
+                if ((buffer[0] != '\n') && (buffer[0] != '#') && (buffer[0] == 'a'))
                 {
-                    sscanf(buffer, "c %d %i %i %i %i %i %d %d %d %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &anchorId, &anchorX, &anchorY, layout[controlsCounter].text);
-                    printf("c %d %i %i %i %i %i %s %i %i %i\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, layout[controlsCounter].text, anchorId, anchorX, anchorY);
+                    sscanf(buffer, "a %03i %i %i %i", &anchors[anchorCounter].id, &anchors[anchorCounter].x, &anchors[anchorCounter].y, &anchors[anchorCounter].enabled);
+                    printf("a %03i %i %i %i\n", anchors[anchorCounter].id, anchors[anchorCounter].x, anchors[anchorCounter].y, anchors[anchorCounter].enabled);
+                    anchorCounter++;
+                }
+                else if ((buffer[0] != '\n') && (buffer[0] != '#') && (buffer[0] == 'c'))
+                {
+                    sscanf(buffer, "c %d %i %i %i %i %i %d %[^\n]s", &layout[controlsCounter].id, &layout[controlsCounter].type, &layout[controlsCounter].rec.x, &layout[controlsCounter].rec.y, &layout[controlsCounter].rec.width, &layout[controlsCounter].rec.height, &anchorId, layout[controlsCounter].text);
+                    printf("c %d %i %i %i %i %i %i %s\n", layout[controlsCounter].id, layout[controlsCounter].type, layout[controlsCounter].rec.x, layout[controlsCounter].rec.y, layout[controlsCounter].rec.width, layout[controlsCounter].rec.height, anchorId, layout[controlsCounter].text);
                     
+                    layout[controlsCounter].ap = &anchors[anchorId];
                     controlsCounter++;
                 }
                 fgets(buffer, 256, rglFile);
@@ -1114,8 +1161,7 @@ static void LoadLayoutRGL(const char *fileName)
                     fread(&anchors[i].y, 1, sizeof(int), rglFile);
                     fread(&anchors[i].enabled, 1, sizeof(bool), rglFile);
                 }
-                
-                
+
                 for (int i = 0; i < controlsCounter; i++)
                 {
                     int anchorId = 0;
@@ -1320,6 +1366,7 @@ static void GenerateLayoutCode(const char *fileName)
             case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s%03i, %sSize%03i);\n\n", i, controlTypeNameShort[layout[i].type], i, controlTypeNameShort[layout[i].type], i); break;
             case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
             case WINDOWBOX: fprintf(ftool, "\t\t\tGuiWindowBox(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
+            case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec(layoutRecs[%i], \"%s\");\n\n", i, layout[i].text); break;
             case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar(layoutRecs[%i], \"%s\", 10);\n\n", i, layout[i].text); break;
             case COLORPICKER: fprintf(ftool, "\t\t\t%sColor%03i = GuiColorPicker(layoutRecs[%i], %sColor%03i);\n\n", controlTypeNameShort[layout[i].type], i, i, controlTypeNameShort[layout[i].type], i); break;
             
