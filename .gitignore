@@ -31,3 +31,6 @@
 # Debug files
 *.dSYM/
 *.su
+
+!tools/rGuiLayout/release/win32/rguilayout.exe
+!tools/rGuiStyler/release/win32/rguistyler.exe
