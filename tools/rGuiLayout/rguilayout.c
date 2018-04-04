@@ -15,7 +15,7 @@
 #define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
 
-#include "easings.h"
+#include "external/easings.h"
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
 
 #include <stdlib.h>
@@ -61,6 +61,7 @@ typedef struct {
     int x;
     int y;
     bool enabled;
+    bool hidding;
 } AnchorPoint;
 
 // Gui control type
@@ -123,9 +124,16 @@ int main()
     bool anchorLinkMode = false;
     int selectedAnchor = -1;
     int linkedAnchor = -1;
+    
+    AnchorPoint auxAnchor = { 9, 0, 0, 0};
+    bool anchorNewPos = false;
 
     bool lockMode = false;
-    bool helpMode = false;
+
+    int helpPosX = -300;
+    int helpCounter = 0;
+    int startPosXHelp = -300;
+    int deltaPosXHelp = 0;
     
     int fileCount = 0;
     char **droppedFiles = { 0 };
@@ -154,15 +162,15 @@ int main()
     
     // List view required variables
     Rectangle listViewControls = { -200, 0, 140, 500 };
-    int counterListViewControls = 0;
-    int startPosXListViewControls = -200;
-    int deltaPosXListViewControls = 0;
+
     Rectangle listViewControlsCounter = { GetScreenWidth() + 140, 0, 140, 500 };
     int counterListViewControlsCounter = 0;
     int startPosXListViewControlsCounter = GetScreenWidth() + 140;
     int deltaPosXListViewControlsCounter = 0;
 
+    // ToggleGroup, ComboBox, DropdownBox use this data
     const char *list[3] = { "ONE", "TWO", "THREE" };
+    
  
     const char *guiControls[18] = { 
         "LABEL", 
@@ -205,7 +213,12 @@ int main()
     };
     
     Texture2D texture = LoadTexture("icons.png");
-    Texture2D rfxgenLayout = LoadTexture("screenshot001.png");
+    Texture2D tracemap = { 0 };
+    Rectangle tracemapRec = { 0 };
+    bool tracemapEditMode = false;
+    float tracemapFade = 0.5f;
+    Vector2 panOffset = { 0 };
+    Vector2 prevPosition = { tracemapRec.x, tracemapRec.y };
     
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
@@ -214,6 +227,7 @@ int main()
         anchors[i].x = 0;
         anchors[i].y = 0;
         anchors[i].enabled = false;
+        anchors[i].hidding = false;
     }
 
     anchors[0].enabled = true;      // Enable anchors parent (0, 0)
@@ -247,34 +261,35 @@ int main()
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
         else if (CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = true;
         
-        /*
+        
         // Toggle on the controlListView
         if (IsKeyPressed(KEY_TAB))
         {
-            startPosXListViewControls = listViewControls.x;
-            deltaPosXListViewControls = 0 - startPosXListViewControls;
-            counterListViewControls = 0;
+            startPosXHelp = helpPosX;
+            deltaPosXHelp = 0 - startPosXHelp;
+            helpCounter = 0;
         }
         
         if (IsKeyDown(KEY_TAB))
         {
-            counterListViewControls++;
-            if (counterListViewControls >= 60) counterListViewControls = 60;
-            listViewControls.x = (int)EaseCubicInOut(counterListViewControls, startPosXListViewControls, deltaPosXListViewControls, 60);
+            helpCounter++;
+            if (helpCounter >= 60) helpCounter = 60;
+            helpPosX = (int)EaseCubicInOut(helpCounter, startPosXHelp, deltaPosXHelp, 60);
         }  
         else if (IsKeyReleased(KEY_TAB))
         {
-            startPosXListViewControls = listViewControls.x;
-            deltaPosXListViewControls = -200 - startPosXListViewControls;
-            counterListViewControls = 0;
+            startPosXHelp = helpPosX;
+            deltaPosXHelp = -300 - startPosXHelp;
+            helpCounter = 0;
         }
         else
         {
-            counterListViewControls++;
-            if (counterListViewControls >= 60) counterListViewControls = 60;
-            listViewControls.x = (int)EaseCubicInOut(counterListViewControls, startPosXListViewControls, deltaPosXListViewControls, 60);
+            helpCounter++;
+            if (helpCounter >= 60) helpCounter = 60;
+            helpPosX = (int)EaseCubicInOut(helpCounter, startPosXHelp, deltaPosXHelp, 60);
         }
         
+        /*
         // Toggle on the controlListViewCounter
         if (IsKeyPressed(KEY_W))
         {
@@ -303,7 +318,7 @@ int main()
         }
         */
         
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode)
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode && !tracemapEditMode)
         {
             // Add new control (button)
             layout[controlsCounter].id = controlsCounter;
@@ -339,13 +354,13 @@ int main()
         // Check selected control (on mouse hover)
         for (int i = 0; i < controlsCounter; i++)
         {
-            if (controlDrag || lockMode) break;
-            if ((layout[i].type == WINDOWBOX) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, 24 })))
+            if (controlDrag || lockMode || tracemapEditMode) break;
+            if ((layout[i].type == WINDOWBOX) && (!layout[i].ap->hidding) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, 24 })))
             {
                 selectedControl = i;
                 break;
             }
-            else if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }) && layout[i].type != WINDOWBOX) 
+            else if ((!layout[i].ap->hidding) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }) && layout[i].type != WINDOWBOX))
             {
                 selectedControl = i;
                 break;
@@ -585,15 +600,10 @@ int main()
             textEditMode = true;
             saveControlSelected = selectedControl;
         }
-        
-        if (IsKeyPressed(KEY_H) && !textEditMode) helpMode = !helpMode;
-        
+       
         // Selected control lock logic
-        if (lockMode)
-        {
-            selectedControl = saveControlSelected;
-        }
-        
+        if (lockMode) selectedControl = saveControlSelected;
+
         if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedControl != -1) && !lockMode && !anchorMode) 
         {
             lockMode = true;
@@ -658,17 +668,50 @@ int main()
                     anchors[selectedAnchor].x = 0;
                     anchors[selectedAnchor].y = 0;
                     anchors[selectedAnchor].enabled = false;
+                    anchors[selectedAnchor].hidding = false;
                     anchorMode = false;
                 }
                 
                 // Allows to drag an anchor without losing collision
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) controlDrag = true;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && IsKeyDown(KEY_A))
+                {
+                    controlDrag = true;
+                    anchorNewPos = true;
+                    
+                    for (int i = 0; i < controlsCounter; i++)
+                    {
+                        if (layout[i].ap->id == selectedAnchor) 
+                        {
+                            layout[i].rec.x += layout[i].ap->x;
+                            layout[i].rec.y += layout[i].ap->y;
+                            layout[i].ap = &auxAnchor;
+                        }
+                    } 
+                }
+                else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) controlDrag = true;
                 
                 if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-                {                   
+                {     
+                    if (anchorNewPos)
+                    {
+                        for (int i = 0; i < controlsCounter; i++)
+                        {
+                            if (layout[i].ap->id == 9) 
+                            {
+                                layout[i].rec.x += layout[i].ap->x;
+                                layout[i].rec.y += layout[i].ap->y;
+                                layout[i].ap = &anchors[selectedAnchor];
+                                layout[i].rec.x -= anchors[selectedAnchor].x;
+                                layout[i].rec.y -= anchors[selectedAnchor].y;
+                            }
+                        } 
+                        
+                        anchorNewPos = false;
+                    }            
                     controlDrag = false;
                     selectedAnchor = -1;
                     anchorMode = false;
+                    
                 }
                 
                 // Moves the anchor to the mouse position
@@ -699,6 +742,11 @@ int main()
                     
                     anchorLinkMode = false;  
                     anchorMode = false;                    
+                }
+                
+                if (IsKeyPressed(KEY_H)) 
+                {
+                    anchors[selectedAnchor].hidding = !anchors[selectedAnchor].hidding;
                 }
             }
         }
@@ -758,6 +806,16 @@ int main()
             
             if (IsFileExtension(name, ".rgl")) LoadLayoutRGL(name);
             else if (IsFileExtension(name, ".rgs")) GuiLoadStyle(name);
+            else if (IsFileExtension(name, ".png"))
+            {
+                if (tracemap.id > 0) UnloadTexture(tracemap);
+                tracemap = LoadTexture(name);
+                
+                SetTextureFilter(tracemap, FILTER_BILINEAR);
+                
+                tracemapRec.width = tracemap.width;
+                tracemapRec.height = tracemap.height;
+            }
 
             ClearDroppedFiles();
         }
@@ -802,6 +860,72 @@ int main()
         }
         
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateLayoutCode("test_layout.c");
+        
+        // Tracemap texture control logic
+        if (tracemap.id > 0)
+        {
+            // Toggles Texture editting mode between true or false
+            if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_T)) tracemapEditMode = !tracemapEditMode;
+            
+            if (tracemapEditMode)
+            {
+                int offsetX = mouseX%GRID_LINE_SPACING;
+                int offsetY = mouseY%GRID_LINE_SPACING;
+                
+                // Moves the texture with the mouse
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) panOffset = (Vector2){ mouseX, mouseY };
+                
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+                {
+                    if (snapMode)
+                    {
+                        if (offsetX >= GRID_LINE_SPACING/2) mouseX += (GRID_LINE_SPACING - offsetX);
+                        else mouseX -= offsetX;
+                        
+                        if (offsetY >= GRID_LINE_SPACING/2) mouseY += (GRID_LINE_SPACING - offsetY);
+                        else mouseY -= offsetY;
+                    }
+
+                    tracemapRec.x = prevPosition.x + (mouseX - panOffset.x);
+                    tracemapRec.y = prevPosition.y + (mouseY - panOffset.y);
+                }
+                
+                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) prevPosition = (Vector2){ tracemapRec.x, tracemapRec.y };
+
+                // Moves and scales the texture with snap.
+                if (IsKeyDown(KEY_LEFT_CONTROL))
+                {
+                    tracemapRec.height -= GetMouseWheelMove();
+                    tracemapRec.width -= GetMouseWheelMove();
+                }
+                else 
+                {
+                    tracemapRec.height -= 10*GetMouseWheelMove();
+                    tracemapRec.width -= 10*GetMouseWheelMove();
+                      
+                }
+                
+                tracemap.height = tracemapRec.height;
+                tracemap.width = tracemapRec.width;
+                
+                // Change texture fade
+                if (IsKeyDown(KEY_LEFT)) tracemapFade-= 0.01f;
+                else if (IsKeyDown(KEY_RIGHT)) tracemapFade+=0.01f;
+                
+                if (tracemapFade < 0) tracemapFade = 0;
+                else if (tracemapFade > 1) tracemapFade = 1;
+                
+                // Deletes the texture and resets it
+                if (IsKeyPressed(KEY_DELETE))
+                {
+                    UnloadTexture(tracemap);
+                    tracemap.id = 0;
+                    tracemapEditMode = false;
+                    tracemapRec.x = 0;
+                    tracemapRec.y = 0;
+                }
+            }
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -812,41 +936,45 @@ int main()
             
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
             
-            DrawTexture(rfxgenLayout, 100, 50, Fade(WHITE, 0.6f));
+            if (tracemap.id > 0) DrawTexture(tracemap, tracemapRec.x, tracemapRec.y, Fade(WHITE, tracemapFade));
 
             for (int i = 0; i < controlsCounter; i++)
             {
                 // Draws the Controls when placed on the grid.
-                switch (layout[i].type)
+                if (!layout[i].ap->hidding)
                 {
-                    case LABEL: GuiLabel((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case BUTTON: GuiButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case IMAGEBUTTON: GuiImageButtonEx((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
-                    case TOGGLE: GuiToggleButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, false); break;
-                    case TOGGLEGROUP: GuiToggleGroup((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
-                    case SLIDER: GuiSlider((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
-                    case SLIDERBAR: GuiSliderBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
-                    case PROGRESSBAR: GuiProgressBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
-                    case SPINNER: GuiSpinner((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
-                    case COMBOBOX: GuiComboBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
-                    case CHECKBOX: GuiCheckBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, false); break;
-                    case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
-                    case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case WINDOWBOX: GuiWindowBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case DUMMYREC: GuiDummyRec((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
-                    case STATUSBAR: GuiStatusBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 15); break;
-                    case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
-                    case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
-                    default: break;
+                    switch (layout[i].type)
+                    {
+                        case LABEL: GuiLabel((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                        case BUTTON: GuiButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                        case IMAGEBUTTON: GuiImageButtonEx((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, texture, (Rectangle){ 0, 0, texture.width/3, texture.height/6 }, layout[i].text); break;
+                        case TOGGLE: GuiToggleButton((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, false); break;
+                        case TOGGLEGROUP: GuiToggleGroup((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
+                        case SLIDER: GuiSlider((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                        case SLIDERBAR: GuiSliderBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                        case PROGRESSBAR: GuiProgressBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                        case SPINNER: GuiSpinner((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, 40, 0, 100); break;
+                        case COMBOBOX: GuiComboBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, list, 3, 1); break;
+                        case CHECKBOX: GuiCheckBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, false); break;
+                        case TEXTBOX: GuiTextBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 32); break;
+                        case GROUPBOX: GuiGroupBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                        case WINDOWBOX: GuiWindowBox((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                        case DUMMYREC: GuiDummyRec((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text); break;
+                        case STATUSBAR: GuiStatusBar((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, layout[i].text, 15); break;
+                        case LISTVIEW: GuiListView((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, guiControls, 14, 1); break;
+                        case COLORPICKER: GuiColorPicker((Rectangle){ layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, layout[i].rec.width, layout[i].rec.height }, RED); break;
+                        default: break;
+                    }
+                    
+                    if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
                 }
-
-                if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
+                else if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, BLUE);
                 // Draw Control anchor information
                 // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
             // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1 && !anchorMode)
+            if (selectedControl == -1 && !anchorMode && !tracemapEditMode)
             {
                 switch (selectedTypeDraw)
                 {
@@ -871,6 +999,12 @@ int main()
                     default: break;
                 }
             }
+
+            // Draw the tracemap controler
+            if (tracemapEditMode)
+            {
+                DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
+            }
             
             /*
             // Draw the list of controls
@@ -885,16 +1019,48 @@ int main()
             // Draw the anchorPoints
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
-                if (anchors[i].id == selectedAnchor) DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                else DrawCircleLines(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, RED);
-                DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                if (anchors[i].id == selectedAnchor && anchorNewPos)
+                {
+                    // Draw the anchor that is currently moving
+                    DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(ORANGE, 0.5f));
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, ORANGE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, ORANGE);
+                }
+                else if (anchors[i].hidding && anchors[i].id == selectedAnchor)
+                {
+                    // Draw idle anchor
+                    DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(BLUE, 0.5f));
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, BLUE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
+                }
+                else if (anchors[i].id == selectedAnchor)
+                {
+                    // Draw the selected anchor
+                    DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                } 
+                else if (anchors[i].hidding)
+                {
+                    // Draw idle anchor
+                    DrawCircleLines(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(BLUE, 0.5f));
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, BLUE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
+                }
+                else
+                {
+                    // Draw idle anchor
+                    DrawCircleLines(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                }
             }
             
             if ((selectedControl != -1) && (selectedControl < controlsCounter))
             {
                 DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
-                if (layout[selectedControl].ap->id > 0) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
+                if (layout[selectedControl].ap->id > 0 && !layout[selectedControl].ap->hidding) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
+                else if (layout[selectedControl].ap->id > 0 && layout[selectedControl].ap->hidding) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, BLUE);
             }
              
             if ((selectedControl == -1)  && (selectedAnchor == -1))
@@ -927,35 +1093,34 @@ int main()
             }
 
             if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
-            
-            if (helpMode)
-            {
-                DrawRectangleRec((Rectangle){ 20, 20, 260, 330 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-                GuiGroupBox((Rectangle){ 20, 20, 260, 330 }, "Shortcuts");
-                GuiLabel((Rectangle){ 30, 30, 0, 0 }, "G - Show/hide grid");
-                GuiLabel((Rectangle){ 30, 50, 0, 0 }, "S - Toggle snap");
-                GuiLabel((Rectangle){ 30, 70, 0, 0 }, "R - Resize to grid");
-                GuiLabel((Rectangle){ 30, 90, 0, 0 }, "A - Anchor mode");
-                GuiLabel((Rectangle){ 30, 110, 0, 0 }, "U - Unlink anchor");
-                GuiLabel((Rectangle){ 30, 130, 0, 0 }, "Space - Lock/unlock control");
-                GuiLabel((Rectangle){ 30, 150, 0, 0 }, "T - Enter text mode(if possible)");
-                GuiLabel((Rectangle){ 30, 170, 0, 0 }, "Enter - Exit text mode");
-                GuiLabel((Rectangle){ 30, 190, 0, 0 }, "Delete - Delete a control");
-                GuiLabel((Rectangle){ 30, 210, 0, 0 }, "Arrows - Modify width/height");
-                GuiLabel((Rectangle){ 30, 230, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
-                GuiLabel((Rectangle){ 30, 250, 0, 0 }, "L. Alt + Arrows - Modify position");
-                GuiLabel((Rectangle){ 30, 270, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
-                GuiLabel((Rectangle){ 30, 290, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
-                GuiLabel((Rectangle){ 30, 310, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
-                GuiLabel((Rectangle){ 30, 330, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
-            }
-            
+
+            // Draw the help list
+            DrawRectangleRec((Rectangle){ helpPosX + 20, 20, 260, 350 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            GuiGroupBox((Rectangle){ helpPosX + 20, 20, 260, 350 }, "Shortcuts");
+            GuiLabel((Rectangle){ helpPosX + 30, 30, 0, 0 }, "G - Show/hide grid");
+            GuiLabel((Rectangle){ helpPosX + 30, 50, 0, 0 }, "S - Toggle snap");
+            GuiLabel((Rectangle){ helpPosX + 30, 70, 0, 0 }, "R - Resize to grid");
+            GuiLabel((Rectangle){ helpPosX + 30, 90, 0, 0 }, "A - Anchor mode");
+            GuiLabel((Rectangle){ helpPosX + 30, 110, 0, 0 }, "H - Hide controls of selected anchor");
+            GuiLabel((Rectangle){ helpPosX + 30, 130, 0, 0 }, "U - Unlink anchor");
+            GuiLabel((Rectangle){ helpPosX + 30, 150, 0, 0 }, "Space - Lock/unlock control");
+            GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "T - Enter text mode(if possible)");
+            GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "Enter - Exit text mode");
+            GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Delete - Delete a control");
+            GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify width/height");
+            GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
+            GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows - Modify position");
+            GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
+            GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
+            GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
+            GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
+
             // Draw status bar bottom with debug information
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 126, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
             if (snapMode) GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP ON", 10);
             else GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP OFF", 10);
-            GuiStatusBar((Rectangle){ 329, GetScreenHeight() - 24, 80, 24}, "H - Help", 10);
+            GuiStatusBar((Rectangle){ 329, GetScreenHeight() - 24, 80, 24}, "Tab - Help", 10);
             GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, FormatText("Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
             
         EndDrawing();
@@ -965,7 +1130,7 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadTexture(texture);
-    UnloadTexture(rfxgenLayout);
+    UnloadTexture(tracemap);
     
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
