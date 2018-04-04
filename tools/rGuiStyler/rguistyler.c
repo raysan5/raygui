@@ -350,8 +350,7 @@ int main(int argc, char *argv[])
     
     //SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
-    //SetWindowMinSize(700, 700);
-    
+
     int dropsCount = 0;
     char **droppedFiles;
     
@@ -377,16 +376,6 @@ int main(int argc, char *argv[])
         (Rectangle){ 10, guiPosY + 3, 140, 563 },                   // LISTVIEW
         (Rectangle){ guiPosX + 20, guiPosY + 295, 240, 240 },       // COLORPICKER
     };
-
-    // Get current directory
-    // NOTE: Current working directory could not match current executable directory
-    GetCurrentDir(currentPath, sizeof(currentPath));
-    currentPath[strlen(currentPath)] = '\\';
-    currentPath[strlen(currentPath) + 1] = '\0';      // Not really required
-    
-    //GuiLoadStyleImage("resources/rguistyle_default_dark.png");
-    
-    Texture2D texIcons = LoadTexture("resources/icons.png");
     
     // Keep a backup for style    
     memcpy(styleBackup, style, NUM_PROPERTIES*sizeof(int));
@@ -531,7 +520,7 @@ int main(int argc, char *argv[])
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
             // Draw load style button
-            if (GuiImageButtonEx((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, texIcons , (Rectangle){ 0, 0, texIcons.width/3, texIcons.height/6 }, "Load Style")) {  currentSelectedProperty = -1; BtnLoadStyle(); }
+            if (GuiButton((Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 }, "Load Style")) {  currentSelectedProperty = -1; BtnLoadStyle(); }
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
@@ -583,8 +572,6 @@ int main(int argc, char *argv[])
     }
     // De-Initialization
     //--------------------------------------------------------------------------------------    
-    UnloadTexture(texIcons);
-
     ClearDroppedFiles();        // Clear internal buffers
     
     CloseWindow();              // Close window and OpenGL context
@@ -600,9 +587,14 @@ int main(int argc, char *argv[])
 // Button load style function
 static void BtnLoadStyle(void)
 {
+    char currentPath[256];
+
+    // Add sample file name to currentPath
+    strcpy(currentPath, GetWorkingDirectory());
+    strcat(currentPath, "\\\0");
+    
     // Open file dialog
     const char *filters[] = { "*.rgs" };
-
     const char *fileName = tinyfd_openFileDialog("Load raygui style file", currentPath, 1, filters, "raygui Style Files (*.rgs)", 0);
 
     if (fileName != NULL) GuiLoadStyle(fileName);
@@ -611,21 +603,20 @@ static void BtnLoadStyle(void)
 // Button save style function
 static void BtnSaveStyle(const char *defaultName, bool binary)
 {
-    char currrentPathFile[256];
+    char currentPathFile[256];
 
     // Add sample file name to currentPath
-    strcpy(currrentPathFile, currentPath);
-    strcat(currrentPathFile, defaultName);
-
+    strcpy(currentPathFile, GetWorkingDirectory());
+    strcat(currentPathFile, "\\style.rgs\0");
+    
     // Save file dialog
     const char *filters[] = { "*.rgs" };
-    const char *fileName = tinyfd_saveFileDialog("Save raygui style text file", currrentPathFile, 1, filters, "raygui Style Files (*.rgs)");
+    const char *fileName = tinyfd_saveFileDialog("Save raygui style text file", currentPathFile, 1, filters, "raygui Style Files (*.rgs)");
 
     if (fileName != NULL)
     {
-        // Save style file (text or binary)
-        SaveStyleRGS(fileName, binary);
-        fileName = "";
+        //if (GetExtension(fileName) == NULL) strcat(fileName, ".rgs\0");     // No extension provided
+        if (fileName != NULL) SaveStyleRGS(fileName, binary);               // Save style file (text or binary)        
     }
 }
 
