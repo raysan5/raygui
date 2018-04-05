@@ -13,11 +13,11 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 24 15 220 161 1 Image Export Options
-c 001 9 102 47 130 20 1 
-c 002 9 102 77 130 20 1 SAMPLE TEXT
-c 003 11 102 107 131 22 1 Untitled
-c 004 1 35 139 200 30 1 Export Image
-c 005 0 35 53 60 20 1 File format
-c 006 0 35 83 61 20 1 Pixel format
-c 007 0 35 113 50 20 1 File name
+c 000 13 0 0 220 161 1 Image Export Options
+c 001 9 77 32 130 20 1 Laser/Shoot
+c 002 9 77 62 130 20 1 SAMPLE TEXT
+c 003 11 77 92 131 22 1 Untitled
+c 004 1 10 124 200 30 1 Export Image
+c 005 0 10 38 60 20 1 File format
+c 006 0 10 68 61 20 1 Pixel format
+c 007 0 10 98 50 20 1 File name
