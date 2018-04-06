@@ -1,23 +1,18 @@
 /*******************************************************************************************
 *
-*   raygui - raw image file importer
+*   raygui - image exporter window box test
 *
-*   This example has been created using raylib v1.7 (www.raylib.com)
+*   This example has been created using raylib v1.9 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
-*   Copyright (c) 2017 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2018 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
 
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_STYLE_SAVE_LOAD
 #include "raygui.h"
-
-#include <string.h>             // Required for: strcpy()
-#include <stdlib.h>             // Required for: atoi()
-
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -29,35 +24,33 @@ int main(int argc, char *argv[0])
     const int SCREEN_WIDTH = 800;
     const int SCREEN_HEIGHT = 450;
     
-    int guiHeight = 30;
-    int guiWidth = 150;
+    // Window box 
+    Rectangle windowBoxRec = { SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 - 110, 260, 230 };
+    bool windowBoxActive = false;
     
-    Rectangle panel = { SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 - 110, 260, 230 };
+    // File format combo box
+    int formatCount = 3;
+    int formatSelected = 0;
+    const char *formatText[3] = { "PNG", "RAW", "CODE"};
     
-    int guiPosX = panel.x + 10;
-    int guiPosY = panel.y + 20;
-   
+    // Pixel format combo box
+    int pixelFormatCount = 6;
+    int pixelActiveSelected = 0;
+    const char *pixelFormatText[6] = { "R8G8B8A8", "R8", "R5G5B5A1" ,"R5G6B5", "R8A8", "R4G4B4A4" };
     
-    int formatNum = 3;
-    int formatActive = 0;
-    int pixelNum = 8;
-    int pixelActive = 0;
-    //int channelsNum = 4;
-    //int channelsActive = 0;
-    int dropdownTest = 0;
+    // Toggle buttons
     bool toggleRed = true;
     bool toggleGreen = true;
     bool toggleBlue = true;
     bool toggleAlpha = true;
-    const char *formatText[3] = { "PNG", "RAW", "CODE (.c/.h)"};
-    const char *formatPixel[8] = { "R8G8B8A8", "R8", "R5G5B5A1" ,"R5G6B5", "R8A8", "R16G16B16", "R4G4B4A4", "R2D2C3P0" };
-    char fileNameText[32] = "Untitled"; 
-    //const char *formatChannels[4] = { "R", "G", "B" ,"A" };
     
+    // Text box
+    char fileNameText[32] = "Untitled";
+
+    //int dropdownSelected = 0;
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "image exporter");
-    
-    Texture2D texture = { 0 };
-    
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -66,6 +59,8 @@ int main(int argc, char *argv[0])
     {
         // Update
         //----------------------------------------------------------------------------------
+        // ...
+        //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -73,33 +68,43 @@ int main(int argc, char *argv[0])
 
             ClearBackground(RAYWHITE);
             
-            GuiDisable();
-            GuiWindowBox(panel, "Image export options");
-            GuiEnable();
-            //Draw file format options
-            GuiLabel((Rectangle){ guiPosX, guiPosY + 20, 0, 0 }, FormatText("File format"));
-            formatActive = GuiComboBox((Rectangle){ guiPosX + 90, guiPosY + 10, guiWidth, guiHeight },formatText,formatNum,formatActive);
+            // Draw message box (testing)
+            //GuiMessageBox((Rectangle){600, 100, 150, 100}, "Image export options", "Hello World!\nHello World!");
             
-            //Draw pixel format options
-            GuiLabel((Rectangle){ guiPosX, guiPosY + 60, 0, 0 }, FormatText("Pixel format"));
-            pixelActive = GuiComboBox((Rectangle){ guiPosX + 90, guiPosY + 50, guiWidth, guiHeight },formatPixel,pixelNum,pixelActive); 
+            if (GuiButton((Rectangle){ 20, 20, 150, 30 }, "Show Export Window")) windowBoxActive = true;
             
-            //Draw active channels options
-            GuiLabel((Rectangle){ guiPosX, guiPosY + 100, 0, 0 }, FormatText("Active channels"));
-            toggleRed = GuiToggleButton((Rectangle){ guiPosX + 100, guiPosY + 90, guiWidth/5, guiHeight}, "R", toggleRed);
-            toggleGreen = GuiToggleButton((Rectangle){ guiPosX + 132, guiPosY + 90, guiWidth/5, guiHeight}, "G", toggleGreen);
-            toggleBlue = GuiToggleButton((Rectangle){ guiPosX + 164, guiPosY + 90, guiWidth/5, guiHeight}, "B", toggleBlue);
-            toggleAlpha = GuiToggleButton((Rectangle){ guiPosX + 196, guiPosY + 90, guiWidth/5, guiHeight}, "A", toggleAlpha);
-            //channelsActive = GuiToggleGroup((Rectangle){ guiPosX + 100, guiPosY + 90, guiWidth/5, guiHeight },formatChannels,channelsNum,channelsActive);
+            // Draw window box
+            //-----------------------------------------------------------------------------
+            if (windowBoxActive)
+            {
+                windowBoxActive = !GuiWindowBox(windowBoxRec, "Image export options");
+
+                // Draw file format options
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 20, 0, 0 }, FormatText("File format"));
+                formatSelected = GuiComboBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 10, 150, 30 }, formatText, formatCount, formatSelected);
+                
+                // Draw pixel format options
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 60, 0, 0 }, FormatText("Pixel format"));
+                pixelActiveSelected = GuiComboBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 50, 150, 30 }, pixelFormatText, pixelFormatCount, pixelActiveSelected); 
+                
+                // Draw active channels options
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 100, 0, 0 }, FormatText("Active channels"));
+                toggleRed = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 90, 36, 30}, "R", toggleRed);
+                toggleGreen = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 128, windowBoxRec.y + 20 + 90, 36, 30}, "G", toggleGreen);
+                toggleBlue = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 166, windowBoxRec.y + 20 + 90, 36, 30}, "B", toggleBlue);
+                toggleAlpha = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 204, windowBoxRec.y + 20 + 90, 36, 30}, "A", toggleAlpha);
+
+                //Draw file name options
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 140, 0, 0 }, FormatText("File name"));
+                GuiTextBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 130, 150, 30 }, fileNameText, 32);
+                
+                // Draw export image button
+                if (GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 170, 150 + 90, 30 }, "Export Image")) { /* Call function */ }
+            }
+            //-----------------------------------------------------------------------------
             
-            //Draw file name options
-            GuiLabel((Rectangle){ guiPosX, guiPosY + 140, 0, 0 }, FormatText("File name"));
-            GuiTextBox((Rectangle){ guiPosX + 90, guiPosY + 130, guiWidth, guiHeight }, fileNameText, 32);
-            
-            //Draw export image button
-            if(GuiButton((Rectangle){ guiPosX, guiPosY + 170, guiWidth + 90, guiHeight }, "Export Image")){} // Call function
-            
-            dropdownTest = GuiDropdownBox((Rectangle){ 10, 10, 200, 20 }, formatText, formatNum, dropdownTest);
+            // Draw dropdown box (testing)
+            //dropdownSelected = GuiDropdownBox((Rectangle){ 10, 10, 150, 30 }, formatText, formatCount, dropdownSelected);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -107,8 +112,6 @@ int main(int argc, char *argv[0])
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    if (texture.id != 0) UnloadTexture(texture);
-    
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
