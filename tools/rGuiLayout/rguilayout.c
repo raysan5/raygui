@@ -92,10 +92,11 @@ const char *controlTypeNameShort[] = { "lbl", "btn", "ibtn", "tggl", "tgroup", "
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-static void DrawGrid2D(int divsX, int divsY);                                       // Draw 2d grid with horizontal and vertical lines depending on the screen size
-static void SaveLayoutRGL(const char *fileName, bool binary);                       // Save gui layout project information
-static void LoadLayoutRGL(const char *fileName);                                    // Load gui layout project information
-static void GenerateLayoutCode(const char *fileName , bool noStaticData);           // Generate C code for gui layout
+static void DrawGrid2D(int divsX, int divsY);                           // Draw 2d grid with horizontal and vertical lines depending on the screen size
+static void SaveLayoutRGL(const char *fileName, bool binary);           // Save gui layout project information
+static void LoadLayoutRGL(const char *fileName);                        // Load gui layout project information
+static void GenerateCode(const char *fileName , bool noStaticData);     // Generate C code for gui layout
+static void GenerateCodeFromRGL(const char *fileName);                  // Generate C code from .rgl file
 
 //----------------------------------------------------------------------------------
 // Main Entry point
@@ -535,6 +536,7 @@ int main()
 
             if (offsetY >= GRID_LINE_SPACING/2) defaultRec[selectedType].y += (GRID_LINE_SPACING - offsetY);
             else defaultRec[selectedType].y -= offsetY;
+            
             // Snap rectangle size to closer snap point sizes
             /*
             offsetX = defaultRec[selectedType].width%GRID_LINE_SPACING;
@@ -551,7 +553,6 @@ int main()
         // Resize the controller aplying the snap
         if (!textEditMode && IsKeyPressed(KEY_R) && selectedControl != -1)
         {
-             
             int offsetX = layout[selectedControl].rec.width%GRID_LINE_SPACING;
             int offsetY = layout[selectedControl].rec.height%GRID_LINE_SPACING;
             
@@ -560,7 +561,6 @@ int main()
             
             if (offsetY >= GRID_LINE_SPACING/2) layout[selectedControl].rec.height += (GRID_LINE_SPACING - offsetY);
             else layout[selectedControl].rec.height -= offsetY;
- 
         }
         
         // Check if control has text to edit
@@ -612,10 +612,7 @@ int main()
             lockMode = true;
             saveControlSelected = selectedControl;
         }
-        else if (IsKeyPressed(KEY_SPACE) && (selectedControl != -1))
-        {
-            lockMode = false;
-        }
+        else if (IsKeyPressed(KEY_SPACE) && (selectedControl != -1)) lockMode = false;
 
         // Checks if mouse is over an anchor
         for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
@@ -710,7 +707,8 @@ int main()
                         } 
                         
                         anchorNewPos = false;
-                    }            
+                    }
+                    
                     controlDrag = false;
                     selectedAnchor = -1;
                     anchorMode = false;
@@ -746,10 +744,8 @@ int main()
                     anchorMode = false;                    
                 }
                 
-                if (IsKeyPressed(KEY_H)) 
-                {
-                    anchors[selectedAnchor].hidding = !anchors[selectedAnchor].hidding;
-                }
+                // Hide/Unhide selected anchor linked controls
+                if (IsKeyPressed(KEY_H)) anchors[selectedAnchor].hidding = !anchors[selectedAnchor].hidding;
             }
         }
 
@@ -794,8 +790,6 @@ int main()
             else if (layout[selectedControl].rec.height <= 20) layout[selectedControl].rec.height = 20;
         }
   
-        // TODO: Draw global app screen limits (black rectangle with black default anchor)
-        
         // Shows or hides the grid if not in textEditMode
         if (IsKeyPressed(KEY_G) && (!textEditMode)) showGrid = !showGrid;
         
@@ -852,17 +846,18 @@ int main()
             const char *filters[] = { "*.rgl" };
             const char *fileName = tinyfd_openFileDialog("Load raygui layout file", "", 1, filters, "raygui Layout Files (*.rgl)", 0);
             
-            if (fileName != NULL) 
-            {
-                LoadLayoutRGL(fileName);
-                
-                // Setup by default some anchor value because logic is always trying to access layout[i].ap->id
-                // if layout[i].ap == NULL, program crashes
-                //for (int i = 0; i < controlsCounter; i++) layout[i].ap = &anchors[0];
-            }
+            if (fileName != NULL) LoadLayoutRGL(fileName);
         }
         
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) GenerateLayoutCode("test_layout.c", true);
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) 
+        {
+            // Save file dialog
+            // TODO: Support additional languages (.lua, .go...) code generation
+            const char *filters[] = { "*.c", "*.go", "*.lua" };
+            const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.c", 3, filters, "Code file");
+            
+            if (fileName != NULL) GenerateCode(fileName, true);
+        }
         
         // Tracemap texture control logic
         if (tracemap.id > 0)
@@ -905,7 +900,6 @@ int main()
                 {
                     tracemapRec.height -= 10*GetMouseWheelMove();
                     tracemapRec.width -= 10*GetMouseWheelMove();
-                      
                 }
                 
                 tracemap.height = tracemapRec.height;
@@ -937,6 +931,8 @@ int main()
 
             ClearBackground(RAYWHITE);
             
+            // TODO: Draw global app screen limits (black rectangle with black default anchor)
+
             if (showGrid) DrawGrid2D(GetScreenWidth()/13, GetScreenHeight()/13);
             
             if (tracemap.id > 0) DrawTexture(tracemap, tracemapRec.x, tracemapRec.y, Fade(WHITE, tracemapFade));
@@ -973,8 +969,6 @@ int main()
                     if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, RED);
                 }
                 else if ((layout[i].ap->id == selectedAnchor) && (layout[i].ap->id > 0)) DrawLine(layout[i].ap->x, layout[i].ap->y, layout[i].ap->x + layout[i].rec.x, layout[i].ap->y + layout[i].rec.y, BLUE);
-                // Draw Control anchor information
-                // DrawText(FormatText("Id: %i | X: %i | Y: %i | Enabled: %i", layout[0].ap->id, layout[0].ap->x, layout[0].ap->y, layout[0].ap->enabled), 100, 100, style[DEFAULT_TEXT_SIZE], RED);
             }
             
             // Draws the defaultRec[selectedType] of the control selected
@@ -1005,12 +999,9 @@ int main()
                 }
             }
 
-            // Draw the tracemap controler
-            if (tracemapEditMode)
-            {
-                DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
-            }
-            
+            // Draw the tracemap rectangle
+            if (tracemapEditMode) DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
+
             /*
             // Draw the list of controls
             DrawRectangleRec(listViewControls, Fade(WHITE, 0.7f));
@@ -1061,13 +1052,17 @@ int main()
                 }
             }
             
+            // Draw selected control selection rectangle (transparent RED)
             if ((selectedControl != -1) && (selectedControl < controlsCounter))
             {
                 DrawRectangleRec((Rectangle){ layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height }, Fade(RED, 0.5f));
+                
+                // Draw anchor lines (if not hidden)
                 if (layout[selectedControl].ap->id > 0 && !layout[selectedControl].ap->hidding) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, RED);
                 else if (layout[selectedControl].ap->id > 0 && layout[selectedControl].ap->hidding) DrawLine(layout[selectedControl].ap->x, layout[selectedControl].ap->y, layout[selectedControl].ap->x + layout[selectedControl].rec.x, layout[selectedControl].ap->y + layout[selectedControl].rec.y, BLUE);
             }
-             
+            
+            // Draw cursor (control mode or anchor mode)
             if ((selectedControl == -1)  && (selectedAnchor == -1))
             {
                 if (anchorMode)
@@ -1083,7 +1078,7 @@ int main()
                 }
             }
 
-            // Draws the cursor of textEditMode
+            // Draw cursor on textEditMode
             if (textEditMode)
             {
                if (((framesCounter/20)%2) == 0)
@@ -1097,28 +1092,32 @@ int main()
                }
             }
 
+            // Draw anchor linking line
             if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
 
-            // Draw the help list
-            DrawRectangleRec((Rectangle){ helpPosX + 20, 20, 260, 350 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-            GuiGroupBox((Rectangle){ helpPosX + 20, 20, 260, 350 }, "Shortcuts");
-            GuiLabel((Rectangle){ helpPosX + 30, 30, 0, 0 }, "G - Show/hide grid");
-            GuiLabel((Rectangle){ helpPosX + 30, 50, 0, 0 }, "S - Toggle snap");
-            GuiLabel((Rectangle){ helpPosX + 30, 70, 0, 0 }, "R - Resize to grid");
-            GuiLabel((Rectangle){ helpPosX + 30, 90, 0, 0 }, "A - Anchor mode");
-            GuiLabel((Rectangle){ helpPosX + 30, 110, 0, 0 }, "H - Hide controls of selected anchor");
-            GuiLabel((Rectangle){ helpPosX + 30, 130, 0, 0 }, "U - Unlink anchor");
-            GuiLabel((Rectangle){ helpPosX + 30, 150, 0, 0 }, "Space - Lock/unlock control");
-            GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "T - Enter text mode(if possible)");
-            GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "Enter - Exit text mode");
-            GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Delete - Delete a control");
-            GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify width/height");
-            GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
-            GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows - Modify position");
-            GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
-            GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
-            GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
-            GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
+            // Draw the help list (by default is out of screen)
+            if (helpPosX > -280)
+            {
+                DrawRectangleRec((Rectangle){ helpPosX + 20, 20, 260, 350 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+                GuiGroupBox((Rectangle){ helpPosX + 20, 20, 260, 350 }, "Shortcuts");
+                GuiLabel((Rectangle){ helpPosX + 30, 30, 0, 0 }, "G - Show/hide grid");
+                GuiLabel((Rectangle){ helpPosX + 30, 50, 0, 0 }, "S - Toggle snap");
+                GuiLabel((Rectangle){ helpPosX + 30, 70, 0, 0 }, "R - Resize to grid");
+                GuiLabel((Rectangle){ helpPosX + 30, 90, 0, 0 }, "A - Anchor mode");
+                GuiLabel((Rectangle){ helpPosX + 30, 110, 0, 0 }, "H - Hide controls of selected anchor");
+                GuiLabel((Rectangle){ helpPosX + 30, 130, 0, 0 }, "U - Unlink anchor");
+                GuiLabel((Rectangle){ helpPosX + 30, 150, 0, 0 }, "Space - Lock/unlock control");
+                GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "T - Enter text mode(if possible)");
+                GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "Enter - Exit text mode");
+                GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Delete - Delete a control");
+                GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify width/height");
+                GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
+                GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows - Modify position");
+                GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout to code");
+                GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + S - Save layout(.rgl)");
+                GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + O - Open layout(.rgl)");
+                GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
+            }
 
             // Draw status bar bottom with debug information
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
@@ -1255,7 +1254,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
 }
 
 // Import gui layout project information
-// NOTE: Imported from text file
+// NOTE: Updates global variable: layout
 static void LoadLayoutRGL(const char *fileName)
 {
     char buffer[256];
@@ -1357,7 +1356,7 @@ static void LoadLayoutRGL(const char *fileName)
 }
 
 // Generate C code for gui layout
-static void GenerateLayoutCode(const char *fileName , bool noStaticData)
+static void GenerateCode(const char *fileName , bool noStaticData)
 {
     #define RGL_TOOL_NAME           "rGuiLayout"
     #define RGL_TOOL_DESCRIPTION    "tool_name"
@@ -1609,4 +1608,23 @@ static void GenerateLayoutCode(const char *fileName , bool noStaticData)
     }
 
     fclose(ftool);
+}
+
+// Generate C code from .rgl file
+static void GenerateCodeFromRGL(const char *fileName)
+{
+    if (IsFileExtension(fileName, ".rgl"))
+    {
+        LoadLayoutRGL(fileName);    // Updates global: layout
+        
+        int len = strlen(fileName);
+        char outName[256] = "\0";
+        strcpy(outName, fileName);
+        outName[len - 3] = 'c';
+        outName[len - 2] = '\0';
+        
+        // Generate C code for gui layout
+        GenerateCode(outName, true);
+    }
+    else printf("Input RGL file not valid\n");
 }
