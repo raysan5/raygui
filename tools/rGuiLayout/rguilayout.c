@@ -222,7 +222,7 @@ int main()
     bool tracemapEditMode = false;
     float tracemapFade = 0.5f;
     Vector2 panOffset = { 0 };
-    Vector2 prevPosition = { tracemapRec.x, tracemapRec.y };
+    Vector2 prevPosition = { 0 };
     
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
@@ -243,7 +243,6 @@ int main()
         layout[i].type = 0;
         layout[i].rec = (Rectangle){ 0, 0, 0, 0 };
         layout[i].text = (unsigned char *)calloc(1, 32);
-        strcpy(layout[i].text, "SAMPLE TEXT");
         layout[i].ap = &anchors[0];  // By default, set parent anchor
     }
     
@@ -380,18 +379,21 @@ int main()
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 controlDrag = true;
+                panOffset = (Vector2){ mouseX, mouseY };
+                prevPosition = (Vector2){ layout[selectedControl].rec.x, layout[selectedControl].rec.y  };
             }
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
             {
                 controlDrag = false;
-                selectedControl = -1;
             } 
              
             if (controlDrag && !lockMode)
-            {
-                layout[selectedControl].rec.x = mouseX - layout[selectedControl].rec.width/2 - layout[selectedControl].ap->x;
-                layout[selectedControl].rec.y = mouseY - layout[selectedControl].rec.height/2 - layout[selectedControl].ap->y;
-                
+            {       
+
+                layout[selectedControl].rec.x = prevPosition.x + (mouseX - panOffset.x);
+                layout[selectedControl].rec.y = prevPosition.y + (mouseY - panOffset.y);
+                                  
+
                 // Snap to grid position and size
                 if (snapMode)
                 {
@@ -403,29 +405,52 @@ int main()
                     else layout[selectedControl].rec.x -= offsetX;
                     
                     if (offsetY >= GRID_LINE_SPACING/2) layout[selectedControl].rec.y += (GRID_LINE_SPACING - offsetY);
-                    else layout[selectedControl].rec.y -= offsetY;  
+                    else layout[selectedControl].rec.y -= offsetY;
                 }
             }
             
             if (snapMode)
             {
-                if (IsKeyDown(KEY_LEFT_ALT))
+                if (IsKeyDown(KEY_LEFT_CONTROL))
                 {
-                    // Control modifier of position
-                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x += GRID_LINE_SPACING;
-                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x -= GRID_LINE_SPACING;
-                    
-                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y -= GRID_LINE_SPACING;
-                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y += GRID_LINE_SPACING;
+                    // Control modifier of width and height            
+                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    {
+                        if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
+                        else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
+
+                        if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
+                        else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                    }
+                    else
+                    {
+                        if (IsKeyDown(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
+                        else if (IsKeyDown(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
+
+                        if (IsKeyDown(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
+                        else if (IsKeyDown(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                    }
                 }
                 else 
                 {
-                    // Control modifier of width and height
-                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width += GRID_LINE_SPACING;
-                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width -= GRID_LINE_SPACING;
-
-                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height -= GRID_LINE_SPACING;
-                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height += GRID_LINE_SPACING;
+                    // Control modifier of position
+                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    {
+                        if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x += GRID_LINE_SPACING;
+                        else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x -= GRID_LINE_SPACING;
+                        
+                        if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y -= GRID_LINE_SPACING;
+                        else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y += GRID_LINE_SPACING;
+                    }
+                    else
+                    {
+                        if (IsKeyDown(KEY_RIGHT)) layout[selectedControl].rec.x += GRID_LINE_SPACING;
+                        else if (IsKeyDown(KEY_LEFT)) layout[selectedControl].rec.x -= GRID_LINE_SPACING;
+                        
+                        if (IsKeyDown(KEY_UP)) layout[selectedControl].rec.y -= GRID_LINE_SPACING;
+                        else if (IsKeyDown(KEY_DOWN)) layout[selectedControl].rec.y += GRID_LINE_SPACING;
+                    }
+                    
                 }
                 
                 /*
@@ -444,29 +469,44 @@ int main()
             {
                 if (IsKeyDown(KEY_LEFT_CONTROL))
                 {
-                    // Control modifier for a more precise sizing
-                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width++;
-                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width--;
+                    // Control modifier for a more precise sizing                  
+                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    {
+                        // Control modifier of position 
+                        if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.width++;
+                        else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.width--;
+                        
+                        if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height--;
+                        else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height++;
+                    }
+                    else
+                    {
+                        if (IsKeyDown(KEY_RIGHT)) layout[selectedControl].rec.width++;
+                        else if (IsKeyDown(KEY_LEFT)) layout[selectedControl].rec.width--;
 
-                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.height--;
-                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.height++;
-                }
-                else if (IsKeyDown(KEY_LEFT_ALT))
-                {
-                    // Control modifier of position 
-                    if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x ++;
-                    else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x --;
-                    
-                    if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y --;
-                    else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y ++;
+                        if (IsKeyDown(KEY_UP)) layout[selectedControl].rec.height--;
+                        else if (IsKeyDown(KEY_DOWN)) layout[selectedControl].rec.height++;
+                    }
                 }
                 else
                 {
-                    if (IsKeyDown(KEY_RIGHT)) layout[selectedControl].rec.width++;
-                    else if (IsKeyDown(KEY_LEFT)) layout[selectedControl].rec.width--;
-                    
-                    if (IsKeyDown(KEY_UP)) layout[selectedControl].rec.height--;
-                    else if (IsKeyDown(KEY_DOWN)) layout[selectedControl].rec.height++;
+                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    {
+                        // Control modifier for a more precise sizing
+                        if (IsKeyPressed(KEY_RIGHT)) layout[selectedControl].rec.x++;
+                        else if (IsKeyPressed(KEY_LEFT)) layout[selectedControl].rec.x--;
+
+                        if (IsKeyPressed(KEY_UP)) layout[selectedControl].rec.y--;
+                        else if (IsKeyPressed(KEY_DOWN)) layout[selectedControl].rec.y++;
+                    }
+                    else
+                    {
+                        if (IsKeyDown(KEY_RIGHT)) layout[selectedControl].rec.x++;
+                        else if (IsKeyDown(KEY_LEFT)) layout[selectedControl].rec.x--;
+                        
+                        if (IsKeyDown(KEY_UP)) layout[selectedControl].rec.y--;
+                        else if (IsKeyDown(KEY_DOWN)) layout[selectedControl].rec.y++;
+                    }
                 }
             }
             
@@ -871,10 +911,17 @@ int main()
                 int offsetY = mouseY%GRID_LINE_SPACING;
                 
                 // Moves the texture with the mouse
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) panOffset = (Vector2){ mouseX, mouseY };
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    panOffset = (Vector2){ mouseX, mouseY };
+                    prevPosition = (Vector2){ tracemapRec.x, tracemapRec.y };
+                }
                 
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
                 {
+                    tracemapRec.x = prevPosition.x + (mouseX - panOffset.x);
+                    tracemapRec.y = prevPosition.y + (mouseY - panOffset.y);
+                        
                     if (snapMode)
                     {
                         if (offsetX >= GRID_LINE_SPACING/2) mouseX += (GRID_LINE_SPACING - offsetX);
@@ -882,13 +929,17 @@ int main()
                         
                         if (offsetY >= GRID_LINE_SPACING/2) mouseY += (GRID_LINE_SPACING - offsetY);
                         else mouseY -= offsetY;
+                        
+                        offsetX = tracemapRec.x%GRID_LINE_SPACING;
+                        offsetY = tracemapRec.y%GRID_LINE_SPACING;
+                        
+                        if (offsetX >= GRID_LINE_SPACING/2) tracemapRec.x += (GRID_LINE_SPACING - offsetX);
+                        else tracemapRec.x -= offsetX;
+                        
+                        if (offsetY >= GRID_LINE_SPACING/2) tracemapRec.y += (GRID_LINE_SPACING - offsetY);
+                        else tracemapRec.y -= offsetY;
                     }
-
-                    tracemapRec.x = prevPosition.x + (mouseX - panOffset.x);
-                    tracemapRec.y = prevPosition.y + (mouseY - panOffset.y);
-                }
-                
-                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) prevPosition = (Vector2){ tracemapRec.x, tracemapRec.y };
+                }  
 
                 // Moves and scales the texture with snap.
                 if (IsKeyDown(KEY_LEFT_CONTROL))
@@ -906,8 +957,31 @@ int main()
                 tracemap.width = tracemapRec.width;
                 
                 // Change texture fade
-                if (IsKeyDown(KEY_LEFT)) tracemapFade-= 0.01f;
-                else if (IsKeyDown(KEY_RIGHT)) tracemapFade+=0.01f;
+                if (IsKeyDown(KEY_LEFT_CONTROL))
+                {
+                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    {
+                        if (IsKeyPressed(KEY_LEFT)) tracemapRec.x--;
+                        else if (IsKeyPressed(KEY_RIGHT)) tracemapRec.x++;
+                        
+                        if (IsKeyPressed(KEY_UP)) tracemapRec.y--;
+                        else if (IsKeyPressed(KEY_DOWN)) tracemapRec.y++;
+                    }
+                    else
+                    {
+                        if (IsKeyDown(KEY_LEFT)) tracemapRec.x--;
+                        else if (IsKeyDown(KEY_RIGHT)) tracemapRec.x++;
+                        
+                        if (IsKeyDown(KEY_UP)) tracemapRec.y--;
+                        else if (IsKeyDown(KEY_DOWN)) tracemapRec.y++;
+                    }
+                }
+                else
+                {
+                    if (IsKeyDown(KEY_LEFT)) tracemapFade-= 0.01f;
+                    else if (IsKeyDown(KEY_RIGHT)) tracemapFade+=0.01f; 
+                }
+                
                 
                 if (tracemapFade < 0) tracemapFade = 0;
                 else if (tracemapFade > 1) tracemapFade = 1;
@@ -1001,6 +1075,7 @@ int main()
 
             // Draw the tracemap rectangle
             if (tracemapEditMode) DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
+            else DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, GRAY);
 
             /*
             // Draw the list of controls
@@ -1019,36 +1094,38 @@ int main()
                 {
                     // Draw the anchor that is currently moving
                     DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(ORANGE, 0.5f));
-                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y - 1, ANCHOR_RADIUS*2 + 10, 1, ORANGE);
-                    DrawRectangle(anchors[i].x - 1, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, ORANGE);
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, ORANGE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, ORANGE);
                 }
                 else if (anchors[i].hidding && anchors[i].id == selectedAnchor)
                 {
                     // Draw idle anchor
                     DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(BLUE, 0.5f));
-                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y - 1, ANCHOR_RADIUS*2 + 10, 1, BLUE);
-                    DrawRectangle(anchors[i].x - 1, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, BLUE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
+                    DrawText(FormatText("[%i, %i]", anchors[i].x, anchors[i].y), anchors[i].x, anchors[i].y - 25, 20, BLUE);
                 }
                 else if (anchors[i].id == selectedAnchor)
                 {
                     // Draw the selected anchor
                     DrawCircle(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y - 1, ANCHOR_RADIUS*2 + 10, 1, RED);
-                    DrawRectangle(anchors[i].x - 1, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                    DrawText(FormatText("[%i, %i]", anchors[i].x, anchors[i].y), anchors[i].x, anchors[i].y - 25, 20, RED);
                 } 
                 else if (anchors[i].hidding)
                 {
                     // Draw idle anchor
                     DrawCircleLines(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(BLUE, 0.5f));
-                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y - 1, ANCHOR_RADIUS*2 + 10, 1, BLUE);
-                    DrawRectangle(anchors[i].x - 1, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, BLUE);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, BLUE);
                 }
                 else
                 {
                     // Draw idle anchor
                     DrawCircleLines(anchors[i].x, anchors[i].y, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y - 1, ANCHOR_RADIUS*2 + 10, 1, RED);
-                    DrawRectangle(anchors[i].x - 1, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                    DrawRectangle(anchors[i].x - ANCHOR_RADIUS - 5, anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(anchors[i].x, anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
                 }
             }
             
@@ -1068,8 +1145,8 @@ int main()
                 if (anchorMode)
                 {
                     DrawCircleLines(mouseX, mouseY, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                    DrawRectangle(mouseX - ANCHOR_RADIUS - 5, mouseY - 1, ANCHOR_RADIUS*2 + 10, 1, RED);
-                    DrawRectangle(mouseX - 1 , mouseY - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                    DrawRectangle(mouseX - ANCHOR_RADIUS - 5, mouseY, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(mouseX , mouseY - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
                 }
                 else 
                 {
@@ -1094,6 +1171,12 @@ int main()
 
             // Draw anchor linking line
             if (anchorLinkMode) DrawLine(anchors[linkedAnchor].x, anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
+
+            // Draw Rectangle Info
+            if (selectedControl != -1) DrawText(FormatText("[%i, %i, %i, %i]", layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), layout[selectedControl].rec.x + layout[selectedControl].ap->x, layout[selectedControl].rec.y + layout[selectedControl].ap->y - 30, 20, MAROON);
+            
+            // Draw Image info
+            if (tracemapEditMode) DrawText(FormatText("[%i, %i, %i, %i]", tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height), tracemapRec.x + 25, tracemapRec.y + 25, 20, MAROON);
 
             // Draw the help list (by default is out of screen)
             if (helpPosX > -280)
@@ -1120,13 +1203,11 @@ int main()
             }
 
             // Draw status bar bottom with debug information
-            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 125, 24}, FormatText("Controls count: %i", controlsCounter), 20);
-            GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 126, 24}, FormatText("Mouse: (%i, %i)", mouseX, mouseY), 15);
-            if (snapMode) GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP ON", 10);
-            else GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP OFF", 10);
-            GuiStatusBar((Rectangle){ 329, GetScreenHeight() - 24, 80, 24}, "Tab - Help", 10);
-            if (selectedControl != -1) GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, FormatText("Selected Control: #%03i  |  %s  |  rec(%i, %i, %i, %i)", selectedControl, controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
-            else GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, "", 15);
+            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", mouseX, mouseY), 15);
+            GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 81, 24}, (snapMode ? "SNAP: ON" : "SNAP: OFF"), 10);
+            GuiStatusBar((Rectangle){ 204, GetScreenHeight() - 24, 145, 24}, FormatText("CONTROLS COUNT: %i", controlsCounter), 20);
+            if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)", selectedControl, controlTypeName[layout[selectedControl].type], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
+            else GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, "", 15);
             
             
         EndDrawing();
@@ -1158,7 +1239,7 @@ static void DrawGrid2D(int divsX, int divsY)
     {
         for (int k = 0; k < 5; k++)
         {
-            DrawRectangle(-(divsX/2*GRID_LINE_SPACING*5) + offset - 1, -1, 1, GetScreenHeight(), ((k == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA)));
+            DrawRectangle(-(divsX/2*GRID_LINE_SPACING*5) + offset, 0, 1, GetScreenHeight(), ((k == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA)));
             offset += GRID_LINE_SPACING;
         }
     }
@@ -1170,7 +1251,7 @@ static void DrawGrid2D(int divsX, int divsY)
     {
         for (int k = 0; k < 5; k++)
         {
-            DrawRectangle(-1, -(divsY/2*GRID_LINE_SPACING*5) + offset - 1, GetScreenWidth(), 1, ((k == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA)));
+            DrawRectangle(0, -(divsY/2*GRID_LINE_SPACING*5) + offset, GetScreenWidth(), 1, ((k == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA)));
             offset += GRID_LINE_SPACING;
         }
     }
