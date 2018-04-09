@@ -1,5 +1,3 @@
-# raygui tools
-Some useful raygui tools:
+## raygui tools: rGuiLayout and rGuiStyler
 
- - rGuiSyler: raygui visual styles editor to create color-sizes variants of default raygui styles.
- - rGuiLayout: raygui visual layout editor to make easy gui creation, it can export to C code.
+Two tools are distributed together with raygui library to help on imgui development and styling. **rGuiSyler** is a raygui visual styles editor to create color-sizes variants of default raygui styles and **rGuiLayout** is a raygui visual layout editor to place controls in a visual way, defined layout could be saved and also exported to C code.
