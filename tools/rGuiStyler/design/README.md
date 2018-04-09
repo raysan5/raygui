@@ -25,7 +25,9 @@ The first big change was a brand new raygui color picker, generated in real-time
 
 ![rGuiStyler - February 2017](https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV4.png)
 
-Tool UI/UX kept improving day after day, trying different options and refining details at the same time that raygui kept growing with new controls and styling options. After some months of continuous review, here it is the final result: **rGuiStyler v2.0**
+Tool UI/UX kept improving day after day, trying different options and refining details at the same time that raygui kept growing with new controls and styling options. 
+
+After some months of continuous review, here it is the final result: **rGuiStyler v2.0**
 
 ![rGuiStyler - April 2017](https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV8.png)
 
