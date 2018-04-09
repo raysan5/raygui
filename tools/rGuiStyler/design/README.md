@@ -1,4 +1,4 @@
-<img align="left" src="../logo/rguistyler_128x128.png" width=128>
+<img align="left" src="../logo/rguistyler_128x128.png" width=128 height=128>
 
 ### rGuiStyler - tool evolution
 
