@@ -1,4 +1,3 @@
-
 <img align="left" src="../logo/rguistyler_128x128.png" width=128>
 
 ### rGuiStyler - tool evolution
