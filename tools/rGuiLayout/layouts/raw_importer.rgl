@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     22
+# Total number of controls:     21
 # Anchor info: a <id> <posx> <posy> <enabled>
 # Control info: c <id> <type> <rectangle> <anchor_id> <text>
 #
@@ -13,25 +13,24 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 0 0 200 452 1 RAW Import Options
-c 002 0 9 50 80 20 1 File size:
-c 004 0 19 100 30 20 1 Width:
-c 005 0 19 125 33 20 1 Height:
-c 006 0 149 100 30 20 1 pixels
-c 007 0 149 125 30 20 1 pixels
-c 008 11 59 95 80 20 1 SAMPLE TEXT
-c 009 11 59 120 80 20 1 SAMPLE TEXT
-c 011 0 21 188 63 20 1 Pixel format:
-c 012 9 20 202 158 21 1 SAMPLE TEXT
-c 013 0 20 238 50 20 1 Channels:
-c 012 4 20 251 156 20 1 Bit Depth:
-c 013 4 20 292 156 20 1 Bit Depth:
-c 014 0 20 279 50 20 1 Bit Depth:
-c 015 0 19 366 22 20 1 Size:
-c 016 0 149 366 30 20 1 bytes
-c 017 11 59 361 80 20 1 SAMPLE TEXT
-c 018 1 9 411 180 24 1 Import
-c 019 12 9 346 179 49 1 Header
-c 020 12 9 175 179 150 1 Pixels Data
-c 021 12 9 75 179 79 1 Resolution
-c 022 0 9 30 54 20 1 Import file:
+c 000 13 0 0 200 475 1 RAW Import Options
+c 002 0 10 55 80 20 1 File size:
+c 004 0 20 108 33 20 1 Width:
+c 005 0 20 138 33 20 1 Height:
+c 006 0 145 107 30 20 1 pixels
+c 007 0 145 136 30 20 1 pixels
+c 008 11 60 100 80 25 1 256
+c 009 11 60 130 81 25 1 256
+c 012 9 20 195 160 30 1 SAMPLE TEXT
+c 013 0 20 250 50 20 1 Channels:
+c 012 4 20 265 159 25 1 Bit Depth:
+c 013 4 20 315 159 25 1 Bit Depth:
+c 014 0 20 300 50 20 1 Bit Depth:
+c 015 0 25 388 22 20 1 Size:
+c 016 0 147 387 30 20 1 bytes
+c 017 11 55 380 85 25 1 4096
+c 018 1 10 430 180 30 1 Import
+c 019 12 10 365 180 50 1 Header
+c 020 12 10 180 180 170 1 Pixel Format
+c 021 12 10 85 180 80 1 Resolution
+c 022 0 10 35 65 20 1 Import file:

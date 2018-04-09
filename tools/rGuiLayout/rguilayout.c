@@ -26,7 +26,7 @@
 #define MAX_GUI_CONTROLS   256          // Maximum number of gui controls
 #define MAX_ANCHOR_POINTS    8          // Maximum number of anchor points
 
-#define GRID_LINE_SPACING   10          // Grid line spacing in pixels
+#define GRID_LINE_SPACING    5          // Grid line spacing in pixels
 #define GRID_ALPHA        0.1f          // Grid lines alpha amount
 
 #define ANCHOR_RADIUS       20          // Default anchor radius
@@ -1125,7 +1125,9 @@ int main()
             if (snapMode) GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP ON", 10);
             else GuiStatusBar((Rectangle){ 249, GetScreenHeight() - 24, 81, 24}, "SNAP OFF", 10);
             GuiStatusBar((Rectangle){ 329, GetScreenHeight() - 24, 80, 24}, "Tab - Help", 10);
-            GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, FormatText("Selected Control: %s (%i, %i, %i, %i)", controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
+            if (selectedControl != -1) GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, FormatText("Selected Control: #%03i  |  %s  |  rec(%i, %i, %i, %i)", selectedControl, controlTypeName[selectedType], layout[selectedControl].rec.x, layout[selectedControl].rec.y, layout[selectedControl].rec.width, layout[selectedControl].rec.height), 15);
+            else GuiStatusBar((Rectangle){ 400, GetScreenHeight() - 24, GetScreenWidth() - 400, 24}, "", 15);
+            
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -1235,8 +1237,8 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
              // Write some description comments
             fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
             fprintf(rglFile, "# Total number of controls:     %i\n", controlsCounter);
-            fprintf(rglFile, "# Anchor info: a <id> <posx> <posy> <enabled>\n");
-            fprintf(rglFile, "# Control info: c <id> <type> <rectangle> <anchor_id> <text>\n#\n");
+            fprintf(rglFile, "# Anchor info:   a <id> <posx> <posy> <enabled>\n");
+            fprintf(rglFile, "# Control info:  c <id> <type> <rectangle> <anchor_id> <text>\n#\n");
 
             for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
             {

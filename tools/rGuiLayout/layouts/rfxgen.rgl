@@ -2,7 +2,7 @@
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
 # Total number of controls:     108
-# Anchor info: a <id> <posx> <posy> <enabled>
+# Anchor info:  a <id> <posx> <posy> <enabled>
 # Control info: c <id> <type> <rectangle> <anchor_id> <text>
 #
 a 000 0 0 1

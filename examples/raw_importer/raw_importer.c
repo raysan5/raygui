@@ -18,7 +18,6 @@
 #include <string.h>             // Required for: strcpy()
 #include <stdlib.h>             // Required for: atoi()
 
-
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -55,8 +54,6 @@ int main(int argc, char *argv[0])
     int height = 0;
     int format = UNCOMPRESSED_R8G8B8A8;
     int headerSize = 0;
-    
-    GuiLoadStyleImage("rguistyle_default_dark.png");
     
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "raw image importer");
 
@@ -146,7 +143,6 @@ int main(int argc, char *argv[0])
         }
         
         if (imageLoaded) imageScale += (float)GetMouseWheelMove();   // Image scale control
-        
         //----------------------------------------------------------------------------------
         
         // Draw
