@@ -921,7 +921,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
         Vector2 mousePoint = GetMousePosition();
 
         // Check button state
-        if (CheckCollisionPointRec(mousePoint, (Rectangle){statusBar.x + statusBar.width - 18, statusBar.y, 18, statusBar.height }))
+        if (CheckCollisionPointRec(mousePoint, (Rectangle){statusBar.x + statusBar.width - 24, statusBar.y, 20, statusBar.height }))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
