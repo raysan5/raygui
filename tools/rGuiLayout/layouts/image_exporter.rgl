@@ -1,9 +1,9 @@
 #
-# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+# rgl text file (v1.0) - raygui layout.controls text file generated using rGuiLayout
 #
 # Total number of controls:     8
-# Anchor info: a <id> <posx> <posy> <enabled>
-# Control info: c <id> <type> <rectangle> <anchor_id> <text>
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <rectangle> <anchor_id> <text>
 #
 a 000 0 0 1
 a 001 50 50 1
@@ -18,6 +18,6 @@ c 001 9 80 35 160 30 1 Laser/Shoot
 c 002 9 80 75 160 30 1 SAMPLE TEXT
 c 003 11 80 115 160 30 1 Untitled
 c 004 1 10 160 230 30 1 Export Image
-c 005 0 10 43 60 20 1 File format:
-c 006 0 10 85 63 20 1 Pixel format:
-c 007 0 10 125 50 20 1 File name:
+c 005 0 10 35 60 30 1 File format:
+c 006 0 10 75 63 30 1 Pixel format:
+c 007 0 10 115 50 30 1 File name:

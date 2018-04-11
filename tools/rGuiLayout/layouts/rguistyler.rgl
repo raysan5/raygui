@@ -1,5 +1,5 @@
 #
-# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+# rgl text file (v1.0) - raygui layout.controls text file generated using rGuiLayout
 #
 # Total number of controls:     32
 # Anchor info:   a <id> <posx> <posy> <enabled>
@@ -20,9 +20,9 @@ c 003 16 0 616 150 24 1 BASE STYLE: LIGHT
 c 004 13 0 0 365 560 2 Sample raygui controls
 c 005 1 175 240 180 30 2 Save Style
 c 006 1 240 35 115 25 2 Load Style
-c 007 0 11 45 80 20 2 rGuiStyler
-c 008 0 90 45 140 20 2 github.com/raysan5/raygui
-c 009 3 11 70 60 30 2 toggle
+c 007 0 10 35 65 25 2 rGuiStyler
+c 008 0 90 35 145 25 2 github.com/raysan5/raygui
+c 009 3 10 70 65 30 2 toggle
 c 010 4 90 70 265 30 2 SAMPLE TEXT
 c 011 5 10 110 345 20 2 SAMPLE TEXT
 c 012 6 10 140 345 20 2 SAMPLE TEXT

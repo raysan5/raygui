@@ -1,0 +1,49 @@
+#
+# rgl text file (v1.0) - raygui layout.controls text file generated using rGuiLayout
+#
+# Total number of controls:     34
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 595 50 1
+a 002 0 0 0
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 16 0 0 210 25 1 SCENE SETTINGS
+c 001 9 105 50 90 25 1 SAMPLE TEXT
+c 002 0 25 50 70 25 1 Render Mode:
+c 003 5 105 85 90 10 1 SAMPLE TEXT
+c 004 6 105 105 90 10 1 SAMPLE TEXT
+c 005 0 25 80 65 20 1 Wordl Scale:
+c 006 0 40 100 60 20 1 Wireframe:
+c 007 10 25 105 10 10 1 SAMPLE TEXT
+c 008 0 20 120 86 20 1 Render elements:
+c 009 4 25 138 170 20 1 SAMPLE TEXT
+c 010 12 15 40 185 125 1 Render Settings
+c 011 14 25 195 170 110 1 SAMPLE TEXT
+c 012 0 25 310 80 20 1 Parallax:
+c 013 5 75 315 120 10 1 SAMPLE TEXT
+c 014 6 75 330 120 10 1 SAMPLE TEXT
+c 015 0 25 325 80 20 1 Blurry:
+c 016 12 15 180 185 165 1 Environment
+c 017 4 25 373 170 20 1 SAMPLE TEXT
+c 018 0 25 400 80 20 1 FOV:
+c 019 6 55 405 140 10 1 SAMPLE TEXT
+c 020 12 15 360 185 65 1 Camera
+c 021 0 40 445 18 20 1 Key
+c 022 0 40 465 18 20 1 Fill
+c 023 0 40 485 24 20 1 Back
+c 024 10 25 450 10 10 1 SAMPLE TEXT
+c 025 10 25 470 10 10 1 SAMPLE TEXT
+c 026 10 25 490 10 10 1 SAMPLE TEXT
+c 027 6 70 450 85 10 1 SAMPLE TEXT
+c 028 6 70 470 85 10 1 SAMPLE TEXT
+c 029 6 70 490 85 10 1 SAMPLE TEXT
+c 030 14 160 445 35 20 1 
+c 031 14 160 465 35 20 1 
+c 032 14 160 485 35 20 1 
+c 033 12 15 435 185 75 1 Lights
