@@ -855,8 +855,8 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
     {
         case NORMAL: 
         case FOCUSED:
-        case PRESSED: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
-        case DISABLED: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
+        case PRESSED: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
+        case DISABLED: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -1153,10 +1153,10 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     switch (state)
     {
-        case NORMAL: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
-        case FOCUSED: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
-        case PRESSED: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
-        case DISABLED: DrawText(text, bounds.x, bounds.y, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
+        case NORMAL: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_NORMAL])); break;
+        case FOCUSED: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_FOCUSED])); break;
+        case PRESSED: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_PRESSED])); break;
+        case DISABLED: DrawText(text, bounds.x, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], GetColor(style[LABEL_TEXT_COLOR_DISABLED])); break;
         default: break;
     }
     //--------------------------------------------------------------------
@@ -2693,13 +2693,16 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
             char signature[5] = "";
             short version = 0;
             short numProperties = 0;
-            int reserved = 0;
+            short changedProperties = 0;
+            short reserved = 0;
+            int editionTime = 0;
 
             fread(signature, 1, 4, rgsFile);
             fread(&version, 1, sizeof(short), rgsFile);
+            fread(&reserved, 1, sizeof(short), rgsFile);
             fread(&numProperties, 1, sizeof(short), rgsFile);
-            fread(&reserved, 1, sizeof(int), rgsFile);
-           
+            fread(&changedProperties, 1, sizeof(short), rgsFile);
+
             if ((signature[0] == 'R') &&
                 (signature[1] == 'G') &&
                 (signature[2] == 'S') &&
