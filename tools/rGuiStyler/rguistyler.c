@@ -349,24 +349,25 @@ int main(int argc, char *argv[])
     const int screenHeight = 640;
     
     //SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "rGuiStyler - raygui style editor");
+    InitWindow(screenWidth, screenHeight, "rGuiStyler v2.0 - raygui style editor");
 
     int dropsCount = 0;
     char **droppedFiles;
+    
+    int framesCounter = 0;
     
     int guiPosX = 336;
     int guiPosY = 36;
     Vector2 anchor01 = { 0, 0 };
     Vector2 anchor02 = { 345, 40 };
     bool saveColor = false;
-    
-    int framesCounter = 0;
+
     int changedControlsCounter = 0;
 
     // Define gui controls rectangles
     Rectangle bounds[NUM_CONTROLS] = {
         (Rectangle){ 0 },                                           // DEFAULT
-        (Rectangle){ anchor02.x + 90, anchor02.y + 45, 140, 20 },   // LABELBUTTON
+        (Rectangle){ anchor02.x + 90, anchor02.y + 35, 140, 30 },   // LABELBUTTON
         (Rectangle){ anchor02.x + 175, anchor02.y + 240, 180, 30 }, // BUTTON
         //(Rectangle){ guiPosX + 251, guiPosY + 5, 113, 32 },       // IMAGEBUTTON
         (Rectangle){ anchor02.x + 11, anchor02.y + 70, 60, 30 },    // TOGGLE
@@ -417,7 +418,7 @@ int main(int argc, char *argv[])
     
     Color colorBoxValue[12];
     
-    for (int i = 0; i < 12; i++) colorBoxValue[i] = GuiBackgroundColor();
+    for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
     
     char colorHex[9] = "00000000";
  
@@ -439,8 +440,10 @@ int main(int argc, char *argv[])
 
         if (IsFileDropped())
         {
+            currentSelectedControl = -1;
             droppedFiles = GetDroppedFiles(&dropsCount);
             GuiLoadStyle(droppedFiles[0]);
+            for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
             ClearDroppedFiles();
         }
         
@@ -509,8 +512,9 @@ int main(int argc, char *argv[])
             #endif
 
             GuiStatusBar((Rectangle){ anchor01.x + 149, anchor01.y + 616, 186, 24 }, FormatText("CHANGED PROPERTIES: %03i", changedControlsCounter), 10);
-			GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
-
+			//GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
+            GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, "powered by raylib and raygui", 226);
+            
             // Draw Gui controls
             currentSelectedControl = GuiListView(bounds[LISTVIEW], guiControlText, NUM_CONTROLS, currentSelectedControl);
             
@@ -534,12 +538,17 @@ int main(int argc, char *argv[])
 
             if (checked) GuiDisable();
 
-            GuiLabel((Rectangle){ anchor02.x + 11, anchor02.y + 45, 80, 20 }, "rGuiStyler");
+            GuiLabel((Rectangle){ anchor02.x + 11, anchor02.y + 35, 80, 30 }, "rGuiStyler");
 
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
             // Draw load style button
-            if (GuiButton((Rectangle){ anchor02.x + 240, anchor02.y + 35, 115, 25 }, "Load Style")) {  currentSelectedProperty = -1; BtnLoadStyle(); }
+            if (GuiButton((Rectangle){ anchor02.x + 240, anchor02.y + 35, 115, 25 }, "Load Style")) 
+            {  
+                currentSelectedProperty = -1;
+                BtnLoadStyle();
+                for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
+            }
             
             toggle = GuiToggleButton(bounds[TOGGLE], "toggle", toggle);
             
@@ -708,21 +717,26 @@ static void SaveStyleRGS(const char *fileName, bool binary)
         if (rgsFile != NULL)
         {
             // Write some header info (12 bytes)
-            // id: "RGS "       - 4 bytes
-            // version: 200     - 2 bytes
-            // NUM_PROPERTIES   - 2 bytes
-            // reserved         - 4 bytes
+            // id: "RGS "            - 4 bytes
+            // version: 200          - 2 bytes
+            // reserved              - 2 bytes
+            // total properties      - 2 bytes
+            // changed properties    - 2 bytes
             
             char signature[5] = "RGS ";
             short version = RGS_FILE_VERSION_BINARY;
+            short reserved = 0;
             short numProperties = NUM_PROPERTIES;
-            int reserved = 0;
+            short changedProperties = 0;
+            
+            for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) changedProperties++;
 
             fwrite(signature, 1, 4, rgsFile);
             fwrite(&version, 1, sizeof(short), rgsFile);
+            fwrite(&reserved, 1, sizeof(short), rgsFile);
             fwrite(&numProperties, 1, sizeof(short), rgsFile);
-            fwrite(&reserved, 1, sizeof(int), rgsFile);
-            
+            fwrite(&changedProperties, 1, sizeof(short), rgsFile);
+
             short id = 0;
             
             for (int i = 0; i < NUM_PROPERTIES; i++)
