@@ -2692,10 +2692,9 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
         {
             char signature[5] = "";
             short version = 0;
+            short reserved = 0;
             short numProperties = 0;
             short changedProperties = 0;
-            short reserved = 0;
-            int editionTime = 0;
 
             fread(signature, 1, 4, rgsFile);
             fread(&version, 1, sizeof(short), rgsFile);

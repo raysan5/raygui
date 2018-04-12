@@ -139,8 +139,7 @@ int main()
     bool anchorNewPos = false;
     bool lockAnchorMode = false;
     int saveAnchorSelected = -1;
-    GuiControl aux;
-    
+
     int snapFrameCounter = 0;
 
     bool lockMode = false;
@@ -342,31 +341,28 @@ int main()
             layout.controlsCount++;
         }
         
-        // TODO: Change controls layer order (position inside array)
+        // Change controls layer order (position inside array)
         if (IsKeyDown(KEY_LEFT_ALT) && !lockMode)
         {
             if ((IsKeyPressed(KEY_UP)) && (selectedControl < layout.controlsCount - 1))
             {
                 // Move control towards beginning of array
-                // selectedControl pos --> selectedControl - 1 pos (if possible)
-                //GuiControl prevControl = layout.controls[selectedControl - 1];
-                //for (int i = selectedControl - 1; i < layout.controlsCount - 1; i++) layout.controls[i] = layout.controls[i + 1];
-                aux = layout.controls[selectedControl];
+                GuiControl auxControl = layout.controls[selectedControl];
                 layout.controls[selectedControl] = layout.controls[selectedControl + 1];
-                layout.controls[selectedControl + 1] = aux;
+                layout.controls[selectedControl + 1] = auxControl;
             }
             else if ((IsKeyPressed(KEY_DOWN)) && (selectedControl > 0))
             {
                 // Move control towards end of array
-                aux = layout.controls[selectedControl];
+                GuiControl auxControl = layout.controls[selectedControl];
                 layout.controls[selectedControl] = layout.controls[selectedControl - 1];
-                layout.controls[selectedControl - 1] = aux;
+                layout.controls[selectedControl - 1] = auxControl;
             }
         }
         
         if (!(controlDrag || lockMode || tracemapEditMode || lockAnchorMode))
         {
-            // Check selected control (on mouse over)
+            // Check selected control (on mouse hover)
             for (int i = 0; i < layout.controlsCount; i++)
             {
                 if (controlDrag || lockMode || tracemapEditMode || lockAnchorMode) break;
