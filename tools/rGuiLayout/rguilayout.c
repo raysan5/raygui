@@ -71,6 +71,7 @@ typedef struct {
     int type;
     Rectangle rec;
     unsigned char *text;
+    unsigned char *name;
     //unsigned char text[MAX_CONTROL_TEXT_LENGTH];
     //unsigned char name[MAX_CONTROL_NAME_LENGTH];
     AnchorPoint *ap;
@@ -125,6 +126,7 @@ int main()
     bool controlDrag = false;               // Allows the control to be moved with the mouse without detecting collision every frame
     
     bool textEditMode = false;
+    bool nameEditMode = false;
     int framesCounter = 0;
     int saveControlSelected = -1;
     char previewText[8] = "TEXTBOX";
@@ -137,6 +139,7 @@ int main()
     bool anchorNewPos = false;
     bool lockAnchorMode = false;
     int saveAnchorSelected = -1;
+    GuiControl aux;
     
     int snapFrameCounter = 0;
 
@@ -253,6 +256,7 @@ int main()
         layout.controls[i].type = 0;
         layout.controls[i].rec = (Rectangle){ 0, 0, 0, 0 };
         layout.controls[i].text = (unsigned char *)calloc(1, 32);
+        layout.controls[i].name = (unsigned char *)calloc(1, 32);
         layout.controls[i].ap = &layout.anchors[0];  // By default, set parent anchor
     }
     
@@ -270,7 +274,7 @@ int main()
         snapFrameCounter++;
         
         // Enables or disables snapMode if not in textEditMode
-        if (IsKeyPressed(KEY_S) && (!textEditMode)) snapMode = !snapMode;
+        if (IsKeyPressed(KEY_S) && (!textEditMode) && (!nameEditMode)) snapMode = !snapMode;
         
         // Checks if the defaultRec[selectedType] is colliding with the list of the controls
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
@@ -311,6 +315,7 @@ int main()
             layout.controls[layout.controlsCount].type = selectedType;
             layout.controls[layout.controlsCount].rec = (Rectangle){  mouseX - defaultRec[selectedType].width/2, mouseY - defaultRec[selectedType].height/2, defaultRec[selectedType].width, defaultRec[selectedType].height };
             strcpy(layout.controls[layout.controlsCount].text, "SAMPLE TEXT");
+            strcpy(layout.controls[layout.controlsCount].name, "SAMPLE NAME");
             layout.controls[layout.controlsCount].ap = &layout.anchors[0];        // Default anchor point (0, 0)
             
             for (int i = 0; i < layout.controlsCount; i++)
@@ -337,9 +342,31 @@ int main()
             layout.controlsCount++;
         }
         
+        // TODO: Change controls layer order (position inside array)
+        if (IsKeyDown(KEY_LEFT_ALT) && !lockMode)
+        {
+            if ((IsKeyPressed(KEY_UP)) && (selectedControl < layout.controlsCount - 1))
+            {
+                // Move control towards beginning of array
+                // selectedControl pos --> selectedControl - 1 pos (if possible)
+                //GuiControl prevControl = layout.controls[selectedControl - 1];
+                //for (int i = selectedControl - 1; i < layout.controlsCount - 1; i++) layout.controls[i] = layout.controls[i + 1];
+                aux = layout.controls[selectedControl];
+                layout.controls[selectedControl] = layout.controls[selectedControl + 1];
+                layout.controls[selectedControl + 1] = aux;
+            }
+            else if ((IsKeyPressed(KEY_DOWN)) && (selectedControl > 0))
+            {
+                // Move control towards end of array
+                aux = layout.controls[selectedControl];
+                layout.controls[selectedControl] = layout.controls[selectedControl - 1];
+                layout.controls[selectedControl - 1] = aux;
+            }
+        }
+        
         if (!(controlDrag || lockMode || tracemapEditMode || lockAnchorMode))
         {
-            // Check selected control (on mouse hover)
+            // Check selected control (on mouse over)
             for (int i = 0; i < layout.controlsCount; i++)
             {
                 if (controlDrag || lockMode || tracemapEditMode || lockAnchorMode) break;
@@ -357,7 +384,7 @@ int main()
             }
         }
         
-        if (selectedControl != -1 && !textEditMode && !anchorMode)
+        if (selectedControl != -1 && !textEditMode && !nameEditMode && !anchorMode)
         {
             // Disables the defaultRec[selectedType]
             controlCollision = true;
@@ -395,95 +422,97 @@ int main()
                 }
             }
             
-            if (snapMode)
+            if(!IsKeyDown(KEY_LEFT_ALT))
             {
-                if (IsKeyDown(KEY_LEFT_CONTROL))
+                if (snapMode)
                 {
-                    // Control modifier of width and height            
-                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    if (IsKeyDown(KEY_LEFT_CONTROL))
                     {
-                        if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.width += GRID_LINE_SPACING;
-                        else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.width -= GRID_LINE_SPACING;
+                        // Control modifier of width and height            
+                        if (IsKeyDown(KEY_LEFT_SHIFT))
+                        {
+                            if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.width += GRID_LINE_SPACING;
+                            else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.width -= GRID_LINE_SPACING;
 
-                        if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.height -= GRID_LINE_SPACING;
-                        else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.height += GRID_LINE_SPACING;
-                    }
-                    else
-                    {
-                        if (IsKeyDown(KEY_RIGHT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.width += GRID_LINE_SPACING;
-                        else if (IsKeyDown(KEY_LEFT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.width -= GRID_LINE_SPACING;
+                            if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.height -= GRID_LINE_SPACING;
+                            else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.height += GRID_LINE_SPACING;
+                        }
+                        else
+                        {
+                            if (IsKeyDown(KEY_RIGHT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.width += GRID_LINE_SPACING;
+                            else if (IsKeyDown(KEY_LEFT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.width -= GRID_LINE_SPACING;
 
-                        if (IsKeyDown(KEY_UP) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.height -= GRID_LINE_SPACING;
-                        else if (IsKeyDown(KEY_DOWN) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.height += GRID_LINE_SPACING;
+                            if (IsKeyDown(KEY_UP) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.height -= GRID_LINE_SPACING;
+                            else if (IsKeyDown(KEY_DOWN) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.height += GRID_LINE_SPACING;
+                        }
                     }
-                }
-                else 
-                {
-                    // Control modifier of position
-                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    else 
                     {
-                        if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.x += GRID_LINE_SPACING;
-                        else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.x -= GRID_LINE_SPACING;
+                        // Control modifier of position
+                        if (IsKeyDown(KEY_LEFT_SHIFT))
+                        {
+                            if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.x += GRID_LINE_SPACING;
+                            else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.x -= GRID_LINE_SPACING;
+                            
+                            if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.y -= GRID_LINE_SPACING;
+                            else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.y += GRID_LINE_SPACING;
+                        }
+                        else
+                        {
+                            if (IsKeyDown(KEY_RIGHT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.x += GRID_LINE_SPACING;
+                            else if (IsKeyDown(KEY_LEFT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.x -= GRID_LINE_SPACING;
+                            
+                            if (IsKeyDown(KEY_UP) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.y -= GRID_LINE_SPACING;
+                            else if (IsKeyDown(KEY_DOWN) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.y += GRID_LINE_SPACING;
+                        }
                         
-                        if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.y -= GRID_LINE_SPACING;
-                        else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.y += GRID_LINE_SPACING;
-                    }
-                    else
-                    {
-                        if (IsKeyDown(KEY_RIGHT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.x += GRID_LINE_SPACING;
-                        else if (IsKeyDown(KEY_LEFT) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.x -= GRID_LINE_SPACING;
-                        
-                        if (IsKeyDown(KEY_UP) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.y -= GRID_LINE_SPACING;
-                        else if (IsKeyDown(KEY_DOWN) && ((snapFrameCounter%MOVEMENT_FRAME_SPEED) == 0)) layout.controls[selectedControl].rec.y += GRID_LINE_SPACING;
-                    }
-                    
-                }
-            }
-            else
-            {
-                if (IsKeyDown(KEY_LEFT_CONTROL))
-                {
-                    // Control modifier for a more precise sizing                  
-                    if (IsKeyDown(KEY_LEFT_SHIFT))
-                    {
-                        // Control modifier of position 
-                        if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.width++;
-                        else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.width--;
-                        
-                        if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.height--;
-                        else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.height++;
-                    }
-                    else
-                    {
-                        if (IsKeyDown(KEY_RIGHT)) layout.controls[selectedControl].rec.width++;
-                        else if (IsKeyDown(KEY_LEFT)) layout.controls[selectedControl].rec.width--;
-
-                        if (IsKeyDown(KEY_UP)) layout.controls[selectedControl].rec.height--;
-                        else if (IsKeyDown(KEY_DOWN)) layout.controls[selectedControl].rec.height++;
                     }
                 }
                 else
                 {
-                    if (IsKeyDown(KEY_LEFT_SHIFT))
+                    if (IsKeyDown(KEY_LEFT_CONTROL))
                     {
-                        // Control modifier for a more precise sizing
-                        if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.x++;
-                        else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.x--;
+                        // Control modifier for a more precise sizing                  
+                        if (IsKeyDown(KEY_LEFT_SHIFT))
+                        {
+                            // Control modifier of position 
+                            if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.width++;
+                            else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.width--;
+                            
+                            if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.height--;
+                            else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.height++;
+                        }
+                        else
+                        {
+                            if (IsKeyDown(KEY_RIGHT)) layout.controls[selectedControl].rec.width++;
+                            else if (IsKeyDown(KEY_LEFT)) layout.controls[selectedControl].rec.width--;
 
-                        if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.y--;
-                        else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.y++;
+                            if (IsKeyDown(KEY_UP)) layout.controls[selectedControl].rec.height--;
+                            else if (IsKeyDown(KEY_DOWN)) layout.controls[selectedControl].rec.height++;
+                        }
                     }
                     else
                     {
-                        if (IsKeyDown(KEY_RIGHT)) layout.controls[selectedControl].rec.x++;
-                        else if (IsKeyDown(KEY_LEFT)) layout.controls[selectedControl].rec.x--;
-                        
-                        if (IsKeyDown(KEY_UP)) layout.controls[selectedControl].rec.y--;
-                        else if (IsKeyDown(KEY_DOWN)) layout.controls[selectedControl].rec.y++;
+                        if (IsKeyDown(KEY_LEFT_SHIFT))
+                        {
+                            // Control modifier for a more precise sizing
+                            if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.x++;
+                            else if (IsKeyPressed(KEY_LEFT)) layout.controls[selectedControl].rec.x--;
+
+                            if (IsKeyPressed(KEY_UP)) layout.controls[selectedControl].rec.y--;
+                            else if (IsKeyPressed(KEY_DOWN)) layout.controls[selectedControl].rec.y++;
+                        }
+                        else
+                        {
+                            if (IsKeyDown(KEY_RIGHT)) layout.controls[selectedControl].rec.x++;
+                            else if (IsKeyDown(KEY_LEFT)) layout.controls[selectedControl].rec.x--;
+                            
+                            if (IsKeyDown(KEY_UP)) layout.controls[selectedControl].rec.y--;
+                            else if (IsKeyDown(KEY_DOWN)) layout.controls[selectedControl].rec.y++;
+                        }
                     }
                 }
             }
-            
             // Delete selected control and shift array position
             if (IsKeyPressed(KEY_DELETE))
             {
@@ -493,6 +522,7 @@ int main()
                     layout.controls[i].type = layout.controls[i + 1].type;
                     layout.controls[i].rec = layout.controls[i + 1].rec;
                     strcpy(layout.controls[i].text, layout.controls[i + 1].text);
+                    strcpy(layout.controls[i].name, layout.controls[i + 1].name);
                     layout.controls[i].ap = layout.controls[i + 1].ap;
                 }
 
@@ -553,7 +583,7 @@ int main()
         }
         
         // Resize the controller aplying the snap
-        if (!textEditMode && IsKeyPressed(KEY_R) && selectedControl != -1)
+        if (!textEditMode && !nameEditMode && IsKeyPressed(KEY_R) && selectedControl != -1)
         {
             int offsetX = layout.controls[selectedControl].rec.width%GRID_LINE_SPACING;
             int offsetY = layout.controls[selectedControl].rec.height%GRID_LINE_SPACING;
@@ -586,7 +616,32 @@ int main()
                 if (keyCount < 0) keyCount = 0;
             }
             
-            // Used to show the cursor('_') in textEditMode 
+            // Used to show the cursor('|') in textEditMode 
+            if (keyCount < 32) framesCounter++;
+            else if (keyCount == 32) framesCounter = 21;
+        }
+        
+        if (nameEditMode)
+        {
+            // Locks the selectedControl for text editing
+            selectedControl = saveControlSelected;
+            int key = GetKeyPressed();
+            int keyCount = strlen(layout.controls[selectedControl].name); // Keeps track of name length
+       
+            // Replaces characters with pressed keys or '\0' in case of backspace
+            // NOTE: Only allow keys in range [32..125]
+            if ((key >= 32) && (key <= 125) && (keyCount < 31))
+            {
+                layout.controls[selectedControl].name[keyCount] = (unsigned char)key;
+            }
+            
+            if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+            {
+                layout.controls[selectedControl].name[keyCount - 1] = '\0';
+                if (keyCount < 0) keyCount = 0;
+            }
+            
+            // Used to show the cursor('|') in textEditMode 
             if (keyCount < 32) framesCounter++;
             else if (keyCount == 32) framesCounter = 21;
         }
@@ -598,18 +653,30 @@ int main()
             framesCounter = 0;
         }
         
+        if (nameEditMode && IsKeyPressed(KEY_ENTER)) 
+        {
+            nameEditMode = false;
+            framesCounter = 0;
+        }
+        
         // Turns on textEditMode
-        if (IsKeyPressed(KEY_T) && (selectedControl != -1) && (!anchorMode) &&
+        if (IsKeyPressed(KEY_T) && !nameEditMode && (selectedControl != -1) && (!anchorMode) &&
            ((layout.controls[selectedControl].type == LABEL) || (layout.controls[selectedControl].type == BUTTON) || (layout.controls[selectedControl].type == TOGGLE) || (layout.controls[selectedControl].type == IMAGEBUTTON) || (layout.controls[selectedControl].type == GROUPBOX) || (layout.controls[selectedControl].type == WINDOWBOX) || (layout.controls[selectedControl].type == STATUSBAR) || (layout.controls[selectedControl].type == DUMMYREC)))
         {   
             textEditMode = true;
+            saveControlSelected = selectedControl;
+        }
+        
+        if(IsKeyPressed(KEY_N) && !textEditMode)
+        {
+            nameEditMode = true;
             saveControlSelected = selectedControl;
         }
        
         // Selected control lock logic
         if (lockMode) selectedControl = saveControlSelected;
 
-        if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedControl != -1) && !lockMode && !anchorMode) 
+        if (IsKeyPressed(KEY_SPACE) && !nameEditMode && !textEditMode && (selectedControl != -1) && !lockMode && !anchorMode) 
         {
             lockMode = true;
             saveControlSelected = selectedControl;
@@ -700,7 +767,7 @@ int main()
                 }
             }
 
-            if (IsKeyPressed(KEY_SPACE) && !textEditMode && (selectedAnchor != -1) && !lockAnchorMode && anchorMode) 
+            if (IsKeyPressed(KEY_SPACE) && !nameEditMode && !textEditMode && (selectedAnchor != -1) && !lockAnchorMode && anchorMode) 
             {
                 lockAnchorMode = true;
                 saveAnchorSelected = selectedAnchor;
@@ -810,7 +877,7 @@ int main()
         }
 
         // Enable anchor mode editing
-        if (IsKeyDown(KEY_A) && !textEditMode && (layout.controls[selectedControl].type != TEXTBOX)) anchorMode = true;
+        if (IsKeyDown(KEY_A) && !nameEditMode && !textEditMode && (layout.controls[selectedControl].type != TEXTBOX)) anchorMode = true;
 
         // Checks the minimum size of the rec
         if (selectedControl != -1)
@@ -850,8 +917,8 @@ int main()
             else if (layout.controls[selectedControl].rec.height <= 20) layout.controls[selectedControl].rec.height = 20;
         }
   
-        // Shows or hides the grid if not in textEditMode
-        if (IsKeyPressed(KEY_G) && (!textEditMode)) showGrid = !showGrid;
+        // Shows or hides the grid
+        if (IsKeyPressed(KEY_G) && (!nameEditMode) && (!textEditMode)) showGrid = !showGrid;
         
         if (IsFileDropped())
         {
@@ -894,7 +961,7 @@ int main()
         {
             // Save file dialog
             const char *filters[] = { "*.rgl" };
-            const char *fileName = tinyfd_saveFileDialog("Save raygui layout.controls text file", "", 1, filters, "raygui Layout Files (*.rgl)");
+            const char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
 
             // Save layout.controls file (text or binary)
             if (fileName != NULL) 
@@ -908,7 +975,7 @@ int main()
         {
             // Open file dialog
             const char *filters[] = { "*.rgl" };
-            const char *fileName = tinyfd_openFileDialog("Load raygui layout.controls file", "", 1, filters, "raygui Layout Files (*.rgl)", 0);
+            const char *fileName = tinyfd_openFileDialog("Load raygui layout file", "", 1, filters, "raygui Layout Files (*.rgl)", 0);
             
             if (fileName != NULL) LoadLayoutRGL(fileName);
         }
@@ -918,7 +985,7 @@ int main()
             // Save file dialog
             // TODO: Support additional languages (.lua, .go...) code generation
             const char *filters[] = { "*.c", "*.go", "*.lua" };
-            const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.controls.c", 3, filters, "Code file");
+            const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.c", 3, filters, "Code file");
             
             if (fileName != NULL) GenerateCode(fileName, true);
         }
@@ -1020,22 +1087,6 @@ int main()
                 }
             }
         }
-        
-        // TODO: Change controls layer order (position inside array)
-        if (IsKeyDown(KEY_LEFT_ALT))
-        {
-            if (IsKeyPressed(KEY_UP))
-            {
-                // Move control towards beginning of array
-                // selectedControl pos --> selectedControl - 1 pos (if possible)
-                //GuiControl prevControl = layout.controls[selectedControl - 1];
-                //for (int i = selectedControl - 1; i < layout.controlsCount - 1; i++) layout.controls[i] = layout.controls[i + 1];
-            }
-            else if (IsKeyPressed(KEY_DOWN))
-            {
-                // Move control towards end of array
-            }
-        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -1048,7 +1099,15 @@ int main()
 
             if (showGrid) DrawGrid2D(GetScreenWidth(), GetScreenHeight(), GRID_LINE_SPACING);
             
-            if (tracemap.id > 0) DrawTexture(tracemap, tracemapRec.x, tracemapRec.y, Fade(WHITE, tracemapFade));
+            // Draw the texture if loaded
+            if (tracemap.id > 0)
+            {
+                DrawTexture(tracemap, tracemapRec.x, tracemapRec.y, Fade(WHITE, tracemapFade));
+                
+                // Draw the tracemap rectangle
+                if (tracemapEditMode) DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
+                else DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, GRAY);
+            }
 
             for (int i = 0; i < layout.controlsCount; i++)
             {
@@ -1112,10 +1171,6 @@ int main()
                 }
             }
 
-            // Draw the tracemap rectangle
-            if (tracemapEditMode) DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
-            else DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, GRAY);
-            
             // Draw the anchorPoints
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
@@ -1189,12 +1244,28 @@ int main()
             {
                if (((framesCounter/20)%2) == 0)
                {
-                    if (layout.controls[selectedControl].type == LABEL) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 1, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    if (layout.controls[selectedControl].type == LABEL) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == IMAGEBUTTON) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == GROUPBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == WINDOWBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 10 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == STATUSBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+               }
+            }
+            
+            // Draw cursor on nameEditMode
+            if (nameEditMode)
+            {
+                DrawText(FormatText("%s", layout.controls[selectedControl].name), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height + 10, style[DEFAULT_TEXT_SIZE], BLACK);
+                
+               if (((framesCounter/20)%2) == 0)
+               {
+                    if (layout.controls[selectedControl].type == LABEL) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].name , style[DEFAULT_TEXT_SIZE]) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == IMAGEBUTTON) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].name , style[DEFAULT_TEXT_SIZE])/2 + texture.width/6, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == GROUPBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == WINDOWBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 10 + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == STATUSBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE], style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].name , style[DEFAULT_TEXT_SIZE])/2 + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
 
@@ -1222,10 +1293,10 @@ int main()
                 GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "T - Enter text mode(if possible)");
                 GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "Enter - Exit text mode");
                 GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Delete - Delete a control");
-                GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify width/height");
-                GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify width/height(smooth)");
-                GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows - Modify position");
-                GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout.controls to code");
+                GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify position(+ shift smooth)");
+                GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify scale(+ shift smooth)");
+                GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows(Up/Down) - Changes drawing order");
+                GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout controls to code");
                 GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + S - Save layout.controls(.rgl)");
                 GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + O - Open layout.controls(.rgl)");
                 GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
@@ -1235,7 +1306,7 @@ int main()
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", mouseX, mouseY), 15);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 81, 24}, (snapMode ? "SNAP: ON" : "SNAP: OFF"), 10);
             GuiStatusBar((Rectangle){ 204, GetScreenHeight() - 24, 145, 24}, FormatText("CONTROLS COUNT: %i", layout.controlsCount), 20);
-            if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)", selectedControl, controlTypeName[layout.controls[selectedControl].type], layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), 15);
+            if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)  |  %s", selectedControl, controlTypeName[layout.controls[selectedControl].type], layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height, layout.controls[selectedControl].name), 15);
             else GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, "", 15);
             
         EndDrawing();
@@ -1334,7 +1405,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
         if (rglFile != NULL)
         {
              // Write some description comments
-            fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout.controls text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
+            fprintf(rglFile, "#\n# rgl text file (v%s) - raygui layout text file generated using rGuiLayout\n#\n", RGL_FILE_VERSION_TEXT);
             fprintf(rglFile, "# Total number of controls:     %i\n", layout.controlsCount);
             fprintf(rglFile, "# Anchor info:   a <id> <posx> <posy> <enabled>\n");
             fprintf(rglFile, "# Control info:  c <id> <type> <rectangle> <anchor_id> <text>\n#\n");
@@ -1446,7 +1517,7 @@ static void LoadLayoutRGL(const char *fileName)
                     //printf("[READ] Control info> id: %i, type: %i, rec: %i,%i,%i,%i, text: %s, anchorId: %i\n", layout.controls[i].id, layout.controls[i].type, layout.controls[i].rec.x, layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, anchorId);
                 }
             }
-            else TraceLog(LOG_WARNING, "[raygui] Invalid layout.controls file");
+            else TraceLog(LOG_WARNING, "[raygui] Invalid layout file");
             
             fclose(rglFile);
         }
