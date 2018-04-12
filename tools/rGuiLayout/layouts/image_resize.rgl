@@ -1,0 +1,36 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     21
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 50 50 1
+a 002 205 160 1
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 13 0 0 220 210 1 Image Resize Options
+c 002 9 75 70 135 25 1 SAMPLE TEXT
+c 004 1 10 165 200 30 1 Resize Image
+c 005 0 10 35 60 25 1 Resize:
+c 006 0 10 70 65 25 1 Algorythm:
+c 007 0 40 108 110 20 1 Lock Aspect Ratio
+c 007 11 75 35 60 25 1 512
+c 008 11 150 35 60 25 1 512
+c 009 0 140 35 35 25 1 x
+c 009 10 20 110 15 15 1 SAMPLE TEXT
+c 010 10 0 0 15 15 2 SAMPLE TEXT
+c 011 10 14 0 15 15 2 SAMPLE TEXT
+c 012 10 28 0 15 15 2 SAMPLE TEXT
+c 018 10 0 14 15 15 2 SAMPLE TEXT
+c 019 10 20 135 15 15 1 SAMPLE TEXT
+c 020 0 40 133 80 20 1 Canvas Resize
+c 018 10 14 14 15 15 2 SAMPLE TEXT
+c 019 10 28 14 15 15 2 SAMPLE TEXT
+c 018 10 0 28 15 15 2 SAMPLE TEXT
+c 019 10 14 28 15 15 2 SAMPLE TEXT
+c 020 10 28 28 15 15 2 SAMPLE TEXT

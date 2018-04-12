@@ -1,5 +1,5 @@
 #
-# rgl text file (v1.0) - raygui layout.controls text file generated using rGuiLayout
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
 # Total number of controls:     14
 # Anchor info:   a <id> <posx> <posy> <enabled>
@@ -7,23 +7,23 @@
 #
 a 000 0 0 1
 a 001 50 50 1
-a 002 0 0 0
-a 003 0 0 0
-a 004 0 0 0
+a 002 60 460 1
+a 003 60 645 1
+a 004 60 275 1
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 14 20 50 130 125 1 SAMPLE TEXT
-c 001 14 20 235 130 125 1 SAMPLE TEXT
-c 002 14 20 415 130 125 1 SAMPLE TEXT
-c 003 14 20 590 130 125 1 SAMPLE TEXT
-c 004 0 35 185 55 20 1 Color Tint:
-c 005 11 100 185 35 20 1   
-c 006 6 20 370 130 10 1 SAMPLE TEXT
-c 007 6 20 550 130 10 1 SAMPLE TEXT
-c 008 6 20 725 130 10 1 SAMPLE TEXT
+c 000 14 20 50 130 130 1 SAMPLE TEXT
+c 001 14 10 10 130 130 4 SAMPLE TEXT
+c 002 14 10 10 130 130 2 SAMPLE TEXT
+c 003 14 10 10 130 130 3 SAMPLE TEXT
+c 004 0 40 185 55 20 1 Color Tint:
+c 006 6 10 150 130 10 4 SAMPLE TEXT
+c 007 6 10 150 130 10 2 SAMPLE TEXT
+c 008 6 10 150 130 10 3 SAMPLE TEXT
 c 009 16 0 0 175 30 1 MATERIAL MAPS
-c 010 12 15 40 140 170 1 Albedo
-c 011 12 15 225 140 160 1 Normals
-c 012 12 15 405 140 160 1 Metalness
-c 013 12 15 580 140 160 1 Roughness
+c 011 12 0 0 150 170 4 Normals
+c 012 12 0 0 150 170 2 Metalness
+c 013 12 0 0 150 170 3 Roughness
+c 014 14 100 185 50 20 1 col
+c 010 12 10 40 150 170 1 Albedo
