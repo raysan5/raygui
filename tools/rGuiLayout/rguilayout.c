@@ -143,6 +143,7 @@ int main()
     int snapFrameCounter = 0;
 
     bool lockMode = false;
+    bool globalReference = false;
 
     int helpPosX = -300;
     int helpCounter = 0;
@@ -275,6 +276,9 @@ int main()
         // Enables or disables snapMode if not in textEditMode
         if (IsKeyPressed(KEY_S) && (!textEditMode) && (!nameEditMode)) snapMode = !snapMode;
         
+        // Enables or disables position reference information(anchor reference or global reference)
+        if (IsKeyPressed(KEY_F) && (!textEditMode) && (!nameEditMode)) globalReference = !globalReference;
+        
         // Checks if the defaultRec[selectedType] is colliding with the list of the controls
         if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
         else if (CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = true;
@@ -349,21 +353,25 @@ int main()
                 // Move control towards beginning of array
                 GuiControl auxControl = layout.controls[selectedControl];
                 layout.controls[selectedControl] = layout.controls[selectedControl + 1];
+                layout.controls[selectedControl].id -= 1;
                 layout.controls[selectedControl + 1] = auxControl;
+                layout.controls[selectedControl + 1].id += 1;
             }
             else if ((IsKeyPressed(KEY_DOWN)) && (selectedControl > 0))
             {
                 // Move control towards end of array
                 GuiControl auxControl = layout.controls[selectedControl];
                 layout.controls[selectedControl] = layout.controls[selectedControl - 1];
+                layout.controls[selectedControl].id += 1;
                 layout.controls[selectedControl - 1] = auxControl;
+                layout.controls[selectedControl - 1].id -= 1;
             }
         }
         
         if (!(controlDrag || lockMode || tracemapEditMode || lockAnchorMode))
         {
             // Check selected control (on mouse hover)
-            for (int i = 0; i < layout.controlsCount; i++)
+            for (int i = layout.controlsCount; i >= 0; i--)
             {
                 if (controlDrag || lockMode || tracemapEditMode || lockAnchorMode) break;
                 if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
@@ -1120,7 +1128,7 @@ int main()
                         case SLIDER: GuiSlider((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
                         case SLIDERBAR: GuiSliderBar((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
                         case PROGRESSBAR: GuiProgressBar((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
-                        case SPINNER: GuiSpinner((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
+                        case SPINNER: GuiSpinner((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 3, 25); break;
                         case COMBOBOX: GuiComboBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, list, 3, 1); break;
                         case CHECKBOX: GuiCheckBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, false); break;
                         case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, 32); break;
@@ -1152,7 +1160,7 @@ int main()
                     case SLIDER: GuiSlider(defaultRec[selectedTypeDraw], 40, 0, 100); break;
                     case SLIDERBAR: GuiSliderBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
                     case PROGRESSBAR: GuiProgressBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 42, 3, 25); break;
                     case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
                     case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7); break;
@@ -1171,6 +1179,13 @@ int main()
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
                 if (layout.anchors[i].id == selectedAnchor && anchorNewPos)
+                {
+                    // Draw the anchor that is currently moving
+                    DrawCircle(layout.anchors[i].x, layout.anchors[i].y, ANCHOR_RADIUS, Fade(ORANGE, 0.5f));
+                    DrawRectangle(layout.anchors[i].x - ANCHOR_RADIUS - 5, layout.anchors[i].y, ANCHOR_RADIUS*2 + 10, 1, ORANGE);
+                    DrawRectangle(layout.anchors[i].x, layout.anchors[i].y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, ORANGE);
+                }
+                if (layout.anchors[i].id == selectedAnchor && IsKeyDown(KEY_A))
                 {
                     // Draw the anchor that is currently moving
                     DrawCircle(layout.anchors[i].x, layout.anchors[i].y, ANCHOR_RADIUS, Fade(ORANGE, 0.5f));
@@ -1269,35 +1284,46 @@ int main()
             if (anchorLinkMode) DrawLine(layout.anchors[linkedAnchor].x, layout.anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
 
             // Draw Rectangle Info
-            if (selectedControl != -1) DrawText(FormatText("[%i, %i, %i, %i]", layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, MAROON);
-            
+            if (selectedControl != -1)
+            {
+                if (!globalReference) DrawText(FormatText("[%i, %i, %i, %i]", layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, MAROON);
+                else DrawText(FormatText("[%i, %i, %i, %i]", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, RED);
+            }
+                
             // Draw Image info
             if (tracemapEditMode) DrawText(FormatText("[%i, %i, %i, %i]", tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height), tracemapRec.x + 25, tracemapRec.y + 25, 20, MAROON);
 
             // Draw the help list (by default is out of screen)
             if (helpPosX > -280)
             {
-                DrawRectangleRec((Rectangle){ helpPosX + 20, 20, 260, 350 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-                GuiGroupBox((Rectangle){ helpPosX + 20, 20, 260, 350 }, "Shortcuts");
+                DrawRectangleRec((Rectangle){ helpPosX + 20, 20, 275, 390 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+                GuiGroupBox((Rectangle){ helpPosX + 20, 20, 275, 390 }, "Shortcuts");
                 GuiLabel((Rectangle){ helpPosX + 30, 30, 0, 0 }, "G - Show/hide grid");
                 GuiLabel((Rectangle){ helpPosX + 30, 50, 0, 0 }, "S - Toggle snap");
                 GuiLabel((Rectangle){ helpPosX + 30, 70, 0, 0 }, "R - Resize to grid");
                 GuiLabel((Rectangle){ helpPosX + 30, 90, 0, 0 }, "A - Anchor mode");
-                GuiLabel((Rectangle){ helpPosX + 30, 110, 0, 0 }, "H - Hide controls of selected anchor");
-                GuiLabel((Rectangle){ helpPosX + 30, 130, 0, 0 }, "U - Unlink anchor");
-                GuiLabel((Rectangle){ helpPosX + 30, 150, 0, 0 }, "Space - Lock/unlock control");
-                GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "T - Enter text mode(if possible)");
-                GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "Enter - Exit text mode");
-                GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Delete - Delete a control");
-                GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Arrows - Modify position(+ shift smooth)");
-                GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "L. Ctrl + Arrows - Modify scale(+ shift smooth)");
-                GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Alt + Arrows(Up/Down) - Changes drawing order");
-                GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Ctrl + Enter - Export layout controls to code");
-                GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + S - Save layout.controls(.rgl)");
-                GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + O - Open layout.controls(.rgl)");
-                GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
+                GuiLabel((Rectangle){ helpPosX + 30, 110, 0, 0 }, "F - Reference position(global/anchor)");
+                GuiLabel((Rectangle){ helpPosX + 30, 130, 0, 0 }, "H - Hide controls of selected anchor");
+                GuiLabel((Rectangle){ helpPosX + 30, 150, 0, 0 }, "U - Unlink anchor");
+                GuiLabel((Rectangle){ helpPosX + 30, 170, 0, 0 }, "Space - Lock/unlock control");
+                GuiLabel((Rectangle){ helpPosX + 30, 190, 0, 0 }, "T - Enter text mode(if possible)");
+                GuiLabel((Rectangle){ helpPosX + 30, 210, 0, 0 }, "Enter - Exit text mode");
+                GuiLabel((Rectangle){ helpPosX + 30, 230, 0, 0 }, "Delete - Delete a control");
+                GuiLabel((Rectangle){ helpPosX + 30, 250, 0, 0 }, "Arrows - Modify position(+ shift smooth)");
+                GuiLabel((Rectangle){ helpPosX + 30, 270, 0, 0 }, "L. Ctrl + Arrows - Modify scale(+ shift smooth)");
+                GuiLabel((Rectangle){ helpPosX + 30, 290, 0, 0 }, "L. Alt + Arrows(Up/Down) - Changes drawing order");
+                GuiLabel((Rectangle){ helpPosX + 30, 310, 0, 0 }, "L. Ctrl + Enter - Export layout controls to code");
+                GuiLabel((Rectangle){ helpPosX + 30, 330, 0, 0 }, "L. Ctrl + S - Save layout.controls(.rgl)");
+                GuiLabel((Rectangle){ helpPosX + 30, 350, 0, 0 }, "L. Ctrl + O - Open layout.controls(.rgl)");
+                GuiLabel((Rectangle){ helpPosX + 30, 370, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
+                GuiLabel((Rectangle){ helpPosX + 30, 390, 0, 0 }, "L. Ctrl + N - Rename control");
             }
-
+            
+            if (IsKeyDown(KEY_LEFT_ALT)) 
+            {
+                for (int i = layout.controlsCount; i >= 0; i--)DrawText(FormatText("[%i]", layout.controls[i].id), layout.controls[i].rec.x + layout.controls[i].ap->x + layout.controls[i].rec.width, layout.controls[i].rec.y + layout.controls[i].ap->y - 10, 10, BLUE);  
+            }
+            
             // Draw status bar bottom with debug information
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", mouseX, mouseY), 15);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 81, 24}, (snapMode ? "SNAP: ON" : "SNAP: OFF"), 10);
