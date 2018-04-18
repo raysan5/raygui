@@ -365,7 +365,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                     
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active);               // Dropdown Box control, returns selected item
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize);                                  // Text Box control, updates input text
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
@@ -1682,13 +1682,14 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 
 // Text Box control, updates input text
 // NOTE: Requires static variables: framesCounter
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
+RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit)
 {
     #define GUITEXTBOX_PADDING 4
     #define GUITEXTBOX_LINE_PADDING 4
 
     GuiControlState state = guiState;
     static int framesCounter = 0;         // Required for blinking cursor
+    static bool editMode = false;
 
     // Update control
     //--------------------------------------------------------------------
@@ -1701,27 +1702,37 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             state = FOCUSED;        // NOTE: PRESSED state is not used on this control
-
-            framesCounter++;
             
-            int key = GetKeyPressed();
-            int keyCount = strlen(text);
-            
-            // NOTE: Only allow keys in range [32..125]
-            if ((key >= 32) && (key <= 125) && (keyCount < textSize))
+            if (!freeEdit)
             {
-                text[keyCount] = (char)key;
-                keyCount++;
+                if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) editMode = !editMode;
             }
-            
-            if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+            else editMode = true;
+
+            if (editMode)
             {
-                keyCount--;
-                text[keyCount] = '\0';
+                framesCounter++;
                 
-                if (keyCount < 0) keyCount = 0;
+                int key = GetKeyPressed();
+                int keyCount = strlen(text);
+                
+                // NOTE: Only allow keys in range [32..125]
+                if ((key >= 32) && (key <= 125) && (keyCount < textSize))
+                {
+                    text[keyCount] = (char)key;
+                    keyCount++;
+                }
+                
+                if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    keyCount--;
+                    text[keyCount] = '\0';
+                    
+                    if (keyCount < 0) keyCount = 0;
+                }
             }
         }
+        else editMode = false;
     }
     //--------------------------------------------------------------------
 
@@ -1741,7 +1752,7 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize)
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]));
             DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]));
             
-            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + GUITEXTBOX_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOX_LINE_PADDING/2, 1, bounds.height - GUITEXTBOX_LINE_PADDING, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
+            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GUITEXTBOX_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOX_LINE_PADDING/2, 1, bounds.height - GUITEXTBOX_LINE_PADDING, GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]));
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
