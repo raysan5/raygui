@@ -115,6 +115,7 @@ int main()
     //--------------------------------------------------------------------------------------
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiLayout v1.0 - raygui layout editor");
+    SetExitKey(0);
        
     int selectedControl = -1;
     int selectedType = BUTTON;
@@ -237,6 +238,9 @@ int main()
     Vector2 panOffset = { 0 };
     Vector2 prevPosition = { 0 };
     
+    char prevControlText[32];
+    char prevControlName[32];
+    
     // Initialize anchor points to default values
     for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
     {
@@ -266,14 +270,18 @@ int main()
     
     //if (CTRL+Z) currentSelectedRec = undoLastRec;
     
+    bool exitWindow = false;
+    
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!exitWindow)    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
+        if (IsKeyPressed(KEY_ESCAPE) || WindowShouldClose()) exitWindow = true;
+        
         mouseX = GetMouseX();
         mouseY = GetMouseY();
         
@@ -672,10 +680,22 @@ int main()
             textEditMode = false;
             framesCounter = 0;
         }
+        else if (textEditMode && IsKeyPressed(KEY_ESCAPE)) 
+        {
+            textEditMode = false;
+            strcpy(layout.controls[selectedControl].text, prevControlText);
+            framesCounter = 0;
+        }
         
         if (nameEditMode && IsKeyPressed(KEY_ENTER)) 
         {
             nameEditMode = false;
+            framesCounter = 0;
+        }
+        else if (nameEditMode && IsKeyPressed(KEY_ESCAPE)) 
+        {
+            nameEditMode = false;
+            strcpy(layout.controls[selectedControl].name, prevControlName);
             framesCounter = 0;
         }
         
@@ -685,11 +705,13 @@ int main()
         {   
             textEditMode = true;
             saveControlSelected = selectedControl;
+            strcpy(prevControlText, layout.controls[selectedControl].text);
         }
         
         if (IsKeyPressed(KEY_N) && !textEditMode)
         {
             nameEditMode = true;
+            strcpy(prevControlName, layout.controls[selectedControl].name);
             saveControlSelected = selectedControl;
         }
        
@@ -920,7 +942,7 @@ int main()
             // Sets the minimum limit of the height
             if (layout.controls[selectedControl].type == WINDOWBOX) 
             { 
-                if (layout.controls[selectedControl].rec.height < 48) layout.controls[selectedControl].rec.height = 48;
+                if (layout.controls[selectedControl].rec.height < 50) layout.controls[selectedControl].rec.height = 50;
             }
             else if (layout.controls[selectedControl].type == PROGRESSBAR || layout.controls[selectedControl].type == SLIDER || layout.controls[selectedControl].type == SLIDERBAR || layout.controls[selectedControl].type == CHECKBOX)
             {
@@ -961,9 +983,10 @@ int main()
             layout.controls[layout.controlsCount].id = layout.controlsCount;
             layout.controls[layout.controlsCount].type = layout.controls[selectedControl].type;
             layout.controls[layout.controlsCount].rec = layout.controls[selectedControl].rec;
-            layout.controls[layout.controlsCount].rec.x += 5;
-            layout.controls[layout.controlsCount].rec.y += 5;
+            layout.controls[layout.controlsCount].rec.x += 10;
+            layout.controls[layout.controlsCount].rec.y += 10;
             strcpy(layout.controls[layout.controlsCount].text, layout.controls[selectedControl].text);
+            strcpy(layout.controls[layout.controlsCount].name, FormatText("%s%03i", controlTypeNameLow[layout.controls[layout.controlsCount].type], layout.controlsCount));
             layout.controls[layout.controlsCount].ap = layout.controls[selectedControl].ap;            // Default anchor point (0, 0)
             
             layout.controlsCount++;
@@ -1141,7 +1164,7 @@ int main()
                         case SPINNER: GuiSpinner((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 3, 25); break;
                         case COMBOBOX: GuiComboBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, list, 3, 1); break;
                         case CHECKBOX: GuiCheckBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, false); break;
-                        case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, 32, textEditMode); break;
+                        case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, 32, false); break;
                         case GROUPBOX: GuiGroupBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case WINDOWBOX: GuiWindowBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case DUMMYREC: GuiDummyRec((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
@@ -1173,7 +1196,7 @@ int main()
                     case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 42, 3, 25); break;
                     case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], list, 3, 1); break;
                     case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
-                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7, true); break;
+                    case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], previewText, 7, false); break;
                     case GROUPBOX: GuiGroupBox(defaultRec[selectedTypeDraw], "GROUP BOX"); break;
                     case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
                     case DUMMYREC: GuiDummyRec(defaultRec[selectedTypeDraw], "DUMMY REC"); break;
@@ -1265,7 +1288,8 @@ int main()
             {
                if (((framesCounter/20)%2) == 0)
                {
-                    if (layout.controls[selectedControl].type == LABEL) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE]) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    if (layout.controls[selectedControl].type == LABEL) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == TEXTBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]) + 4, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == GROUPBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == WINDOWBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 10 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == STATUSBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
@@ -1511,6 +1535,9 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     #define RGL_TOOL_AUTHOR         "tool_name"
     #define RGL_TOOL_YEAR           "2018"
     
+    #define RGL_TOOL_WINDOW_WIDTH   800
+    #define RGL_TOOL_WINDOW_HEIGHT  600
+    
     FILE *ftool = fopen(fileName, "wt");
     
     fprintf(ftool, "/*******************************************************************************************\n");
@@ -1544,7 +1571,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     fprintf(ftool, "    //---------------------------------------------------------------------------------------\n");
     fprintf(ftool, "    int screenWidth = %i;\n", screenWidth);
     fprintf(ftool, "    int screenHeight = %i;\n\n", screenHeight);
-    fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"rFXGen\");\n\n");
+    fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"%s\");\n\n", RGL_TOOL_NAME);
     
     fprintf(ftool, "    // Needed variables\n");
     fprintf(ftool, "    // Anchor points\n");
@@ -1562,7 +1589,6 @@ static void GenerateCode(const char *fileName , bool noStaticData)
                     break;
                 }
             }
-            
         }
     }
 
@@ -1681,7 +1707,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
                 case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i },  %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case CHECKBOX: fprintf(ftool, "\t\t\t%s = GuiCheckBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %s); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
                 case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %s, %sSize);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
+                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %s, %sSize, true);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
                 case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
                 case WINDOWBOX: fprintf(ftool, "\t\t\tGuiWindowBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
                 case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
@@ -1711,7 +1737,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
                 case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox(layoutRecs[%i],  %sList, %sCount, %sActive); \n\n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case CHECKBOX: fprintf(ftool, "\t\t\t%s = GuiCheckBox(layoutRecs[%i], %s); \n\n", layout.controls[i].name, i, layout.controls[i].name); break;
                 case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView(layoutRecs[%i], %sList, %sCount, %sActive); \n\n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s, %sSize);\n\n", i, layout.controls[i].name, layout.controls[i].name); break;
+                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s, %sSize, true);\n\n", i, layout.controls[i].name, layout.controls[i].name); break;
                 case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n\n", i, layout.controls[i].text); break;
                 case WINDOWBOX: fprintf(ftool, "\t\t\tGuiWindowBox(layoutRecs[%i], \"%s\");\n\n", i, layout.controls[i].text); break;
                 case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec(layoutRecs[%i], \"%s\");\n\n", i, layout.controls[i].text); break;
