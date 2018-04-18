@@ -3,7 +3,7 @@
 #
 # Total number of controls:     14
 # Anchor info:   a <id> <posx> <posy> <enabled>
-# Control info:  c <id> <type> <rectangle> <anchor_id> <text>
+# Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
 a 000 0 0 1
 a 001 50 50 1
@@ -13,17 +13,17 @@ a 004 60 275 1
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 14 20 50 130 130 1 SAMPLE TEXT
-c 001 14 10 10 130 130 4 SAMPLE TEXT
-c 002 14 10 10 130 130 2 SAMPLE TEXT
-c 003 14 10 10 130 130 3 SAMPLE TEXT
-c 004 0 40 185 55 20 1 Color Tint:
-c 006 6 10 150 130 10 4 SAMPLE TEXT
-c 007 6 10 150 130 10 2 SAMPLE TEXT
-c 008 6 10 150 130 10 3 SAMPLE TEXT
-c 009 16 0 0 175 30 1 MATERIAL MAPS
-c 011 12 0 0 150 170 4 Normals
-c 012 12 0 0 150 170 2 Metalness
-c 013 12 0 0 150 170 3 Roughness
-c 014 14 100 185 50 20 1 col
-c 010 12 10 40 150 170 1 Albedo
+c 000 14 DummyRec000 20 50 130 130 1 SAMPLE TEXT
+c 001 14 DummyRec001 10 10 130 130 4 SAMPLE TEXT
+c 002 14 DummyRec002 10 10 130 130 2 SAMPLE TEXT
+c 003 14 DummyRec003 10 10 130 130 3 SAMPLE TEXT
+c 004 0 Label004 40 185 55 20 1 Color Tint:
+c 006 6 SliderBar005 10 150 130 10 4 SAMPLE TEXT
+c 007 6 SliderBar006 10 150 130 10 2 SAMPLE TEXT
+c 008 6 SliderBar007 10 150 130 10 3 SAMPLE TEXT
+c 009 16 StatusBar008 0 0 175 30 1 MATERIAL MAPS
+c 011 12 GroupBox009 0 0 150 170 4 Normals
+c 012 12 GroupBox010 0 0 150 170 2 Metalness
+c 013 12 GroupBox011 0 0 150 170 3 Roughness
+c 014 14 DummyRec012 100 185 50 20 1 col
+c 010 12 GroupBox013 10 40 150 170 1 Albedo
