@@ -916,7 +916,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 
     if (bounds.width < textWidth + offsetX*2 + 16) bounds.width = textWidth + offsetX*2 + 16;
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, 24 };
-    if (bounds.height < 48) bounds.height = 48;
+    if (bounds.height < 50) bounds.height = 50;
     
     // Update control
     //--------------------------------------------------------------------
