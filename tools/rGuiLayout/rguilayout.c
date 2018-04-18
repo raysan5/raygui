@@ -1623,7 +1623,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
             case CHECKBOX: 
             {
                 fprintf(ftool, "    // %s variables\n", layout.controls[i].name);
-                fprintf(ftool, "    bool %s = false;\n\n", layout.controls[i].name, i);
+                fprintf(ftool, "    bool %s = false;\n\n", layout.controls[i].name);
             }
             break;
             
@@ -1669,7 +1669,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
             case TEXTBOX:
             {
                 fprintf(ftool, "    // %s variables\n", layout.controls[i].name);
-                fprintf(ftool, "    char %s[32] = \"%s\";\n", layout.controls[i].name, i, layout.controls[i].text);        
+                fprintf(ftool, "    char %s[32] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);        
                 fprintf(ftool, "    int %sSize = 32;\n\n", layout.controls[i].name);        
             }
             default: break;
