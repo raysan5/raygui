@@ -13,17 +13,17 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 WindowBox012 0 0 170 445 1 Image Edit Tools
-c 001 1 Button000 10 105 150 25 1 Make Power Of Two
-c 002 1 name 10 140 150 25 1 Clear Transparent Pixels
-c 003 1 name 10 175 150 25 1 Crop Transparent Border
-c 004 1 name 10 210 150 25 1 Pre-Multiply Alpha
-c 005 1 name 10 245 150 25 1 Generate Mipmaps
-c 006 1 name 10 280 150 25 1 Generate Normalmap
-c 007 1 name 10 315 150 25 1 Compute Dithering
-c 008 1 name 10 405 150 25 1 Export Image
-c 009 1 name 10 70 70 25 1 Rotate CCW
-c 010 1 name 90 70 70 25 1 Rotate CW
-c 011 3 Toggle010 10 35 70 25 1 Flip H
-c 012 3 name 90 35 70 25 1 Flip V
-c 013 1 name 10 360 150 25 1 Resize Image
+c 000 13 editWindow 0 0 170 445 1 Image Edit Tools
+c 001 3 flipH 10 35 70 25 1 Flip H
+c 002 3 flipV 90 35 70 25 1 Flip V
+c 003 1 RotateCCW 10 70 70 25 1 Rotate CCW
+c 004 1 RotateCW 90 70 70 25 1 Rotate CW
+c 005 1 ImagePOT 10 105 150 25 1 Make Power Of Two
+c 006 1 ImageAlphaClear 10 140 150 25 1 Clear Transparent Pixels
+c 007 1 ImageCrop 10 175 150 25 1 Crop Transparent Border
+c 008 1 ImageAlphaMultiply 10 210 150 25 1 Pre-Multiply Alpha
+c 009 1 ImageMipmaps 10 245 150 25 1 Generate Mipmaps
+c 010 1 ImageNormalmap 10 280 150 25 1 Generate Normalmap
+c 011 1 ImagetDithering 10 315 150 25 1 Compute Dithering
+c 012 1 ImageResize 10 360 150 25 1 Resize Image
+c 013 1 ExportImage 10 405 150 25 1 Export Image

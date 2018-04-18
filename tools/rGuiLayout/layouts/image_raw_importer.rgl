@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     21
+# Total number of controls:     23
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -13,24 +13,26 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 WindowBox000 0 0 200 475 1 Image RAW Import Options
-c 003 12 GroupBox001 10 85 180 80 1 Resolution
-c 003 0 Label002 10 50 80 20 1 File size:
-c 005 0 Label003 20 100 33 25 1 Width:
-c 006 0 Label004 20 130 33 25 1 Height:
-c 007 0 Label005 145 100 30 25 1 pixels
-c 008 0 Label006 145 130 30 25 1 pixels
-c 007 2 ValueBox007 60 130 80 25 1 SAMPLE TEXT
-c 014 9 ComboBox008 20 195 160 25 1 SAMPLE TEXT
-c 015 0 Label009 20 245 50 20 1 Channels:
-c 014 4 ToggleGroup010 20 265 159 25 1 Bit Depth:
-c 015 4 ToggleGroup011 20 315 159 25 1 Bit Depth:
-c 016 12 GroupBox012 10 365 180 50 1 Header
-c 017 0 Label013 20 295 50 20 1 Bit Depth:
-c 018 0 Label014 25 380 22 25 1 Size:
-c 019 0 Label015 145 380 30 25 1 bytes
-c 016 2 ValueBox016 55 380 85 25 1 SAMPLE TEXT
-c 022 1 Button017 10 430 180 30 1 Import
-c 023 12 GroupBox018 10 180 180 170 1 Pixel Format
-c 024 0 Label019 10 30 65 20 1 Import file:
-c 023 2 ValueBox020 60 100 80 25 1 SAMPLE TEXT
+c 000 13 importWindow 0 0 200 475 1 Image RAW Import Options
+c 001 0 Label019 10 30 65 20 1 Import file:
+c 002 0 Label021 85 30 75 20 1 Untitled
+c 003 0 Label002 10 50 65 20 1 File size:
+c 004 0 Label022 85 50 75 20 1 2132421 bytes
+c 005 12 GroupBox001 10 85 180 80 1 Resolution
+c 006 0 Label003 20 100 33 25 1 Width:
+c 007 2 ValueBox020 60 100 80 25 1 SAMPLE TEXT
+c 008 0 Label005 145 100 30 25 1 pixels
+c 009 0 Label004 20 130 33 25 1 Height:
+c 010 2 ValueBox007 60 130 80 25 1 SAMPLE TEXT
+c 011 0 Label006 145 130 30 25 1 pixels
+c 012 12 GroupBox018 10 180 180 170 1 Pixel Format
+c 013 9 ComboBox008 20 195 160 25 1 SAMPLE TEXT
+c 014 0 Label009 20 245 50 20 1 Channels:
+c 015 4 ToggleGroup010 20 265 159 25 1 Bit Depth:
+c 016 0 Label013 20 295 50 20 1 Bit Depth:
+c 017 4 ToggleGroup011 20 315 159 25 1 Bit Depth:
+c 018 12 GroupBox012 10 365 180 50 1 Header
+c 019 0 Label014 25 380 27 25 1 Size:
+c 020 2 ValueBox016 55 380 85 25 1 SAMPLE TEXT
+c 021 0 Label015 145 380 30 25 1 bytes
+c 022 1 ImportRAW 10 430 180 30 1 Import RAW

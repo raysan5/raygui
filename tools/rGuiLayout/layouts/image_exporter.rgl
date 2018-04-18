@@ -13,11 +13,11 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 WindowBox000 0 0 240 190 1 Image Export Options
-c 001 9 ComboBox001 80 35 150 25 1 Laser/Shoot
-c 002 9 ComboBox002 80 70 150 25 1 SAMPLE TEXT
-c 003 11 TextBox003 80 105 150 25 1 Untitled
-c 004 1 Button004 10 145 220 30 1 Export Image
-c 005 0 Label005 10 35 60 25 1 File format:
-c 006 0 Label006 10 70 63 25 1 Pixel format:
-c 007 0 Label007 10 105 50 25 1 File name:
+c 000 13 exportWindow 0 0 240 190 1 Image Export Options
+c 001 0 lblFileFormat 10 35 60 25 1 File format:
+c 002 9 fileFormat 80 35 150 25 1 Laser/Shoot
+c 003 0 lblPixelFormat 10 70 63 25 1 Pixel format:
+c 004 9 pixelFormat 80 70 150 25 1 SAMPLE TEXT
+c 005 0 lblFileName 10 105 50 25 1 File name:
+c 006 11 fileName 80 105 150 25 1 Untitled
+c 007 1 ExportImage 10 145 220 30 1 Export Image
