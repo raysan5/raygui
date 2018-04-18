@@ -1,0 +1,29 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     14
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 50 50 1
+a 002 0 0 0
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 13 WindowBox012 0 0 170 445 1 Image Edit Tools
+c 001 1 Button000 10 105 150 25 1 Make Power Of Two
+c 002 1 name 10 140 150 25 1 Clear Transparent Pixels
+c 003 1 name 10 175 150 25 1 Crop Transparent Border
+c 004 1 name 10 210 150 25 1 Pre-Multiply Alpha
+c 005 1 name 10 245 150 25 1 Generate Mipmaps
+c 006 1 name 10 280 150 25 1 Generate Normalmap
+c 007 1 name 10 315 150 25 1 Compute Dithering
+c 008 1 name 10 405 150 25 1 Export Image
+c 009 1 name 10 70 70 25 1 Rotate CCW
+c 010 1 name 90 70 70 25 1 Rotate CW
+c 011 3 Toggle010 10 35 70 25 1 Flip H
+c 012 3 name 90 35 70 25 1 Flip V
+c 013 1 name 10 360 150 25 1 Resize Image
