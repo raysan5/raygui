@@ -13,6 +13,7 @@
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_STYLE_SAVE_LOAD
+//#define RAYGUI_STYLE_DEFAULT_DARK
 #include "raygui.h"
 
 #include "external/easings.h"
@@ -459,7 +460,7 @@ int main()
                 }
             }
             
-            if(!IsKeyDown(KEY_LEFT_ALT))
+            if (!IsKeyDown(KEY_LEFT_ALT))
             {
                 if (snapMode)
                 {
@@ -1004,7 +1005,7 @@ int main()
         {
             // Save file dialog
             const char *filters[] = { "*.rgl" };
-            const char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
+            char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
 
             // Save layout.controls file (text or binary)
             if (fileName != NULL) 
@@ -1358,7 +1359,7 @@ int main()
             
             if (IsKeyDown(KEY_LEFT_ALT)) 
             {
-                for (int i = layout.controlsCount; i >= 0; i--)DrawText(FormatText("[%i]", layout.controls[i].id), layout.controls[i].rec.x + layout.controls[i].ap->x + layout.controls[i].rec.width, layout.controls[i].rec.y + layout.controls[i].ap->y - 10, 10, BLUE);  
+                for (int i = layout.controlsCount - 1; i >= 0; i--) DrawText(FormatText("[%i]", layout.controls[i].id), layout.controls[i].rec.x + layout.controls[i].ap->x + layout.controls[i].rec.width, layout.controls[i].rec.y + layout.controls[i].ap->y - 10, 10, BLUE);  
             }
             
             // Draw status bar bottom with debug information
@@ -1376,7 +1377,7 @@ int main()
                 { 
                     // Save file dialog
                     const char *filters[] = { "*.rgl" };
-                    const char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
+                    char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
 
                     // Save layout.controls file (text or binary)
                     if (fileName != NULL) 
