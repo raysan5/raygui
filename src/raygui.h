@@ -365,7 +365,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                     
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active);               // Dropdown Box control, returns selected item
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
@@ -1682,7 +1682,7 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 
 // Text Box control, updates input text
 // NOTE: Requires static variables: framesCounter
-RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit)
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit)
 {
     #define GUITEXTBOX_PADDING 4
     #define GUITEXTBOX_LINE_PADDING 4
@@ -1690,6 +1690,7 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeE
     GuiControlState state = guiState;
     static int framesCounter = 0;         // Required for blinking cursor
     static bool editMode = false;
+    bool pressed = false;
 
     // Update control
     //--------------------------------------------------------------------
@@ -1705,7 +1706,11 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeE
             
             if (!freeEdit)
             {
-                if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) editMode = !editMode;
+                if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+                {
+                    if (editMode) pressed = true;
+                    editMode = !editMode;
+                }
             }
             else editMode = true;
 
@@ -1764,6 +1769,8 @@ RAYGUIDEF void GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeE
         default: break;
     }
     //--------------------------------------------------------------------
+    
+    return pressed;
 }
 
 // Slider control, returns selected value
