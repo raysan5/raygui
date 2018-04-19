@@ -14,16 +14,16 @@ a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
 c 000 13 resizeWindow 0 0 220 210 1 Image Resize Options
-c 001 0 Label003 10 35 60 25 1 Resize:
+c 001 0 lblResize 10 35 60 25 1 Resize:
 c 002 2 widthBox 75 35 60 25 1 SAMPLE TEXT
-c 003 0 Label008 140 35 20 25 1 x
+c 003 0 Label008 140 35 15 25 1 x
 c 004 2 heightBox 150 35 60 25 1 SAMPLE TEXT
-c 005 0 Label004 10 70 65 25 1 Algorythm:
+c 005 0 lblAlgorythm 10 70 65 25 1 Algorythm:
 c 006 9 algorythm 75 70 135 25 1 SAMPLE TEXT
 c 007 10 lockAspect 20 110 15 15 1 SAMPLE TEXT
-c 008 0 Label005 40 108 100 20 1 Lock Aspect Ratio
+c 008 0 lblLockAspect 40 108 100 20 1 Lock Aspect Ratio
 c 009 10 canvasResize 20 135 15 15 1 SAMPLE TEXT
-c 010 0 Label015 40 133 80 20 1 Canvas Resize
+c 010 0 lblCanvasResize 40 133 80 20 1 Canvas Resize
 c 011 10 CheckBox010 0 0 15 15 2 SAMPLE TEXT
 c 012 10 CheckBox011 14 0 15 15 2 SAMPLE TEXT
 c 013 10 CheckBox012 28 0 15 15 2 SAMPLE TEXT
