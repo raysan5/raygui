@@ -421,6 +421,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
     
     char colorHex[9] = "00000000";
+    char colorValue[9] = "FFFFFFFF";
  
     Vector3 colorHSV = { 0.0f, 0.0f, 0.0f };
     //--------------------------------------------------------------------------------------
@@ -487,7 +488,8 @@ int main(int argc, char *argv[])
 
         // TODO: Support text editing on GuiTextBox()
         // NOTE: Editing mode should be detected (status = MOUSE_HOVER) and update colorPicker properly...
-        sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
+        //sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
+        
         
         colorHSV = ColorToHSV(colorPickerValue);
         //----------------------------------------------------------------------------------
@@ -564,7 +566,7 @@ int main(int argc, char *argv[])
             
             comboActive = GuiComboBox(bounds[COMBOBOX], comboText, comboNum, comboActive);
 
-            GuiTextBox(bounds[TEXTBOX], guiText, spinnerValue, true);
+            //GuiTextBox(bounds[TEXTBOX], guiText, spinnerValue, false);
             
             colorPickerValue = GuiColorPicker(bounds[COLORPICKER], colorPickerValue);
             
@@ -581,7 +583,7 @@ int main(int argc, char *argv[])
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 410, 8, 20 }, FormatText("S:  %.0f %%", colorHSV.y*100));
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 395, 8, 20 }, FormatText("V:  %.0f %%", colorHSV.z*100));
 
-            GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, true);
+            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, false)) colorPickerValue = GetColor(atoi(colorHex));
             
             for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
             
