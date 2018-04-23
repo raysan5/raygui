@@ -13,25 +13,25 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 1 Button000 10 45 95 20 1 Pickup/Coin
-c 001 1 Button001 10 70 95 20 1 Laser/Shoot
-c 002 1 Button002 10 95 95 20 1 Explosion
-c 003 1 Button003 10 120 95 20 1 Powerup
-c 004 1 Button004 10 145 95 20 1 Hit/Hurt
-c 005 1 Button005 10 170 95 20 1 Jump
-c 006 1 Button006 10 195 95 20 1 Blip/Select
-c 007 1 Button007 10 364 95 20 1 Mutate
-c 008 1 Button008 10 389 95 20 1 Randomize
-c 009 1 Button009 390 15 95 20 1 Screen Size x2
-c 010 1 Button010 390 283 95 20 1 Load Sound
-c 011 1 Button011 390 307 95 20 1 Save Sound
-c 012 1 Button012 390 389 95 20 1 Export Wav
-c 013 1 Button013 390 81 95 20 1 Play Sound
+c 000 1 PickupCoin 10 45 95 20 1 Pickup/Coin
+c 001 1 LaserShoot 10 70 95 20 1 Laser/Shoot
+c 002 1 Explosion 10 95 95 20 1 Explosion
+c 003 1 Powerup 10 120 95 20 1 Powerup
+c 004 1 HitHurt 10 145 95 20 1 Hit/Hurt
+c 005 1 Jump 10 170 95 20 1 Jump
+c 006 1 BlipSelect 10 195 95 20 1 Blip/Select
+c 007 1 Mutate 10 364 95 20 1 Mutate
+c 008 1 Randomize 10 389 95 20 1 Randomize
+c 009 1 ScreenSize 390 15 95 20 1 Screen Size x2
+c 010 1 LoadSound 390 283 95 20 1 Load Sound
+c 011 1 SaveSound 390 307 95 20 1 Save Sound
+c 012 1 ExportWav 390 389 95 20 1 Export Wav
+c 013 1 PlaySound 390 81 95 20 1 Play Sound
 c 014 10 CheckBox014 390 115 10 10 1 SAMPLE TEXT
 c 015 0 Label015 405 110 80 20 1 Play on change
 c 016 0 Label016 390 135 80 20 1 powered by
 c 017 0 Label017 405 250 70 20 1 www.raylib.com
-c 018 0 Label018 390 49 95 20 1 VOLUME:    60%
+c 018 0 VOLUME 390 49 95 20 1 VOLUME:    60%
 c 019 6 SliderBar019 390 65 95 10 1 SAMPLE TEXT
 c 020 9 ComboBox020 390 340 95 20 1 SAMPLE TEXT
 c 021 9 ComboBox021 390 364 95 20 1 SAMPLE TEXT
