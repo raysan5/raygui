@@ -1636,8 +1636,6 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     fprintf(ftool, "// Controls Functions Declaration\n");
     fprintf(ftool, "//----------------------------------------------------------------------------------\n");
     
-    printf("get here!\n");
-    
     for (int i = 0; i < layout.controlsCount; i++) 
     {
         if (layout.controls[i].type == BUTTON) fprintf(ftool, "static void %s();\t\t// %s: %s logic\n", layout.controls[i].name, controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
@@ -1659,6 +1657,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     fprintf(ftool, "    //----------------------------------------------------------------------------------\n");
     fprintf(ftool, "    // Anchor points\n");
 
+    // TODO: Use config.exportAnchors and config.exportAnchor0
     for(int i = 0; i < MAX_ANCHOR_POINTS; i++)
     {
         for (int j = 0; j < layout.controlsCount; j++)
@@ -1672,6 +1671,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     }
 
     // Define controls variables
+    // TODO: Use config.fullComments
     for (int i = 0; i < layout.controlsCount; i++)
     {
         switch (layout.controls[i].type)
@@ -1738,13 +1738,11 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             default: break;
         }
     }
-    
-    fprintf(ftool, "\n");
 
     if (config.defineRecs)
     {
         // Define controls rectangles
-        fprintf(ftool, "    // Define controls rectangles\n");
+        fprintf(ftool, "\n    // Define controls rectangles\n");
         fprintf(ftool, "    Rectangle layoutRecs[%i] = {\n", layout.controlsCount);
         
         for (int i = 0; i < layout.controlsCount; i++)
@@ -1756,7 +1754,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         }
     }
     
-    fprintf(ftool, "    //----------------------------------------------------------------------------------\n");
+    fprintf(ftool, "    //----------------------------------------------------------------------------------\n\n");
     
     fprintf(ftool, "    SetTargetFPS(60);\n");
     fprintf(ftool, "    //--------------------------------------------------------------------------------------\n\n");
@@ -1776,6 +1774,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n");
     
     // Draw all controls
+    // TODO: Use config.fullComments to add extra comments
     if (!config.defineRecs)
     {
         for (int i = 0; i < layout.controlsCount; i++)
@@ -1783,7 +1782,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             switch (layout.controls[i].type)
             {
                 case LABEL: fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
-                case BUTTON: fprintf(ftool, "\t\t\tif (GuiButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\")) %s(); \n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
+                case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\")) %s(); \n\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 100); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
                 case TOGGLE: fprintf(ftool, "\t\t\t%s = GuiToggleButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\", %s); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
                 case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
@@ -1818,7 +1817,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             switch (layout.controls[i].type)
             {
                 case LABEL: fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text); break;
-                case BUTTON: fprintf(ftool, "\t\t\tif (GuiButton(layoutRecs[%i], \"%s\")) %s(); \n", i, layout.controls[i].text, layout.controls[i].name); break;
+                case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton(layoutRecs[%i], \"%s\")) %s(); \n\n", i, layout.controls[i].text, layout.controls[i].name); break;
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox(layoutRecs[%i], %sValue, 100); \n",layout.controls[i].name, i, layout.controls[i].name); break;
                 case TOGGLE: fprintf(ftool, "\t\t\t%s = GuiToggleButton(layoutRecs[%i], \"%s\", %s); \n", layout.controls[i].name, i, layout.controls[i].text, layout.controls[i].name); break;
                 case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup(layoutRecs[%i], %sList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
@@ -1846,7 +1845,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             }
         }
     }
-    fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n");
+    fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n\n");
     fprintf(ftool, "        EndDrawing();\n");
     fprintf(ftool, "        //----------------------------------------------------------------------------------\n");
     fprintf(ftool, "    }\n\n");
