@@ -421,7 +421,6 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
     
     char colorHex[9] = "00000000";
-    char colorValue[9] = "FFFFFFFF";
  
     Vector3 colorHSV = { 0.0f, 0.0f, 0.0f };
     //--------------------------------------------------------------------------------------
@@ -583,7 +582,7 @@ int main(int argc, char *argv[])
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 410, 8, 20 }, FormatText("S:  %.0f %%", colorHSV.y*100));
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 395, 8, 20 }, FormatText("V:  %.0f %%", colorHSV.z*100));
 
-            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, false)) colorPickerValue = GetColor(atoi(colorHex));
+            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, false)) colorPickerValue = GetColor((int)strtol(colorHex, NULL, 16));
             
             for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
             
