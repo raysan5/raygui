@@ -345,6 +345,7 @@ typedef enum GuiProperty {
 //----------------------------------------------------------------------------------
 RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
+RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 
 RAYGUIDEF Color GuiBackgroundColor(void);                               // Get background color
 RAYGUIDEF Color GuiLinesColor(void);                                    // Get lines color
@@ -827,6 +828,16 @@ RAYGUIDEF void GuiEnable(void) { guiState = NORMAL; }
 
 // Disable gui global state
 RAYGUIDEF void GuiDisable(void) { guiState = DISABLED; }
+
+// Set gui controls alpha global state
+RAYGUIDEF void GuiFade(float alpha)
+{
+      style[DEFAULT_BORDER_COLOR_NORMAL] = ColorToInt(Fade(GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]), alpha));
+      style[DEFAULT_BASE_COLOR_NORMAL] = ColorToInt(Fade(GetColor(style[DEFAULT_BASE_COLOR_NORMAL]), alpha));
+      style[DEFAULT_TEXT_COLOR_NORMAL] = ColorToInt(Fade(GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]), alpha));
+      
+      GuiUpdateStyleComplete();
+}
 
 // Get background color
 RAYGUIDEF Color GuiBackgroundColor(void) { return GetColor(style[DEFAULT_BACKGROUND_COLOR]); }
@@ -1447,7 +1458,12 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
 
     // Draw control
     //--------------------------------------------------------------------
-    if (GuiButton(selector, ""))
+    if (GuiButton(bounds, ""))
+    {
+        active += 1;
+        if (active >= count) active = 0;
+    }
+    else if (GuiButton(selector, ""))
     {
         active += 1;
         if (active >= count) active = 0;
