@@ -1,0 +1,39 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     24
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 50 50 1
+a 002 0 0 0
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 13 generateWindow 0 0 405 205 1 Generate Code Options - layout
+c 001 10 CheckBox001 10 160 15 15 1 File format:
+c 002 0 Label002 10 35 80 25 1 Name:
+c 003 1 GenerateCode 275 165 120 30 1 Generate Code
+c 004 11 TextBox004 75 35 135 25 1 tool_name
+c 005 2 ValueBox005 75 65 60 25 1 File name:
+c 006 2 ValueBox006 150 65 60 25 1 Untitled
+c 007 0 Label007 225 35 50 25 1 Version:
+c 008 0 Label008 10 95 80 25 1 Description:
+c 009 11 TextBox009 275 35 120 25 1 1.2.0-dev
+c 010 0 Label010 225 65 55 25 1 Company:
+c 011 11 TextBox011 275 65 120 25 1 raysan5
+c 012 0 Label013 10 65 65 25 1 Window size:
+c 013 0 Label014 30 155 92 25 1 Define Rectangles
+c 014 10 CheckBox015 10 180 15 15 1 
+c 015 0 Label016 160 155 92 25 1 Export anchors
+c 016 10 CheckBox017 140 160 15 15 1 
+c 017 0 Label018 160 175 92 25 1 Export anchor 0
+c 018 10 CheckBox019 140 180 15 15 1 
+c 019 0 Label020 30 175 92 25 1 Full comments
+c 020 11 TextBox021 75 95 320 55 1 tool_name
+c 021 0 Label021 140 65 15 25 1 x
+c 022 10 CheckBox022 10 210 15 15 1 
+c 023 0 Label023 30 205 92 25 1 Crop to Window
