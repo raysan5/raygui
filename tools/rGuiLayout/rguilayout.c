@@ -86,6 +86,20 @@ typedef struct {
     GuiControl controls[MAX_GUI_CONTROLS];
 } GuiLayout;
 
+// Gui layout configuration type
+typedef struct {
+    int width;
+    int height;
+    unsigned char name[64];
+    unsigned char version[32];
+    unsigned char company[128];
+    unsigned char description[256];
+    bool defineRecs;
+    bool exportAnchors;
+    bool exportAnchor0;
+    bool fullComments;
+} GuiLayoutConfig;
+
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
@@ -104,7 +118,7 @@ const char *controlTypeNameShort[] = { "lbl", "btn", "vlbox", "tggl", "tgroup", 
 static void DrawGrid2D(int width, int height, int spacing);             // Draw 2d grid at specific size and spacing
 static void SaveLayoutRGL(const char *fileName, bool binary);           // Save gui layout project information
 static void LoadLayoutRGL(const char *fileName);                        // Load gui layout project information
-static void GenerateCode(const char *fileName , bool noStaticData);     // Generate C code for gui layout
+static void GenerateCode(const char *fileName, GuiLayoutConfig config); // Generate C code for gui layout
 static void GenerateCodeFromRGL(const char *fileName);                  // Generate C code from .rgl file
 
 //----------------------------------------------------------------------------------
@@ -1034,7 +1048,24 @@ int main()
             const char *filters[] = { "*.c", "*.go", "*.lua" };
             const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.c", 3, filters, "Code file");
             
-            if (fileName != NULL) GenerateCode(fileName, true);
+            if (fileName != NULL)
+            {
+                GuiLayoutConfig config;
+                memset(&config, 0, sizeof(GuiLayoutConfig));
+                
+                config.width = 800;
+                config.height = 600;
+                strcpy(config.name, "file_name");
+                strcpy(config.version, "1.0-dev");
+                strcpy(config.company, "raylib tech");
+                strcpy(config.description, "tool description sample");
+                config.defineRecs = false;
+                config.exportAnchors = true;
+                config.exportAnchor0 = false;
+                config.fullComments = true;
+                
+                GenerateCode(fileName, config);
+            }
         }
         
         // Tracemap texture control logic
@@ -1585,25 +1616,17 @@ static void LoadLayoutRGL(const char *fileName)
 }
 
 // Generate C code for gui layout
-static void GenerateCode(const char *fileName , bool noStaticData)
+static void GenerateCode(const char *fileName, GuiLayoutConfig config)
 {
-    #define RGL_TOOL_NAME           "rGuiLayout"
-    #define RGL_TOOL_DESCRIPTION    "tool_name"
-    #define RGL_TOOL_AUTHOR         "tool_name"
-    #define RGL_TOOL_YEAR           "2018"
-    
-    #define RGL_TOOL_WINDOW_WIDTH   800
-    #define RGL_TOOL_WINDOW_HEIGHT  600
-    
     FILE *ftool = fopen(fileName, "wt");
     
     fprintf(ftool, "/*******************************************************************************************\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   %s - %s\n", RGL_TOOL_NAME, RGL_TOOL_DESCRIPTION);
+    fprintf(ftool, "*   %s - %s\n", config.name, config.description);
     fprintf(ftool, "*\n");
     fprintf(ftool, "*   LICENSE: zlib/libpng\n");
     fprintf(ftool, "*\n");
-    fprintf(ftool, "*   Copyright (c) %s %s\n", RGL_TOOL_YEAR, RGL_TOOL_AUTHOR);
+    fprintf(ftool, "*   Copyright (c) %i %s\n", 2018, config.company);
     fprintf(ftool, "*\n");
     fprintf(ftool, "**********************************************************************************************/\n\n");
     fprintf(ftool, "#include \"raylib.h\"\n\n");
@@ -1612,6 +1635,8 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     fprintf(ftool, "//----------------------------------------------------------------------------------\n");
     fprintf(ftool, "// Controls Functions Declaration\n");
     fprintf(ftool, "//----------------------------------------------------------------------------------\n");
+    
+    printf("get here!\n");
     
     for (int i = 0; i < layout.controlsCount; i++) 
     {
@@ -1626,11 +1651,11 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     fprintf(ftool, "{\n");
     fprintf(ftool, "    // Initialization\n");
     fprintf(ftool, "    //---------------------------------------------------------------------------------------\n");
-    fprintf(ftool, "    int screenWidth = %i;\n", screenWidth);
-    fprintf(ftool, "    int screenHeight = %i;\n\n", screenHeight);
-    fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"%s\");\n\n", RGL_TOOL_NAME);
+    fprintf(ftool, "    int screenWidth = %i;\n", config.width);
+    fprintf(ftool, "    int screenHeight = %i;\n\n", config.height);
+    fprintf(ftool, "    InitWindow(screenWidth, screenHeight, \"%s\");\n\n", config.name);
     
-    fprintf(ftool, "    // raygui: controls initialization\n");
+    fprintf(ftool, "    // %s: controls initialization\n", config.name);
     fprintf(ftool, "    //----------------------------------------------------------------------------------\n");
     fprintf(ftool, "    // Anchor points\n");
 
@@ -1715,8 +1740,8 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     }
     
     fprintf(ftool, "\n");
-    
-    if (!noStaticData)
+
+    if (config.defineRecs)
     {
         // Define controls rectangles
         fprintf(ftool, "    // Define controls rectangles\n");
@@ -1751,7 +1776,7 @@ static void GenerateCode(const char *fileName , bool noStaticData)
     fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n");
     
     // Draw all controls
-    if (noStaticData)
+    if (!config.defineRecs)
     {
         for (int i = 0; i < layout.controlsCount; i++)
         {
@@ -1861,8 +1886,22 @@ static void GenerateCodeFromRGL(const char *fileName)
         outName[len - 3] = 'c';
         outName[len - 2] = '\0';
         
+        GuiLayoutConfig config;
+        memset(&config, 0, sizeof(GuiLayoutConfig));
+        
+        config.width = 800;
+        config.height = 600;
+        strcpy(config.name, "file_name");
+        strcpy(config.version, "1.0-dev");
+        strcpy(config.company, "raylib tech");
+        strcpy(config.description, "tool description sample");
+        config.defineRecs = false;
+        config.exportAnchors = true;
+        config.exportAnchor0 = false;
+        config.fullComments = true;
+        
         // Generate C code for gui layout.controls
-        GenerateCode(outName, true);
+        GenerateCode(outName, config);
     }
     else printf("Input RGL file not valid\n");
 }
