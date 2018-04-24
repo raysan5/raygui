@@ -423,6 +423,9 @@ int main(int argc, char *argv[])
     char colorHex[9] = "00000000";
  
     Vector3 colorHSV = { 0.0f, 0.0f, 0.0f };
+    
+    bool editFilenameText = false;
+    bool editHexColorText = false;
     //--------------------------------------------------------------------------------------
     
     // Main game loop
@@ -485,12 +488,14 @@ int main(int argc, char *argv[])
         progressValue += 0.0005f;
         if (progressValue > 1.0f) progressValue = 0.0f;
 
-        // TODO: Support text editing on GuiTextBox()
-        // NOTE: Editing mode should be detected (status = MOUSE_HOVER) and update colorPicker properly...
-        //sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
-        
+        // Get edited color from text box
+        if (!editHexColorText) sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
         
         colorHSV = ColorToHSV(colorPickerValue);
+        
+        // Control TextBox edit mode
+        if (CheckCollisionPointRec(GetMousePosition(), bounds[TEXTBOX]) && (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) editFilenameText = !editFilenameText;
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }) && (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) editHexColorText = !editHexColorText;
         //----------------------------------------------------------------------------------
         
         // Draw
@@ -561,11 +566,11 @@ int main(int argc, char *argv[])
             
             progressValue = GuiProgressBar(bounds[PROGRESSBAR], progressValue, 0.0f, 1.0f);
             
-            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 12, 31);
+            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 32, 30);
             
             comboActive = GuiComboBox(bounds[COMBOBOX], comboText, comboNum, comboActive);
 
-            //GuiTextBox(bounds[TEXTBOX], guiText, spinnerValue, false);
+            GuiTextBox(bounds[TEXTBOX], guiText, spinnerValue, editFilenameText);
             
             colorPickerValue = GuiColorPicker(bounds[COLORPICKER], colorPickerValue);
             
@@ -582,9 +587,9 @@ int main(int argc, char *argv[])
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 410, 8, 20 }, FormatText("S:  %.0f %%", colorHSV.y*100));
             GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 395, 8, 20 }, FormatText("V:  %.0f %%", colorHSV.z*100));
 
-            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, false)) colorPickerValue = GetColor((int)strtol(colorHex, NULL, 16));
+            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, editHexColorText)) colorPickerValue = GetColor((int)strtoul(colorHex, NULL, 16));
             
-            for(int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
+            for (int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
             
             DrawRectangleLinesEx((Rectangle){ anchor02.x + 290, anchor02.y + 440, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             
