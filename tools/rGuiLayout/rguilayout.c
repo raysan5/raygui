@@ -172,23 +172,23 @@ int main()
     
     // Used to draw the preview of selectedControl
     Rectangle defaultRec[19] = {
-        (Rectangle){ 0, 0, 80, 20},             // LABEL
-        (Rectangle){ 0, 0, 100, 30},            // BUTTON
-        (Rectangle){ 0, 0, 120, 30},            // VALUEBOX
-        (Rectangle){ 0, 0, 100, 30},            // TOGGLE
-        (Rectangle){ 0, 0, 240, 30},            // TOGGLEGROUP  
-        (Rectangle){ 0, 0, 200, 20},            // SLIDER
-        (Rectangle){ 0, 0, 200, 20},            // SLIDERBAR
-        (Rectangle){ 0, 0, 200, 20},            // PROGRESSBAR
-        (Rectangle){ 0, 0, 150, 30},            // SPINNER
-        (Rectangle){ 0, 0, 150, 30},            // COMBOBOX
+        (Rectangle){ 0, 0, 80, 25},             // LABEL
+        (Rectangle){ 0, 0, 100, 25},            // BUTTON
+        (Rectangle){ 0, 0, 120, 25},            // VALUEBOX
+        (Rectangle){ 0, 0, 100, 25},            // TOGGLE
+        (Rectangle){ 0, 0, 240, 25},            // TOGGLEGROUP  
+        (Rectangle){ 0, 0, 200, 25},            // SLIDER
+        (Rectangle){ 0, 0, 200, 25},            // SLIDERBAR
+        (Rectangle){ 0, 0, 200, 25},            // PROGRESSBAR
+        (Rectangle){ 0, 0, 150, 25},            // SPINNER
+        (Rectangle){ 0, 0, 150, 25},            // COMBOBOX
         (Rectangle){ 0, 0, 20, 20},             // CHECKBOX
-        (Rectangle){ 0, 0, 120, 30},            // TEXTBOX    
+        (Rectangle){ 0, 0, 120, 25},            // TEXTBOX    
         (Rectangle){ 0, 0, 120, 40},            // GROUPBOX    
-        (Rectangle){ 0, 0, 120, 48},            // WINDOWBOX    
+        (Rectangle){ 0, 0, 120, 50},            // WINDOWBOX    
         (Rectangle){ 0, 0, 100, 100},           // DUMMYREC    
-        (Rectangle){ 0, 0, 120, 20},            // DROPDOWNBOX    
-        (Rectangle){ 0, 0, 200, 30},            // STATUSBAR
+        (Rectangle){ 0, 0, 120, 25},            // DROPDOWNBOX    
+        (Rectangle){ 0, 0, 200, 25},            // STATUSBAR
         (Rectangle){ 0, 0, 120, 250},           // LISTVIEW
         (Rectangle){ 0, 0, 120, 120}            // COLORPICKER
     };
@@ -303,7 +303,7 @@ int main()
             lockMode = false;
         }
         
-        if (WindowShouldClose()) exitWindow = true;
+        if (WindowShouldClose()) ultimateMessage = true;
         
         mouseX = GetMouseX();
         mouseY = GetMouseY();
@@ -363,6 +363,7 @@ int main()
             {
                 if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type == WINDOWBOX) layout.controls[layout.controlsCount].ap =layout.controls[i].ap;
             }
+            
             if (layout.controls[layout.controlsCount].type == WINDOWBOX)
             {
                 for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
@@ -371,6 +372,22 @@ int main()
                     {
                         layout.anchors[i].x = layout.controls[layout.controlsCount].rec.x;
                         layout.anchors[i].y = layout.controls[layout.controlsCount].rec.y;
+                        
+                        if (snapMode)
+                        {
+                            int offsetX = layout.anchors[i].x%GRID_LINE_SPACING;
+                            int offsetY = layout.anchors[i].y%GRID_LINE_SPACING;
+                            
+                            if (offsetX >= GRID_LINE_SPACING/2) layout.anchors[i].x += (GRID_LINE_SPACING - offsetX);
+                            else layout.anchors[i].x -= offsetX;
+                            
+                            if (offsetY >= GRID_LINE_SPACING/2) layout.anchors[i].y += (GRID_LINE_SPACING - offsetY);
+                            else layout.anchors[i].y -= offsetY;
+                        }
+                        
+                        layout.controls[layout.controlsCount].rec.x = layout.anchors[i].x;
+                        layout.controls[layout.controlsCount].rec.y = layout.anchors[i].y;
+                        
                         layout.anchors[i].enabled = true;
                         layout.controls[layout.controlsCount].ap = &layout.anchors[i];
                         break;
@@ -572,8 +589,8 @@ int main()
                 {
                     layout.controls[i].type = layout.controls[i + 1].type;
                     layout.controls[i].rec = layout.controls[i + 1].rec;
-                    strcpy(layout.controls[i].text, "\0");
-                    strcpy(layout.controls[i].name, "\0");
+                    memset(layout.controls[i].text, 0, 32);
+                    memset(layout.controls[i].name, 0, 32);
                     strcpy(layout.controls[i].text, layout.controls[i + 1].text);
                     strcpy(layout.controls[i].name, layout.controls[i + 1].name);
                     layout.controls[i].ap = layout.controls[i + 1].ap;
@@ -682,8 +699,8 @@ int main()
             int keyCount = strlen(layout.controls[selectedControl].name); // Keeps track of name length
        
             // Replaces characters with pressed keys or '\0' in case of backspace
-            // NOTE: Only allow keys in range [32..125]
-            if ((((key >= 65) && (key < 91)) || ((key > 96) && (key <= 122))) && (keyCount < 31))
+            // NOTE: Only allow keys in range [48..57], [65..90] and [97..122]
+            if ((((key >= 48) && (key <= 57)) || ((key >= 65) && (key <= 90)) || ((key >= 97) && (key <= 122))) && (keyCount < 31))
             {
                 layout.controls[selectedControl].name[keyCount] = (unsigned char)key;
             }
@@ -1188,7 +1205,7 @@ int main()
                 if (tracemapEditMode) DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, RED);
                 else DrawRectangleLines(tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height, GRAY);
             }
-
+            
             for (int i = 0; i < layout.controlsCount; i++)
             {
                 // Draws the Controls when placed on the grid.
@@ -1211,9 +1228,9 @@ int main()
                         case GROUPBOX: GuiGroupBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case WINDOWBOX: 
                         {
-                            GuiFade(0.8f);
+                            //GuiFade(0.35f);
                             GuiWindowBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text);
-                            GuiFade(1.0f);
+                            //GuiFade(1.0f);
                         }break;
                         case DUMMYREC: GuiDummyRec((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case DROPDOWNBOX: GuiDropdownBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, list, 3, 2); break;
@@ -1356,7 +1373,7 @@ int main()
                     
                 if (((framesCounter/20)%2) == 0) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]*2) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height + 10, style[DEFAULT_TEXT_SIZE]*2 + 2, BLACK);                   
             }
-            else if (IsKeyDown(KEY_N))
+            else if ((IsKeyDown(KEY_N)) && (!textEditMode))
             {
                 for (int i = 0; i < layout.controlsCount; i++)
                 {
@@ -1880,7 +1897,7 @@ static void GenerateCodeFromRGL(const char *fileName)
         LoadLayoutRGL(fileName);    // Updates global: layout.controls
         
         int len = strlen(fileName);
-        char outName[256] = "\0";
+        char outName[256] = { 0 };
         strcpy(outName, fileName);
         outName[len - 3] = 'c';
         outName[len - 2] = '\0';
