@@ -1021,7 +1021,7 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
         case FOCUSED:
         case PRESSED:
         {
-            DrawRectangleRec(bounds, Fade(GetColor(style[DEFAULT_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleRec(bounds, Fade(GetColor(style[DEFAULT_BACKGROUND_COLOR]), guiAlpha));
             DrawRectangleLinesEx(bounds, GUIPANEL_BORDER_WIDTH, Fade(GetColor(style[DEFAULT_LINES_COLOR]), guiAlpha));
         }break;
         case DISABLED:
