@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     18
+# Total number of controls:     20
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -13,21 +13,23 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 13 WindowBox000 0 0 125 50 1 WindowBox
-c 001 12 GroupBox001 0 60 125 30 1 GroupBox
-c 002 1 Button011 0 100 125 30 1 Button
-c 003 3 Toggle009 0 140 90 25 1 Toggle
-c 004 10 CheckBox003 105 145 15 15 1 SAMPLE TEXT
-c 005 6 SliderBar007 0 175 125 15 1 SAMPLE TEXT
-c 006 5 Slider008 0 200 125 15 1 SAMPLE TEXT
-c 007 15 DropdownBox016 0 225 125 25 1 SAMPLE TEXT
-c 008 9 ComboBox004 0 260 125 25 1 SAMPLE TEXT
-c 009 0 Label012 0 300 61 25 1 Label
-c 010 2 ValueBox010 65 300 60 25 1 SAMPLE TEXT
-c 011 8 Spinner005 0 340 125 25 1 SAMPLE TEXT
-c 012 11 TextBox002 0 375 125 25 1 TextBox002 TextBox
-c 013 4 ToggleGroup008 0 410 125 25 1 SAMPLE TEXT
-c 014 14 DummyRec017 0 445 125 30 1 DummyRec
-c 015 16 StatusBar015 0 485 125 25 1 StatusBar
-c 016 18 ColorPicker013 0 520 95 95 1 SAMPLE TEXT
-c 017 17 ListView014 0 655 125 75 1 SAMPLE TEXT
+c 000 0 WindowBox 0 0 125 50 1 WindowBox
+c 001 1 GroupBox 0 60 125 30 1 GroupBox
+c 002 2 Line 0 100 125 25 1 
+c 003 3 Panel 0 135 125 35 1 
+c 004 4 Label 0 180 126 25 1 Label (SAMPLE TEXT)
+c 005 5 Button 0 215 125 30 1 Button
+c 006 6 Toggle 0 255 90 25 1 Toggle
+c 007 8 CheckBox 100 260 15 15 1 SAMPLE TEXT
+c 008 7 ToggleGroup 0 290 125 25 1 SAMPLE TEXT
+c 009 9 ComboBox 0 325 125 25 1 SAMPLE TEXT
+c 010 10 DropdownBox 0 360 125 25 1 SAMPLE TEXT
+c 011 11 Spinner 0 395 125 25 1 SAMPLE TEXT
+c 012 12 ValueBox 0 430 125 25 1 SAMPLE TEXT
+c 013 13 TextBox 0 465 125 25 1 TextBox002 TextBox
+c 014 14 Slider 0 500 125 15 1 SAMPLE TEXT
+c 015 15 SliderBar 0 525 125 15 1 SAMPLE TEXT
+c 016 17 StatusBar 0 550 125 25 1 StatusBar
+c 017 18 ListView 0 585 125 75 1 SAMPLE TEXT
+c 018 19 ColorPicker 0 670 95 95 1 SAMPLE TEXT
+c 019 20 DummyRec 0 805 125 30 1 DummyRec
