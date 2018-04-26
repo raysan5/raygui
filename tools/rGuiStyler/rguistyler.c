@@ -56,11 +56,6 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define FONT_SIZE           10
-#define COLOR_REC           GuiLinesColor()
-#define CONTROL_LIST_HEIGHT      38
-#define STATUS_BAR_HEIGHT   25
-
 #define NUM_CONTROLS        13
 #define NUM_STYLES_A         4
 #define NUM_STYLES_B         8
@@ -505,7 +500,7 @@ int main(int argc, char *argv[])
             ClearBackground(RAYWHITE);
             
             // Draw background rectangle
-            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiBackgroundColor());
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiGetBackgroundColor());
             
             // Draw info bar top
             GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 0, 720, 24 }, "CHOOSE CONTROL     >      CHOOSE PROPERTY STYLE      >                            STYLE VIEWER", 35);
