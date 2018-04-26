@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     23
+# Total number of controls:     24
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -14,25 +14,26 @@ a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
 c 000 0 importWindow 0 0 200 465 1 Image RAW Import Options
-c 001 4 Label019 10 30 65 20 1 Import file:
-c 002 4 Label021 85 30 75 20 1 Untitled.raw
-c 003 4 Label002 10 50 65 20 1 File size:
-c 004 4 Label022 85 50 75 20 1 2132421 bytes
-c 005 1 GroupBox001 10 85 180 80 1 Resolution
-c 006 4 Label003 20 100 33 25 1 Width:
-c 007 12 ValueBox020 60 100 80 25 1 SAMPLE TEXT
-c 008 4 Label005 145 100 30 25 1 pixels
-c 009 4 Label004 20 130 33 25 1 Height:
-c 010 12 ValueBox007 60 130 80 25 1 SAMPLE TEXT
-c 011 4 Label006 145 130 30 25 1 pixels
-c 012 1 GroupBox018 10 180 180 160 1 Pixel Format
-c 013 9 ComboBox008 20 195 160 25 1 SAMPLE TEXT
-c 014 4 Label009 20 235 50 20 1 Channels:
-c 015 7 ToggleGroup010 20 255 159 25 1 Bit Depth:
-c 016 4 Label013 20 285 50 20 1 Bit Depth:
-c 017 7 ToggleGroup011 20 305 159 25 1 Bit Depth:
-c 018 1 GroupBox012 10 355 180 50 1 Header
-c 019 4 Label014 25 370 27 25 1 Size:
-c 020 12 ValueBox016 55 370 85 25 1 SAMPLE TEXT
-c 021 4 Label015 145 370 30 25 1 bytes
-c 022 5 ImportRAW 10 420 180 30 1 Import RAW
+c 001 4 lblImportFile 10 30 65 20 1 Import file:
+c 002 4 fileName 85 30 75 20 1 Untitled.raw
+c 003 4 lblFileSize 10 50 65 20 1 File size:
+c 004 4 fileSize 85 50 75 20 1 2132421 bytes
+c 005 1 resolutionBox 10 85 180 80 1 Resolution
+c 006 4 lblWidth 20 100 33 25 1 Width:
+c 007 12 width 60 100 80 25 1 SAMPLE TEXT
+c 008 4 lblPixels 145 100 30 25 1 pixels
+c 009 4 lblHeight 20 130 33 25 1 Height:
+c 010 12 height 60 130 80 25 1 SAMPLE TEXT
+c 011 4 lblPixels 145 130 30 25 1 pixels
+c 012 1 pixelFormatBox 10 180 180 160 1 Pixel Format
+c 013 9 pixelFormat 20 195 160 25 1 SAMPLE TEXT
+c 014 2 line 20 220 160 20 1 
+c 015 4 lblChannels 20 235 50 20 1 Channels:
+c 016 7 channels 20 255 159 25 1 Bit Depth:
+c 017 4 lblBitDepth 20 285 50 20 1 Bit Depth:
+c 018 7 bitDepth 20 305 159 25 1 Bit Depth:
+c 019 1 headerBox 10 355 180 50 1 Header
+c 020 4 lblSize 25 370 27 25 1 Size:
+c 021 12 headerSize 55 370 85 25 1 SAMPLE TEXT
+c 022 4 lblBytes 145 370 30 25 1 bytes
+c 023 5 ImportRAW 10 420 180 30 1 Import RAW

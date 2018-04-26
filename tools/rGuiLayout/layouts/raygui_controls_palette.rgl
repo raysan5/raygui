@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     20
+# Total number of controls:     22
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -13,23 +13,25 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 0 WindowBox 0 0 125 50 1 WindowBox
-c 001 1 GroupBox 0 60 125 30 1 GroupBox
-c 002 2 Line 0 100 125 25 1 
-c 003 3 Panel 0 135 125 35 1 
-c 004 4 Label 0 180 126 25 1 Label (SAMPLE TEXT)
-c 005 5 Button 0 215 125 30 1 Button
-c 006 6 Toggle 0 255 90 25 1 Toggle
-c 007 8 CheckBox 100 260 15 15 1 SAMPLE TEXT
-c 008 7 ToggleGroup 0 290 125 25 1 SAMPLE TEXT
-c 009 9 ComboBox 0 325 125 25 1 SAMPLE TEXT
-c 010 10 DropdownBox 0 360 125 25 1 SAMPLE TEXT
-c 011 11 Spinner 0 395 125 25 1 SAMPLE TEXT
-c 012 12 ValueBox 0 430 125 25 1 SAMPLE TEXT
-c 013 13 TextBox 0 465 125 25 1 TextBox002 TextBox
-c 014 14 Slider 0 500 125 15 1 SAMPLE TEXT
-c 015 15 SliderBar 0 525 125 15 1 SAMPLE TEXT
-c 016 17 StatusBar 0 550 125 25 1 StatusBar
-c 017 18 ListView 0 585 125 75 1 SAMPLE TEXT
-c 018 19 ColorPicker 0 670 95 95 1 SAMPLE TEXT
-c 019 20 DummyRec 0 805 125 30 1 DummyRec
+c 000 3 controlsPanel 590 40 150 865 0 
+c 001 0 WindowBox 0 0 130 50 1 WindowBox
+c 002 1 GroupBox 0 60 130 30 1 GroupBox
+c 003 2 Line 0 95 130 20 1 
+c 004 3 Panel 0 120 130 35 1 
+c 005 4 Label 0 160 131 25 1 Label (SAMPLE TEXT)
+c 006 5 Button 0 190 130 30 1 Button
+c 007 6 Toggle 0 230 90 25 1 Toggle
+c 008 8 CheckBox 105 235 15 15 1 SAMPLE TEXT
+c 009 7 ToggleGroup 0 265 130 25 1 SAMPLE TEXT
+c 010 9 ComboBox 0 300 130 25 1 SAMPLE TEXT
+c 011 10 DropdownBox 0 335 130 25 1 SAMPLE TEXT
+c 012 11 Spinner 0 370 130 25 1 SAMPLE TEXT
+c 013 12 ValueBox 0 405 130 25 1 SAMPLE TEXT
+c 014 13 TextBox 0 440 130 25 1 TextBox
+c 015 14 Slider 0 475 130 15 1 SAMPLE TEXT
+c 016 15 SliderBar 0 500 130 15 1 SAMPLE TEXT
+c 017 16 ProgressBar 600 575 130 15 0 
+c 018 17 StatusBar 0 550 130 25 1 StatusBar
+c 019 18 ListView 0 585 130 75 1 SAMPLE TEXT
+c 020 19 ColorPicker 0 670 100 100 1 SAMPLE TEXT
+c 021 20 DummyRec 0 810 130 30 1 DummyRec

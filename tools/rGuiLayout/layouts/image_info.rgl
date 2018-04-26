@@ -14,19 +14,19 @@ a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
 c 000 0 infoWindow 0 0 170 245 2 Image Info
-c 001 4 Label015 10 30 80 20 2 Size:
-c 002 4 name 95 30 65 20 2 256 x 256
-c 003 4 name 10 50 80 20 2 Pixel format:
-c 004 4 name 95 50 65 20 2 R8G8B8A8
-c 005 4 name 10 70 80 20 2 Data size:
-c 006 4 name 95 70 70 20 2 262144 bytes
-c 007 4 name 10 90 80 20 2 Mipmap levels:
-c 008 4 name 95 90 70 20 2 01
-c 009 4 name 10 110 80 20 2 Scale filter:
-c 010 4 name 95 110 70 20 2 BILINEAR
-c 011 1 GroupBox020 10 145 150 85 2 Selected Pixel
-c 012 20 DummyRec021 20 155 65 65 2 <pixel>
-c 013 4 name 100 155 50 20 2 R: 205
-c 014 4 name 100 170 50 20 2 G: 150
-c 015 4 name 100 185 50 20 2 B: 80
-c 016 4 name 100 200 50 20 2 A: 255
+c 001 4 lblSize 10 30 80 20 2 Size:
+c 002 4 size 95 30 65 20 2 256 x 256
+c 003 4 lblPixelFormat 10 50 80 20 2 Pixel format:
+c 004 4 pixelFormat 95 50 65 20 2 R8G8B8A8
+c 005 4 lblDataSize 10 70 80 20 2 Data size:
+c 006 4 dataSize 95 70 70 20 2 262144 bytes
+c 007 4 lblMipmaps 10 90 80 20 2 Mipmap levels:
+c 008 4 mipmaps 95 90 70 20 2 01
+c 009 4 lblScaleFilter 10 110 80 20 2 Scale filter:
+c 010 4 scaleFilter 95 110 70 20 2 BILINEAR
+c 011 1 groupSelectedPixel 10 145 150 85 2 Selected Pixel
+c 012 20 pixelBox 20 155 65 65 2 <pixel>
+c 013 4 compR 100 155 50 20 2 R: 205
+c 014 4 compG 100 170 50 20 2 G: 150
+c 015 4 compB 100 185 50 20 2 B: 80
+c 016 4 compA 100 200 50 20 2 A: 255

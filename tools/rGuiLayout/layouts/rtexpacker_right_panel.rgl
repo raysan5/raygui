@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     39
+# Total number of controls:     40
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -13,42 +13,43 @@ a 004 60 465 1
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 20 DummyRec000 0 0 226 30 1 ATLAS SETTINGS
-c 001 1 GroupBox002 0 0 210 195 2 Packing
-c 002 4 Label003 10 15 60 25 2 Algorythm:
-c 003 9 ComboBox012 70 15 130 25 2 SAMPLE TEXT
-c 004 4 Label004 10 50 60 25 2 Heuristics:
-c 005 9 ComboBox013 70 50 130 25 2 SAMPLE TEXT
-c 006 4 Label005 10 85 60 25 2 Padding:
-c 007 11 Spinner014 70 85 130 25 2 SAMPLE TEXT
-c 008 8 CheckBox006 10 120 15 15 2 SAMPLE TEXT
-c 009 4 Label009 30 118 135 20 2 Trim sprites
-c 010 8 CheckBox007 10 145 15 15 2 SAMPLE TEXT
-c 011 4 Label010 30 143 135 20 2 Allow sprites rotation
-c 012 8 CheckBox008 10 170 15 15 2 SAMPLE TEXT
-c 013 4 Label011 30 168 135 20 2 Remove duplicates
-c 014 1 GroupBox001 0 0 210 145 3 Texture
-c 015 4 Label015 10 15 30 25 3 Size:
-c 016 12 ValueBox016 65 15 60 25 3 SAMPLE TEXT
-c 017 4 Label025 130 15 20 25 3 x
-c 018 12 ValueBox038 140 15 60 25 3 SAMPLE TEXT
-c 019 8 CheckBox018 10 50 15 15 3 SAMPLE TEXT
-c 020 4 Label020 30 48 56 20 3 Force POT
-c 021 8 CheckBox022 115 50 15 15 3 SAMPLE TEXT
-c 022 4 Label023 135 48 65 20 3 Clear alpha
-c 023 8 CheckBox019 10 75 15 15 3 SAMPLE TEXT
-c 024 4 Label021 30 73 76 20 3 Force squared
-c 025 5 Button024 10 105 190 30 3 Export Image
-c 026 1 GroupBox017 0 0 210 175 4 Font
-c 027 4 Label030 10 10 100 25 4 Char size (Height):
-c 028 13 TextBox028 115 10 50 25 4 32
-c 029 4 Label029 170 10 36 25 4 pixels
-c 030 4 Label027 10 35 100 25 4 Characters Range:
-c 031 11 Spinner031 10 55 85 25 4 SAMPLE TEXT
-c 032 4 Label033 100 55 20 25 4 to
-c 033 11 Spinner032 115 55 85 25 4 SAMPLE TEXT
-c 034 5 Button026 10 90 190 25 4 Import charset
-c 035 8 CheckBox034 10 125 15 15 4 SAMPLE TEXT
-c 036 4 Label035 30 121 135 25 4 Generate SDF
-c 037 8 CheckBox036 10 150 15 15 4 SAMPLE TEXT
-c 038 4 Label037 30 146 135 25 4 Generate Oversampling
+c 000 20 DummyRec000 0 0 231 30 1 ATLAS SETTINGS
+c 001 3 Panel039 50 80 230 575 0 
+c 002 1 GroupBox002 0 0 210 195 2 Packing
+c 003 4 Label003 10 15 60 25 2 Algorythm:
+c 004 9 ComboBox012 70 15 130 25 2 SAMPLE TEXT
+c 005 4 Label004 10 50 60 25 2 Heuristics:
+c 006 9 ComboBox013 70 50 130 25 2 SAMPLE TEXT
+c 007 4 Label005 10 85 60 25 2 Padding:
+c 008 11 Spinner014 70 85 130 25 2 SAMPLE TEXT
+c 009 8 CheckBox006 10 120 15 15 2 SAMPLE TEXT
+c 010 4 Label009 30 118 135 20 2 Trim sprites
+c 011 8 CheckBox007 10 145 15 15 2 SAMPLE TEXT
+c 012 4 Label010 30 143 135 20 2 Allow sprites rotation
+c 013 8 CheckBox008 10 170 15 15 2 SAMPLE TEXT
+c 014 4 Label011 30 168 135 20 2 Remove duplicates
+c 015 1 GroupBox001 0 0 210 145 3 Texture
+c 016 4 Label015 10 15 30 25 3 Size:
+c 017 12 ValueBox016 65 15 60 25 3 SAMPLE TEXT
+c 018 4 Label025 130 15 20 25 3 x
+c 019 12 ValueBox038 140 15 60 25 3 SAMPLE TEXT
+c 020 8 CheckBox018 10 50 15 15 3 SAMPLE TEXT
+c 021 4 Label020 30 48 56 20 3 Force POT
+c 022 8 CheckBox022 115 50 15 15 3 SAMPLE TEXT
+c 023 4 Label023 135 48 65 20 3 Clear alpha
+c 024 8 CheckBox019 10 75 15 15 3 SAMPLE TEXT
+c 025 4 Label021 30 73 76 20 3 Force squared
+c 026 5 Button024 10 105 190 30 3 Export Image
+c 027 1 GroupBox017 0 0 210 175 4 Font
+c 028 4 Label030 10 10 100 25 4 Char size (Height):
+c 029 13 TextBox028 115 10 50 25 4 32
+c 030 4 Label029 170 10 36 25 4 pixels
+c 031 4 Label027 10 35 100 25 4 Characters Range:
+c 032 11 Spinner031 10 55 85 25 4 SAMPLE TEXT
+c 033 4 Label033 100 55 20 25 4 to
+c 034 11 Spinner032 115 55 85 25 4 SAMPLE TEXT
+c 035 5 Button026 10 90 190 25 4 Import charset
+c 036 8 CheckBox034 10 125 15 15 4 SAMPLE TEXT
+c 037 4 Label035 30 121 135 25 4 Generate SDF
+c 038 8 CheckBox036 10 150 15 15 4 SAMPLE TEXT
+c 039 4 Label037 30 146 135 25 4 Generate Oversampling
