@@ -48,7 +48,7 @@ int main(int argc, char *argv[0])
     char fileNameText[32] = "Untitled";
 
     //int dropdownSelected = 0;
-
+    SetConfigFlags(0x11100000);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "image exporter");
 
     SetTargetFPS(60);
@@ -73,12 +73,12 @@ int main(int argc, char *argv[0])
             
             if (GuiButton((Rectangle){ 20, 20, 150, 30 }, "Show Export Window")) windowBoxActive = true;
             
-            // Draw window box
+            // Draw window box: windowBoxName
             //-----------------------------------------------------------------------------
             if (windowBoxActive)
             {
                 windowBoxActive = !GuiWindowBox(windowBoxRec, "Image export options");
-
+            
                 // Draw file format options
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 20, 0, 0 }, FormatText("File format"));
                 formatSelected = GuiComboBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 10, 150, 30 }, formatText, formatCount, formatSelected);
@@ -96,7 +96,7 @@ int main(int argc, char *argv[0])
 
                 //Draw file name options
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 140, 0, 0 }, FormatText("File name"));
-                GuiTextBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 130, 150, 30 }, fileNameText, 32);
+                GuiTextBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 130, 150, 30 }, fileNameText, 32, false);
                 
                 // Draw export image button
                 if (GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 170, 150 + 90, 30 }, "Export Image")) { /* Call function */ }

@@ -149,7 +149,7 @@ int main(int argc, char *argv[0])
         //----------------------------------------------------------------------------------
         BeginDrawing();
         
-            ClearBackground(GuiBackgroundColor());
+            ClearBackground(GuiGetBackgroundColor());
             
             DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
 
