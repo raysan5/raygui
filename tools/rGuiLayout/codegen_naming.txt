@@ -1,0 +1,23 @@
+Control     |   DefaultName     | #GenVars  |      Generated variables (sufixes)
+-----------------------------------------------------------------------
+WINDOWBOX       WindowBox001        1           bool {name}Active
+GROUPBOX        GroupBox001         0           -
+LINE            Line001             0           -
+PANEL           Panel001            0           -
+LABEL           Label001            0           [!] const char *{name}Text  -->  Only if defined to be exported
+BUTTON          Button001           0           [!] void {name}() func
+TOGGLE          Toggle001           1           bool {name}Active
+TOGGLEGROUP     ToggleGroup001      3           const char *{name}TextList[], const int {name}Count, int {name}Active
+CHECKBOX        CheckBox001         1           bool {name}Checked
+COMBOBOX        ComboBox001         3           const char *{name}TextList[], const int {name}Count, int {name}Active
+DROPDOWNBOX     DropdownBox001      3           const char *{name}TextList[], const int {name}Count, int {name}Active
+SPINNER         Spinner001          1           int {name}Value
+VALUEBOX        ValueBox001         1           int {name}Value
+TEXTBOX         TextBox001          2           char *{name}Text, int {name}TextSize
+SLIDER          Slider001           1           float {name}Value, const float {name}MinValue, const float {name}MaxValue 
+SLIDERBAR       SliderBar001        1           float {name}Value, const float {name}MinValue, const float {name}MaxValue 
+PROGRESSBAR     ProgressBar001      1           float {name}Value
+STATUSBAR       StatusBar           1           char *{name}Text
+LISTVIEW        ListView001         3           const char *{name}TextList[], const int {name}Count, int {name}Active
+COLORPICKER     ColorPicker001      1           Color {name}Value
+DUMMYREC        DummyRec001         0           -
