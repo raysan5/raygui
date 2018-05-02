@@ -11,10 +11,9 @@ raygui is intended for **tools development**; it has already been used on tools 
 <br>
 
 ## raygui styles: light & dark
-Default light style
+
 ![raygui light design](design/raygui_style_table_light_REV10.png)
 
-Default dark style
 ![raygui dark design](design/raygui_style_table_dark_REV9.png)
 
 ## raygui history
@@ -29,15 +28,15 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 ## raygui 2.0 provided controls
 
 #### Container/separator controls, useful for controls organization
-
-<img align="right" src="https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV9.png">
-
  - WindowBox
  - GroupBox
  - Line
  - Panel
 
 #### Basic controls
+
+<img align="right" src="https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV9.png">
+
  - Label
  - Button
  - LabelButton
