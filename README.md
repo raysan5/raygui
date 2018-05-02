@@ -28,6 +28,9 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 ## raygui 2.0 provided controls
 
 #### Container/separator controls, useful for controls organization
+
+<img align="right" src="design/raygui_messagebox.png">
+
  - WindowBox
  - GroupBox
  - Line
@@ -35,7 +38,7 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 
 #### Basic controls
 
-<img align="right" src="https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV9.png">
+<img align="right" src="tools/rGuiStyler/design/rguistyler2_light_REV9.png">
 
  - Label
  - Button
