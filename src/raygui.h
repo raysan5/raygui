@@ -32,6 +32,7 @@
 *       - ScrollBar
 *       - ListView
 *       - ColorPicker
+*       - MessageBox
 *       - DummyRec
 *       - Grid
 *
@@ -57,7 +58,7 @@
 *       Include style customization and save/load functions, useful when required.
 *
 *   LIMITATIONS:
-*       Some controls missing, like panels.
+*       Some controls missing.
 *
 *   VERSIONS HISTORY:
 *       2.0 (01-May-2018) Added new controls...
@@ -125,7 +126,7 @@
 // Defines and Macros
 //----------------------------------------------------------------------------------
 #define NUM_PROPERTIES       155
-#define VALIGN_OFFSET(h)      (h%2)         // Vertical alignment for pixel perfect
+#define VALIGN_OFFSET(h)    (h%2)       // Vertical alignment for pixel perfect
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -2065,8 +2066,8 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
 }
 
 // Scroll Bar control
-// NOTE: content defines size of internal data
-RAYGUIDEF void GuiScrollBar(Rectangle bounds, Rectangle content)
+// NOTE: bounds define the view area, content defines size of internal data
+RAYGUIDEF Vector2 GuiScrollBar(Rectangle bounds, Rectangle content, Vector2 viewScroll)
 {
     // TODO: Implement
 }
