@@ -29,9 +29,11 @@
 *       - SliderBar
 *       - ProgressBar
 *       - StatusBar
+*       - ScrollBar
 *       - ListView
 *       - ColorPicker
 *       - DummyRec
+*       - Grid
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
 *
@@ -350,13 +352,15 @@ typedef enum GuiProperty {
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
+
+// Global gui modification functions
 RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 
-RAYGUIDEF Color GuiGetBackgroundColor(void);                            // Get background color
-RAYGUIDEF Color GuiGetLinesColor(void);                                 // Get lines color
-RAYGUIDEF Color GuiGetTextColor(void);                                  // Get text color for normal state
+// Style set/get functions
+RAYGUIDEF void GuiSetStyleProperty(int guiProperty, int value);         // Set one style property
+RAYGUIDEF int GuiGetStyleProperty(int guiProperty);                     // Get one style property
 
 // Container/separator controls, useful for controls organization
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                                        // Window Box control, shows a window that can be closed
@@ -395,9 +399,6 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName);                      // Load 
 RAYGUIDEF void GuiLoadStyleImage(const char *fileName);                 // Load style from an image style file
 RAYGUIDEF void GuiLoadStylePalette(Color *palette);                     // Load style from a color palette array (14 values required)
 RAYGUIDEF void GuiUpdateStyleComplete(void);                            // Updates full style properties set with generic values
-
-RAYGUIDEF void GuiSetStyleProperty(int guiProperty, int value);         // Set one style property
-RAYGUIDEF int GuiGetStyleProperty(int guiProperty);                     // Get one style property
 #endif
 
 #endif // RAYGUI_H
@@ -852,14 +853,11 @@ RAYGUIDEF void GuiFade(float alpha)
     guiAlpha = alpha;
 }
 
-// Get background color
-RAYGUIDEF Color GuiGetBackgroundColor(void) { return GetColor(style[DEFAULT_BACKGROUND_COLOR]); }
+// Set one style property value
+RAYGUIDEF void GuiSetStyleProperty(int guiProperty, int value) { style[guiProperty] = value; }
 
-// Get lines color
-RAYGUIDEF Color GuiGetLinesColor(void) { return GetColor(style[DEFAULT_LINES_COLOR]); }
-
-// Get text color for normal state
-RAYGUIDEF Color GuiGetTextColor(void) { return GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]); }
+// Get one style property value
+RAYGUIDEF int GuiGetStyleProperty(int guiProperty) { return style[guiProperty]; }
 
 // Window Box control
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
@@ -2066,6 +2064,13 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
     //--------------------------------------------------------------------
 }
 
+// Scroll Bar control
+// NOTE: content defines size of internal data
+RAYGUIDEF void GuiScrollBar(Rectangle bounds, Rectangle content)
+{
+    // TODO: Implement
+}
+
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
 {
     GuiControlState state = guiState;
@@ -2596,9 +2601,8 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
     color = (Color){ (unsigned char)(rgb.x*255.0f), (unsigned char)(rgb.y*255.0f), (unsigned char)(rgb.z*255.0f), color.a };
     
     
-    // Draw control
+    // Draw control: color select panel
     //--------------------------------------------------------------------
-    // Draw color selected panel
     if (state != DISABLED)
     {
         for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%(bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? Fade(Fade(GRAY, 0.4f), guiAlpha) : Fade(Fade(RAYWHITE, 0.4f), guiAlpha));
@@ -2649,6 +2653,51 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
     //--------------------------------------------------------------------
     
     return clicked;
+}
+
+// Grid control
+// NOTE: Returns mouse position on grid
+RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
+{
+    #define GRID_COLOR_ALPHA    0.1f        // Grid lines alpha amount
+    
+    GuiControlState state = guiState;
+    Vector2 mousePoint = GetMousePosition();
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        // Check mouse position if snap
+        if (snap)
+        {
+            // TODO: Mouse point snap
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            // Draw vertical grid lines
+            for (int i = 0; i < (bounds.width/spacing + 1)*subdivs; i++)
+            {
+                DrawRectangle(bounds.y + spacing*i, 0, 1, bounds.height, ((i%subdivs) == 0) ? Fade(BLACK, GRID_COLOR_ALPHA*2) : Fade(GRAY, GRID_COLOR_ALPHA));
+            }
+
+            // Draw horizontal grid lines
+            for (int i = 0; i < (bounds.height/spacing + 1)*subdivs; i++)
+            {
+                DrawRectangle(0, bounds.x + spacing*i, bounds.width, 1, ((i%subdivs) == 0) ? Fade(BLACK, GRID_COLOR_ALPHA*2) : Fade(GRAY, GRID_COLOR_ALPHA));
+            }
+        } break;
+        default: break;
+    }
+    
+    return mousePoint;
 }
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
@@ -2997,13 +3046,6 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[LISTVIEW_BASE_COLOR_DISABLED] = style[DEFAULT_BASE_COLOR_DISABLED];
     style[LISTVIEW_TEXT_COLOR_DISABLED] = style[DEFAULT_TEXT_COLOR_DISABLED];
 }
-
-// Set one style property value
-RAYGUIDEF void GuiSetStyleProperty(int guiProperty, int value) { style[guiProperty] = value; }
-
-// Get one style property value
-RAYGUIDEF int GuiGetStyleProperty(int guiProperty) { return style[guiProperty]; }
-
 #endif  // defined(RAYGUI_STYLE_SAVE_LOAD)
 
 //----------------------------------------------------------------------------------
