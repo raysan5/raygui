@@ -25,17 +25,17 @@ c 008 12 height 150 65 60 25 1 Untitled
 c 009 4 lblCompany 225 65 50 25 1 Company:
 c 010 13 company 275 65 115 25 1 raysan5
 c 011 4 lblDescription 10 95 65 25 1 Description:
-c 012 13 toolDescription 75 95 315 55 1 tool_name
-c 013 8 checkDefineRecs 10 160 15 15 1 File format:
+c 012 13 toolDescription 75 95 315 55 1 tool_description
+c 013 8 defineRecs 10 160 15 15 1 File format:
 c 014 4 lblDefineRecs 30 155 92 25 1 Define Rectangles
-c 015 8 checkFullComments 10 180 15 15 1 
-c 016 4 lblFullComments 30 175 100 25 1 Full comments
-c 017 8 checkCropWindow 10 200 15 15 1 
-c 018 4 lblCropWindow 30 195 92 25 1 Crop to Window
-c 019 8 checkExportAnchors 140 160 15 15 1 
-c 020 4 lblExportAnchors 160 155 100 25 1 Export anchors
-c 021 8 checkExportAnchor0 140 180 15 15 1 
-c 022 4 lblExportAnchor0 160 175 100 25 1 Export anchor 0
-c 023 8 checkAddPrefixes 140 200 15 15 1 
-c 024 4 lblAddPrefixes 160 195 100 25 1 Add vars prefixes
-c 025 5 GenerateCode 275 185 115 30 1 Generate Code
+c 015 8 defineTexts 10 180 15 15 1 
+c 016 4 lblFullComments 160 195 100 25 1 Full comments
+c 017 4 lblCropWindow 30 195 92 25 1 Crop to Window
+c 018 8 exportAnchors 140 160 15 15 1 
+c 019 4 lblExportAnchors 160 155 100 25 1 Export anchors
+c 020 8 exportAnchor0 140 180 15 15 1 
+c 021 4 lblExportAnchor0 160 175 100 25 1 Export anchor 0
+c 022 8 fullComments 140 200 15 15 1 
+c 023 5 GenerateCode 275 185 115 30 1 Generate Code
+c 024 4 lblDefineTextsConst 30 175 95 25 1 Define text const
+c 025 8 cropWindow 10 200 15 15 1 
