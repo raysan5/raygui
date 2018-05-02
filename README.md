@@ -8,6 +8,7 @@ raygui was originated as an auxiliar module for [raylib](https://github.com/rays
 
 raygui is intended for **tools development**; it has already been used on tools like [rFXGen](https://github.com/raysan5/rFXGen), [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools).
 
+<br>
 
 ## raygui styles: light & dark
 Default light style
@@ -33,7 +34,7 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
  - Line
  - Panel
 
-#### Basic controls set, the standard ones
+#### Basic controls
 
 <img align="right" src="https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV9.png">
 
@@ -57,9 +58,8 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
  - DummyRec
 
 <br>
-<br>
 
-#### Advance controls set, use multiple controls
+#### Advance controls
  - ListView
  - ColorPicker
  - GuiMessageBox
