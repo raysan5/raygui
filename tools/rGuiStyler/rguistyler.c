@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
             ClearBackground(RAYWHITE);
             
             // Draw background rectangle
-            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GuiGetBackgroundColor());
+            DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), GetColor(GuiGetStyleProperty(DEFAULT_BACKGROUND_COLOR)));
             
             // Draw info bar top
             GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 0, 720, 24 }, "CHOOSE CONTROL     >      CHOOSE PROPERTY STYLE      >                            STYLE VIEWER", 35);
