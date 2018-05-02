@@ -32,13 +32,15 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
  - GroupBox
  - Line
  - Panel
- 
+
 #### Basic controls set, the standard ones
+
+<img align="right" src="https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/rguistyler2_light_REV9.png">
+
  - Label
  - Button
  - LabelButton
  - ImageButton
- - ImageButtonEx
  - ToggleButton
  - ToggleGroup
  - CheckBox
@@ -53,6 +55,9 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
  - StatusBar
  - ScrollBar (WIP)
  - DummyRec
+
+<br>
+<br>
 
 #### Advance controls set, use multiple controls
  - ListView
