@@ -57,8 +57,6 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
  - ScrollBar (WIP)
  - DummyRec
 
-<br>
-
 #### Advance controls
  - ListView
  - ColorPicker
