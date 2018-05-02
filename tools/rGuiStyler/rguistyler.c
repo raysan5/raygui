@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
             
             progressValue = GuiProgressBar(bounds[PROGRESSBAR], progressValue, 0.0f, 1.0f);
             
-            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 32, 30);
+            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 32, 35);
             
             comboActive = GuiComboBox(bounds[COMBOBOX], comboText, comboNum, comboActive);
 
