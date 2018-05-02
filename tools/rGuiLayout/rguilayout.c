@@ -35,6 +35,8 @@
 
 #define MOVEMENT_FRAME_SPEED     10         // Controls movement speed in pixels per frame
 
+#define PALETTE_EASING_FRAMES    30         // Controls the easing time in frames     
+
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
@@ -100,6 +102,7 @@ typedef struct {
     bool exportAnchors;
     bool exportAnchor0;
     bool fullComments;
+    bool defineTexts;
 } GuiLayoutConfig;
 
 //----------------------------------------------------------------------------------
@@ -293,39 +296,39 @@ int main()
     bool exitWindow = false;
     bool ultimateMessage = false;
     
-    // Define palette anchor
-    Vector2 palettePos = { GetScreenWidth() - 135, 25 };
-    
-    int focusedPalette = -1;
-    
+    // Define palette variables
+    Rectangle palettePanel = { GetScreenWidth() + 130, 20, 135, 870 };
     bool paletteMode = false;
+    int paletteSelect = -1;
+    int paletteEasingIn = 0;
+    int paletteEasingOut = PALETTE_EASING_FRAMES;
+    int paletteStartPosX = GetScreenWidth() + 130;
+
     
     // Define palette rectangles
     Rectangle paletteRecs[21] = {
-        (Rectangle){ palettePos.x + 0, palettePos.y + 0, 125, 50 },		    // WindowBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 60, 125, 30 },		// GroupBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 100, 125, 25 },		// Line
-        (Rectangle){ palettePos.x + 0, palettePos.y + 135, 125, 35 },		// Panel
-        (Rectangle){ palettePos.x + 0, palettePos.y + 180, 126, 25 },		// Label
-        (Rectangle){ palettePos.x + 0, palettePos.y + 215, 125, 30 },		// Button
-        (Rectangle){ palettePos.x + 0, palettePos.y + 255, 90, 25 },		// Toggle
-        (Rectangle){ palettePos.x + 0, palettePos.y + 290, 125, 25 },		// ToggleGroup
-        (Rectangle){ palettePos.x + 100, palettePos.y + 260, 15, 15 },		// CheckBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 325, 125, 25 },		// ComboBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 360, 125, 25 },		// DropdownBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 395, 125, 25 },		// Spinner
-        (Rectangle){ palettePos.x + 0, palettePos.y + 430, 125, 25 },		// ValueBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 465, 125, 25 },		// TextBox
-        (Rectangle){ palettePos.x + 0, palettePos.y + 500, 125, 15 },		// Slider
-        (Rectangle){ palettePos.x + 0, palettePos.y + 525, 125, 15 },		// SliderBar
-        (Rectangle){ palettePos.x + 0, palettePos.y + 550, 125, 15 },		// ProgressBar
-        (Rectangle){ palettePos.x + 0, palettePos.y + 575, 125, 25 },		// StatusBar
-        (Rectangle){ palettePos.x + 0, palettePos.y + 610, 125, 75 },		// ListView
-        (Rectangle){ palettePos.x + 0, palettePos.y + 695, 95, 95 },		// ColorPicker
-        (Rectangle){ palettePos.x + 0, palettePos.y + 830, 125, 30 }		// DummyRec
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 5, 125, 50 },		    // WindowBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 65, 125, 30 },		// GroupBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 105, 125, 25 },		// Line
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 140, 125, 35 },		// Panel
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 185, 126, 25 },		// Label
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 220, 125, 30 },		// Button
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 260, 90, 25 },		// Toggle
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 295, 125, 25 },		// ToggleGroup
+        (Rectangle){ palettePanel.x + 105, palettePanel.y + 265, 15, 15 },		// CheckBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 330, 125, 25 },		// ComboBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 365, 125, 25 },		// DropdownBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 400, 125, 25 },		// Spinner
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 435, 125, 25 },		// ValueBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 470, 125, 25 },		// TextBox
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 505, 125, 15 },		// Slider
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 530, 125, 15 },		// SliderBar
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 555, 125, 15 },		// ProgressBar
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 580, 125, 25 },		// StatusBar
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 615, 125, 75 },		// ListView
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 700, 95, 95 },		// ColorPicker
+        (Rectangle){ palettePanel.x + 5, palettePanel.y + 835, 125, 30 }		// DummyRec
     };
-    
-    Rectangle palettePanel = { palettePos.x - 5, palettePos.y - 5, 135, 870 };
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -341,10 +344,7 @@ int main()
             selectedControl = -1;
             lockMode = false;
         }
-        
-        palettePanel.x = GetScreenWidth() - 140;
-        palettePos.x = GetScreenWidth() - 135;
-        
+
         if (WindowShouldClose()) ultimateMessage = true;
         
         mouseX = GetMouseX();
@@ -389,27 +389,48 @@ int main()
             helpPosX = (int)EaseCubicInOut(helpCounter, startPosXHelp, deltaPosXHelp, 60);
         }
         
-        // Check if the mouse is over palette controls
-        if (CheckCollisionPointRec(GetMousePosition(), palettePanel))
+        // Controls palette selector logic
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ GetScreenWidth() - 140, 0, 140, GetScreenHeight() }))
         {
             paletteMode = true;
+            paletteEasingOut = 0;
             
-            for(int i = 0; i < 21; i++)
+            for (int i = 0; i < 21; i++)
             {
-                if (i == 8) paletteRecs[i].x = palettePos.x + 100;
-                else paletteRecs[i].x = palettePos.x;
-                
                 if (CheckCollisionPointRec(GetMousePosition(), paletteRecs[i]))
                 {
-                    focusedPalette = i;
-                    
+                    paletteSelect = i;
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectedType = i;
                     break;
                 }
-                else focusedPalette = -1;
+                else paletteSelect = -1;
             }
         }
-        else paletteMode = false;
+        else 
+        {
+            paletteMode = false;
+            paletteEasingIn = 0;
+        }
+        
+        if (paletteMode)
+        {
+            paletteEasingIn++;
+            if (paletteEasingIn >= PALETTE_EASING_FRAMES) paletteEasingIn = PALETTE_EASING_FRAMES;
+            palettePanel.x = (int)EaseCubicInOut(paletteEasingIn, paletteStartPosX,(GetScreenWidth() - 145) - paletteStartPosX, PALETTE_EASING_FRAMES);
+        }
+        else 
+        {
+            paletteStartPosX = GetScreenWidth() + 130;
+            paletteEasingOut++;
+            if (paletteEasingOut >= PALETTE_EASING_FRAMES) paletteEasingOut = PALETTE_EASING_FRAMES;
+            palettePanel.x = (int)EaseCubicInOut(paletteEasingOut, (GetScreenWidth() - 145), paletteStartPosX - (GetScreenWidth() - 145), PALETTE_EASING_FRAMES);
+        }
+          
+        for (int i = 0; i < 21; i++)
+        {
+            if (i == 8) paletteRecs[i].x = palettePanel.x + 105;
+            else paletteRecs[i].x = palettePanel.x + 5;
+        }
         
         // Create new control 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode)
@@ -1061,6 +1082,7 @@ int main()
         // Shows or hides the grid
         if (IsKeyPressed(KEY_G) && (!nameEditMode) && (!textEditMode)) showGrid = !showGrid;
         
+        // Drop files logic
         if (IsFileDropped())
         {
             char name[256]; 
@@ -1139,11 +1161,12 @@ int main()
                 strcpy(config.name, "file_name");
                 strcpy(config.version, "1.0-dev");
                 strcpy(config.company, "raylib tech");
-                strcpy(config.description, "tool description sample");
-                config.defineRecs = true;
-                config.exportAnchors = true;
+                strcpy(config.description, "tool description");
+                config.defineRecs = false;
+                config.exportAnchors = false;
                 config.exportAnchor0 = false;
-                config.fullComments = true;
+                config.fullComments = false;
+                config.defineTexts = false;
                 
                 GenerateCode(fileName, config);
             }
@@ -1494,36 +1517,34 @@ int main()
             }
             
             // Draw right panel controls palette
-            if (paletteMode)
-            {
-                GuiPanel(palettePanel);
-                GuiWindowBox(paletteRecs[0], "WindowBox");
-                GuiGroupBox(paletteRecs[1], "GroupBox");
-                GuiLine(paletteRecs[2], 1);
-                GuiPanel(paletteRecs[3]);
-                GuiLabel(paletteRecs[4], "Label (SAMPLE TEXT)");
-                GuiButton(paletteRecs[5], "Button");
-                GuiToggleButton(paletteRecs[6], "Toggle", false); 
-                GuiCheckBox(paletteRecs[8], false); 
-                GuiToggleGroup(paletteRecs[7], list, 3, 0); 
-                GuiComboBox(paletteRecs[9],  list, 3, 0); 
-                GuiDropdownBox(paletteRecs[10], list, 3, 0); 
-                GuiSpinner(paletteRecs[11], 42, 100, 25);
-                GuiValueBox(paletteRecs[12], 42, 100); 
-                GuiTextBox(paletteRecs[13], previewText, 7, false);
-                GuiSlider(paletteRecs[14], 42, 0, 100);
-                GuiSliderBar(paletteRecs[15], 42, 0, 100);
-                GuiProgressBar(paletteRecs[16], 42, 0, 100);
-                GuiStatusBar(paletteRecs[17], "StatusBar", 10);
-                GuiListView(paletteRecs[18], list, 3, 1); 
-                GuiColorPicker(paletteRecs[19], RED);
-                GuiDummyRec(paletteRecs[20], "DummyRec");
+            GuiPanel(palettePanel);
+            
+            GuiWindowBox(paletteRecs[0], "WindowBox");
+            GuiGroupBox(paletteRecs[1], "GroupBox");
+            GuiLine(paletteRecs[2], 1);
+            GuiPanel(paletteRecs[3]);
+            GuiLabel(paletteRecs[4], "Label (SAMPLE TEXT)");
+            GuiButton(paletteRecs[5], "Button");
+            GuiToggleButton(paletteRecs[6], "Toggle", false); 
+            GuiCheckBox(paletteRecs[8], false); 
+            GuiToggleGroup(paletteRecs[7], list, 3, 0); 
+            GuiComboBox(paletteRecs[9],  list, 3, 0); 
+            GuiDropdownBox(paletteRecs[10], list, 3, 0); 
+            GuiSpinner(paletteRecs[11], 42, 100, 25);
+            GuiValueBox(paletteRecs[12], 42, 100); 
+            GuiTextBox(paletteRecs[13], previewText, 7, false);
+            GuiSlider(paletteRecs[14], 42, 0, 100);
+            GuiSliderBar(paletteRecs[15], 42, 0, 100);
+            GuiProgressBar(paletteRecs[16], 42, 0, 100);
+            GuiStatusBar(paletteRecs[17], "StatusBar", 10);
+            GuiListView(paletteRecs[18], list, 3, 1); 
+            GuiColorPicker(paletteRecs[19], RED);
+            GuiDummyRec(paletteRecs[20], "DummyRec");
 
-                DrawRectangleRec(paletteRecs[selectedType], Fade(RED, 0.5f));
-                
-                DrawRectangleLinesEx(paletteRecs[focusedPalette], 1, RED);
-                DrawRectangleLinesEx(palettePanel, 1, MAROON);
-            }
+            DrawRectangleRec(paletteRecs[selectedType], Fade(RED, 0.5f));
+            
+            if (paletteSelect > -1) DrawRectangleLinesEx(paletteRecs[paletteSelect], 1, RED);
+        
             
             if (IsKeyDown(KEY_LEFT_ALT)) 
             {
@@ -1783,20 +1804,26 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     
     fprintf(ftool, "    // %s: controls initialization\n", config.name);
     fprintf(ftool, "    //----------------------------------------------------------------------------------\n");
-    fprintf(ftool, "    // Anchor points\n");
 
     // TODO: Use config.exportAnchors and config.exportAnchor0
-    for(int i = 0; i < MAX_ANCHOR_POINTS; i++)
+    if (config.exportAnchors)
     {
-        for (int j = 0; j < layout.controlsCount; j++)
+        fprintf(ftool, "    // Anchor points\n");
+        
+        for(int i = 0; i < MAX_ANCHOR_POINTS; i++)
         {
-            if (layout.controls[j].ap->id == layout.anchors[i].id)
+            for (int j = 0; j < layout.controlsCount; j++)
             {
-                fprintf(ftool, "    Vector2 %s%02i = { %i, %i };\n", "anchor", i, layout.anchors[i].x, layout.anchors[i].y);
-                break;
+                if (layout.controls[j].ap->id == layout.anchors[i].id)
+                {
+                    fprintf(ftool, "    Vector2 %s%02i = { %i, %i };\n", "anchor", i, layout.anchors[i].x, layout.anchors[i].y);
+                    break;
+                }
             }
         }
     }
+    
+    if (!config.fullComments) fprintf(ftool, "\n");
 
     // Define controls variables
     // TODO: Use config.fullComments
@@ -1806,15 +1833,35 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         {
             // Bools
             case WINDOWBOX:
+            case TOGGLE:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
                 fprintf(ftool, "    bool %sActive = true;\n", layout.controls[i].name);
             }
-            case TOGGLE: 
+            break;
+            
             case CHECKBOX: 
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
-                fprintf(ftool, "    bool %s = false;\n", layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                fprintf(ftool, "    bool %sChecked = false;\n", layout.controls[i].name);
+            }
+            break;
+            
+            // Const text
+            case LABEL:
+            {
+                if (config.defineTexts)
+                {
+                    if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                    fprintf(ftool, "    const char *%sText = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);
+                }
+            }
+            break;
+            
+            case STATUSBAR:
+            {
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                fprintf(ftool, "    char *%sText = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);
             }
             break;
             
@@ -1823,19 +1870,26 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             case LISTVIEW:
             case TOGGLEGROUP:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
                 fprintf(ftool, "    int %sCount = 3;\n", layout.controls[i].name);
                 fprintf(ftool, "    int %sActive = 0;\n", layout.controls[i].name);
-                fprintf(ftool, "    const char *%sList[3] = { \"ONE\", \"TWO\", \"THREE\" };\n", layout.controls[i].name);
+                fprintf(ftool, "    const char *%sTextList[3] = { \"ONE\", \"TWO\", \"THREE\" };\n", layout.controls[i].name);
             }
             break;
             
             // Floats
             case SLIDER: 
-            case SLIDERBAR: 
+            case SLIDERBAR:
+            {
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                fprintf(ftool, "    float %sValue = 50.0f;\n", layout.controls[i].name);
+                fprintf(ftool, "    const float %sMinValue = 0.0f;\n", layout.controls[i].name);
+                fprintf(ftool, "    const float %sMaxValue = 100.0f;\n", layout.controls[i].name);
+            }
+            break;
             case PROGRESSBAR:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
                 fprintf(ftool, "    float %sValue = 50.0f;\n", layout.controls[i].name);
             }            
             break;
@@ -1844,7 +1898,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             case VALUEBOX:
             case SPINNER:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
                 fprintf(ftool, "    int %sValue = 0;\n", layout.controls[i].name);
             }     
             break;
@@ -1852,16 +1906,16 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             // Colors
             case COLORPICKER:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
-                fprintf(ftool, "    Color %sColor;\n", layout.controls[i].name);
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                fprintf(ftool, "    Color %sValue;\n", layout.controls[i].name);
             }
             break;
 
             case TEXTBOX:
             {
-                fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
-                fprintf(ftool, "    char %s[32] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);        
-                fprintf(ftool, "    int %sSize = 32;\n", layout.controls[i].name);        
+                if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
+                fprintf(ftool, "    int %sSize = 32;\n", layout.controls[i].name);
+                fprintf(ftool, "    char %sText[32] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);           
             }
             default: break;
         }
@@ -1875,7 +1929,8 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         
         for (int i = 0; i < layout.controlsCount; i++)
         {
-            fprintf(ftool, "        (Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height);
+            if (config.exportAnchors) fprintf(ftool, "        (Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height);
+            else fprintf(ftool, "        (Rectangle){ %i, %i, %i, %i }",layout.controls[i].rec.x + layout.controls[i].ap->x, layout.controls[i].rec.y + layout.controls[i].ap->y, layout.controls[i].rec.width, layout.controls[i].rec.height);
             
             if (i == layout.controlsCount - 1) fprintf(ftool, "\t\t// %s: %s\n    };\n\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
             else fprintf(ftool, ",\t\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
@@ -1896,7 +1951,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     fprintf(ftool, "        // Draw\n");
     fprintf(ftool, "        //----------------------------------------------------------------------------------\n");
     fprintf(ftool, "        BeginDrawing();\n\n");
-    fprintf(ftool, "            ClearBackground(GuiGetBackgroundColor());\n\n");
+    fprintf(ftool, "            ClearBackground(GetColor(style[DEFAULT_BACKGROUND_COLOR]));\n\n");
 
     fprintf(ftool, "\t\t\t// raygui: controls drawing\n");
     fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n");
@@ -1909,19 +1964,24 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         {
             switch (layout.controls[i].type)
             {
-                case LABEL: fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
+                case LABEL: 
+                {
+                    if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name);
+                    else fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text);
+                } 
+                break;
                 case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\")) %s(); \n\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 100); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case TOGGLE: fprintf(ftool, "\t\t\t%s = GuiToggleButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\", %s); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
-                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 0, 100);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 0, 100);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\", %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
+                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 0, 100);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
                 case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 100, 25);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i },  %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case CHECKBOX: fprintf(ftool, "\t\t\t%s = GuiCheckBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %s); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %s, %sSize, true);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
+                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i },  %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case CHECKBOX: fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sChecked); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText, %sSize, true);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
                 case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
                 case WINDOWBOX:
                 {
@@ -1930,9 +1990,9 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
                     fprintf(ftool, "\t\t\t}\n");
                 }break;
                 case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
-                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\", 10);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
-                case COLORPICKER: fprintf(ftool, "\t\t\t%sColor = GuiColorPicker((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sColor);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText, 10);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case COLORPICKER: fprintf(ftool, "\t\t\t%sValue = GuiColorPicker((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
                 case LINE: fprintf(ftool, "\t\t\tGuiLine((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, 1);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height); break;
                 case PANEL: fprintf(ftool, "\t\t\tGuiPanel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i });\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height); break;
                 
@@ -1946,19 +2006,24 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         {
             switch (layout.controls[i].type)
             {
-                case LABEL: fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text); break;
+                case LABEL: 
+                {
+                    if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], %sText);\n", i, layout.controls[i].name);
+                    else fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text);
+                }
+                break;
                 case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton(layoutRecs[%i], \"%s\")) %s(); \n\n", i, layout.controls[i].text, layout.controls[i].name); break;
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox(layoutRecs[%i], %sValue, 100); \n",layout.controls[i].name, i, layout.controls[i].name); break;
-                case TOGGLE: fprintf(ftool, "\t\t\t%s = GuiToggleButton(layoutRecs[%i], \"%s\", %s); \n", layout.controls[i].name, i, layout.controls[i].text, layout.controls[i].name); break;
-                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup(layoutRecs[%i], %sList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton(layoutRecs[%i], \"%s\", %sActive); \n", layout.controls[i].name, i, layout.controls[i].text, layout.controls[i].name); break;
+                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup(layoutRecs[%i], %sTextList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider(layoutRecs[%i], %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar(layoutRecs[%i], %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar(layoutRecs[%i], %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
                 case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner(layoutRecs[%i], %sValue, 100, 25);\n", layout.controls[i].name, i, layout.controls[i].name); break;
-                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox(layoutRecs[%i],  %sList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case CHECKBOX: fprintf(ftool, "\t\t\t%s = GuiCheckBox(layoutRecs[%i], %s); \n", layout.controls[i].name, i, layout.controls[i].name); break;
-                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView(layoutRecs[%i], %sList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %s, %sSize, true);\n", i, layout.controls[i].name, layout.controls[i].name); break;
+                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox(layoutRecs[%i],  %sTextList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case CHECKBOX: fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox(layoutRecs[%i], %sChecked); \n", layout.controls[i].name, i, layout.controls[i].name); break;
+                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView(layoutRecs[%i], %sTextList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %sText, %sSize, true);\n", i, layout.controls[i].name, layout.controls[i].name); break;
                 case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text); break;
                 case WINDOWBOX:
                 {
@@ -1967,9 +2032,9 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
                     fprintf(ftool, "\t\t\t}\n");
                 }break;
                 case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text); break;
-                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox(layoutRecs[%i], %sList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar(layoutRecs[%i], \"%s\", 10);\n", i, layout.controls[i].text); break;
-                case COLORPICKER: fprintf(ftool, "\t\t\t%sColor = GuiColorPicker(layoutRecs[%i], %sColor);\n", layout.controls[i].name, i, layout.controls[i].name); break;
+                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox(layoutRecs[%i], %sTextList, %sCount, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar(layoutRecs[%i], %sText, 10);\n", i, layout.controls[i].name); break;
+                case COLORPICKER: fprintf(ftool, "\t\t\t%sValue = GuiColorPicker(layoutRecs[%i], %sValue);\n", layout.controls[i].name, i, layout.controls[i].name); break;
                 case LINE: fprintf(ftool, "\t\t\tGuiLine(layoutRecs[%i], 1);\n", i); break;
                 case PANEL: fprintf(ftool, "\t\t\tGuiPanel(layoutRecs[%i]);\n", i); break;
                 default: break;
