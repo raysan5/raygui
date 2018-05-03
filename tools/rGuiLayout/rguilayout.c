@@ -103,6 +103,7 @@ typedef struct {
     bool exportAnchor0;
     bool fullComments;
     bool defineTexts;
+    bool cropWindow;
 } GuiLayoutConfig;
 
 //----------------------------------------------------------------------------------
@@ -120,7 +121,6 @@ const char *controlTypeNameShort[] = { "wdwbox", "grpbox", "lne", "pnl", "lbl", 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-static void DrawGrid2D(int width, int height, int spacing);             // Draw 2d grid at specific size and spacing
 static void SaveLayoutRGL(const char *fileName, bool binary);           // Save gui layout project information
 static void LoadLayoutRGL(const char *fileName);                        // Load gui layout project information
 static void GenerateCode(const char *fileName, GuiLayoutConfig config); // Generate C code for gui layout
@@ -141,7 +141,7 @@ int main()
     int selectedType = WINDOWBOX;
     int selectedTypeDraw = LABEL;
 
-    int mouseX, mouseY;
+    Vector2 mouse;
     bool snapMode = false;
     bool showGrid = true;
     bool controlCollision = false;          // Checks if the mouse is colliding with a control or list
@@ -292,7 +292,7 @@ int main()
     Rectangle undoLastRec;     // Update when a control is selected
     
     //if (CTRL+Z) currentSelectedRec = undoLastRec;
-    
+
     bool exitWindow = false;
     bool ultimateMessage = false;
     
@@ -330,6 +330,30 @@ int main()
         (Rectangle){ palettePanel.x + 5, palettePanel.y + 835, 125, 30 }		// DummyRec
     };
     
+    // Export options window variables
+    Vector2 exportWindowPos = { 50, 50 };
+    bool generateWindowActive = false;
+    int toolNameSize = 32;
+    int toolVersionSize = 32;
+    int companySize = 32;
+    int toolDescriptionSize = 32;
+    
+    GuiLayoutConfig config;
+    memset(&config, 0, sizeof(GuiLayoutConfig));
+        
+    config.width = 800;
+    config.height = 600;
+    strcpy(config.name, "file_name");
+    strcpy(config.version, "1.0-dev");
+    strcpy(config.company, "raylib tech");
+    strcpy(config.description, "tool description");
+    config.defineRecs = false;
+    config.exportAnchors = false;
+    config.exportAnchor0 = false;
+    config.fullComments = false;
+    config.defineTexts = false;
+            
+    
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
 
@@ -347,9 +371,8 @@ int main()
 
         if (WindowShouldClose()) ultimateMessage = true;
         
-        mouseX = GetMouseX();
-        mouseY = GetMouseY();
-        
+        mouse = GetMousePosition();
+
         snapFrameCounter++;
         
         // Enables or disables snapMode if not in textEditMode
@@ -359,8 +382,8 @@ int main()
         if (IsKeyPressed(KEY_F) && (!textEditMode) && (!nameEditMode)) globalReference = !globalReference;
         
         // Checks if the defaultRec[selectedType] is colliding with the list of the controls
-        if (CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = true;
-        else if (CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = true;
+        if (CheckCollisionPointRec(mouse, listViewControls)) controlCollision = true;
+        else if (CheckCollisionPointRec(mouse, listViewControlsCounter)) controlCollision = true;
         
         // Toggle on help info
         if (IsKeyPressed(KEY_TAB))
@@ -390,14 +413,14 @@ int main()
         }
         
         // Controls palette selector logic
-        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ GetScreenWidth() - 140, 0, 140, GetScreenHeight() }))
+        if (CheckCollisionPointRec(mouse, (Rectangle){ GetScreenWidth() - 140, 0, 140, GetScreenHeight() }))
         {
             paletteMode = true;
             paletteEasingOut = 0;
             
             for (int i = 0; i < 21; i++)
             {
-                if (CheckCollisionPointRec(GetMousePosition(), paletteRecs[i]))
+                if (CheckCollisionPointRec(mouse, paletteRecs[i]))
                 {
                     paletteSelect = i;
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectedType = i;
@@ -433,12 +456,12 @@ int main()
         }
         
         // Create new control 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode)
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !controlCollision && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode && !generateWindowActive)
         {
             // Add new control (button)
             layout.controls[layout.controlsCount].id = layout.controlsCount;
             layout.controls[layout.controlsCount].type = selectedType;
-            layout.controls[layout.controlsCount].rec = (Rectangle){  mouseX - defaultRec[selectedType].width/2, mouseY - defaultRec[selectedType].height/2, defaultRec[selectedType].width, defaultRec[selectedType].height };
+            layout.controls[layout.controlsCount].rec = (Rectangle){  mouse.x - defaultRec[selectedType].width/2, mouse.y - defaultRec[selectedType].height/2, defaultRec[selectedType].width, defaultRec[selectedType].height };
             if ((layout.controls[layout.controlsCount].type == LABEL) || (layout.controls[layout.controlsCount].type == TEXTBOX) || (layout.controls[layout.controlsCount].type == BUTTON) || (layout.controls[layout.controlsCount].type == TOGGLE)
                 || (layout.controls[layout.controlsCount].type == GROUPBOX) || (layout.controls[layout.controlsCount].type == WINDOWBOX) || (layout.controls[layout.controlsCount].type == STATUSBAR) || (layout.controls[layout.controlsCount].type == DUMMYREC)) strcpy(layout.controls[layout.controlsCount].text, "SAMPLE TEXT");
             strcpy(layout.controls[layout.controlsCount].name, FormatText("%s%03i", controlTypeNameLow[layout.controls[layout.controlsCount].type], layout.controlsCount));
@@ -446,7 +469,7 @@ int main()
             
             for (int i = 0; i < layout.controlsCount; i++)
             {
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type == WINDOWBOX) layout.controls[layout.controlsCount].ap = layout.controls[i].ap;
+                if (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type == WINDOWBOX) layout.controls[layout.controlsCount].ap = layout.controls[i].ap;
             }
             
             if (layout.controls[layout.controlsCount].type == WINDOWBOX)
@@ -508,13 +531,14 @@ int main()
             }
         }
         
-        if (!(controlDrag || lockMode || tracemapEditMode || lockAnchorMode || ultimateMessage || paletteMode))
+        if (!(controlDrag || lockMode || tracemapEditMode || lockAnchorMode || ultimateMessage || paletteMode || generateWindowActive))
         {
+
             // Check selected control (on mouse hover)
             for (int i = layout.controlsCount; i >= 0; i--)
             {
                 if (controlDrag || lockMode || tracemapEditMode || lockAnchorMode) break;
-                if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
+                if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
                 {
                     selectedControl = i;
                     if (undoSelectedControl != selectedControl) 
@@ -524,7 +548,7 @@ int main()
                     }
                     break;
                 }
-                else if ((!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type != WINDOWBOX))
+                else if ((!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type != WINDOWBOX))
                 {
                     selectedControl = i;
                     if (undoSelectedControl != selectedControl) 
@@ -546,7 +570,7 @@ int main()
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 controlDrag = true;
-                panOffset = (Vector2){ mouseX, mouseY };
+                panOffset = mouse;
                 prevPosition = (Vector2){ layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y  };
             }
             else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
@@ -557,8 +581,8 @@ int main()
             if (controlDrag && !lockMode)
             {       
 
-                layout.controls[selectedControl].rec.x = prevPosition.x + (mouseX - panOffset.x);
-                layout.controls[selectedControl].rec.y = prevPosition.y + (mouseY - panOffset.y);
+                layout.controls[selectedControl].rec.x = prevPosition.x + (mouse.x - panOffset.x);
+                layout.controls[selectedControl].rec.y = prevPosition.y + (mouse.y - panOffset.y);
                                   
 
                 // Snap to grid position and size
@@ -696,8 +720,8 @@ int main()
         else
         {
             // Check mouse hover a list view
-            if (!CheckCollisionPointRec(GetMousePosition(), listViewControls)) controlCollision = false;
-            if (!CheckCollisionPointRec(GetMousePosition(), listViewControlsCounter)) controlCollision = false;
+            if (!CheckCollisionPointRec(mouse, listViewControls)) controlCollision = false;
+            if (!CheckCollisionPointRec(mouse, listViewControlsCounter)) controlCollision = false;
             
             // Updates the selectedType with the MouseWheel
             selectedType -= GetMouseWheelMove();
@@ -709,21 +733,21 @@ int main()
         }
         
         // Updates the defaultRec[selectedType] position
-        defaultRec[selectedType].x = mouseX - defaultRec[selectedType].width/2;
-        defaultRec[selectedType].y = mouseY - defaultRec[selectedType].height/2;
+        defaultRec[selectedType].x = mouse.x - defaultRec[selectedType].width/2;
+        defaultRec[selectedType].y = mouse.y - defaultRec[selectedType].height/2;
 
         // Mouse snap
         // NOTE: Snap point changes when GRID_LINE_SPACING/2 has been surpassed in X and Y
         if ((snapMode) && (selectedControl == -1))
         {
-            int offsetX = mouseX%GRID_LINE_SPACING;
-            int offsetY = mouseY%GRID_LINE_SPACING;
+            int offsetX = (int)mouse.x%GRID_LINE_SPACING;
+            int offsetY = (int)mouse.y%GRID_LINE_SPACING;
             
-            if (offsetX >= GRID_LINE_SPACING/2) mouseX += (GRID_LINE_SPACING - offsetX);
-            else mouseX -= offsetX;
+            if (offsetX >= GRID_LINE_SPACING/2) mouse.x += (GRID_LINE_SPACING - offsetX);
+            else mouse.x -= offsetX;
             
-            if (offsetY >= GRID_LINE_SPACING/2) mouseY += (GRID_LINE_SPACING - offsetY);
-            else mouseY -= offsetY;
+            if (offsetY >= GRID_LINE_SPACING/2) mouse.y += (GRID_LINE_SPACING - offsetY);
+            else mouse.y -= offsetY;
             
             // SnapMode of the DrawingControls
             // Snap rectangle position to closer snap point
@@ -858,7 +882,7 @@ int main()
         {
             for (int i = 1; i < MAX_ANCHOR_POINTS; i++)
             {
-                if (CheckCollisionPointCircle(GetMousePosition(), (Vector2){ layout.anchors[i].x, layout.anchors[i].y }, ANCHOR_RADIUS))
+                if (CheckCollisionPointCircle(mouse, (Vector2){ layout.anchors[i].x, layout.anchors[i].y }, ANCHOR_RADIUS))
                 {
                     selectedAnchor = i;
                     if (layout.anchors[selectedAnchor].enabled) anchorMode = true;
@@ -928,8 +952,8 @@ int main()
                 {
                     if (!layout.anchors[i].enabled)
                     {
-                        layout.anchors[i].x = mouseX;
-                        layout.anchors[i].y = mouseY;
+                        layout.anchors[i].x = mouse.x;
+                        layout.anchors[i].y = mouse.y;
                         layout.anchors[i].enabled = true;
                         anchorMode = false;
                         break;
@@ -1013,8 +1037,8 @@ int main()
                     // Moves the anchor to the mouse position
                     if (controlDrag)
                     {
-                        layout.anchors[selectedAnchor].x = mouseX;
-                        layout.anchors[selectedAnchor].y = mouseY;
+                        layout.anchors[selectedAnchor].x = mouse.x;
+                        layout.anchors[selectedAnchor].y = mouse.y;
                     }
                 }
                 
@@ -1080,7 +1104,7 @@ int main()
         }
   
         // Shows or hides the grid
-        if (IsKeyPressed(KEY_G) && (!nameEditMode) && (!textEditMode)) showGrid = !showGrid;
+        if (IsKeyPressed(KEY_G) && (!nameEditMode) && (!textEditMode) && (!generateWindowActive)) showGrid = !showGrid;
         
         // Drop files logic
         if (IsFileDropped())
@@ -1148,28 +1172,14 @@ int main()
         {
             // Save file dialog
             // TODO: Support additional languages (.lua, .go...) code generation
-            const char *filters[] = { "*.c", "*.go", "*.lua" };
-            const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.c", 3, filters, "Code file");
-            
-            if (fileName != NULL)
-            {
-                GuiLayoutConfig config;
-                memset(&config, 0, sizeof(GuiLayoutConfig));
-                
-                config.width = 800;
-                config.height = 600;
-                strcpy(config.name, "file_name");
-                strcpy(config.version, "1.0-dev");
-                strcpy(config.company, "raylib tech");
-                strcpy(config.description, "tool description");
-                config.defineRecs = false;
-                config.exportAnchors = false;
-                config.exportAnchor0 = false;
-                config.fullComments = false;
-                config.defineTexts = false;
-                
-                GenerateCode(fileName, config);
-            }
+
+            generateWindowActive = true;
+        }
+        
+        if (generateWindowActive) 
+        {
+            exportWindowPos.x = GetScreenWidth()/2 - 200;
+            exportWindowPos.y = GetScreenHeight()/2 - 112;
         }
         
         // Tracemap texture control logic
@@ -1180,28 +1190,28 @@ int main()
             
             if (tracemapEditMode)
             {
-                int offsetX = mouseX%GRID_LINE_SPACING;
-                int offsetY = mouseY%GRID_LINE_SPACING;
+                int offsetX = (int)mouse.x%GRID_LINE_SPACING;
+                int offsetY = (int)mouse.y%GRID_LINE_SPACING;
                 
                 // Moves the texture with the mouse
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    panOffset = (Vector2){ mouseX, mouseY };
+                    panOffset = mouse;
                     prevPosition = (Vector2){ tracemapRec.x, tracemapRec.y };
                 }
                 
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
                 {
-                    tracemapRec.x = prevPosition.x + (mouseX - panOffset.x);
-                    tracemapRec.y = prevPosition.y + (mouseY - panOffset.y);
+                    tracemapRec.x = prevPosition.x + (mouse.x - panOffset.x);
+                    tracemapRec.y = prevPosition.y + (mouse.y - panOffset.y);
                         
                     if (snapMode)
                     {
-                        if (offsetX >= GRID_LINE_SPACING/2) mouseX += (GRID_LINE_SPACING - offsetX);
-                        else mouseX -= offsetX;
+                        if (offsetX >= GRID_LINE_SPACING/2) mouse.x += (GRID_LINE_SPACING - offsetX);
+                        else mouse.x -= offsetX;
                         
-                        if (offsetY >= GRID_LINE_SPACING/2) mouseY += (GRID_LINE_SPACING - offsetY);
-                        else mouseY -= offsetY;
+                        if (offsetY >= GRID_LINE_SPACING/2) mouse.y += (GRID_LINE_SPACING - offsetY);
+                        else mouse.y -= offsetY;
                         
                         offsetX = tracemapRec.x%GRID_LINE_SPACING;
                         offsetY = tracemapRec.y%GRID_LINE_SPACING;
@@ -1281,7 +1291,7 @@ int main()
             
             // TODO: Draw global app screen limits (black rectangle with black default anchor)
 
-            if (showGrid) DrawGrid2D(GetScreenWidth(), GetScreenHeight(), GRID_LINE_SPACING);
+            if (showGrid) GuiGrid((Rectangle){ 0, 0, GetScreenWidth(), GetScreenHeight() }, GRID_LINE_SPACING, 5, false);
             
             // Draw the texture if loaded
             if (tracemap.id > 0)
@@ -1308,7 +1318,12 @@ int main()
                         }break;
                         case GROUPBOX: GuiGroupBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case LINE: GuiLine((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 1); break;
-                        case PANEL: GuiPanel((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }); break;
+                        case PANEL: 
+                        {
+                            GuiFade(0.8f);
+                            GuiPanel((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height });
+                            GuiFade(1.0f);
+                        }break;
                         case LABEL: GuiLabel((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case BUTTON: GuiButton((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text); break;
                         case TOGGLE: GuiToggleButton((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, false); break;
@@ -1336,7 +1351,7 @@ int main()
             }
             
             // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1 && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode)
+            if (selectedControl == -1 && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode && !generateWindowActive)
             {
                 switch (selectedTypeDraw)
                 {
@@ -1432,14 +1447,14 @@ int main()
             {
                 if (anchorMode)
                 {
-                    DrawCircleLines(mouseX, mouseY, ANCHOR_RADIUS, Fade(RED, 0.5f));
-                    DrawRectangle(mouseX - ANCHOR_RADIUS - 5, mouseY, ANCHOR_RADIUS*2 + 10, 1, RED);
-                    DrawRectangle(mouseX , mouseY - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
+                    DrawCircleLines(mouse.x, mouse.y, ANCHOR_RADIUS, Fade(RED, 0.5f));
+                    DrawRectangle(mouse.x - ANCHOR_RADIUS - 5, mouse.y, ANCHOR_RADIUS*2 + 10, 1, RED);
+                    DrawRectangle(mouse.x , mouse.y - ANCHOR_RADIUS - 5, 1, ANCHOR_RADIUS*2 + 10, RED);
                 }
                 else 
                 {
-                    DrawRectangle(mouseX - 8, mouseY, 17, 1, RED);
-                    DrawRectangle(mouseX, mouseY - 8, 1, 17, RED);
+                    DrawRectangle(mouse.x - 8, mouse.y, 17, 1, RED);
+                    DrawRectangle(mouse.x, mouse.y - 8, 1, 17, RED);
                 }
             }
 
@@ -1464,7 +1479,7 @@ int main()
                     
                 if (((framesCounter/20)%2) == 0) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]*2) + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height + 10, style[DEFAULT_TEXT_SIZE]*2 + 2, BLACK);                   
             }
-            else if ((IsKeyDown(KEY_N)) && (!textEditMode))
+            else if ((IsKeyDown(KEY_N)) && (!textEditMode) && (!generateWindowActive))
             {
                 for (int i = 0; i < layout.controlsCount; i++)
                 {
@@ -1476,7 +1491,7 @@ int main()
 
 
             // Draw anchor linking line
-            if (anchorLinkMode) DrawLine(layout.anchors[linkedAnchor].x, layout.anchors[linkedAnchor].y, mouseX, mouseY, BLACK);
+            if (anchorLinkMode) DrawLine(layout.anchors[linkedAnchor].x, layout.anchors[linkedAnchor].y, mouse.x, mouse.y, BLACK);
 
             // Draw Rectangle Info
             if (selectedControl != -1)
@@ -1488,8 +1503,11 @@ int main()
             // Draw Image info
             if (tracemapEditMode) DrawText(FormatText("[%i, %i, %i, %i]", tracemapRec.x, tracemapRec.y, tracemapRec.width, tracemapRec.height), tracemapRec.x + 25, tracemapRec.y + 25, 20, MAROON);
 
-            // Draw right panel for easy-finding controls
-            
+            // Draw the id of all controls
+            if (IsKeyDown(KEY_LEFT_ALT)) 
+            {
+                for (int i = layout.controlsCount - 1; i >= 0; i--) DrawText(FormatText("[%i]", layout.controls[i].id), layout.controls[i].rec.x + layout.controls[i].ap->x + layout.controls[i].rec.width, layout.controls[i].rec.y + layout.controls[i].ap->y - 10, 10, BLUE);  
+            }
             // Draw the help list (by default is out of screen)
             if (helpPosX > -280)
             {
@@ -1545,14 +1563,52 @@ int main()
             
             if (paletteSelect > -1) DrawRectangleLinesEx(paletteRecs[paletteSelect], 1, RED);
         
-            
-            if (IsKeyDown(KEY_LEFT_ALT)) 
-            {
-                for (int i = layout.controlsCount - 1; i >= 0; i--) DrawText(FormatText("[%i]", layout.controls[i].id), layout.controls[i].rec.x + layout.controls[i].ap->x + layout.controls[i].rec.width, layout.controls[i].rec.y + layout.controls[i].ap->y - 10, 10, BLUE);  
-            }
-            
+            // Draw export options window
+            if (generateWindowActive)
+			{
+                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(WHITE, 0.8f));
+				generateWindowActive = !GuiWindowBox((Rectangle){ exportWindowPos.x, exportWindowPos.y, 400, 225 }, "Generate Code Options - layout");
+                
+                GuiLabel((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 35, 65, 25 }, "Name:");
+                GuiTextBox((Rectangle){ exportWindowPos.x + 75, exportWindowPos.y + 35, 135, 25 }, config.name, toolNameSize, true);
+                GuiLabel((Rectangle){ exportWindowPos.x + 225, exportWindowPos.y + 35, 50, 25 }, "Version:");
+                GuiTextBox((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 35, 115, 25 }, config.version, toolVersionSize, true);
+                GuiLabel((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 65, 65, 25 }, "Window size:");
+                config.width = GuiValueBox((Rectangle){ exportWindowPos.x + 75, exportWindowPos.y + 65, 60, 25 }, config.width, 1000); 
+                GuiLabel((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 65, 10, 25 }, "x");
+                config.height = GuiValueBox((Rectangle){ exportWindowPos.x + 150, exportWindowPos.y + 65, 60, 25 }, config.height, 1000);
+                GuiLabel((Rectangle){ exportWindowPos.x + 225, exportWindowPos.y + 65, 50, 25 }, "Company:");
+                GuiTextBox((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 65, 115, 25 }, config.company, companySize, true);
+                GuiLabel((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 95, 65, 25 }, "Description:");
+                GuiTextBox((Rectangle){ exportWindowPos.x + 75, exportWindowPos.y + 95, 315, 55 }, config.description, toolDescriptionSize, true);
+                config.defineRecs = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 160, 15, 15 }, config.defineRecs); 
+                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 155, 92, 25 }, "Define Rectangles");
+                config.defineTexts = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 180, 15, 15 }, config.defineTexts);
+                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 195, 100, 25 }, "Full comments");
+                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 195, 92, 25 }, "Crop to Window");
+                config.exportAnchors = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 160, 15, 15 }, config.exportAnchors);
+                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 155, 100, 25 }, "Export anchors");
+                config.exportAnchor0 = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 180, 15, 15 }, config.exportAnchor0);
+                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 175, 100, 25 }, "Export anchor 0");
+                config.fullComments = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 200, 15, 15 }, config.fullComments);
+                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 175, 95, 25 }, "Define text const");
+                config.cropWindow = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 200, 15, 15 }, config.cropWindow); 
+
+                if (GuiButton((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 185, 115, 30 }, "Generate Code"))
+                {                
+                    const char *filters[] = { "*.c", "*.go", "*.lua" };
+                    const char *fileName = tinyfd_saveFileDialog("Generate code file", "layout.c", 3, filters, "Code file");
+
+                    if (fileName != NULL)
+                    {
+                        GenerateCode(fileName, config);
+                        generateWindowActive = false;
+                    } 
+                }
+			}
+    
             // Draw status bar bottom with debug information
-            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", mouseX, mouseY), 15);
+            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", (int)mouse.x, (int)mouse.y), 15);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 81, 24}, (snapMode ? "SNAP: ON" : "SNAP: OFF"), 10);
             GuiStatusBar((Rectangle){ 204, GetScreenHeight() - 24, 145, 24}, FormatText("CONTROLS COUNT: %i", layout.controlsCount), 20);
             if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)  |  %s", selectedControl, controlTypeName[layout.controls[selectedControl].type], layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height, layout.controls[selectedControl].name), 15);
@@ -1562,7 +1618,7 @@ int main()
             {
                 if (GuiWindowBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "rGuiLayout")) ultimateMessage = false;
                 GuiLabel((Rectangle){ GetScreenWidth()/2 - 95, GetScreenHeight()/2 - 60, 200, 100 }, "Do you want to save before quitting?");
-                if (GuiButton((Rectangle){ GetScreenWidth()/2 - 90, GetScreenHeight()/2 + 10, 70, 25 }, "Yes")) 
+                if (GuiButton((Rectangle){ GetScreenWidth()/2 - 94, GetScreenHeight()/2 + 10, 85, 25 }, "Yes")) 
                 { 
                     // Save file dialog
                     const char *filters[] = { "*.rgl" };
@@ -1577,7 +1633,7 @@ int main()
                     
                     exitWindow = true;
                 }
-                else if (GuiButton((Rectangle){ GetScreenWidth()/2 + 20, GetScreenHeight()/2 + 10, 70, 25 }, "No")) { exitWindow = true; }
+                else if (GuiButton((Rectangle){ GetScreenWidth()/2 + 20, GetScreenHeight()/2 + 10, 85, 25 }, "No")) { exitWindow = true; }
             }
             
         EndDrawing();
@@ -1597,27 +1653,6 @@ int main()
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
-
-// Draw 2d grid at specific size and spacing
-static void DrawGrid2D(int width, int height, int spacing)
-{
-    #define GRID_ALPHA          0.1f        // Grid lines alpha amount
-    #define GRID_SUBDIVISIONS      5        // Grid subdivisions between lines (spacing) 
-
-    int offset = 0;
-    
-    // Draw vertical grid lines
-    for (int i = 0; i < (width/spacing + 1)*GRID_SUBDIVISIONS; i++)
-    {
-        DrawRectangle(offset + spacing*i, 0, 1, height, ((i%GRID_SUBDIVISIONS) == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA));
-    }
-
-    // Draw horizontal grid lines
-    for (int i = 0; i < (height/spacing + 1)*GRID_SUBDIVISIONS; i++)
-    {
-        DrawRectangle(0, offset + spacing*i, width, 1, ((i%GRID_SUBDIVISIONS) == 0) ? Fade(BLACK, GRID_ALPHA*2) : Fade(GRAY, GRID_ALPHA));
-    }
-}
 
 // Save gui layout information
 static void SaveLayoutRGL(const char *fileName, bool binary)
@@ -1929,8 +1964,7 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
         
         for (int i = 0; i < layout.controlsCount; i++)
         {
-            if (config.exportAnchors) fprintf(ftool, "        (Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height);
-            else fprintf(ftool, "        (Rectangle){ %i, %i, %i, %i }",layout.controls[i].rec.x + layout.controls[i].ap->x, layout.controls[i].rec.y + layout.controls[i].ap->y, layout.controls[i].rec.width, layout.controls[i].rec.height);
+            fprintf(ftool, "        (Rectangle){ %s, %i, %i }", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height);
             
             if (i == layout.controlsCount - 1) fprintf(ftool, "\t\t// %s: %s\n    };\n\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
             else fprintf(ftool, ",\t\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
@@ -1966,35 +2000,35 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             {
                 case LABEL: 
                 {
-                    if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name);
-                    else fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text);
+                    if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s, %i, %i }, %sText);\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name);
+                    else fprintf(ftool, "\t\t\tGuiLabel((Rectangle){ %s, %i, %i }, \"%s\");\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text);
                 } 
                 break;
-                case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\")) %s(); \n\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
-                case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 100); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\", %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
-                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 0, 100);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue, 100, 25);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i },  %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case CHECKBOX: fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sChecked); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText, %sSize, true);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
-                case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
+                case BUTTON: fprintf(ftool, "\n\t\t\tif (GuiButton((Rectangle){ %s, %i, %i }, \"%s\")) %s(); \n\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
+                case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox((Rectangle){ %s, %i, %i }, %sValue, 100); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton((Rectangle){ %s, %i, %i }, \"%s\", %sActive); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text, layout.controls[i].name); break;
+                case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup((Rectangle){ %s, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider((Rectangle){ %s, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar((Rectangle){ %s, %i, %i }, %sValue, %sMinValue, %sMaxValue);\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar((Rectangle){ %s, %i, %i }, %sValue, 0, 100);\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner((Rectangle){ %s, %i, %i }, %sValue, 100, 25);\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox((Rectangle){ %s, %i, %i },  %sTextList, %sCount, %sActive); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case CHECKBOX: fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox((Rectangle){ %s, %i, %i }, %sChecked); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView((Rectangle){ %s, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox((Rectangle){ %s, %i, %i }, %sText, %sSize, true);\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name); break;
+                case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox((Rectangle){ %s, %i, %i }, \"%s\");\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
                 case WINDOWBOX:
                 {
                     fprintf(ftool, "\t\t\tif (%sActive)\n\t\t\t{\n", layout.controls[i].name);
-                    fprintf(ftool, "\t\t\t\t%sActive = !GuiWindowBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text);
+                    fprintf(ftool, "\t\t\t\t%sActive = !GuiWindowBox((Rectangle){ %s, %i, %i }, \"%s\");\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text);
                     fprintf(ftool, "\t\t\t}\n");
                 }break;
-                case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, \"%s\");\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
-                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
-                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sText, 10);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case COLORPICKER: fprintf(ftool, "\t\t\t%sValue = GuiColorPicker((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, %sValue);\n", layout.controls[i].name, "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
-                case LINE: fprintf(ftool, "\t\t\tGuiLine((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i }, 1);\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height); break;
-                case PANEL: fprintf(ftool, "\t\t\tGuiPanel((Rectangle){ %s%02i%s + %i, %s%02i%s + %i, %i, %i });\n", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height); break;
+                case DUMMYREC: fprintf(ftool, "\t\t\tGuiDummyRec((Rectangle){ %s, %i, %i }, \"%s\");\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].text); break;
+                case DROPDOWNBOX: fprintf(ftool, "\t\t\t%sActive = GuiDropdownBox((Rectangle){ %s, %i, %i }, %sTextList, %sCount, %sActive); \n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name, layout.controls[i].name, layout.controls[i].name); break;
+                case STATUSBAR: fprintf(ftool, "\t\t\tGuiStatusBar((Rectangle){ %s, %i, %i }, %sText, 10);\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case COLORPICKER: fprintf(ftool, "\t\t\t%sValue = GuiColorPicker((Rectangle){ %s, %i, %i }, %sValue);\n", layout.controls[i].name, (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].name); break;
+                case LINE: fprintf(ftool, "\t\t\tGuiLine((Rectangle){ %s, %i, %i }, 1);\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height); break;
+                case PANEL: fprintf(ftool, "\t\t\tGuiPanel((Rectangle){ %s, %i, %i });\n", (config.exportAnchors) ? FormatText("%s%02i%s + %i, %s%02i%s + %i", "anchor", layout.controls[i].ap->id, ".x", layout.controls[i].rec.x, "anchor", layout.controls[i].ap->id, ".y", layout.controls[i].rec.y) : FormatText("%i, %i", layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y), layout.controls[i].rec.width, layout.controls[i].rec.height); break;
                 
                 default: break;
             }
