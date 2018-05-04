@@ -6,14 +6,14 @@
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
 a 000 0 0 1
-a 001 600 50 1
+a 001 100 50 1
 a 002 0 0 0
 a 003 0 0 0
 a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 3 controlsPanel 590 40 150 865 0 
+c 000 3 controlsPanel -10 -10 150 865 1 
 c 001 0 WindowBox 0 0 130 50 1 WindowBox
 c 002 1 GroupBox 0 60 130 30 1 GroupBox
 c 003 2 Line 0 95 130 20 1 
@@ -30,7 +30,7 @@ c 013 12 ValueBox 0 405 130 25 1 SAMPLE TEXT
 c 014 13 TextBox 0 440 130 25 1 TextBox
 c 015 14 Slider 0 475 130 15 1 SAMPLE TEXT
 c 016 15 SliderBar 0 500 130 15 1 SAMPLE TEXT
-c 017 16 ProgressBar 600 575 130 15 0 
+c 017 16 ProgressBar 0 525 130 15 1 
 c 018 17 StatusBar 0 550 130 25 1 StatusBar
 c 019 18 ListView 0 585 130 75 1 SAMPLE TEXT
 c 020 19 ColorPicker 0 670 100 100 1 SAMPLE TEXT
