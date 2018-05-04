@@ -527,8 +527,8 @@ int main()
                 if (snapMode)
                 {
                     // Snap rectangle position to closer snap point
-                    int offsetX = layout.controls[selectedControl].rec.x%GRID_LINE_SPACING;
-                    int offsetY = layout.controls[selectedControl].rec.y%GRID_LINE_SPACING;
+                    int offsetX = (int)layout.controls[selectedControl].rec.x%GRID_LINE_SPACING;
+                    int offsetY = (int)layout.controls[selectedControl].rec.y%GRID_LINE_SPACING;
                     
                     if (offsetX >= GRID_LINE_SPACING/2) layout.controls[selectedControl].rec.x += (GRID_LINE_SPACING - offsetX);
                     else layout.controls[selectedControl].rec.x -= offsetX;
@@ -685,8 +685,8 @@ int main()
             
             // SnapMode of the DrawingControls
             // Snap rectangle position to closer snap point
-            offsetX = defaultRec[selectedType].x%GRID_LINE_SPACING;
-            offsetY = defaultRec[selectedType].y%GRID_LINE_SPACING;
+            offsetX = (int)defaultRec[selectedType].x%GRID_LINE_SPACING;
+            offsetY = (int)defaultRec[selectedType].y%GRID_LINE_SPACING;
 
             if (offsetX >= GRID_LINE_SPACING/2) defaultRec[selectedType].x += (GRID_LINE_SPACING - offsetX);
             else defaultRec[selectedType].x -= offsetX;
@@ -698,8 +698,8 @@ int main()
         // Resize the controller aplying the snap
         if (!textEditMode && !nameEditMode && IsKeyPressed(KEY_R) && selectedControl != -1)
         {
-            int offsetX = layout.controls[selectedControl].rec.width%GRID_LINE_SPACING;
-            int offsetY = layout.controls[selectedControl].rec.height%GRID_LINE_SPACING;
+            int offsetX = (int)layout.controls[selectedControl].rec.width%GRID_LINE_SPACING;
+            int offsetY = (int)layout.controls[selectedControl].rec.height%GRID_LINE_SPACING;
             
             if (offsetX >= GRID_LINE_SPACING/2) layout.controls[selectedControl].rec.width += (GRID_LINE_SPACING - offsetX);
             else layout.controls[selectedControl].rec.width -= offsetX;
@@ -1134,8 +1134,8 @@ int main()
                         if (offsetY >= GRID_LINE_SPACING/2) mouse.y += (GRID_LINE_SPACING - offsetY);
                         else mouse.y -= offsetY;
                         
-                        offsetX = tracemapRec.x%GRID_LINE_SPACING;
-                        offsetY = tracemapRec.y%GRID_LINE_SPACING;
+                        offsetX = (int)tracemapRec.x%GRID_LINE_SPACING;
+                        offsetY = (int)tracemapRec.y%GRID_LINE_SPACING;
                         
                         if (offsetX >= GRID_LINE_SPACING/2) tracemapRec.x += (GRID_LINE_SPACING - offsetX);
                         else tracemapRec.x -= offsetX;
@@ -1532,7 +1532,7 @@ int main()
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 24, 126, 24}, FormatText("MOUSE: (%i, %i)", (int)mouse.x, (int)mouse.y), 15);
             GuiStatusBar((Rectangle){ 124, GetScreenHeight() - 24, 81, 24}, (snapMode ? "SNAP: ON" : "SNAP: OFF"), 10);
             GuiStatusBar((Rectangle){ 204, GetScreenHeight() - 24, 145, 24}, FormatText("CONTROLS COUNT: %i", layout.controlsCount), 20);
-            if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)  |  %s", selectedControl, controlTypeName[layout.controls[selectedControl].type], layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height, layout.controls[selectedControl].name), 15);
+            if (selectedControl != -1) GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, FormatText("SELECTED CONTROL: #%03i  |  %s  |  REC(%i, %i, %i, %i)  |  %s", selectedControl, controlTypeName[layout.controls[selectedControl].type], (int)layout.controls[selectedControl].rec.x, (int)layout.controls[selectedControl].rec.y, (int)layout.controls[selectedControl].rec.width, (int)layout.controls[selectedControl].rec.height, layout.controls[selectedControl].name), 15);
             else GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, "", 15);
             
             // Draw ending message window (save)
@@ -1635,7 +1635,7 @@ static void SaveLayoutRGL(const char *fileName, bool binary)
             
             for (int i = 0; i < layout.controlsCount; i++)
             {
-                fprintf(rglFile, "c %03i %i %s %i %i %i %i %i %s\n", layout.controls[i].id, layout.controls[i].type, layout.controls[i].name, layout.controls[i].rec.x, layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height, layout.controls[i].ap->id, layout.controls[i].text);
+                fprintf(rglFile, "c %03i %i %s %i %i %i %i %i %s\n", layout.controls[i].id, layout.controls[i].type, layout.controls[i].name, (int)layout.controls[i].rec.x, (int)layout.controls[i].rec.y, (int)layout.controls[i].rec.width, (int)layout.controls[i].rec.height, layout.controls[i].ap->id, layout.controls[i].text);
             }
 
             fclose(rglFile);
@@ -1687,7 +1687,7 @@ static void LoadLayoutRGL(const char *fileName)
                 }
                 else if ((buffer[0] != '\n') && (buffer[0] != '#') && (buffer[0] == 'c'))
                 {
-                    sscanf(buffer, "c %d %i %s %i %i %i %i %d %[^\n]s", &layout.controls[layout.controlsCount].id, &layout.controls[layout.controlsCount].type, layout.controls[layout.controlsCount].name, &layout.controls[layout.controlsCount].rec.x, &layout.controls[layout.controlsCount].rec.y, &layout.controls[layout.controlsCount].rec.width, &layout.controls[layout.controlsCount].rec.height, &anchorId, layout.controls[layout.controlsCount].text);
+                    sscanf(buffer, "c %d %i %s %f %f %f %f %d %[^\n]s", &layout.controls[layout.controlsCount].id, &layout.controls[layout.controlsCount].type, layout.controls[layout.controlsCount].name, &layout.controls[layout.controlsCount].rec.x, &layout.controls[layout.controlsCount].rec.y, &layout.controls[layout.controlsCount].rec.width, &layout.controls[layout.controlsCount].rec.height, &anchorId, layout.controls[layout.controlsCount].text);
                     //printf("c %d %i %i %i %i %i %i %s\n", layout.controls[layout.controlsCount].id, layout.controls[layout.controlsCount].type, layout.controls[layout.controlsCount].rec.x, layout.controls[layout.controlsCount].rec.y, layout.controls[layout.controlsCount].rec.width, layout.controls[layout.controlsCount].rec.height, anchorId, layout.controls[layout.controlsCount].text);
                     
                     layout.controls[layout.controlsCount].ap = &layout.anchors[anchorId];
