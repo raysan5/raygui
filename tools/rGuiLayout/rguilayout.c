@@ -315,9 +315,13 @@ int main()
         // Show save layout message window on ESC
         if (IsKeyPressed(KEY_ESCAPE) && !textEditMode && !nameEditMode)
         {
-            ultimateMessage = !ultimateMessage;
-            selectedControl = -1;
-            controlLockMode = false;
+            if (generateWindowActive) generateWindowActive = false;
+            else
+            {
+                ultimateMessage = !ultimateMessage;
+                selectedControl = -1;
+                controlLockMode = false;
+            }
         }
 
         // Enables or disables snapMode if not in textEditMode
@@ -1095,7 +1099,7 @@ int main()
         }
         
         // Activate code generation export window
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER)) generateWindowActive = true;
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER) && !ultimateMessage) generateWindowActive = true;
 
         if (generateWindowActive)   // Keep window in the middle of screen
         {
@@ -1417,8 +1421,8 @@ int main()
             // Draw Rectangle Info
             if (selectedControl != -1)
             {
-                if (!controlGlobalPos) DrawText(FormatText("[%i, %i, %i, %i]", layout.controls[selectedControl].rec.x, layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, MAROON);
-                else DrawText(FormatText("[%i, %i, %i, %i]", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height), layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, RED);
+                if (!controlGlobalPos) DrawText(FormatText("[%i, %i, %i, %i]", (int)layout.controls[selectedControl].rec.x, (int)layout.controls[selectedControl].rec.y, (int)layout.controls[selectedControl].rec.width, (int)layout.controls[selectedControl].rec.height), (int)layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, (int)layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, MAROON);
+                else DrawText(FormatText("[%i, %i, %i, %i]", (int)layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, (int)layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y, (int)layout.controls[selectedControl].rec.width, (int)layout.controls[selectedControl].rec.height), (int)layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x, (int)layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - 30, 20, RED);
             }
                 
             // Draw Image info
