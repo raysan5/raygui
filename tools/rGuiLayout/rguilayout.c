@@ -135,7 +135,7 @@ int main()
     // Initialization
     //--------------------------------------------------------------------------------------
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "rGuiLayout v1.0 - not_saved_layout");
+    InitWindow(screenWidth, screenHeight, "rGuiLayout v1.0");
     SetExitKey(0);
 
     // General app variables
@@ -272,8 +272,10 @@ int main()
     char prevControlText[32];
     char prevControlName[32];
     
+    char loadedFileName[128] = "not_loaded_layout";
+    
     // Close layout window variables
-    bool ultimateMessage = false;
+    bool closingWindowActive = false;
     
     // Generate code options window variables
     Vector2 exportWindowPos = { 50, 50 };
@@ -318,7 +320,7 @@ int main()
             if (generateWindowActive) generateWindowActive = false;
             else
             {
-                ultimateMessage = !ultimateMessage;
+                closingWindowActive = !closingWindowActive;
                 selectedControl = -1;
                 controlLockMode = false;
             }
@@ -401,7 +403,7 @@ int main()
         }
         
         // Create new control 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode && !generateWindowActive)
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive)
         {
             // Add new control (button)
             layout.controls[layout.controlsCount].id = layout.controlsCount;
@@ -476,9 +478,8 @@ int main()
             }
         }
         
-        if (!(controlDrag || controlLockMode || tracemapEditMode || anchorLockMode || ultimateMessage || paletteMode || generateWindowActive))
+        if (!(controlDrag || controlLockMode || tracemapEditMode || anchorLockMode || closingWindowActive || paletteMode || generateWindowActive))
         {
-
             // Check selected control (on mouse hover)
             for (int i = layout.controlsCount; i >= 0; i--)
             {
@@ -521,11 +522,9 @@ int main()
             } 
              
             if (controlDrag && !controlLockMode)
-            {       
-
+            {
                 layout.controls[selectedControl].rec.x = prevControlPosition.x + (mouse.x - panControlOffset.x);
                 layout.controls[selectedControl].rec.y = prevControlPosition.y + (mouse.y - panControlOffset.y);
-                                  
 
                 // Snap to grid position and size
                 if (snapMode)
@@ -1053,7 +1052,12 @@ int main()
             droppedFiles = GetDroppedFiles(&fileCount);
             strcpy(droppedFileName, droppedFiles[0]);
             
-            if (IsFileExtension(droppedFileName, ".rgl")) LoadLayoutRGL(droppedFileName);
+            if (IsFileExtension(droppedFileName, ".rgl")) 
+            {
+                LoadLayoutRGL(droppedFileName);
+                strcpy(loadedFileName, droppedFileName);
+                SetWindowTitle(FormatText("rGuiLayout v1.0 - %s", GetFileName(loadedFileName)));
+            }
             else if (IsFileExtension(droppedFileName, ".rgs")) GuiLoadStyle(droppedFileName);
             else if (IsFileExtension(droppedFileName, ".png"))
             {
@@ -1099,7 +1103,7 @@ int main()
         }
         
         // Activate code generation export window
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER) && !ultimateMessage) generateWindowActive = true;
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_ENTER) && !closingWindowActive) generateWindowActive = true;
 
         if (generateWindowActive)   // Keep window in the middle of screen
         {
@@ -1276,7 +1280,7 @@ int main()
             }
             
             // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1 && !anchorMode && !tracemapEditMode && !ultimateMessage && !paletteMode && !generateWindowActive)
+            if (selectedControl == -1 && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive)
             {
                 switch (selectedTypeDraw)
                 {
@@ -1540,10 +1544,10 @@ int main()
             else GuiStatusBar((Rectangle){ 348, GetScreenHeight() - 24, GetScreenWidth() - 348, 24}, "", 15);
             
             // Draw ending message window (save)
-            if (ultimateMessage)
+            if (closingWindowActive)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(WHITE, 0.7f));
-                ultimateMessage = !GuiWindowBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "Closing rGuiLayout");
+                closingWindowActive = !GuiWindowBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "Closing rGuiLayout");
                 
                 GuiLabel((Rectangle){ GetScreenWidth()/2 - 95, GetScreenHeight()/2 - 60, 200, 100 }, "Do you want to save before quitting?");
                 
@@ -1730,7 +1734,7 @@ static void LoadLayoutRGL(const char *fileName)
             fclose(rglFile);
         }
     }
-    
+
     printf("[GuiLayout] Layout data loaded successfully\n");
 }
 
@@ -2055,10 +2059,10 @@ static void GenerateCodeFromRGL(const char *fileName)
         
         config.width = 800;
         config.height = 600;
-        strcpy(config.name, "file_name");
+        strcpy(config.name, "layout_file_name");
         strcpy(config.version, "1.0-dev");
-        strcpy(config.company, "raylib tech");
-        strcpy(config.description, "tool description sample");
+        strcpy(config.company, "raylib technologies");
+        strcpy(config.description, "tool description");
         config.defineRecs = false;
         config.exportAnchors = true;
         config.exportAnchor0 = false;
