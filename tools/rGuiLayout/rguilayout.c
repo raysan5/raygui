@@ -1440,27 +1440,36 @@ int main()
             // Draw the help listData (by default is out of screen)
             if (helpPositionX > -280)
             {
-                DrawRectangleRec((Rectangle){ helpPositionX + 20, 20, 275, 390 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-                GuiGroupBox((Rectangle){ helpPositionX + 20, 20, 275, 390 }, "Shortcuts");
-                GuiLabel((Rectangle){ helpPositionX + 30, 30, 0, 0 }, "G - Show/hide grid");
-                GuiLabel((Rectangle){ helpPositionX + 30, 50, 0, 0 }, "S - Toggle snap");
-                GuiLabel((Rectangle){ helpPositionX + 30, 70, 0, 0 }, "R - Resize to grid");
-                GuiLabel((Rectangle){ helpPositionX + 30, 90, 0, 0 }, "A - Anchor mode");
-                GuiLabel((Rectangle){ helpPositionX + 30, 110, 0, 0 }, "F - Reference position(global/anchor)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 130, 0, 0 }, "H - Hide controls of selected anchor");
-                GuiLabel((Rectangle){ helpPositionX + 30, 150, 0, 0 }, "U - Unlink anchor");
-                GuiLabel((Rectangle){ helpPositionX + 30, 170, 0, 0 }, "Space - Lock/unlock control");
-                GuiLabel((Rectangle){ helpPositionX + 30, 190, 0, 0 }, "T - Enter text mode(if possible)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 210, 0, 0 }, "Enter - Exit text mode");
-                GuiLabel((Rectangle){ helpPositionX + 30, 230, 0, 0 }, "Delete - Delete a control");
-                GuiLabel((Rectangle){ helpPositionX + 30, 250, 0, 0 }, "Arrows - Modify position(+ shift smooth)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 270, 0, 0 }, "L. Ctrl + Arrows - Modify scale(+ shift smooth)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 290, 0, 0 }, "L. Alt + Arrows(Up/Down) - Changes drawing order");
-                GuiLabel((Rectangle){ helpPositionX + 30, 310, 0, 0 }, "L. Ctrl + Enter - Export layout controls to code");
-                GuiLabel((Rectangle){ helpPositionX + 30, 330, 0, 0 }, "L. Ctrl + S - Save layout.controls(.rgl)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 350, 0, 0 }, "L. Ctrl + O - Open layout.controls(.rgl)");
-                GuiLabel((Rectangle){ helpPositionX + 30, 370, 0, 0 }, "L. Ctrl + D - Duplicate selected control");
-                GuiLabel((Rectangle){ helpPositionX + 30, 390, 0, 0 }, "L. Ctrl + N - Rename control");
+                DrawRectangleRec((Rectangle){ helpPositionX + 20, 10, 280, 540 }, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+                GuiGroupBox((Rectangle){ helpPositionX + 20, 10, 280, 540 }, "TAB - Shortcuts");
+                GuiLabel((Rectangle){ helpPositionX + 30, 30, 0, 0 }, "G - Toggle grid mode");
+                GuiLabel((Rectangle){ helpPositionX + 30, 50, 0, 0 }, "S - Toggle snap to grid mode");
+                GuiLabel((Rectangle){ helpPositionX + 30, 70, 0, 0 }, "F - Toggle control position (global/anchor)");
+                GuiLine((Rectangle){ helpPositionX + 30, 85, 260, 10 }, 1);
+                GuiLabel((Rectangle){ helpPositionX + 30, 100, 0, 0 }, "SPACE - Lock/unlock control for editing");
+                GuiLabel((Rectangle){ helpPositionX + 30, 120, 0, 0 }, "ARROWS - Edit control position");
+                GuiLabel((Rectangle){ helpPositionX + 30, 140, 0, 0 }, "LCTRL + ARROWS - Edit control scale");
+                GuiLabel((Rectangle){ helpPositionX + 30, 160, 0, 0 }, "LSHIFT + ARROWS - Smooth edit position");
+                GuiLabel((Rectangle){ helpPositionX + 30, 180, 0, 0 }, "LSHIFT + LCTRL + ARROWS - Smooth edit  scale");
+                GuiLabel((Rectangle){ helpPositionX + 30, 200, 0, 0 }, "LCTRL + D - Duplicate selected control");
+                GuiLabel((Rectangle){ helpPositionX + 30, 220, 0, 0 }, "DEL - Delete selected control");
+                GuiLabel((Rectangle){ helpPositionX + 30, 240, 0, 0 }, "R - Resize control to grid");
+                GuiLine((Rectangle){ helpPositionX + 30, 255, 260, 10 }, 1);
+                GuiLabel((Rectangle){ helpPositionX + 30, 270, 0, 0 }, "T - Control text editing (if possible)");
+                GuiLabel((Rectangle){ helpPositionX + 30, 290, 0, 0 }, "N - Control name editing ");
+                GuiLabel((Rectangle){ helpPositionX + 30, 310, 0, 0 }, "ESC - Exit text/name editing mode");
+                GuiLabel((Rectangle){ helpPositionX + 30, 330, 0, 0 }, "ENTER - Validate text/name edition");
+                GuiLine((Rectangle){ helpPositionX + 30, 345, 260, 10 }, 1);
+                GuiLabel((Rectangle){ helpPositionX + 30, 360, 0, 0 }, "LALT + UP/DOWN - Control layer order");
+                GuiLine((Rectangle){ helpPositionX + 30, 375, 260, 10 }, 1);
+                GuiLabel((Rectangle){ helpPositionX + 30, 390, 0, 0 }, "A - Anchor editing mode");
+                GuiLabel((Rectangle){ helpPositionX + 30, 410, 0, 0 }, "RMB - Link anchor to control");
+                GuiLabel((Rectangle){ helpPositionX + 30, 430, 0, 0 }, "U - Unlink control from anchor");
+                GuiLabel((Rectangle){ helpPositionX + 30, 450, 0, 0 }, "H - Hide/Unhide controls for selected anchor");
+                GuiLine((Rectangle){ helpPositionX + 30, 465, 260, 10 }, 1);
+                GuiLabel((Rectangle){ helpPositionX + 30, 480, 0, 0 }, "LCTRL + S - Save layout.controls(.rgl)");
+                GuiLabel((Rectangle){ helpPositionX + 30, 500, 0, 0 }, "LCTRL + O - Open layout.controls(.rgl)");
+                GuiLabel((Rectangle){ helpPositionX + 30, 520, 0, 0 }, "LCTRL + ENTER - Export layout to code");
             }
             
             // Draw right panel controls palette
