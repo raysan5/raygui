@@ -571,22 +571,21 @@ int main(int argc, char *argv[])
             
             // Draw labels for GuiColorPicker information (RGBA)
             GuiGroupBox((Rectangle){ anchor02.x + 290, anchor02.y + 285, 64, 75 }, "RGBA");
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 295, 20, 20 }, FormatText("R:   %03i", colorPickerValue.r));
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 310, 20, 20 }, FormatText("G:   %03i", colorPickerValue.g));
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 325, 20, 20 }, FormatText("B:   %03i", colorPickerValue.b));
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 340, 20, 20 }, FormatText("A:   %03i", colorPickerValue.a));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 295 - 2, 20, 20 }, FormatText("R:   %03i", colorPickerValue.r));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 310 - 2, 20, 20 }, FormatText("G:   %03i", colorPickerValue.g));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 325 - 2, 20, 20 }, FormatText("B:   %03i", colorPickerValue.b));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 340 - 2, 20, 20 }, FormatText("A:   %03i", colorPickerValue.a));
             
             // Draw labels for GuiColorPicker information (HSV)
             GuiGroupBox((Rectangle){ anchor02.x + 290, anchor02.y + 370, 64, 60 }, "HSV");
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 380, 8, 20 }, FormatText("H:  %.0f º", colorHSV.x));
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 410, 8, 20 }, FormatText("S:  %.0f %%", colorHSV.y*100));
-            GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 395, 8, 20 }, FormatText("V:  %.0f %%", colorHSV.z*100));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 380 - 2, 8, 20 }, FormatText("H:  %.0f", colorHSV.x));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 410 - 2, 8, 20 }, FormatText("S:  %.0f%%", colorHSV.y*100));
+            GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 395 - 2, 8, 20 }, FormatText("V:  %.0f%%", colorHSV.z*100));
 
             if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 530, 65, 20 }, colorHex, 8, editHexColorText)) colorPickerValue = GetColor((int)strtoul(colorHex, NULL, 16));
             
-            for (int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
-            
-            DrawRectangleLinesEx((Rectangle){ anchor02.x + 290, anchor02.y + 440, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            for (int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 292 + 20*(i%3), anchor02.y + 440 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
+            DrawRectangleLinesEx((Rectangle){ anchor02.x + 292, anchor02.y + 440, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             
             GuiEnable();
 
