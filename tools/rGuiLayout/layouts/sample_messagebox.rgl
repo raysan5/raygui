@@ -1,0 +1,20 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     5
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 225 175 1
+a 002 0 0 0
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 0 WindowBox000 0 0 325 125 1 rGuiLayout - GuiMessageBox
+c 001 4 Label001 35 40 205 25 1 Are you ready to create the mos
+c 002 4 Label002 189 40 126 25 1 most amazing tools?
+c 003 5 Button003 25 75 120 30 1 Sure!
+c 004 5 Button004 180 75 120 30 1 Continue!
