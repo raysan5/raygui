@@ -440,7 +440,11 @@ int main(int argc, char *argv[])
         {
             currentSelectedControl = -1;
             droppedFiles = GetDroppedFiles(&dropsCount);
-            GuiLoadStyle(droppedFiles[0]);
+            if (IsFileExtension(droppedFiles[0], ".png"))
+            {
+                GuiLoadStyleImage(droppedFiles[0]);
+            }                
+            else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
             for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
             ClearDroppedFiles();
         }
