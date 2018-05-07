@@ -13,8 +13,8 @@ a 004 0 0 0
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 0 WindowBox000 0 0 325 125 1 rGuiLayout - GuiMessageBox
-c 001 4 Label001 35 40 205 25 1 Are you ready to create the mos
-c 002 4 Label002 189 40 126 25 1 most amazing tools?
-c 003 5 Button003 25 75 120 30 1 Sure!
-c 004 5 Button004 180 75 120 30 1 Continue!
+c 000 0 messageWindow 0 0 325 125 1 rGuiLayout - GuiMessageBox
+c 001 4 lblMsg01 35 40 155 25 1 Are you ready to create the
+c 002 4 lblMsg02 190 40 110 25 1 most amazing tools?
+c 003 5 SureButton 25 75 120 30 1 Sure!
+c 004 5 ContinueButton 180 75 120 30 1 Continue!
