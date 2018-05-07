@@ -57,11 +57,9 @@
 *   #define RAYGUI_STYLE_SAVE_LOAD
 *       Include style customization and save/load functions, useful when required.
 *
-*   LIMITATIONS:
-*       Some controls missing.
 *
 *   VERSIONS HISTORY:
-*       2.0 (01-May-2018) Added new controls...
+*       2.0 (01-May-2018) Lot of rework and redesign! Lots of new controls!
 *       1.5 (21-Jun-2017) Working in an improved styles system
 *       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
 *       1.3 (12-Jun-2017) Redesigned styles system
