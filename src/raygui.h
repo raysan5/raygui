@@ -25,6 +25,7 @@
 *       - Spinner
 *       - ValueBox
 *       - TextBox
+*       - TextBoxMultiline
 *       - Slider
 *       - SliderBar
 *       - ProgressBar
@@ -381,6 +382,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth);                      // Spinner control, returns selected value
 RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue);                                   // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
+RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
@@ -1829,6 +1831,102 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_DISABLED]), guiAlpha));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_DISABLED]), guiAlpha));
             DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]), guiAlpha));
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+    
+    return pressed;
+}
+
+RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode)
+{
+    #define GUITEXTBOX_PADDING          4
+    #define GUITEXTBOX_LINE_PADDING     5   // Internal from raylib line-break space (height + height/2)*scale
+    #define GUITEXTBOX_LINE_HEIGHT     10 
+    
+    GuiControlState state = guiState;
+    static int framesCounter = 0;           // Required for blinking cursor
+    bool pressed = false;
+    int currentLine = 0;
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            state = FOCUSED;        // NOTE: PRESSED state is not used on this control
+            
+            if (editMode)
+            {
+                framesCounter++;
+                
+                int key = GetKeyPressed();
+                int keyCount = strlen(text);
+                
+                if (((MeasureText(text, style[DEFAULT_TEXT_SIZE])) > bounds.width - GUITEXTBOX_PADDING))
+                {
+                    char *ptr = strrchr(text, 32);
+                    
+                    if (ptr != NULL)
+                    {
+                        int index = ptr - text;
+                        text[index] = '\n';
+                    }
+                }
+                
+                currentLine = MeasureTextEx(GetDefaultFont(), text, style[DEFAULT_TEXT_SIZE], 1).y/10 - 1;
+                
+                // NOTE: Only allow keys in range [32..125]
+                if ((key >= 32) && (key <= 125) && (keyCount < textSize))
+                {
+                    text[keyCount] = (char)key;
+                    keyCount++;
+                }
+                
+                if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    keyCount--;
+                    text[keyCount] = '\0';
+                    
+                    if (keyCount < 0) keyCount = 0;
+                }
+            }
+            else if (IsKeyPressed(KEY_ENTER)) pressed = true;
+        }
+        else editMode = false;
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]), guiAlpha));
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha));
+            
+            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GUITEXTBOX_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOX_PADDING + (style[DEFAULT_TEXT_SIZE] + GUITEXTBOX_LINE_PADDING)*currentLine, 1, style[DEFAULT_TEXT_SIZE]*2, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+        } break;
+        case PRESSED: break; // NOTE: State not used on this control
+        case DISABLED:
+        {
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_DISABLED]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_DISABLED]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
     }
