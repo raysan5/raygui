@@ -36,7 +36,7 @@
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_STYLE_SAVE_LOAD
-#define RAYGUI_STYLE_DEFAULT_LIGHT
+#define RAYGUI_STYLE_DEFAULT_LIGHT      1
 #include "raygui.h"
 
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
@@ -430,22 +430,24 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         framesCounter++;
         
+        // Check for changed controls 
         if ((framesCounter%120) == 0) 
         {
             changedControlsCounter = 0;
             for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) changedControlsCounter++;
         }
 
+        // Check for dropped files
         if (IsFileDropped())
         {
             currentSelectedControl = -1;
             droppedFiles = GetDroppedFiles(&dropsCount);
-            if (IsFileExtension(droppedFiles[0], ".png"))
-            {
-                GuiLoadStyleImage(droppedFiles[0]);
-            }                
-            else if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
+            
+            if (IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
+            else if (IsFileExtension(droppedFiles[0], ".png")) GuiLoadStyleImage(droppedFiles[0]);
+            
             for (int i = 0; i < 12; i++) colorBoxValue[i] = GetColor(style[DEFAULT_BORDER_COLOR_NORMAL + i]);
+            
             ClearDroppedFiles();
         }
         
@@ -479,7 +481,6 @@ int main(int argc, char *argv[])
             GuiSetStyleProperty(GetGuiStylePropertyIndex(currentSelectedControl, currentSelectedProperty), ColorToInt(colorPickerValue));
         }
         
-        
         previousSelectedProperty = currentSelectedProperty;
         previousSelectedControl = currentSelectedControl;
         
@@ -510,14 +511,9 @@ int main(int argc, char *argv[])
             GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 0, 720, 24 }, "CHOOSE CONTROL     >      CHOOSE PROPERTY STYLE      >                            STYLE VIEWER", 35);
 
             // Draw status bar bottom
-            #if defined(RAYGUI_STYLE_DEFAULT_DARK)
-                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: DARK", 10);
-            #else 
-                GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: LIGHT", 10);
-            #endif
-
+   			//GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
+            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, FormatText("BASE STYLE: %s", RAYGUI_STYLE_DEFAULT_LIGHT ? "DARK" : "LIGHT"), 10);
             GuiStatusBar((Rectangle){ anchor01.x + 149, anchor01.y + 616, 186, 24 }, FormatText("CHANGED PROPERTIES: %03i", changedControlsCounter), 10);
-			//GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
             GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, "powered by raylib and raygui", 226);
             
             // Draw Gui controls
