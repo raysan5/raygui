@@ -3,8 +3,8 @@
 *   rGuiStyler v2.0 - raygui Style Editor
 *
 *   Compile this program using:
-*       gcc -o $(NAME_PART).exe $(FILE_NAME) external/tinyfiledialogs.c -I..\.. \ 
-*       -lraylib -lglfw3 -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
+*       gcc -o rguistyler.exe rguistyler.c external/tinyfiledialogs.c -I..\.. \ 
+*       -lraylib -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
 *   CONTRIBUTORS:
 *       Ramon Santamaria:   Supervision, review, redesign, update and maintenance...

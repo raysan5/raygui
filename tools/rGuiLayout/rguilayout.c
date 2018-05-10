@@ -1,13 +1,36 @@
 /*******************************************************************************************
 *
-*   rGuiLayout - raygui layout editor
+*   rGuiLayout v1.0 - raygui layout editor
 *
-*   This example has been created using raylib 1.9.7 (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+*   Compile this program using:
+*       gcc -o rguilayout.exe rguilayout.c external/tinyfiledialogs.c -I..\.. \ 
+*       -lraylib -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
-*   Copyright (c) 2014-2018 Ramon Santamaria (@raysan5), Jordi Jorba & Adria Arranz
+*   CONTRIBUTORS:
+*       Ramon Santamaria:   Supervision, review, design, update and maintenance...
+*       Adria Arranz:       Design and implementation v1.0 (2018)
+*       Jordi Jorba:        Design and implementation v1.0 (2018)
 *
-********************************************************************************************/
+*   LICENSE: zlib/libpng
+*
+*   Copyright (c) 2014-2018 raylib technologies (@raysan5)
+*
+*   This software is provided "as-is", without any express or implied warranty. In no event
+*   will the authors be held liable for any damages arising from the use of this software.
+*
+*   Permission is granted to anyone to use this software for any purpose, including commercial
+*   applications, and to alter it and redistribute it freely, subject to the following restrictions:
+*
+*     1. The origin of this software must not be misrepresented; you must not claim that you
+*     wrote the original software. If you use this software in a product, an acknowledgment
+*     in the product documentation would be appreciated but is not required.
+*
+*     2. Altered source versions must be plainly marked as such, and must not be misrepresented
+*     as being the original software.
+*
+*     3. This notice may not be removed or altered from any source distribution.
+*
+**********************************************************************************************/
 
 #include "raylib.h"
 
@@ -1542,7 +1565,9 @@ int main()
 
                     if (fileName != NULL)
                     {
-                        if (GetExtension(fileName) == NULL) strcat(fileName, ".c\0");     // No extension provided
+                        char outFileName[64] = { 0 };
+                        strcpy(outFileName, fileName);
+                        if (GetExtension(fileName) == NULL) strcat(outFileName, ".c\0");     // No extension provided
                         GenerateCode(fileName, config);
                         generateWindowActive = false;
                     } 

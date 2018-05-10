@@ -1,8 +1,8 @@
 GLFW_ICON ICON "rguilayout.ico"
 
 1 VERSIONINFO
-FILEVERSION     1,6,0,0
-PRODUCTVERSION  1,6,0,0
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -13,7 +13,7 @@ BEGIN
       VALUE "FileDescription", "rGuiLayout - raygui layout editor"
       VALUE "FileVersion", "1.0"
       VALUE "InternalName", "rguilayout"
-      VALUE "LegalCopyright", "(c) 2017 Ramon Santamaria - @raysan5"
+      VALUE "LegalCopyright", "(c) 2017 raylib technologies (@raysan5)"
       //VALUE "OriginalFilename", "raylib_app.exe"
       VALUE "ProductName", "rGuiLayout"
       VALUE "ProductVersion", "1.0"
