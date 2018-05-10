@@ -1760,7 +1760,7 @@ RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
 // NOTE 2: Returns if KEY_ENTER pressed (useful for data validation)
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
-    #define GUITEXTBOX_PADDING 4
+    #define GUITEXTBOX_PADDING      4
     #define GUITEXTBOX_LINE_PADDING 4
 
     GuiControlState state = guiState;
@@ -1841,9 +1841,9 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
 
 RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode)
 {
-    #define GUITEXTBOX_PADDING          4
-    #define GUITEXTBOX_LINE_PADDING     5   // Internal from raylib line-break space (height + height/2)*scale
-    #define GUITEXTBOX_LINE_HEIGHT     10 
+    #define GUITEXTBOXMULTI_PADDING          4
+    #define GUITEXTBOXMULTI_LINE_PADDING     5   // Internal from raylib line-break space (height + height/2)*scale
+    #define GUITEXTBOXMULTI_LINE_HEIGHT     10 
     
     GuiControlState state = guiState;
     static int framesCounter = 0;           // Required for blinking cursor
@@ -1911,22 +1911,22 @@ RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, b
         {
             DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]), guiAlpha));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]), guiAlpha));
-            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOXMULTI_PADDING, bounds.y + GUITEXTBOXMULTI_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]), guiAlpha));
         } break;
         case FOCUSED:
         {
             DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]), guiAlpha));
-            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOXMULTI_PADDING, bounds.y + GUITEXTBOXMULTI_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha));
             
-            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GUITEXTBOX_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOX_PADDING + (style[DEFAULT_TEXT_SIZE] + GUITEXTBOX_LINE_PADDING)*currentLine, 1, style[DEFAULT_TEXT_SIZE]*2, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GUITEXTBOXMULTI_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOXMULTI_PADDING + (style[DEFAULT_TEXT_SIZE] + GUITEXTBOXMULTI_LINE_PADDING)*currentLine, 1, style[DEFAULT_TEXT_SIZE]*2, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
         {
             DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_DISABLED]), guiAlpha));
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_DISABLED]), guiAlpha));
-            DrawText(text, bounds.x + GUITEXTBOX_PADDING, bounds.y + GUITEXTBOX_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]), guiAlpha));
+            DrawText(text, bounds.x + GUITEXTBOXMULTI_PADDING, bounds.y + GUITEXTBOXMULTI_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
     }
