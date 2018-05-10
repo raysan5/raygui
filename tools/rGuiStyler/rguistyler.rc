@@ -13,7 +13,7 @@ BEGIN
       VALUE "FileDescription", "rGuiStyler - raygui styles editor"
       VALUE "FileVersion", "2.0"
       VALUE "InternalName", "rguistyler"
-      VALUE "LegalCopyright", "(c) 2018 @raysan5 @JordiKoro @Adri102502"
+      VALUE "LegalCopyright", "(c) 2018 raylib technologies"
       //VALUE "OriginalFilename", "raylib_app.exe"
       VALUE "ProductName", "rGuiStyler"
       VALUE "ProductVersion", "2.0"

@@ -7,13 +7,14 @@
 *       -lraylib -lglfw3 -lopengl32 -lgdi32 -lcomdlg32 -lole32 -std=c99 -Wall
 *
 *   CONTRIBUTORS:
-*       Adria Arranz    - 2018 (v2.0)
-*       Jordi Jorba     - 2018 (v2.0)
-*       Sergio Martinez - 2015..2017 (v1.0)
+*       Ramon Santamaria:   Supervision, review, redesign, update and maintenance...
+*       Adria Arranz:       Reimplementation and new features v2.0 (2018)
+*       Jordi Jorba:        Reimplementation and new features v2.0 (2018)
+*       Sergio Martinez:    Implementation and testing v1.0 (2015..2017)
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2016 Ramon Santamaria and Co.
+*   Copyright (c) 2014-2018 raylib technologies (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -512,7 +513,13 @@ int main(int argc, char *argv[])
 
             // Draw status bar bottom
    			//GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
-            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, FormatText("BASE STYLE: %s", RAYGUI_STYLE_DEFAULT_LIGHT ? "DARK" : "LIGHT"), 10);
+        #if defined(RAYGUI_STYLE_DEFAULT_LIGHT)
+            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: LIGHT", 10);
+        #elif defined(RAYGUI_STYLE_DEFAULT_DARK)
+            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: DARK", 10);
+        #else
+            GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: UNKNOWN", 10);
+        #endif
             GuiStatusBar((Rectangle){ anchor01.x + 149, anchor01.y + 616, 186, 24 }, FormatText("CHANGED PROPERTIES: %03i", changedControlsCounter), 10);
             GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, "powered by raylib and raygui", 226);
             
