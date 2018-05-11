@@ -10,11 +10,16 @@ raygui is intended for **tools development**; it has already been used on tools 
 
 <br>
 
-## raygui styles: light & dark
+## raygui styles
+raygui comes with two predefined styles, selectable at compile time just defining `RAYGUI_STYLE_DEFAULT_LIGHT` or `RAYGUI_STYLE_DEFAULT_DARK` but additional custom styles can be created using [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool and imported at runtime using `GuiLoadStyle()`, `GuiLoadStyleImage()` or `GuiLoadStylePalette()` functions.
 
 ![raygui light design](design/raygui_style_table_light_REV10.png)
 
 ![raygui dark design](design/raygui_style_table_dark_REV9.png)
+
+![raygui candy design](design/raygui_style_table_candy_REV1.png)
+
+![raygui cherry design](design/raygui_style_table_cherry_REV1.png)
 
 ## raygui history
 raygui development started on December 2014 by two intenship students (Kevin Gato and Daniel Nicolas) guided by me, the objective was creating a simple and easy-to-use raylib immediate-mode-gui module, intended for tools development. On June 2015, library was mostly functional (including all planned controls) and work started into the styling options for the library, focusing on an easy way to style some controls properties. Consequently, development of [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources invested on the tool were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib) development.
