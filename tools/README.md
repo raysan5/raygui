@@ -7,7 +7,6 @@
 <br>
 <br>
 <br>
-<br>
 
 ## rGuiLayout and rGuiStyler
 
@@ -27,4 +26,4 @@ Two tools are distributed together with **raygui library** to help on imgui deve
 
 Check those tools folders for further information.
 
-Copyright (c) 2017-2018 raylib technologies ([@raysan5](https://twitter.com/raysan5))
+*Copyright (c) 2017-2018 raylib technologies ([@raysan5](https://twitter.com/raysan5))*
