@@ -1,6 +1,4 @@
-
 <img align="left" src="rGuiLayout/logo/rguilayout_128x128.png" width=128>
-
 <img align="left" src="rGuiStyler/logo/rguistyler_128x128.png" width=128>
 
 ## rGuiLayout and rGuiStyler
