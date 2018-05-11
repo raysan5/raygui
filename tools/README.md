@@ -1,11 +1,7 @@
-<img align="left" src="rGuiLayout/logo/rguilayout_128x128.png" width=128>
-<img align="left" src="rGuiStyler/logo/rguistyler_128x128.png" width=128>
+![rGuiLayout logo](rGuiLayout/logo/rguilayout_128x128.png) ![rGuiStyler logo](rGuiStyler/logo/rguistyler_128x128.png)
 
 ## rGuiLayout and rGuiStyler
-Two tools are distributed together with **raygui library** to help on imgui development and styling. 
-
-<br>
-<br>
+Two tools are distributed together with **raygui library** to help on imgui development and styling.
 
 **rGuiLayout** is a visual layout editor to place controls in a visual way, defined layout could be saved and exported to C code.
 
