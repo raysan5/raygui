@@ -574,8 +574,6 @@ int main(int argc, char *argv[])
 
             GuiTextBox(bounds[TEXTBOX], guiText, spinnerValue, editFilenameText);
             
-            colorPickerValue = GuiColorPicker(bounds[COLORPICKER], colorPickerValue);
-            
             // Draw labels for GuiColorPicker information (RGBA)
             GuiGroupBox((Rectangle){ anchor02.x + 290, anchor02.y + 285, 64, 75 }, "RGBA");
             GuiLabel((Rectangle){ anchor02.x + 300 + 3, anchor02.y + 295 - 2, 20, 20 }, FormatText("R:   %03i", colorPickerValue.r));
@@ -595,6 +593,8 @@ int main(int argc, char *argv[])
             DrawRectangleLinesEx((Rectangle){ anchor02.x + 292, anchor02.y + 440, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
             
             GuiEnable();
+            
+            colorPickerValue = GuiColorPicker(bounds[COLORPICKER], colorPickerValue);
 
             // Draw save style button
             if (GuiButton(bounds[BUTTON], "Save Style")) BtnSaveStyle(guiText, comboActive);
@@ -715,6 +715,8 @@ static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color)
 // Save raygui style file (.rgs), text or binary
 static void SaveStyleRGS(const char *fileName, bool binary)
 {
+    #define NUM_COLOR_PROPERTIES 130
+
     if (binary)
     {
         #define RGS_FILE_VERSION_BINARY   200
@@ -733,7 +735,7 @@ static void SaveStyleRGS(const char *fileName, bool binary)
             char signature[5] = "RGS ";
             short version = RGS_FILE_VERSION_BINARY;
             short reserved = 0;
-            short numProperties = NUM_PROPERTIES;
+            short numProperties = NUM_COLOR_PROPERTIES;
             short changedProperties = 0;
             
             for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) changedProperties++;
@@ -773,7 +775,7 @@ static void SaveStyleRGS(const char *fileName, bool binary)
             
             // Write some description comments
             fprintf(rgsFile, "#\n# rgst file (v%s) - raygui style text file generated using rGuiStyler\n#\n", RGS_FILE_VERSION_TEXT);
-            fprintf(rgsFile, "# Total number of properties:     %i\n", NUM_PROPERTIES);
+            fprintf(rgsFile, "# Total number of properties:     %i\n", NUM_COLOR_PROPERTIES);
             fprintf(rgsFile, "# Number of properties changed:   %i\n", counter);
             fprintf(rgsFile, "# Required base default style:    %s\n#\n", "LIGHT");     // TODO: check base style
 
