@@ -377,6 +377,7 @@ RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle t
 RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool toggle);                        // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active);               // Toggle Group control, returns toggled button index
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
+RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text);                         // Check Box control with text, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active);               // Dropdown Box control, returns selected item
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth);                      // Spinner control, returns selected value
@@ -385,6 +386,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeE
 RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
+RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue); // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
@@ -484,7 +486,7 @@ static int style[NUM_PROPERTIES] = {
     0x368bafff,     // BUTTON_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
     0xb5c1c2ff,     // BUTTON_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0xe6e9e9ff,     // BUTTON_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0xaeb7b8ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_COLOR_COLOR_DISABLED
+    0xaeb7b8ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // TOGGLE_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x838383ff,     // TOGGLE_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0xc9c9c9ff,     // TOGGLE_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -642,7 +644,7 @@ static int style[NUM_PROPERTIES] = {
     0x97af81ff,     // BUTTON_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
     0x5b6462ff,     // BUTTON_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x2c3334ff,     // BUTTON_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x666b69ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_COLOR_COLOR_DISABLED
+    0x666b69ff,     // BUTTON_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // TOGGLE_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x60827dff,     // TOGGLE_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
     0x2c3334ff,     // TOGGLE_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
@@ -1026,7 +1028,7 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
         case DISABLED:
         {
             DrawRectangleRec(bounds, Fade(GetColor(style[DEFAULT_BASE_COLOR_DISABLED]), guiAlpha));
-            DrawRectangleLinesEx(bounds, GUIPANEL_BORDER_WIDTH, Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));            
+            DrawRectangleLinesEx(bounds, GUIPANEL_BORDER_WIDTH, Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));
         }break;
     }
     //--------------------------------------------------------------------
@@ -1410,6 +1412,79 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
     return checked;
 }
 
+// Check Box extended control, returns true when active
+RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
+{
+    #define GUICHECKBOXEX_PADDING 5
+    
+    GuiControlState state = guiState;
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check checkbox state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
+            else state = FOCUSED;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    if (GuiLabelButton((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, text)) checked = !checked;
+    
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_NORMAL]), guiAlpha));
+            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
+            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
+                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]), guiAlpha));
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
+            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
+                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]), guiAlpha));           
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_PRESSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
+            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
+                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]), guiAlpha));
+        } break;
+        case DISABLED:
+        {
+            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));
+            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_DISABLED]), guiAlpha));
+            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
+                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING], 
+                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), 
+                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+
+    return checked;
+}
+
 // Combo Box control, returns selected item index
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active)
 {
@@ -1453,7 +1528,6 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
 
     // Draw control
     //--------------------------------------------------------------------
-
     switch (state)
     {
         case NORMAL:
@@ -1602,7 +1676,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         } break;
         case PRESSED:
         {
-            DrawRectangleLinesEx(bounds, DROPDOWNBOX_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
+            GuiPanel(bounds);
             if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
 
@@ -2045,6 +2119,77 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 
     // Draw control
     //--------------------------------------------------------------------
+    switch (state)
+    {
+        case NORMAL:
+        {
+            DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]), guiAlpha));
+            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
+        } break;
+        case FOCUSED:
+        {
+            DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
+        } break;
+        case PRESSED:
+        {
+            DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha)); 
+        } break;
+        case DISABLED:
+        {
+            DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_DISABLED]), guiAlpha));
+            DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_DISABLED]), guiAlpha));
+            DrawRectangleRec(slider, Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
+        } break;
+        default: break;
+    }    
+    //--------------------------------------------------------------------
+
+    return value;
+}
+
+// Slider Bar control extended, returns selected value
+RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue)
+{
+    GuiControlState state = guiState;
+    int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
+    
+    Rectangle slider = { bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH] + style[SLIDERBAR_INNER_PADDING], 
+                         (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH])),
+                         bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH] - 2*style[SLIDERBAR_INNER_PADDING] };
+
+    // Update control
+    //--------------------------------------------------------------------
+    if (state != DISABLED)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                state = PRESSED;
+                
+                // Get equivalent value and slider width from mousePoint.x
+                value = (maxValue - minValue)*((mousePoint.x - (float)bounds.x)/(float)bounds.width) + minValue;
+                slider.width = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH]));
+            }
+            else state = FOCUSED;
+        }
+        
+        if (slider.width > bounds.width) slider.width = bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH];
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiLabel((Rectangle){ bounds.x - GUICHECKBOXEX_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
+    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
+    
     switch (state)
     {
         case NORMAL:
