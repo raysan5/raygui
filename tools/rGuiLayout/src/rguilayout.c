@@ -289,6 +289,9 @@ int main()
     bool tracemapEditMode = false;
     float tracemapFade = 0.5f;
     
+    // loadedTexture for checking if texture is a tracemap or a style
+    Texture2D loadedTexture = { 0 };
+    
     // Very basic undo system
     // Undo last-selected rectangle changes
     // Undo text/name editing on cancel (KEY_ESC)
@@ -324,6 +327,11 @@ int main()
     config.exportAnchor0 = false;
     config.fullComments = false;
     config.defineTexts = false;
+    
+    // Delete current layout and reset variables
+    bool resetWindowActive = false;
+    bool resetLayout = false;
+    
 
     
     SetTargetFPS(120);
@@ -343,6 +351,7 @@ int main()
         if (IsKeyPressed(KEY_ESCAPE) && !textEditMode && !nameEditMode)
         {
             if (generateWindowActive) generateWindowActive = false;
+            else if (resetWindowActive) resetWindowActive = false;
             else
             {
                 closingWindowActive = !closingWindowActive;
@@ -428,7 +437,7 @@ int main()
         }
         
         // Create new control 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive)
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive && (!resetWindowActive))
         {
             // Add new control (button)
             layout.controls[layout.controlsCount].id = layout.controlsCount;
@@ -503,7 +512,7 @@ int main()
             }
         }
         
-        if (!(controlDrag || controlLockMode || tracemapEditMode || anchorLockMode || closingWindowActive || paletteMode || generateWindowActive))
+        if (!(controlDrag || controlLockMode || tracemapEditMode || anchorLockMode || closingWindowActive || paletteMode || generateWindowActive || resetWindowActive))
         {
             // Check selected control (on mouse hover)
             for (int i = layout.controlsCount; i >= 0; i--)
@@ -746,7 +755,7 @@ int main()
        
             // Replaces characters with pressed keys or '\0' in case of backspace
             // NOTE: Only allow keys in range [32..125]
-            if ((key >= 32) && (key <= 125) && (keyCount < 31))
+            if (((key >= 32) && (key <= 125)) && (keyCount < 31))
             {
                 layout.controls[selectedControl].text[keyCount] = (unsigned char)key;
             }
@@ -828,7 +837,7 @@ int main()
         }
         
         // Turns on NameEditMode
-        if (IsKeyPressed(KEY_N) && !textEditMode && (selectedControl != -1) && (!generateWindowActive))
+        if (IsKeyPressed(KEY_N) && (!IsKeyDown(KEY_LEFT_CONTROL)) && (!resetWindowActive) && !textEditMode && (selectedControl != -1) && (!generateWindowActive))
         {
             nameEditMode = true;
             strcpy(prevControlName, layout.controls[selectedControl].name);
@@ -911,7 +920,7 @@ int main()
         }
 
         // Create and edit anchor points
-        if (anchorMode)
+        if (anchorMode && (!generateWindowActive) && (!resetWindowActive) && (!closingWindowActive))
         {
             // On mouse click anchor is created
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedAnchor == -1) && (selectedControl == -1))
@@ -1092,13 +1101,22 @@ int main()
             else if (IsFileExtension(droppedFileName, ".rgs")) GuiLoadStyle(droppedFileName);
             else if (IsFileExtension(droppedFileName, ".png"))
             {
-                if (tracemap.id > 0) UnloadTexture(tracemap);
-                tracemap = LoadTexture(droppedFileName);
+                if (loadedTexture.id > 0) UnloadTexture(loadedTexture);
+                loadedTexture = LoadTexture(droppedFileName);
+                
+                if (loadedTexture.width == 64 && loadedTexture.height == 16) GuiLoadStyleImage(droppedFileName);
+                else
+                {
+                    if (tracemap.id > 0) UnloadTexture(tracemap);
+                    tracemap = LoadTexture(droppedFileName);
+                }
+                
+                UnloadTexture(loadedTexture);
                 
                 SetTextureFilter(tracemap, FILTER_BILINEAR);
                 
                 tracemapRec.width = tracemap.width;
-                tracemapRec.height = tracemap.height;
+                tracemapRec.height = tracemap.height; 
             }
 
             ClearDroppedFiles();
@@ -1241,6 +1259,39 @@ int main()
         }
         
         if ((IsKeyDown(KEY_LEFT_CONTROL)) && (IsKeyPressed(KEY_Z))) layout.controls[undoSelectedControl].rec = undoLastRec;
+        
+        if ((IsKeyDown(KEY_LEFT_CONTROL)) && (IsKeyPressed(KEY_N)) && (!generateWindowActive) && (!closingWindowActive))
+        {
+            resetWindowActive = true;
+            resetLayout = false;
+        }
+        
+        if (resetWindowActive && resetLayout)
+        {
+            // Resets all controls to default values
+            for (int i = selectedControl; i < layout.controlsCount; i++)
+            {
+                layout.controls[i].id = 0;
+                layout.controls[i].type = 0;
+                layout.controls[i].rec = (Rectangle){ 0, 0, 0, 0 };
+                memset(layout.controls[i].text, 0, 32);
+                memset(layout.controls[i].name, 0, 32);
+                layout.controls[i].ap = &layout.anchors[0];  // By default, set parent anchor
+            }
+            
+            // Resets anchor points to default values
+            for (int i = 0; i < MAX_ANCHOR_POINTS; i++)
+            {
+                layout.anchors[i].x = 0;
+                layout.anchors[i].y = 0;
+                layout.anchors[i].enabled = false;
+                layout.anchors[i].hidding = false;
+            }
+            
+            SetWindowTitle("rGuiLayout v1.0");
+            layout.controlsCount = 0;
+            resetWindowActive = false;
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -1441,7 +1492,7 @@ int main()
                     
                 if (((framesCounter/20)%2) == 0) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].rec.width/2 + layout.controls[selectedControl].ap->x + MeasureText(layout.controls[selectedControl].name, style[DEFAULT_TEXT_SIZE]*2)/2 + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 10, style[DEFAULT_TEXT_SIZE]*2 + 2, BLACK);                   
             }
-            else if ((IsKeyDown(KEY_N)) && (!textEditMode) && (!generateWindowActive))
+            else if ((IsKeyDown(KEY_N)) && (!textEditMode) && (!generateWindowActive) && (!resetWindowActive))
             {
                 if (layout.controlsCount > 0) DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(WHITE, 0.7f));
                 
@@ -1605,6 +1656,23 @@ int main()
                     if (cancelSave) exitWindow = true;
                 }
                 else if (GuiButton((Rectangle){ GetScreenWidth()/2 + 10, GetScreenHeight()/2 + 10, 85, 25 }, "No")) { exitWindow = true; }
+            }
+            
+            // Draw reset message window (save)
+            if (resetWindowActive)
+            {
+                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(WHITE, 0.7f));
+                resetWindowActive = !GuiWindowBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "Creating new layout");
+                
+                GuiLabel((Rectangle){ GetScreenWidth()/2 - 95, GetScreenHeight()/2 - 60, 200, 100 }, "Do you want to save the current layout?");
+                
+                if (GuiButton((Rectangle){ GetScreenWidth()/2 - 94, GetScreenHeight()/2 + 10, 85, 25 }, "Yes")) 
+                { 
+                    cancelSave = false;
+                    ShowSaveLayoutDialog();
+                    if (cancelSave) resetLayout = true;
+                }
+                else if (GuiButton((Rectangle){ GetScreenWidth()/2 + 10, GetScreenHeight()/2 + 10, 85, 25 }, "No")) { resetLayout = true; }
             }
             
         EndDrawing();
