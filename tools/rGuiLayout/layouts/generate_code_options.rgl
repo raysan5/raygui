@@ -26,7 +26,7 @@ c 009 4 lblCompany 225 65 50 25 1 Company:
 c 010 13 company 275 65 115 25 1 raysan5
 c 011 4 lblDescription 10 95 65 25 1 Description:
 c 012 13 toolDescription 75 95 315 55 1 tool_description
-c 013 8 defineRecs 10 160 15 15 1 File format:
+c 013 8 defineRecs 10 160 15 15 1 
 c 014 4 lblDefineRecs 30 155 92 25 1 Define Rectangles
 c 015 8 defineTexts 10 180 15 15 1 
 c 016 4 lblFullComments 160 195 100 25 1 Full comments
