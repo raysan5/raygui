@@ -397,7 +397,11 @@ int main(int argc, char *argv[])
     
     bool checked = false;
     
+    bool selectingColor = false;
+    
     int spinnerValue = 28;
+    
+    Vector2 mousePos = { 0 };
 
     int comboNum = 2;
     const char *comboText[2] = { "Style Text (.rgs)", "Style Binary (.rgs)" };
@@ -430,6 +434,9 @@ int main(int argc, char *argv[])
         // Update
         //----------------------------------------------------------------------------------
         framesCounter++;
+        
+        // Get mouse position each frame
+        mousePos = GetMousePosition();
         
         // Check for changed controls 
         if ((framesCounter%120) == 0) 
@@ -493,6 +500,28 @@ int main(int argc, char *argv[])
         if (!editHexColorText) sprintf(colorHex, "%02X%02X%02X%02X", colorPickerValue.r, colorPickerValue.g, colorPickerValue.b, colorPickerValue.a);
         
         colorHSV = ColorToHSV(colorPickerValue);
+        
+        if (CheckCollisionPointRec(mousePos, bounds[COLORPICKER]))
+        {
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectingColor = true;
+        }
+        
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+        {
+            selectingColor = false;
+            ShowCursor();
+        }
+        
+        if (selectingColor)
+        {
+            HideCursor();
+            if (mousePos.x < bounds[COLORPICKER].x) SetMousePosition((Vector2){ bounds[COLORPICKER].x, mousePos.y });
+            else if (mousePos.x > bounds[COLORPICKER].x + bounds[COLORPICKER].width) SetMousePosition((Vector2){ bounds[COLORPICKER].x + bounds[COLORPICKER].width, mousePos.y });
+            
+            if (mousePos.y < bounds[COLORPICKER].y) SetMousePosition((Vector2){ mousePos.x, bounds[COLORPICKER].y });
+            else if (mousePos.y > bounds[COLORPICKER].y + bounds[COLORPICKER].height) SetMousePosition((Vector2){ mousePos.x, bounds[COLORPICKER].y + bounds[COLORPICKER].height });
+
+        }
         
         // Control TextBox edit mode
         if (CheckCollisionPointRec(GetMousePosition(), bounds[TEXTBOX]) && (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) editFilenameText = !editFilenameText;
