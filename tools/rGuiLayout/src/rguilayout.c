@@ -328,7 +328,7 @@ int main()
     config.exportAnchor0 = false;
     config.fullComments = false;
     config.defineTexts = false;
-    config.fullVariables = true;
+    config.fullVariables = false;
     
     // Delete current layout and reset variables
     bool resetWindowActive = false;
@@ -813,6 +813,7 @@ int main()
         else if (textEditMode && IsKeyPressed(KEY_ESCAPE)) 
         {
             textEditMode = false;
+            memset(layout.controls[selectedControl].text, 0, 32);
             strcpy(layout.controls[selectedControl].text, prevControlText);
             framesCounter = 0;
         }
@@ -825,6 +826,7 @@ int main()
         else if (nameEditMode && IsKeyPressed(KEY_ESCAPE)) 
         {
             nameEditMode = false;
+            memset(layout.controls[selectedControl].name, 0, 32);
             strcpy(layout.controls[selectedControl].name, prevControlName);
             framesCounter = 0;
         }
@@ -1481,7 +1483,7 @@ int main()
                     else if (layout.controls[selectedControl].type == GROUPBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == WINDOWBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 10 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == STATUSBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else if (layout.controls[selectedControl].type == CHECKBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 20 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == CHECKBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width + 5 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == SLIDERBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x - 5, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
@@ -1608,18 +1610,13 @@ int main()
                 GuiTextBox((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 65, 115, 25 }, config.company, companySize, true);
                 GuiLabel((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 95, 65, 25 }, "Description:");
                 GuiTextBox((Rectangle){ exportWindowPos.x + 75, exportWindowPos.y + 95, 315, 55 }, config.description, toolDescriptionSize, true);
-                config.defineRecs = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 160, 15, 15 }, config.defineRecs); 
-                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 155, 92, 25 }, "Define Rectangles");
-                config.defineTexts = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 180, 15, 15 }, config.defineTexts);
-                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 195, 100, 25 }, "Full comments");
-                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 195, 92, 25 }, "Crop to Window");
-                config.exportAnchors = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 160, 15, 15 }, config.exportAnchors);
-                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 155, 100, 25 }, "Export anchors");
-                config.exportAnchor0 = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 180, 15, 15 }, config.exportAnchor0);
-                GuiLabel((Rectangle){ exportWindowPos.x + 160, exportWindowPos.y + 175, 100, 25 }, "Export anchor 0");
-                config.fullComments = GuiCheckBox((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 200, 15, 15 }, config.fullComments);
-                GuiLabel((Rectangle){ exportWindowPos.x + 30, exportWindowPos.y + 175, 95, 25 }, "Define text const");
-                config.cropWindow = GuiCheckBox((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 200, 15, 15 }, config.cropWindow); 
+                config.defineRecs = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 160, 15, 15 }, config.defineRecs, "Define Rectangles"); 
+                config.defineTexts = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 180, 15, 15 }, config.defineTexts, "Define text const");
+                config.exportAnchors = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 160, 15, 15 }, config.exportAnchors, "Export anchors");
+                config.exportAnchor0 = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 180, 15, 15 }, config.exportAnchor0, "Export anchor 0");
+                config.fullComments = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 140, exportWindowPos.y + 200, 15, 15 }, config.fullComments, "Full comments");
+                config.cropWindow = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 160, 15, 15 }, config.cropWindow, "Crop to Window");
+                config.fullVariables = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 200, 15, 15 }, config.fullVariables, "Full variables");
 
                 if (GuiButton((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 185, 115, 30 }, "Generate Code"))
                 {                
