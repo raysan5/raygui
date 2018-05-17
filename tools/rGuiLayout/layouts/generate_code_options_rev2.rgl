@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     20
+# Total number of controls:     21
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -28,8 +28,9 @@ c 011 4 lblDescription 10 95 65 25 1 Description:
 c 012 13 toolDescription 75 95 315 55 1 tool_description
 c 013 8 defineRecs 10 160 15 15 1 Define Rectangles
 c 014 8 defineTexts 10 180 15 15 1 Define text const
-c 015 8 exportAnchors 140 160 15 15 1 Export anchors
-c 016 8 exportAnchor0 140 180 15 15 1 Export anchor 0
-c 017 8 fullComments 140 200 15 15 1 Full comments
-c 018 5 GenerateCode 275 185 115 30 1 Generate Code
-c 019 8 cropWindow 10 200 15 15 1 Crop to Window
+c 015 8 fullVariables 10 200 15 15 1 Full variables
+c 016 8 exportAnchors 140 160 15 15 1 Export anchors
+c 017 8 exportAnchor0 140 180 15 15 1 Export anchor 0
+c 018 8 fullComments 140 200 15 15 1 Full comments
+c 019 8 cropWindow 275 160 15 15 1 Crop to Window
+c 020 5 GenerateCode 275 185 115 30 1 Generate Code

@@ -1,0 +1,47 @@
+#
+# rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
+#
+# Total number of controls:     32
+# Anchor info:   a <id> <posx> <posy> <enabled>
+# Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
+#
+a 000 0 0 1
+a 001 50 50 1
+a 002 395 90 1
+a 003 0 0 0
+a 004 0 0 0
+a 005 0 0 0
+a 006 0 0 0
+a 007 0 0 0
+c 000 17 StatusBar002 0 0 720 24 1 CHOSE CONTROL            >
+c 001 18 ListView000 10 40 140 560 1 
+c 002 18 ListView001 155 40 180 560 1 
+c 003 0 WindowBox004 0 0 365 560 2 Sample raygui controls
+c 004 4 Label007 10 35 65 25 2 rGuiStyler
+c 005 4 Label008 90 35 145 25 2 github.com/raysan5/raygui
+c 006 6 Toggle009 10 70 65 25 2 toggle
+c 007 7 ToggleGroup010 90 70 265 25 2 
+c 008 14 Slider011 10 110 165 15 2 
+c 009 15 SliderBar012 75 140 250 15 2 SLIDERBAR
+c 010 16 ProgressBar013 180 110 175 15 2 
+c 011 8 CheckBox014 270 38 20 20 2 DISABLED
+c 012 11 Spinner015 240 165 115 30 2 
+c 013 13 TextBox016 10 205 180 30 2 custom_style.rgs
+c 014 9 ComboBox017 10 165 110 30 2 
+c 015 5 Button005 195 205 160 30 2 Save Style
+c 016 19 ColorPicker018 10 309 240 240 2 
+c 017 1 GroupBox019 290 310 65 60 2 RGBA
+c 018 4 Label023 300 290 20 20 2 R:
+c 019 4 Label024 300 305 20 20 2 G:
+c 020 4 Label025 300 320 20 20 2 B:
+c 021 1 GroupBox020 290 370 65 60 2 HSV
+c 022 4 Label027 300 375 8 20 2 H:
+c 023 17 StatusBar003 0 616 150 24 1 BASE STYLE: LIGHT
+c 024 20 DummyRec021 290 440 65 80 2 Panel
+c 025 13 TextBox022 290 530 65 20 2 AABBCCDD
+c 026 4 Label028 300 405 19 20 2 V:
+c 027 4 Label029 300 390 18 20 2 S:
+c 028 17 StatusBar030 149 616 186 24 1 CHANGED PROPERTIES: 77
+c 029 17 StatusBar031 334 616 386 24 1 EDITION TIME: 02:45:30
+c 030 2 Line031 10 245 349 25 2 
+c 031 10 DropdownBox032 520 255 110 30 0 
