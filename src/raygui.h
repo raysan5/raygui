@@ -1415,7 +1415,8 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 // Check Box extended control, returns true when active
 RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
 {
-    #define GUICHECKBOXEX_PADDING 5
+    #define GUICHECKBOXEX_WIDTH_PADDING 5
+    #define GUICHECKBOXEX_HEIGHT_PADDING 1
     
     GuiControlState state = guiState;
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
@@ -1438,7 +1439,7 @@ RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    if (GuiLabelButton((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, text)) checked = !checked;
+    if (GuiLabelButton((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + GUICHECKBOXEX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text)) checked = !checked;
     
     switch (state)
     {
@@ -2155,6 +2156,9 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, floa
 // Slider Bar control extended, returns selected value
 RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue)
 {
+    #define SLIDERBAREX_WIDTH_PADDING 5
+    #define SLIDERBAREX_HEIGHT_PADDING 1
+    
     GuiControlState state = guiState;
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
     
@@ -2187,8 +2191,8 @@ RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, fl
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiLabel((Rectangle){ bounds.x - GUICHECKBOXEX_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
-    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
+    GuiLabel((Rectangle){ bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
+    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + SLIDERBAREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
     
     switch (state)
     {
@@ -2833,16 +2837,12 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
     Rectangle boundsHue = { bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y, style[COLORPICKER_BARS_THICK], bounds.height };
     
     Vector3 hsv = ConvertRGBtoHSV((Vector3){ color.r/255.0f, color.g/255.0f, color.b/255.0f });
-    
     hsv.x = GuiColorBarHue(boundsHue, hsv.x);
-    
-    color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
-    
+    //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
-
     color = (Color){ (unsigned char)(rgb.x*255.0f), (unsigned char)(rgb.y*255.0f), (unsigned char)(rgb.z*255.0f), color.a };
     
-    
+    /*
     // Draw control: color select panel
     //--------------------------------------------------------------------
     if (state != DISABLED)
@@ -2859,6 +2859,7 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
         DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], Fade(GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]), guiAlpha));
     }
     //--------------------------------------------------------------------
+    */
 
     return color;
 }
