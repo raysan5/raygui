@@ -25,12 +25,12 @@
 *       - Spinner
 *       - ValueBox
 *       - TextBox
-*       - TextBoxMultiline
+*       - TextBoxMulti
 *       - Slider
 *       - SliderBar
 *       - ProgressBar
 *       - StatusBar
-*       - ScrollBar
+*       - ScrollPanel
 *       - ListView
 *       - ColorPicker
 *       - MessageBox
@@ -367,6 +367,8 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiLine(Rectangle bounds, int thick);                                                    // Line separator control
 RAYGUIDEF void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
+RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll);              // Scroll Panel control
+
 
 // Basic controls set
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
@@ -383,7 +385,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth);                      // Spinner control, returns selected value
 RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue);                                   // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
-RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
+RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
 RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue); // Slider Bar control, returns selected value
@@ -1032,7 +1034,13 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
         }break;
     }
     //--------------------------------------------------------------------
-    
+}
+
+// Scroll Panel control
+// NOTE: bounds define the view area, content defines size of internal data
+RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll)
+{
+    // TODO: Implement
 }
 
 // Label control
@@ -1914,7 +1922,8 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     return pressed;
 }
 
-RAYGUIDEF bool GuiTextBoxMultiline(Rectangle bounds, char *text, int textSize, bool editMode)
+// Text Box control with multiple lines
+RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     #define GUITEXTBOXMULTI_PADDING          4
     #define GUITEXTBOXMULTI_LINE_PADDING     5   // Internal from raylib line-break space (height + height/2)*scale
@@ -2308,13 +2317,6 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX)
         default: break;
     }
     //--------------------------------------------------------------------
-}
-
-// Scroll Bar control
-// NOTE: bounds define the view area, content defines size of internal data
-RAYGUIDEF Vector2 GuiScrollBar(Rectangle bounds, Rectangle content, Vector2 viewScroll)
-{
-    // TODO: Implement
 }
 
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
