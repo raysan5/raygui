@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiLayout v1.0 - raygui layout editor
+*   rGuiLayout v1.1 - raygui layout editor
 *
 *   Compile this program using:
 *       gcc -o rguilayout.exe rguilayout.c external/tinyfiledialogs.c -I..\.. \ 
@@ -202,6 +202,7 @@ int main()
     int helpCounter = 0;
     int helpStartPositionX = -300;
     int helpDeltaPositionX = 0;
+    bool helpActive = false;
 
     // Rectangles used on controls preview drawing
     Rectangle defaultRec[21] = {
@@ -369,24 +370,26 @@ int main()
         if (IsKeyPressed(KEY_F) && (!textEditMode) && (!nameEditMode)) controlGlobalPos = !controlGlobalPos;
         
         // Toggle help info
-        if (IsKeyPressed(KEY_TAB))
+        if (IsKeyPressed(KEY_TAB) && !helpActive)
         {
             helpStartPositionX = helpPositionX;
             helpDeltaPositionX = 0 - helpStartPositionX;
             helpCounter = 0;
+            helpActive = true;
         }
-        
-        if (IsKeyDown(KEY_TAB))
-        {
-            helpCounter++;
-            if (helpCounter >= 60) helpCounter = 60;
-            helpPositionX = (int)EaseCubicInOut(helpCounter, helpStartPositionX, helpDeltaPositionX, 60);
-        }
-        else if (IsKeyReleased(KEY_TAB))
+        else if (IsKeyPressed(KEY_TAB) && helpActive)
         {
             helpStartPositionX = helpPositionX;
             helpDeltaPositionX = -300 - helpStartPositionX;
             helpCounter = 0;
+            helpActive = false;
+        }
+        
+        if (helpActive)
+        {
+            helpCounter++;
+            if (helpCounter >= 60) helpCounter = 60;
+            helpPositionX = (int)EaseCubicInOut(helpCounter, helpStartPositionX, helpDeltaPositionX, 60);
         }
         else
         {
@@ -396,10 +399,22 @@ int main()
         }
         
         // Controls palette selector logic
-        if ((IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) && (!anchorMode))
+        if ((IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) && (!anchorMode) && (!paletteMode))
         {
             paletteMode = true;
             paletteEasingOut = 0;
+        }
+        else if ((IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) && (!anchorMode) && (paletteMode))
+        {
+            paletteMode = false;
+            paletteEasingIn = 0;
+        }
+        
+        if (paletteMode)
+        {
+            paletteEasingIn++;
+            if (paletteEasingIn >= PALETTE_EASING_FRAMES) paletteEasingIn = PALETTE_EASING_FRAMES;
+            palettePanel.x = (int)EaseCubicInOut(paletteEasingIn, paletteStartPosX,(GetScreenWidth() - 145) - paletteStartPosX, PALETTE_EASING_FRAMES);
             
             for (int i = 0; i < 21; i++)
             {
@@ -411,18 +426,6 @@ int main()
                 }
                 else paletteSelect = -1;
             }
-        }
-        else 
-        {
-            paletteMode = false;
-            paletteEasingIn = 0;
-        }
-        
-        if (paletteMode)
-        {
-            paletteEasingIn++;
-            if (paletteEasingIn >= PALETTE_EASING_FRAMES) paletteEasingIn = PALETTE_EASING_FRAMES;
-            palettePanel.x = (int)EaseCubicInOut(paletteEasingIn, paletteStartPosX,(GetScreenWidth() - 145) - paletteStartPosX, PALETTE_EASING_FRAMES);
         }
         else 
         {
