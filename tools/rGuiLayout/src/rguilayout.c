@@ -178,6 +178,7 @@ int main()
     int framesCounterSnap = 0;
     int selectedControl = -1;
     int storedControl = -1;
+    int focusedControl = -1;
     int selectedType = WINDOWBOX;
     int selectedTypeDraw = LABEL;
     Vector2 panControlOffset = { 0 };
@@ -440,7 +441,7 @@ int main()
         }
         
         // Create new control 
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive && (!resetWindowActive))
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && (focusedControl == -1) && (selectedControl == -1) && !anchorMode && !tracemapEditMode && !closingWindowActive && !generateWindowActive && (!resetWindowActive) && !CheckCollisionPointRec(mouse, palettePanel))
         {
             // Add new control (button)
             layout.controls[layout.controlsCount].id = layout.controlsCount;
@@ -523,25 +524,42 @@ int main()
                 if (controlDrag || tracemapEditMode || anchorLockMode) break;
                 if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
                 {
-                    selectedControl = i;
-                    if (undoSelectedControl != selectedControl) 
+                    focusedControl = i;
+                    
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                     {
-                        undoSelectedControl = selectedControl;
+                        selectedControl = focusedControl;
+                    }
+                    
+                    if (undoSelectedControl != focusedControl) 
+                    {
+                        undoSelectedControl = focusedControl;
                         undoLastRec = layout.controls[i].rec;
                     }
                     break;
                 }
                 else if ((!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type != WINDOWBOX))
                 {
-                    selectedControl = i;
-                    if (undoSelectedControl != selectedControl) 
+                    focusedControl = i;
+                    
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                     {
-                        undoSelectedControl = selectedControl;
+                        selectedControl = focusedControl;
+                    }
+                    
+                    if (undoSelectedControl != focusedControl) 
+                    {
+                        undoSelectedControl = focusedControl;
                         undoLastRec = layout.controls[i].rec;
                     }
                     break;
                 }
-                else selectedControl = -1;
+                else 
+                {
+                    focusedControl = -1;
+                    
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectedControl = -1;
+                }
             }
         }
         
@@ -1024,13 +1042,13 @@ int main()
                 // Links the selected control to the current anchor
                 if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
                 {
-                    if (selectedControl != -1)
+                    if (focusedControl != -1)
                     {
-                        layout.controls[selectedControl].rec.x += layout.controls[selectedControl].ap->x;
-                        layout.controls[selectedControl].rec.y += layout.controls[selectedControl].ap->y;
-                        layout.controls[selectedControl].ap = &layout.anchors[linkedAnchor];
-                        layout.controls[selectedControl].rec.x -= layout.anchors[linkedAnchor].x;
-                        layout.controls[selectedControl].rec.y -= layout.anchors[linkedAnchor].y;
+                        layout.controls[focusedControl].rec.x += layout.controls[focusedControl].ap->x;
+                        layout.controls[focusedControl].rec.y += layout.controls[focusedControl].ap->y;
+                        layout.controls[focusedControl].ap = &layout.anchors[linkedAnchor];
+                        layout.controls[focusedControl].rec.x -= layout.anchors[linkedAnchor].x;
+                        layout.controls[focusedControl].rec.y -= layout.anchors[linkedAnchor].y;
                     }
                     
                     anchorLinkMode = false;  
@@ -1439,15 +1457,20 @@ int main()
             }
             
             // Draw selected control selection rectangle (transparent RED/WHITE)
-            if ((selectedControl != -1) && (selectedControl < layout.controlsCount))
+            if (((selectedControl != -1) || (focusedControl != -1)) && (selectedControl < layout.controlsCount))
             {
-                DrawRectangleRec((Rectangle){ layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height }, (nameEditMode) ? Fade(WHITE, 0.7f) : Fade(RED, 0.5f));
+                if (selectedControl != -1) DrawRectangleRec((Rectangle){ layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, layout.controls[selectedControl].rec.width, layout.controls[selectedControl].rec.height }, (nameEditMode) ? Fade(WHITE, 0.7f) : Fade(RED, 0.5f));
                 
-                // Draw anchor lines (if not hidden)
-                if (layout.controls[selectedControl].ap->id > 0 && !layout.controls[selectedControl].ap->hidding) DrawLine(layout.controls[selectedControl].ap->x, layout.controls[selectedControl].ap->y, layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, RED);
-                else if (layout.controls[selectedControl].ap->id > 0 && layout.controls[selectedControl].ap->hidding) DrawLine(layout.controls[selectedControl].ap->x, layout.controls[selectedControl].ap->y, layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, BLUE);
+                if (focusedControl != -1) DrawRectangleLinesEx((Rectangle){ layout.controls[focusedControl].ap->x + layout.controls[focusedControl].rec.x, layout.controls[focusedControl].ap->y + layout.controls[focusedControl].rec.y, layout.controls[focusedControl].rec.width, layout.controls[focusedControl].rec.height }, 1, RED);
             }
             
+            // Draw anchor lines
+            if ((selectedControl != -1) && layout.controls[selectedControl].ap->id > 0 && !layout.controls[selectedControl].ap->hidding) DrawLine(layout.controls[selectedControl].ap->x, layout.controls[selectedControl].ap->y, layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, RED);
+            else if ((selectedControl != -1) && layout.controls[selectedControl].ap->id > 0 && layout.controls[selectedControl].ap->hidding) DrawLine(layout.controls[selectedControl].ap->x, layout.controls[selectedControl].ap->y, layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.x, layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.y, BLUE);
+            
+            if ((focusedControl != -1) && layout.controls[focusedControl].ap->id > 0 && !layout.controls[focusedControl].ap->hidding) DrawLine(layout.controls[focusedControl].ap->x, layout.controls[focusedControl].ap->y, layout.controls[focusedControl].ap->x + layout.controls[focusedControl].rec.x, layout.controls[focusedControl].ap->y + layout.controls[focusedControl].rec.y, RED);
+            else if ((focusedControl != -1) && layout.controls[focusedControl].ap->id > 0 && layout.controls[focusedControl].ap->hidding) DrawLine(layout.controls[focusedControl].ap->x, layout.controls[focusedControl].ap->y, layout.controls[focusedControl].ap->x + layout.controls[focusedControl].rec.x, layout.controls[focusedControl].ap->y + layout.controls[focusedControl].rec.y, BLUE);
+                
             // Draw cursor (control mode or anchor mode)
             if ((selectedControl == -1)  && (selectedAnchor == -1))
             {
