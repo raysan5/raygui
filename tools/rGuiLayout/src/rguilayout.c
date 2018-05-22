@@ -51,7 +51,7 @@
 #define MAX_ANCHOR_POINTS         8         // Maximum number of anchor points
 #define ANCHOR_RADIUS            20         // Default anchor radius
 
-#define MAX_CONTROL_TEXT_LENGTH  32         // Maximum length of control text
+#define MAX_CONTROL_TEXT_LENGTH  64         // Maximum length of control text
 #define MAX_CONTROL_NAME_LENGTH  32         // Maximum length of control name (used on code generation)
 
 #define GRID_LINE_SPACING         5         // Grid line spacing in pixels
@@ -147,6 +147,7 @@ static bool cancelSave = false;
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
 static void ShowSaveLayoutDialog(void);                                 // Show save layout dialog
+static void ShowExportLayoutDialog(GuiLayoutConfig config);             // Show export layout dialog
 static void SaveLayoutRGL(const char *fileName, bool binary);           // Save gui layout project information
 static void LoadLayoutRGL(const char *fileName);                        // Load gui layout project information
 static void GenerateCode(const char *fileName, GuiLayoutConfig config); // Generate C code for gui layout
@@ -247,8 +248,8 @@ int main()
         layout.controls[i].id = 0;
         layout.controls[i].type = 0;
         layout.controls[i].rec = (Rectangle){ 0, 0, 0, 0 };
-        memset(layout.controls[i].text, 0, 32);
-        memset(layout.controls[i].name, 0, 32);
+        memset(layout.controls[i].text, 0, MAX_CONTROL_TEXT_LENGTH);
+        memset(layout.controls[i].name, 0, MAX_CONTROL_NAME_LENGTH);
         layout.controls[i].ap = &layout.anchors[0];  // By default, set parent anchor
     }
        
@@ -299,8 +300,8 @@ int main()
     // Undo text/name editing on cancel (KEY_ESC)
     int undoSelectedControl = -1;
     Rectangle undoLastRec;
-    char prevControlText[32];
-    char prevControlName[32];
+    char prevControlText[MAX_CONTROL_TEXT_LENGTH];
+    char prevControlName[MAX_CONTROL_NAME_LENGTH];
     
     char loadedFileName[128] = "not_loaded_layout";
     
@@ -353,7 +354,8 @@ int main()
         // Show save layout message window on ESC
         if (IsKeyPressed(KEY_ESCAPE) && !textEditMode && !nameEditMode)
         {
-            if (generateWindowActive) generateWindowActive = false;
+            if (layout.controlsCount <= 0) exitWindow = true;
+            else if (generateWindowActive) generateWindowActive = false;
             else if (resetWindowActive) resetWindowActive = false;
             else
             {
@@ -602,7 +604,7 @@ int main()
                 {
                     if (IsKeyDown(KEY_LEFT_CONTROL))
                     {
-                        // Control modifier of width and height            
+                        // Control modifier of width and height
                         if (IsKeyDown(KEY_LEFT_SHIFT))
                         {
                             if (IsKeyPressed(KEY_RIGHT)) layout.controls[selectedControl].rec.width += GRID_LINE_SPACING;
@@ -694,8 +696,8 @@ int main()
                 {
                     layout.controls[i].type = layout.controls[i + 1].type;
                     layout.controls[i].rec = layout.controls[i + 1].rec;
-                    memset(layout.controls[i].text, 0, 32);
-                    memset(layout.controls[i].name, 0, 32);
+                    memset(layout.controls[i].text, 0, MAX_CONTROL_TEXT_LENGTH);
+                    memset(layout.controls[i].name, 0, MAX_CONTROL_NAME_LENGTH);
                     strcpy(layout.controls[i].text, layout.controls[i + 1].text);
                     strcpy(layout.controls[i].name, layout.controls[i + 1].name);
                     layout.controls[i].ap = layout.controls[i + 1].ap;
@@ -776,26 +778,26 @@ int main()
        
             // Replaces characters with pressed keys or '\0' in case of backspace
             // NOTE: Only allow keys in range [32..125]
-            if (((key >= 32) && (key <= 125)) && (keyCount < 31))
+            if (((key >= 32) && (key <= 125)) && (keyCount < MAX_CONTROL_TEXT_LENGTH - 1))
             {
                 layout.controls[selectedControl].text[keyCount] = (unsigned char)key;
             }
             
-            if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
             {
                 layout.controls[selectedControl].text[keyCount - 1] = '\0';
                 framesCounterSnap = 0;
                 if (keyCount < 0) keyCount = 0;
             }
-            else if (IsKeyDown(KEY_BACKSPACE_TEXT))
+            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
             {
                 if ((framesCounterSnap > 60) && (framesCounterSnap%15) == 0) layout.controls[selectedControl].text[keyCount - 1] = '\0';
                 if (keyCount < 0) keyCount = 0;
             }
             
             // Used to show the cursor('|') in textEditMode 
-            if (keyCount < 32) framesCounter++;
-            else if (keyCount == 32) framesCounter = 21;
+            if (keyCount < MAX_CONTROL_TEXT_LENGTH) framesCounter++;
+            else if (keyCount == MAX_CONTROL_TEXT_LENGTH) framesCounter = 21;
         }
         
         if ((nameEditMode))
@@ -807,20 +809,20 @@ int main()
        
             // Replaces characters with pressed keys or '\0' in case of backspace
             // NOTE: Only allow keys in range [48..57], [65..90] and [97..122]
-            if ((((key >= 48) && (key <= 57)) || ((key >= 65) && (key <= 90)) || ((key >= 97) && (key <= 122))) && (keyCount < 31))
+            if ((((key >= 48) && (key <= 57)) || ((key >= 65) && (key <= 90)) || ((key >= 97) && (key <= 122))) && (keyCount < MAX_CONTROL_NAME_LENGTH - 1))
             {
                 layout.controls[selectedControl].name[keyCount] = (unsigned char)key;
             }
             
-            if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
             {
                 layout.controls[selectedControl].name[keyCount - 1] = '\0';
                 if (keyCount < 0) keyCount = 0;
             }
             
             // Used to show the cursor('|') in textEditMode 
-            if (keyCount < 32) framesCounter++;
-            else if (keyCount == 32) framesCounter = 21;
+            if (keyCount < MAX_CONTROL_NAME_LENGTH) framesCounter++;
+            else if (keyCount == MAX_CONTROL_NAME_LENGTH) framesCounter = 21;
         }
         
         // Turns off textEditMode
@@ -832,7 +834,7 @@ int main()
         else if (textEditMode && IsKeyPressed(KEY_ESCAPE)) 
         {
             textEditMode = false;
-            memset(layout.controls[selectedControl].text, 0, 32);
+            memset(layout.controls[selectedControl].text, 0, MAX_CONTROL_TEXT_LENGTH);
             strcpy(layout.controls[selectedControl].text, prevControlText);
             framesCounter = 0;
         }
@@ -845,7 +847,7 @@ int main()
         else if (nameEditMode && IsKeyPressed(KEY_ESCAPE)) 
         {
             nameEditMode = false;
-            memset(layout.controls[selectedControl].name, 0, 32);
+            memset(layout.controls[selectedControl].name, 0, MAX_CONTROL_NAME_LENGTH);
             strcpy(layout.controls[selectedControl].name, prevControlName);
             framesCounter = 0;
         }
@@ -1287,8 +1289,8 @@ int main()
                 layout.controls[i].id = 0;
                 layout.controls[i].type = 0;
                 layout.controls[i].rec = (Rectangle){ 0, 0, 0, 0 };
-                memset(layout.controls[i].text, 0, 32);
-                memset(layout.controls[i].name, 0, 32);
+                memset(layout.controls[i].text, 0, MAX_CONTROL_TEXT_LENGTH);
+                memset(layout.controls[i].name, 0, MAX_CONTROL_NAME_LENGTH);
                 layout.controls[i].ap = &layout.anchors[0];  // By default, set parent anchor
             }
             
@@ -1357,7 +1359,7 @@ int main()
                         case DROPDOWNBOX: GuiDropdownBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, listData, 3, 2); break;
                         case SPINNER: GuiSpinner((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 3, 25); break;
                         case VALUEBOX: GuiValueBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 100); break;
-                        case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, 32, false); break;
+                        case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, MAX_CONTROL_TEXT_LENGTH, false); break;
                         case SLIDER: GuiSlider((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 0, 100); break;
                         case SLIDERBAR: GuiSliderBarEx((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100, layout.controls[i].text, true); break;
                         case PROGRESSBAR: GuiProgressBar((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
@@ -1375,8 +1377,9 @@ int main()
             }
             
             // Draws the defaultRec[selectedType] of the control selected
-            if (selectedControl == -1 && !anchorMode && !tracemapEditMode && !closingWindowActive && !paletteMode && !generateWindowActive)
+            if ((selectedControl == -1) && (focusedControl == -1 )&& !anchorMode && !tracemapEditMode && !closingWindowActive && !generateWindowActive)
             {
+                GuiFade(0.4f);
                 switch (selectedTypeDraw)
                 {
                     case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
@@ -1402,6 +1405,8 @@ int main()
                     case DUMMYREC: GuiDummyRec(defaultRec[selectedTypeDraw], "DUMMY REC"); break;
                     default: break;
                 }
+                
+                GuiFade(1.0f);
             }
 
             // Draw the anchorPoints
@@ -1576,7 +1581,7 @@ int main()
                 GuiLabel((Rectangle){ helpPositionX + 30, 520, 0, 0 }, "LCTRL + O - Open layout file (.rgl)");
                 GuiLabel((Rectangle){ helpPositionX + 30, 540, 0, 0 }, "LCTRL + ENTER - Export layout to code");
             }
-            
+
             // Draw right panel controls palette
             GuiPanel(palettePanel);
             
@@ -1633,18 +1638,9 @@ int main()
                 config.fullVariables = GuiCheckBoxEx((Rectangle){ exportWindowPos.x + 10, exportWindowPos.y + 200, 15, 15 }, config.fullVariables, "Full variables");
 
                 if (GuiButton((Rectangle){ exportWindowPos.x + 275, exportWindowPos.y + 185, 115, 30 }, "Generate Code"))
-                {                
-                    const char *filters[] = { "*.c", "*.go", "*.lua" };
-                    const char *fileName = tinyfd_saveFileDialog("Generate code file", config.name, 3, filters, "Code file");
-
-                    if (fileName != NULL)
-                    {
-                        char outFileName[64] = { 0 };
-                        strcpy(outFileName, fileName);
-                        if (GetExtension(fileName) == NULL) strcat(outFileName, ".c\0");     // No extension provided
-                        GenerateCode(fileName, config);
-                        generateWindowActive = false;
-                    } 
+                {
+                    ShowExportLayoutDialog(config);
+                    generateWindowActive = false;
                 }
 			}
     
@@ -1721,6 +1717,21 @@ static void ShowSaveLayoutDialog(void)
         if (GetExtension(fileName) == NULL) strcat(outFileName, ".rgl\0");     // No extension provided
         SaveLayoutRGL(outFileName, false);
         cancelSave = true;
+    }
+}
+
+// Show save layout dialog
+static void ShowExportLayoutDialog(GuiLayoutConfig config)
+{
+    const char *filters[] = { "*.c", "*.go", "*.lua" };
+    const char *fileName = tinyfd_saveFileDialog("Generate code file", config.name, 3, filters, "Code file");
+
+    if (fileName != NULL)
+    {
+        char outFileName[64] = { 0 };
+        strcpy(outFileName, fileName);
+        if (GetExtension(fileName) == NULL) strcat(outFileName, ".c\0");     // No extension provided
+        GenerateCode(fileName, config);
     }
 }
 
@@ -1804,8 +1815,8 @@ static void LoadLayoutRGL(const char *fileName)
             layout.controls[i].id = 0;
             layout.controls[i].type = 0;
             layout.controls[i].rec = (Rectangle){ 0, 0, 0, 0 };
-            memset(layout.controls[i].text, 0, 32);
-            memset(layout.controls[i].name, 0, 32);
+            memset(layout.controls[i].text, 0, MAX_CONTROL_TEXT_LENGTH);
+            memset(layout.controls[i].name, 0, MAX_CONTROL_NAME_LENGTH);
             layout.controls[i].ap = &layout.anchors[0];
         }
         for (int i = 0; i < MAX_ANCHOR_POINTS; i++) layout.anchors[i].hidding = false;
@@ -1917,7 +1928,7 @@ static char *ExportFullVariables(int controlType, char *name, GuiLayoutConfig co
         case TEXTBOX:
         {
             if (config.fullVariables) strcpy(text, FormatText("%sSize", name));
-            else strcpy(text, "32");
+            else strcpy(text, "64");
         } break;
     }
     
@@ -2078,8 +2089,8 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             case TEXTBOX:
             {
                 if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
-                if (config.fullVariables) fprintf(ftool, "    int %sSize = 32;\n", layout.controls[i].name);
-                fprintf(ftool, "    char %sText[32] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);           
+                if (config.fullVariables) fprintf(ftool, "    int %sSize = 64;\n", layout.controls[i].name);
+                fprintf(ftool, "    char %sText[64] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);           
             }
             default: break;
         }
