@@ -169,7 +169,6 @@ int main()
     bool exitWindow = false;            // Exit window flag
     bool snapMode = false;              // Snap mode flag (KEY_S)
     bool showGrid = true;               // Show grid flag (KEY_G)
-    bool controlLockMode = false;       // Control edition locked mode
     bool controlDrag = false;           // Control drag mode
     bool controlGlobalPos = false;      // Control global position mode
     bool textEditMode = false;          // Control text edit mode (KEY_T)
@@ -359,7 +358,6 @@ int main()
             {
                 closingWindowActive = !closingWindowActive;
                 selectedControl = -1;
-                controlLockMode = false;
             }
         }
 
@@ -495,7 +493,7 @@ int main()
         }
         
         // Change controls layer order (position inside array)
-        if (IsKeyDown(KEY_LEFT_ALT) && !controlLockMode && (selectedControl != -1))
+        if (IsKeyDown(KEY_LEFT_ALT) && (selectedControl != -1))
         {
             if ((IsKeyPressed(KEY_UP)) && (selectedControl < layout.controlsCount - 1))
             {
@@ -517,12 +515,12 @@ int main()
             }
         }
         
-        if (!(controlDrag || controlLockMode || tracemapEditMode || anchorLockMode || closingWindowActive || paletteMode || generateWindowActive || resetWindowActive))
+        if (!(controlDrag || tracemapEditMode || anchorLockMode || closingWindowActive || generateWindowActive || resetWindowActive))
         {
             // Check selected control (on mouse hover)
             for (int i = layout.controlsCount; i >= 0; i--)
             {
-                if (controlDrag || controlLockMode || tracemapEditMode || anchorLockMode) break;
+                if (controlDrag || tracemapEditMode || anchorLockMode) break;
                 if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
                 {
                     selectedControl = i;
@@ -560,7 +558,7 @@ int main()
                 controlDrag = false;
             } 
              
-            if (controlDrag && !controlLockMode)
+            if (controlDrag)
             {
                 layout.controls[selectedControl].rec.x = prevControlPosition.x + (mouse.x - panControlOffset.x);
                 layout.controls[selectedControl].rec.y = prevControlPosition.y + (mouse.y - panControlOffset.y);
@@ -580,7 +578,7 @@ int main()
                 }
             }
             
-            if (!IsKeyDown(KEY_LEFT_ALT))
+            if (!IsKeyDown(KEY_LEFT_ALT) && (selectedControl != -1))
             {
                 if (snapMode)
                 {
@@ -850,16 +848,6 @@ int main()
             strcpy(prevControlName, layout.controls[selectedControl].name);
             storedControl = selectedControl;
         }
-       
-        // Selected control lock logic
-        if (controlLockMode) selectedControl = storedControl;
-
-        if (IsKeyPressed(KEY_SPACE) && !nameEditMode && !textEditMode && (selectedControl != -1) && !controlLockMode && !anchorMode) 
-        {
-            controlLockMode = true;
-            storedControl = selectedControl;
-        }
-        else if (IsKeyPressed(KEY_SPACE) && (selectedControl != -1)) controlLockMode = false;
 
         // Checks if mouse is over an anchor
         if (!(anchorLinkMode || controlDrag || anchorLockMode))
@@ -1036,7 +1024,7 @@ int main()
                 // Links the selected control to the current anchor
                 if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
                 {
-                    if (selectedControl != -1 && !controlLockMode)
+                    if (selectedControl != -1)
                     {
                         layout.controls[selectedControl].rec.x += layout.controls[selectedControl].ap->x;
                         layout.controls[selectedControl].rec.y += layout.controls[selectedControl].ap->y;
