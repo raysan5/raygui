@@ -36,10 +36,10 @@ int main(int argc, char *argv[0])
     
     bool btnLoadPressed = false;
 
-    int buttonToggleChannel = 3;
+    int buttonToggleChannel = 1;
     int buttonToggleDepth = 0;
-    char *arrayChannel[4] = { "1", "2", "3", "4" };
-    char *arrayDepth[3] = { "8", "16", "32" };
+    const char *arrayChannel[4] = { "1", "2", "3", "4" };
+    const char *arrayDepth[3] = { "8", "16", "32" };
     
     // Image file info
     int dataSize = 0;
@@ -149,24 +149,24 @@ int main(int argc, char *argv[0])
         //----------------------------------------------------------------------------------
         BeginDrawing();
         
-            ClearBackground(GuiGetBackgroundColor());
+            ClearBackground(RAYWHITE);
             
-            DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, GuiLinesColor());
+            DrawRectangleLines(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, BLUE);
 
             if (texture.id != 0) 
             {
                 DrawTextureEx(texture, (Vector2){ SCREEN_WIDTH/2 - texture.width*imageScale/2, SCREEN_HEIGHT/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
-                DrawText(FormatText("SCALE x%.0f", imageScale), 20, SCREEN_HEIGHT - 40, 20, GuiTextColor());
+                DrawText(FormatText("SCALE x%.0f", imageScale), 20, SCREEN_HEIGHT - 40, 20, BLUE);
                 
             }
-            else DrawText("drag & drop RAW image file", 320, 180, 10, GuiTextColor());
+            else DrawText("drag & drop RAW image file", 320, 180, 10, BLUE);
 
             if (showImportPanel)
             {
                 DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(LIGHTGRAY, 0.5f));
                 
-                DrawRectangleRec(panel, GuiBackgroundColor());
-                DrawRectangleLines(panel.x, panel.y, panel.width, panel.height, GuiLinesColor());
+                DrawRectangleRec(panel, RAYWHITE);
+                DrawRectangleLines(panel.x, panel.y, panel.width, panel.height, BLUE);
 
                 GuiLabel((Rectangle){ panel.x + 10, panel.y + 10, 0, 0 }, FormatText("Import file: %s", fileName));
                 GuiLabel((Rectangle){ panel.x + 10, panel.y + 30, 0, 0 }, FormatText("File size: %i bytes", dataSize));
@@ -177,12 +177,12 @@ int main(int argc, char *argv[0])
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 80, 0, 0 }, "Width:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 80, 0, 0 }, "pixels");
                 
-                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 75, 80, 20 }, textImageWidth, 4);
+                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 75, 80, 20 }, textImageWidth, 4, false);
                 
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 105, 0, 0 }, "Height:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 105, 0, 0 }, "pixels");
                 
-                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 100, 80, 20 }, textImageHeight, 4);
+                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 100, 80, 20 }, textImageHeight, 4, false);
                 
                 // ----- Pixel data panel -----
                 GuiGroupBox((Rectangle){ panel.x + 10, panel.y + 155, 180, 110 }, "Pixels Data");
@@ -199,7 +199,7 @@ int main(int argc, char *argv[0])
                 GuiLabel((Rectangle){ panel.x + 20, panel.y + 305, 0, 0 }, "Size:");
                 GuiLabel((Rectangle){ panel.x + 150, panel.y + 305, 0, 0 }, "bytes");
                 
-                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 300, 80, 20 }, textImageSize, 4);
+                GuiTextBox((Rectangle){ panel.x + 60, panel.y + 300, 80, 20 }, textImageSize, 4, false);
                 
                 btnLoadPressed = GuiButton((Rectangle){ panel.x + 10, panel.y + 350, 180, 24 }, "Load RAW Image");
             }
