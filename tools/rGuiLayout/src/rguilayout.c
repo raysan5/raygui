@@ -143,6 +143,7 @@ const char *controlTypeNameLow[] = { "WindowBox", "GroupBox", "Line", "Panel", "
 const char *controlTypeNameShort[] = { "wdwbox", "grpbox", "lne", "pnl", "lbl", "btn", "tgl", "tglgrp", "chkbox", "combox", "ddwnbox", "spnr", "vlbox", "txtbox", "sldr", "sldrb", "prgssb", "stsb", "lstvw", "clrpckr", "dmyrc" };
 
 static bool cancelSave = false;
+static char loadedFileName[128] = "\0";
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
@@ -173,7 +174,7 @@ int main()
     bool controlDrag = false;           // Control drag mode
     bool controlGlobalPos = false;      // Control global position mode
     bool textEditMode = false;          // Control text edit mode (KEY_T)
-    bool nameEditMode = false;          // Controlo name edit mode (KEY_N)
+    bool nameEditMode = false;          // Control name edit mode (KEY_N)
     
     int framesCounter = 0;
     int framesCounterSnap = 0;
@@ -302,9 +303,7 @@ int main()
     Rectangle undoLastRec;
     char prevControlText[MAX_CONTROL_TEXT_LENGTH];
     char prevControlName[MAX_CONTROL_NAME_LENGTH];
-    
-    char loadedFileName[128] = "not_loaded_layout";
-    
+
     // Close layout window variables
     bool closingWindowActive = false;
     
@@ -492,78 +491,83 @@ int main()
                              
             layout.controls[layout.controlsCount].rec.x -= layout.controls[layout.controlsCount].ap->x;
             layout.controls[layout.controlsCount].rec.y -= layout.controls[layout.controlsCount].ap->y;
-            layout.controlsCount++;
+            layout.controlsCount++;     
+        }
+        else
+        {
+            if (!(controlDrag || tracemapEditMode || anchorLockMode || closingWindowActive || generateWindowActive || resetWindowActive))
+            {
+                // Check selected control (on mouse hover)
+                for (int i = layout.controlsCount; i >= 0; i--)
+                {
+                    if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
+                    {
+                        focusedControl = i;
+                        
+                        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !anchorLinkMode && !anchorMode)
+                        {
+                            selectedControl = focusedControl;
+                        }
+                        
+                        if (undoSelectedControl != focusedControl) 
+                        {
+                            undoSelectedControl = focusedControl;
+                            undoLastRec = layout.controls[i].rec;
+                        }
+                        break;
+                    }
+                    else if ((!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type != WINDOWBOX))
+                    {
+                        focusedControl = i;
+                        
+                        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !anchorLinkMode && !anchorMode)
+                        {
+                            selectedControl = focusedControl;
+                        }
+                        
+                        if (undoSelectedControl != focusedControl) 
+                        {
+                            undoSelectedControl = focusedControl;
+                            undoLastRec = layout.controls[i].rec;
+                        }
+                        break;
+                    }
+                    else 
+                    {
+                        focusedControl = -1;
+                        
+                        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectedControl = -1;
+                    }
+                }
+            }
         }
         
         // Change controls layer order (position inside array)
-        if (IsKeyDown(KEY_LEFT_ALT) && (selectedControl != -1))
+        if (IsKeyDown(KEY_LEFT_ALT) && (focusedControl != -1))
         {
-            if ((IsKeyPressed(KEY_UP)) && (selectedControl < layout.controlsCount - 1))
+            if ((IsKeyPressed(KEY_UP)) && (focusedControl < layout.controlsCount - 1))
             {
                 // Move control towards beginning of array
-                GuiControl auxControl = layout.controls[selectedControl];
-                layout.controls[selectedControl] = layout.controls[selectedControl + 1];
-                layout.controls[selectedControl].id -= 1;
-                layout.controls[selectedControl + 1] = auxControl;
-                layout.controls[selectedControl + 1].id += 1;
+                GuiControl auxControl = layout.controls[focusedControl];
+                layout.controls[focusedControl] = layout.controls[focusedControl + 1];
+                layout.controls[focusedControl].id -= 1;
+                layout.controls[focusedControl + 1] = auxControl;
+                layout.controls[focusedControl + 1].id += 1;
+                selectedControl = -1;
             }
-            else if ((IsKeyPressed(KEY_DOWN)) && (selectedControl > 0))
+            else if ((IsKeyPressed(KEY_DOWN)) && (focusedControl > 0))
             {
                 // Move control towards end of array
-                GuiControl auxControl = layout.controls[selectedControl];
-                layout.controls[selectedControl] = layout.controls[selectedControl - 1];
-                layout.controls[selectedControl].id += 1;
-                layout.controls[selectedControl - 1] = auxControl;
-                layout.controls[selectedControl - 1].id -= 1;
+                GuiControl auxControl = layout.controls[focusedControl];
+                layout.controls[focusedControl] = layout.controls[focusedControl - 1];
+                layout.controls[focusedControl].id += 1;
+                layout.controls[focusedControl - 1] = auxControl;
+                layout.controls[focusedControl - 1].id -= 1;
+                selectedControl = -1;
             }
         }
         
-        if (!(controlDrag || tracemapEditMode || anchorLockMode || closingWindowActive || generateWindowActive || resetWindowActive))
-        {
-            // Check selected control (on mouse hover)
-            for (int i = layout.controlsCount; i >= 0; i--)
-            {
-                if (controlDrag || tracemapEditMode || anchorLockMode) break;
-                if ((layout.controls[i].type == WINDOWBOX) && (!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, 24 })))
-                {
-                    focusedControl = i;
-                    
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-                    {
-                        selectedControl = focusedControl;
-                    }
-                    
-                    if (undoSelectedControl != focusedControl) 
-                    {
-                        undoSelectedControl = focusedControl;
-                        undoLastRec = layout.controls[i].rec;
-                    }
-                    break;
-                }
-                else if ((!layout.controls[i].ap->hidding) && (CheckCollisionPointRec(mouse, (Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }) && layout.controls[i].type != WINDOWBOX))
-                {
-                    focusedControl = i;
-                    
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-                    {
-                        selectedControl = focusedControl;
-                    }
-                    
-                    if (undoSelectedControl != focusedControl) 
-                    {
-                        undoSelectedControl = focusedControl;
-                        undoLastRec = layout.controls[i].rec;
-                    }
-                    break;
-                }
-                else 
-                {
-                    focusedControl = -1;
-                    
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) selectedControl = -1;
-                }
-            }
-        }
+
         
         if (selectedControl != -1 && !textEditMode && !nameEditMode && !anchorMode)
         {
@@ -689,10 +693,30 @@ int main()
                     }
                 }
             }
-            // Delete selected control and shift array position
+
+            // Unlinks the control selected from its current anchor
+            if (IsKeyPressed(KEY_U))
+            {
+                layout.controls[selectedControl].rec.x += layout.controls[selectedControl].ap->x;
+                layout.controls[selectedControl].rec.y += layout.controls[selectedControl].ap->y;
+                layout.controls[selectedControl].ap = &layout.anchors[0];
+            }
+        }
+
+        // Updates the selectedType with the MouseWheel
+        selectedType -= GetMouseWheelMove();
+        
+        if (selectedType < WINDOWBOX) selectedType = WINDOWBOX;
+        else if (selectedType > DUMMYREC) selectedType = DUMMYREC;
+        
+        selectedTypeDraw = selectedType;
+        
+        if (focusedControl != -1)
+        {
+            // Delete focused control and shift array position
             if (IsKeyPressed(KEY_DELETE))
             {
-                for (int i = selectedControl; i < layout.controlsCount; i++)
+                for (int i = focusedControl; i < layout.controlsCount; i++)
                 {
                     layout.controls[i].type = layout.controls[i + 1].type;
                     layout.controls[i].rec = layout.controls[i + 1].rec;
@@ -704,26 +728,9 @@ int main()
                 }
 
                 layout.controlsCount--;
+                focusedControl = -1;
                 selectedControl = -1;
             }
-            
-            // Unlinks the control selected from its current anchor
-            if (IsKeyPressed(KEY_U))
-            {
-                layout.controls[selectedControl].rec.x += layout.controls[selectedControl].ap->x;
-                layout.controls[selectedControl].rec.y += layout.controls[selectedControl].ap->y;
-                layout.controls[selectedControl].ap = &layout.anchors[0];
-            }
-        }
-        else
-        {
-            // Updates the selectedType with the MouseWheel
-            selectedType -= GetMouseWheelMove();
-            
-            if (selectedType < WINDOWBOX) selectedType = WINDOWBOX;
-            else if (selectedType > DUMMYREC) selectedType = DUMMYREC;
-            
-            selectedTypeDraw = selectedType;
         }
         
         // Updates the defaultRec[selectedType] position
@@ -791,7 +798,7 @@ int main()
             }
             else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
             {
-                if ((framesCounterSnap > 60) && (framesCounterSnap%15) == 0) layout.controls[selectedControl].text[keyCount - 1] = '\0';
+                if ((framesCounterSnap > 60) && (framesCounterSnap%4) == 0) layout.controls[selectedControl].text[keyCount - 1] = '\0';
                 if (keyCount < 0) keyCount = 0;
             }
             
@@ -854,7 +861,7 @@ int main()
         
         // Turns on textEditMode
         if (IsKeyPressed(KEY_T) && !nameEditMode && (selectedControl != -1) && (!generateWindowActive) && (!anchorMode) &&
-           ((layout.controls[selectedControl].type == LABEL) || (layout.controls[selectedControl].type == CHECKBOX) || (layout.controls[selectedControl].type == SLIDERBAR) || (layout.controls[selectedControl].type == TEXTBOX) || (layout.controls[selectedControl].type == BUTTON) || (layout.controls[selectedControl].type == TOGGLE) || (layout.controls[selectedControl].type == GROUPBOX) || (layout.controls[selectedControl].type == WINDOWBOX) || (layout.controls[selectedControl].type == STATUSBAR) || (layout.controls[selectedControl].type == DUMMYREC)))
+           ((layout.controls[selectedControl].type == LABEL) || (layout.controls[selectedControl].type == CHECKBOX) || (layout.controls[selectedControl].type == SLIDERBAR) || (layout.controls[selectedControl].type == SLIDER) || (layout.controls[selectedControl].type == TEXTBOX) || (layout.controls[selectedControl].type == BUTTON) || (layout.controls[selectedControl].type == TOGGLE) || (layout.controls[selectedControl].type == GROUPBOX) || (layout.controls[selectedControl].type == WINDOWBOX) || (layout.controls[selectedControl].type == STATUSBAR) || (layout.controls[selectedControl].type == DUMMYREC)))
         {   
             textEditMode = true;
             storedControl = selectedControl;
@@ -963,7 +970,7 @@ int main()
             if (selectedAnchor > 0)
             {
                 // Unlinks and deletes the selected anchor point
-                if (IsKeyPressed(KEY_DELETE))
+                if (IsKeyPressed(KEY_DELETE) && (!anchorLinkMode))
                 {
                     for (int i = 0; i < layout.controlsCount; i++)
                     {
@@ -982,7 +989,7 @@ int main()
                     anchorLockMode = false;
                 }
                 
-                if (!anchorLockMode)
+                if (!anchorLockMode && (!anchorLinkMode))
                 {
                     // Allows to drag an anchor without losing collision
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && IsKeyDown(KEY_A))
@@ -1058,7 +1065,7 @@ int main()
                 }
                 
                 // Hide/Unhide selected anchor linked controls
-                if (IsKeyPressed(KEY_H)) layout.anchors[selectedAnchor].hidding = !layout.anchors[selectedAnchor].hidding;
+                if (IsKeyPressed(KEY_H) && (!anchorLinkMode)) layout.anchors[selectedAnchor].hidding = !layout.anchors[selectedAnchor].hidding;
             }
         }
 
@@ -1109,6 +1116,7 @@ int main()
             
             if (IsFileExtension(droppedFileName, ".rgl")) 
             {
+                selectedControl = -1;
                 LoadLayoutRGL(droppedFileName);
                 strcpy(loadedFileName, droppedFileName);
                 SetWindowTitle(FormatText("rGuiLayout v1.0 - %s", GetFileName(loadedFileName)));
@@ -1154,7 +1162,12 @@ int main()
         }
      
         // Save layout file dialog logic
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) ShowSaveLayoutDialog();
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_S)) ShowSaveLayoutDialog();
+        else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) 
+        {
+            if (loadedFileName[0] == '\0') ShowSaveLayoutDialog();
+            else SaveLayoutRGL(loadedFileName, false);
+        }
         
         // Open laout file dialog logic
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O))
@@ -1304,6 +1317,7 @@ int main()
             }
             
             SetWindowTitle("rGuiLayout v1.0");
+            strcpy(loadedFileName, "\0");
             layout.controlsCount = 0;
             resetWindowActive = false;
         }
@@ -1360,9 +1374,9 @@ int main()
                         case SPINNER: GuiSpinner((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 3, 25); break;
                         case VALUEBOX: GuiValueBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 100); break;
                         case TEXTBOX: GuiTextBox((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, MAX_CONTROL_TEXT_LENGTH, false); break;
-                        case SLIDER: GuiSlider((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 0, 100); break;
+                        case SLIDER: GuiSliderEx((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 42, 0, 100, layout.controls[i].text, true); break;
                         case SLIDERBAR: GuiSliderBarEx((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100, layout.controls[i].text, true); break;
-                        case PROGRESSBAR: GuiProgressBar((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100); break;
+                        case PROGRESSBAR: GuiProgressBarEx((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, 40, 0, 100, true); break;
                         case STATUSBAR: GuiStatusBar((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, layout.controls[i].text, 15); break;
                         case LISTVIEW: GuiListView((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, listViewData, 4, 1); break;
                         case COLORPICKER: GuiColorPicker((Rectangle){ layout.controls[i].ap->x + layout.controls[i].rec.x, layout.controls[i].ap->y + layout.controls[i].rec.y, layout.controls[i].rec.width, layout.controls[i].rec.height }, RED); break;
@@ -1379,7 +1393,7 @@ int main()
             // Draws the defaultRec[selectedType] of the control selected
             if ((selectedControl == -1) && (focusedControl == -1 )&& !anchorMode && !tracemapEditMode && !closingWindowActive && !generateWindowActive)
             {
-                GuiFade(0.4f);
+                GuiFade(0.5f);
                 switch (selectedTypeDraw)
                 {
                     case WINDOWBOX: GuiWindowBox(defaultRec[selectedTypeDraw], "WINDOW BOX"); break;
@@ -1390,15 +1404,15 @@ int main()
                     case BUTTON: GuiButton(defaultRec[selectedTypeDraw], "BUTTON"); break;
                     case TOGGLE: GuiToggleButton(defaultRec[selectedTypeDraw], "TOGGLE", false); break;
                     case TOGGLEGROUP: GuiToggleGroup(defaultRec[selectedTypeDraw], listData, 3, 1); break;
-                    case CHECKBOX: GuiCheckBox(defaultRec[selectedTypeDraw], false); break;
+                    case CHECKBOX: GuiCheckBoxEx(defaultRec[selectedTypeDraw], false, "TEXT SAMPLE"); break;
                     case COMBOBOX: GuiComboBox(defaultRec[selectedTypeDraw], listData, 3, 1); break;
                     case DROPDOWNBOX: GuiDropdownBox(defaultRec[selectedTypeDraw], listData, 3, 2); break;
                     case SPINNER: GuiSpinner(defaultRec[selectedTypeDraw], 42, 3, 25); break;
                     case VALUEBOX: GuiValueBox(defaultRec[selectedTypeDraw], 42, 100); break;
                     case TEXTBOX: GuiTextBox(defaultRec[selectedTypeDraw], "TEXTBOX", 7, false); break;
-                    case SLIDER: GuiSlider(defaultRec[selectedTypeDraw], 42, 0, 100); break;
-                    case SLIDERBAR: GuiSliderBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
-                    case PROGRESSBAR: GuiProgressBar(defaultRec[selectedTypeDraw], 40, 0, 100); break;
+                    case SLIDER: GuiSliderEx(defaultRec[selectedTypeDraw], 42, 0, 100, "TEXT SAMPLE", true); break;
+                    case SLIDERBAR: GuiSliderBarEx(defaultRec[selectedTypeDraw], 40, 0, 100, "TEXT SAMPLE", true); break;
+                    case PROGRESSBAR: GuiProgressBarEx(defaultRec[selectedTypeDraw], 40, 0, 100, true); break;
                     case STATUSBAR: GuiStatusBar(defaultRec[selectedTypeDraw], "STATUS BAR", 15); break;
                     case LISTVIEW: GuiListView(defaultRec[selectedTypeDraw], listViewData, 4, 1); break;
                     case COLORPICKER: GuiColorPicker(defaultRec[selectedTypeDraw], RED); break;
@@ -1503,7 +1517,7 @@ int main()
                     else if (layout.controls[selectedControl].type == WINDOWBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 10 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + style[DEFAULT_TEXT_SIZE]/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == STATUSBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + 15 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else if (layout.controls[selectedControl].type == CHECKBOX) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width + 5 + MeasureText(layout.controls[selectedControl].text, style[DEFAULT_TEXT_SIZE]), layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
-                    else if (layout.controls[selectedControl].type == SLIDERBAR) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x - 5, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
+                    else if (layout.controls[selectedControl].type == SLIDERBAR || layout.controls[selectedControl].type == SLIDER) DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x - 5, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y - style[DEFAULT_TEXT_SIZE]/2 + layout.controls[selectedControl].rec.height/2, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                     else DrawText("|", layout.controls[selectedControl].rec.x + layout.controls[selectedControl].ap->x + layout.controls[selectedControl].rec.width/2 + MeasureText(layout.controls[selectedControl].text , style[DEFAULT_TEXT_SIZE])/2 + 2, layout.controls[selectedControl].rec.y + layout.controls[selectedControl].ap->y + layout.controls[selectedControl].rec.height/2 - 6, style[DEFAULT_TEXT_SIZE] + 2, BLACK);
                }
             }
@@ -1710,12 +1724,14 @@ static void ShowSaveLayoutDialog(void)
     const char *fileName = tinyfd_saveFileDialog("Save raygui layout text file", "", 1, filters, "raygui Layout Files (*.rgl)");
 
     // Save layout.controls file (text or binary)
-    if (fileName != NULL) 
+    if (fileName != NULL)
     {
         char outFileName[64] = { 0 };
         strcpy(outFileName, fileName);
         if (GetExtension(fileName) == NULL) strcat(outFileName, ".rgl\0");     // No extension provided
         SaveLayoutRGL(outFileName, false);
+        strcpy(loadedFileName, outFileName);
+        SetWindowTitle(FormatText("rGuiLayout v1.0 - %s", GetFileName(loadedFileName)));
         cancelSave = true;
     }
 }
@@ -1731,7 +1747,7 @@ static void ShowExportLayoutDialog(GuiLayoutConfig config)
         char outFileName[64] = { 0 };
         strcpy(outFileName, fileName);
         if (GetExtension(fileName) == NULL) strcat(outFileName, ".c\0");     // No extension provided
-        GenerateCode(fileName, config);
+        GenerateCode(outFileName, config);
     }
 }
 
@@ -1928,7 +1944,7 @@ static char *ExportFullVariables(int controlType, char *name, GuiLayoutConfig co
         case TEXTBOX:
         {
             if (config.fullVariables) strcpy(text, FormatText("%sSize", name));
-            else strcpy(text, "64");
+            else strcpy(text, FormatText("%i", MAX_CONTROL_TEXT_LENGTH));
         } break;
     }
     
@@ -2089,8 +2105,8 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
             case TEXTBOX:
             {
                 if (config.fullComments) fprintf(ftool, "    \n\t// %s: %s\n", controlTypeNameLow[layout.controls[i].type], layout.controls[i].name);
-                if (config.fullVariables) fprintf(ftool, "    int %sSize = 64;\n", layout.controls[i].name);
-                fprintf(ftool, "    char %sText[64] = \"%s\";\n", layout.controls[i].name, layout.controls[i].text);           
+                if (config.fullVariables) fprintf(ftool, "    int %sSize = %i;\n", layout.controls[i].name, MAX_CONTROL_TEXT_LENGTH);
+                fprintf(ftool, "    char %sText[%i] = \"%s\";\n", layout.controls[i].name, MAX_CONTROL_TEXT_LENGTH, layout.controls[i].text);           
             }
             default: break;
         }
@@ -2148,18 +2164,22 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox(%s, %sValue, 100); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name); break;
                 case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton(%s, \"%s\", %sActive); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].text, layout.controls[i].name); break;
                 case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup(%s, %sTextList, %s, %sActive); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
-                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider(%s, %sValue, %s);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
+                case SLIDER: 
+                {
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sValue = GuiSliderEx(%s, %sValue, %s, \"%s\", true);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].text);
+                    else fprintf(ftool, "\t\t\t%sValue = GuiSlider(%s, %sValue, %s);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config));
+                } break;
                 case SLIDERBAR: 
                 {
-                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sValue = GuiSliderBarEx(%s, %sValue, %s, %s, true);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].text);
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sValue = GuiSliderBarEx(%s, %sValue, %s, \"%s\", true);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].text);
                     else fprintf(ftool, "\t\t\t%sValue = GuiSliderBar(%s, %sValue, %s);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config));
                 } break;
-                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar(%s, %sValue, 0, 100);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name); break;
+                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBarEx(%s, %sValue, 0, 100, true);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name); break;
                 case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner(%s, %sValue, 100, 25);\n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name); break;
                 case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox(%s,  %sTextList, %s, %sActive); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
                 case CHECKBOX: 
                 {
-                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sChecked = GuiCheckBoxEx(%s, %sChecked, %s); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, layout.controls[i].text);
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sChecked = GuiCheckBoxEx(%s, %sChecked, \"%s\"); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, layout.controls[i].text);
                     else fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox(%s, %sChecked); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name);
                 } break;
                 case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView(%s, %sTextList, %s, %sActive); \n", layout.controls[i].name, GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
@@ -2192,18 +2212,29 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
                 {
                     if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], %sText);\n", i, layout.controls[i].name);
                     else fprintf(ftool, "\t\t\tGuiLabel(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text);
-                }
-                break;
+                } break;
                 case BUTTON: fprintf(ftool, "\t\t\tif (GuiButton(layoutRecs[%i], \"%s\")) %s(); \n\n", i, layout.controls[i].text, layout.controls[i].name); break;
                 case VALUEBOX: fprintf(ftool, "\t\t\t%sValue = GuiValueBox(layoutRecs[%i], %sValue, 100); \n",layout.controls[i].name, i, layout.controls[i].name); break;
                 case TOGGLE: fprintf(ftool, "\t\t\t%sActive = GuiToggleButton(layoutRecs[%i], \"%s\", %sActive); \n", layout.controls[i].name, i, layout.controls[i].text, layout.controls[i].name); break;
                 case TOGGLEGROUP: fprintf(ftool, "\t\t\t%sActive = GuiToggleGroup(layoutRecs[%i], %sTextList, %s, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
-                case SLIDER: fprintf(ftool, "\t\t\t%sValue = GuiSlider(layoutRecs[%i], %sValue, %s);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
-                case SLIDERBAR: fprintf(ftool, "\t\t\t%sValue = GuiSliderBar(layoutRecs[%i], %sValue, %s);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
-                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBar(layoutRecs[%i], %sValue, %s);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
+                case SLIDER:
+                {
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sValue = GuiSliderEx(layoutRecs[%i], %sValue, %s, \"%s\", true);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].text);
+                    else fprintf(ftool, "\t\t\t%sValue = GuiSlider(layoutRecs[%i], %sValue, %s);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config));
+                } break;
+                case SLIDERBAR: 
+                {
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sValue = GuiSliderBarEx(layoutRecs[%i], %sValue, %s, \"%s\", true);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].text);
+                    else fprintf(ftool, "\t\t\t%sValue = GuiSliderBar(layoutRecs[%i], %sValue, %s);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config));
+                } break;
+                case PROGRESSBAR: fprintf(ftool, "\t\t\t%sValue = GuiProgressBarEx(layoutRecs[%i], %sValue, %s, true);\n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
                 case SPINNER: fprintf(ftool, "\t\t\t%sValue = GuiSpinner(layoutRecs[%i], %sValue, 100, 25);\n", layout.controls[i].name, i, layout.controls[i].name); break;
                 case COMBOBOX: fprintf(ftool, "\t\t\t%sActive = GuiComboBox(layoutRecs[%i],  %sTextList, %s, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
-                case CHECKBOX: fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox(layoutRecs[%i], %sChecked); \n", layout.controls[i].name, i, layout.controls[i].name); break;
+                case CHECKBOX:
+                {
+                    if (layout.controls[i].text[0] != '\0') fprintf(ftool, "\t\t\t%sChecked = GuiCheckBoxEx(layoutRecs[%i], %sChecked, \"%s\"); \n", layout.controls[i].name, i, layout.controls[i].name, layout.controls[i].text);
+                    else fprintf(ftool, "\t\t\t%sChecked = GuiCheckBox(layoutRecs[%i], %sChecked); \n", layout.controls[i].name, i, layout.controls[i].name);
+                } break;
                 case LISTVIEW: fprintf(ftool, "\t\t\t%sActive = GuiListView(layoutRecs[%i], %sTextList, %s, %sActive); \n", layout.controls[i].name, i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config), layout.controls[i].name); break;
                 case TEXTBOX: fprintf(ftool, "\t\t\tGuiTextBox(layoutRecs[%i], %sText, %s, true);\n", i, layout.controls[i].name, ExportFullVariables(layout.controls[i].type, layout.controls[i].name, config)); break;
                 case GROUPBOX: fprintf(ftool, "\t\t\tGuiGroupBox(layoutRecs[%i], \"%s\");\n", i, layout.controls[i].text); break;
