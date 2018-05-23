@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     64
+# Total number of controls:     63
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -34,46 +34,45 @@ c 017 6 screenSize 440 65 95 20 0 Screen Size x2
 c 018 4 lblVolume 390 45 95 20 1 VOLUME:    60%
 c 019 15 volume 390 65 95 10 1 
 c 020 5 PlaySound 390 81 95 20 1 Play Sound
-c 021 8 playOnChange 390 115 10 10 1 
-c 022 4 lblPlayOnChange 405 110 80 20 1 Play on change
-c 023 4 lblPoweredBy 390 135 80 20 1 powered by
-c 024 20 logo 390 153 95 95 1 LOGO
-c 025 4 lblRaylibDotCom 405 250 70 20 1 www.raylib.com
-c 026 5 LoadSound 390 280 95 20 1 Load Sound
-c 027 5 SaveSound 390 305 95 20 1 Save Sound
-c 028 9 sampleRate 390 340 95 20 1 
-c 029 9 sampleSize 390 364 95 20 1 
-c 030 5 ExportWav 390 389 95 20 1 Export Wav
-c 031 1 GroupBox098 0 0 265 71 2 
-c 032 1 GroupBox099 0 70 265 96 2 
-c 033 1 GroupBox100 0 165 265 36 2 
-c 034 1 GroupBox102 0 200 265 36 2 
-c 035 1 GroupBox101 0 235 265 21 2 
-c 036 1 GroupBox104 0 255 265 36 2 
-c 037 1 GroupBox103 0 290 265 85 2 
-c 038 15 attackTime 125 10 100 10 2 ATTACK TIME
-c 039 15 sustainTime 125 25 100 10 2 SUSTAIN TIME
-c 040 15 sustainPunch 125 40 100 10 2 SUSTAIN PUNCH
-c 041 15 decayTime 125 55 100 10 2 DECAY TIME
-c 042 15 startFrequency 125 75 100 10 2 START FREQUENCY
-c 043 15 minFrequency 125 90 100 10 2 MIN FREQUENCY
-c 044 15 slide 125 105 100 10 2 SLIDE
-c 045 15 deltaSlide 125 120 100 10 2 DELTA SLIDE
-c 046 15 vibratoDepth 125 135 100 10 2 VIBRATO DEPTH
-c 047 15 vibratoSpeed 125 150 100 10 2 VIBRATO SPEED
-c 048 15 changeAmount 125 170 100 10 2 CHANGE AMOUNT
-c 049 15 changeSpeed 125 185 100 10 2 CHANGE SPEED
-c 050 15 squareDuty 125 205 100 10 2 SQUARE DUTY
-c 051 15 dutySweep 125 220 100 10 2 DUTY SWEEP
-c 052 15 repeatSpeed 125 240 100 10 2 REPEAT SPEED
-c 053 15 phaserOffset 125 260 100 10 2 PHASER OFFSET
-c 054 15 phaserSweep 125 275 100 10 2 PHASER SWEEP
-c 055 15 lpfCutoff 125 295 100 10 2 LPF CUTOFF
-c 056 15 lpfCutoffSweep 125 310 100 10 2 LPF CUTOFF SWEEP
-c 057 15 lpfResonance 125 325 100 10 2 LPF RESONANCE
-c 058 15 hpfCutoff 125 340 100 10 2 HPF CUTOFF
-c 059 15 hpfCutoffSweep 125 355 100 10 2 HPF CUTOFF SWEEP
-c 060 20 Wave 10 420 475 50 1 WAVE
-c 061 17 soundInfo 0 480 201 20 1 SOUND INFO: Num samples:
-c 062 17 duration 200 480 126 20 1 Duration
-c 063 17 waveSize 325 480 175 20 1 Wave size
+c 021 8 playOnChange 390 115 10 10 1 Play on change
+c 022 4 lblPoweredBy 390 135 80 20 1 powered by
+c 023 20 logo 390 153 95 95 1 LOGO
+c 024 4 lblRaylibDotCom 405 250 70 20 1 www.raylib.com
+c 025 5 LoadSound 390 280 95 20 1 Load Sound
+c 026 5 SaveSound 390 305 95 20 1 Save Sound
+c 027 9 sampleRate 390 340 95 20 1 
+c 028 9 sampleSize 390 364 95 20 1 
+c 029 5 ExportWav 390 389 95 20 1 Export Wav
+c 030 1 GroupBox098 0 0 265 71 2 
+c 031 1 GroupBox099 0 70 265 96 2 
+c 032 1 GroupBox100 0 165 265 36 2 
+c 033 1 GroupBox102 0 200 265 36 2 
+c 034 1 GroupBox101 0 235 265 21 2 
+c 035 1 GroupBox104 0 255 265 36 2 
+c 036 1 GroupBox103 0 290 265 85 2 
+c 037 15 attackTime 125 10 100 10 2 ATTACK TIME
+c 038 15 sustainTime 125 25 100 10 2 SUSTAIN TIME
+c 039 15 sustainPunch 125 40 100 10 2 SUSTAIN PUNCH
+c 040 15 decayTime 125 55 100 10 2 DECAY TIME
+c 041 15 startFrequency 125 75 100 10 2 START FREQUENCY
+c 042 15 minFrequency 125 90 100 10 2 MIN FREQUENCY
+c 043 15 slide 125 105 100 10 2 SLIDE
+c 044 15 deltaSlide 125 120 100 10 2 DELTA SLIDE
+c 045 15 vibratoDepth 125 135 100 10 2 VIBRATO DEPTH
+c 046 15 vibratoSpeed 125 150 100 10 2 VIBRATO SPEED
+c 047 15 changeAmount 125 170 100 10 2 CHANGE AMOUNT
+c 048 15 changeSpeed 125 185 100 10 2 CHANGE SPEED
+c 049 15 squareDuty 125 205 100 10 2 SQUARE DUTY
+c 050 15 dutySweep 125 220 100 10 2 DUTY SWEEP
+c 051 15 repeatSpeed 125 240 100 10 2 REPEAT SPEED
+c 052 15 phaserOffset 125 260 100 10 2 PHASER OFFSET
+c 053 15 phaserSweep 125 275 100 10 2 PHASER SWEEP
+c 054 15 lpfCutoff 125 295 100 10 2 LPF CUTOFF
+c 055 15 lpfCutoffSweep 125 310 100 10 2 LPF CUTOFF SWEEP
+c 056 15 lpfResonance 125 325 100 10 2 LPF RESONANCE
+c 057 15 hpfCutoff 125 340 100 10 2 HPF CUTOFF
+c 058 15 hpfCutoffSweep 125 355 100 10 2 HPF CUTOFF SWEEP
+c 059 20 Wave 10 420 475 50 1 WAVE
+c 060 17 soundInfo 0 480 201 20 1 SOUND INFO: Num samples:
+c 061 17 duration 200 480 126 20 1 Duration
+c 062 17 waveSize 325 480 175 20 1 Wave size

@@ -21,7 +21,7 @@ c 004 4 Label007 10 35 65 25 2 rGuiStyler
 c 005 4 Label008 85 35 145 25 2 github.com/raysan5/raygui
 c 006 6 Toggle009 10 70 65 30 2 toggle
 c 007 7 ToggleGroup010 85 70 270 30 2 
-c 008 14 Slider011 75 115 250 15 2 
+c 008 14 Slider011 75 115 250 15 2 SLIDER
 c 009 15 SliderBar012 75 140 250 15 2 SLIDERBAR
 c 010 16 ProgressBar013 10 165 315 15 2 
 c 011 8 CheckBox014 270 38 20 20 2 DISABLED
