@@ -679,7 +679,7 @@ static void BtnSaveStyle(const char *defaultName, bool binary)
 
     if (fileName != NULL)
     {
-        //if (GetExtension(fileName) == NULL) strcat(fileName, ".rgs\0");     // No extension provided
+        if (GetExtension(fileName) == NULL) strcat(fileName, ".rgs\0");     // No extension provided
         if (fileName != NULL) SaveStyleRGS(fileName, binary);               // Save style file (text or binary)        
     }
 }
