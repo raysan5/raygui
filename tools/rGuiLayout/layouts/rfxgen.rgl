@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     108
+# Total number of controls:     64
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -27,11 +27,11 @@ c 010 4 lblInfo03 20 280 85 20 1 www.github.com/
 c 011 4 lblInfo04 20 295 85 20 1 raysan5/raygui
 c 012 4 lblInfo05 20 320 85 20 1 www.github.com/
 c 013 4 lblInfo06 20 335 85 20 1 raysan5/raylib
-c 014 5 Mutate 10 364 95 20 1 Mutate
-c 015 5 Randomize 10 389 95 20 1 Randomize
+c 014 5 Mutate 10 365 95 20 1 Mutate
+c 015 5 Randomize 10 390 95 20 1 Randomize
 c 016 7 waveType 115 15 265 20 1 
 c 017 6 screenSize 440 65 95 20 0 Screen Size x2
-c 018 4 lblVolume 390 49 95 20 1 VOLUME:    60%
+c 018 4 lblVolume 390 45 95 20 1 VOLUME:    60%
 c 019 15 volume 390 65 95 10 1 
 c 020 5 PlaySound 390 81 95 20 1 Play Sound
 c 021 8 playOnChange 390 115 10 10 1 
@@ -39,8 +39,8 @@ c 022 4 lblPlayOnChange 405 110 80 20 1 Play on change
 c 023 4 lblPoweredBy 390 135 80 20 1 powered by
 c 024 20 logo 390 153 95 95 1 LOGO
 c 025 4 lblRaylibDotCom 405 250 70 20 1 www.raylib.com
-c 026 5 LoadSound 390 283 95 20 1 Load Sound
-c 027 5 SaveSound 390 307 95 20 1 Save Sound
+c 026 5 LoadSound 390 280 95 20 1 Load Sound
+c 027 5 SaveSound 390 305 95 20 1 Save Sound
 c 028 9 sampleRate 390 340 95 20 1 
 c 029 9 sampleSize 390 364 95 20 1 
 c 030 5 ExportWav 390 389 95 20 1 Export Wav
@@ -51,73 +51,29 @@ c 034 1 GroupBox102 0 200 265 36 2
 c 035 1 GroupBox101 0 235 265 21 2 
 c 036 1 GroupBox104 0 255 265 36 2 
 c 037 1 GroupBox103 0 290 265 85 2 
-c 038 4 lblAttackTime 43 3 80 20 2 ATTACK TIME
-c 039 4 lblSustainTime 40 18 81 20 2 SUSTAIN TIME
-c 040 4 lblSustainPunch 32 33 90 20 2 SUSTAIN PUNCH
-c 041 4 lblDecayTime 52 48 70 20 2 DECAY TIME
-c 042 4 lblStartFrequency 14 69 103 20 2 START FREQUENCY
-c 043 4 lblMinFrequency 32 84 90 20 2 MIN FREQUENCY
-c 044 4 lblSlide 87 99 30 20 2 SLIDE
-c 045 4 lblDeltaSlide 48 114 70 20 2 DELTA SLIDE
-c 046 4 lblVibratoDepth 30 129 90 20 2 VIBRATO DEPTH
-c 047 4 lblVibratoSpeed 31 144 90 20 2 VIBRATO SPEED
-c 048 4 lblChangeAmount 28 165 90 20 2 CHANGE AMOUNT
-c 049 4 lblChangeSpeed 37 180 80 20 2 CHANGE SPEED
-c 050 4 lblSquareDuty 43 201 80 20 2 SQUARE DUTY
-c 051 4 lblDutySweep 49 216 68 20 2 DUTY SWEEP
-c 052 4 lblRepeatSpeed 36 237 81 20 2 REPEAT SPEED
-c 053 4 lblPhaserOffset 29 258 88 20 2 PHASER OFFSET
-c 054 4 lblPhaserSweep 36 273 81 20 2 PHASER SWEEP
-c 055 4 lblLPFCutoff 51 294 66 20 2 LPF CUTOFF
-c 056 4 lblLPFCutoffSweep 11 309 106 20 2 LPF CUTOFF SWEEP
-c 057 4 lblLPFResonance 31 324 86 20 2 LPF RESONANCE
-c 058 4 lblHPFCutoff 50 339 67 20 2 HPF CUTOFF
-c 059 4 lblHPFCutoffSweep 10 354 107 20 2 HPF CUTOFF SWEEP
-c 060 15 attackTime 130 8 100 10 2 
-c 061 15 sustainTime 130 23 100 10 2 
-c 062 15 sustainPunch 130 38 100 10 2 
-c 063 15 decayTime 130 53 100 10 2 
-c 064 15 startFrequency 130 74 100 10 2 
-c 065 15 minFrequency 130 89 100 10 2 
-c 066 15 slide 130 104 100 10 2 
-c 067 15 deltaSlide 130 119 100 10 2 
-c 068 15 vibratoDepth 130 134 100 10 2 
-c 069 15 vibratoSpeed 130 149 100 10 2 
-c 070 15 changeAmount 130 170 100 10 2 
-c 071 15 changeSpeed 130 185 100 10 2 
-c 072 15 squareDuty 130 206 100 10 2 
-c 073 15 dutySweep 130 221 100 10 2 
-c 074 15 repeatSpeed 130 242 100 10 2 
-c 075 15 phaserOffset 130 263 100 10 2 
-c 076 15 phaserSweep 130 278 100 10 2 
-c 077 15 lpfCutoff 130 299 100 10 2 
-c 078 15 lpfCutoffSweep 130 314 100 10 2 
-c 079 15 lpfResonance 130 329 100 10 2 
-c 080 15 hpfCutoff 130 344 100 10 2 
-c 081 15 hpfCutoffSweep 130 359 100 10 2 
-c 082 4 textAttackTime 235 4 25 20 2 0.00
-c 083 4 textSustainTime 235 19 20 20 2 0.30
-c 084 4 textSustainPunch 235 34 20 20 2 0.00
-c 085 4 textDecayTime 235 49 20 20 2 0.40
-c 086 4 textStartFrequency 235 70 20 20 2 0.30
-c 087 4 textMinFrequency 235 85 20 20 2 0.00
-c 088 4 textSlide 235 100 20 20 2 0.00
-c 089 4 textDeltaSlide 235 115 20 20 2 0.00
-c 090 4 textVibratoDepth 235 130 20 20 2 0.00
-c 091 4 textVibratoSpeed 235 145 20 20 2 0.00
-c 092 4 textChangeAmount 235 166 20 20 2 0.00
-c 093 4 textChangeSpeed 235 181 20 20 2 0.00
-c 094 4 textSquareDuty 235 202 20 20 2 0.00
-c 095 4 textDutySweep 235 217 19 20 2 0.00
-c 096 4 textRepeatSpeed 235 238 19 20 2 0.00
-c 097 4 textPhaserOffset 235 259 19 20 2 0.00
-c 098 4 textPhaserSweep 235 274 19 20 2 0.00
-c 099 4 textLPFCutoff 235 295 20 20 2 1.00
-c 100 4 textLPFCutoff 235 310 20 20 2 0.00
-c 101 4 textLPFResonance 235 325 20 20 2 0.00
-c 102 4 textHPFCutoff 235 340 20 20 2 0.00
-c 103 4 textHPFCutoffSweep 235 355 20 20 2 0.00
-c 104 20 Wave 10 420 475 50 1 WAVE
-c 105 17 soundInfo 0 480 201 20 1 SOUND INFO: Num samples:
-c 106 17 duration 200 480 126 20 1 Duration
-c 107 17 waveSize 325 480 175 20 1 Wave size
+c 038 15 attackTime 125 10 100 10 2 ATTACK TIME
+c 039 15 sustainTime 125 25 100 10 2 SUSTAIN TIME
+c 040 15 sustainPunch 125 40 100 10 2 SUSTAIN PUNCH
+c 041 15 decayTime 125 55 100 10 2 DECAY TIME
+c 042 15 startFrequency 125 75 100 10 2 START FREQUENCY
+c 043 15 minFrequency 125 90 100 10 2 MIN FREQUENCY
+c 044 15 slide 125 105 100 10 2 SLIDE
+c 045 15 deltaSlide 125 120 100 10 2 DELTA SLIDE
+c 046 15 vibratoDepth 125 135 100 10 2 VIBRATO DEPTH
+c 047 15 vibratoSpeed 125 150 100 10 2 VIBRATO SPEED
+c 048 15 changeAmount 125 170 100 10 2 CHANGE AMOUNT
+c 049 15 changeSpeed 125 185 100 10 2 CHANGE SPEED
+c 050 15 squareDuty 125 205 100 10 2 SQUARE DUTY
+c 051 15 dutySweep 125 220 100 10 2 DUTY SWEEP
+c 052 15 repeatSpeed 125 240 100 10 2 REPEAT SPEED
+c 053 15 phaserOffset 125 260 100 10 2 PHASER OFFSET
+c 054 15 phaserSweep 125 275 100 10 2 PHASER SWEEP
+c 055 15 lpfCutoff 125 295 100 10 2 LPF CUTOFF
+c 056 15 lpfCutoffSweep 125 310 100 10 2 LPF CUTOFF SWEEP
+c 057 15 lpfResonance 125 325 100 10 2 LPF RESONANCE
+c 058 15 hpfCutoff 125 340 100 10 2 HPF CUTOFF
+c 059 15 hpfCutoffSweep 125 355 100 10 2 HPF CUTOFF SWEEP
+c 060 20 Wave 10 420 475 50 1 WAVE
+c 061 17 soundInfo 0 480 201 20 1 SOUND INFO: Num samples:
+c 062 17 duration 200 480 126 20 1 Duration
+c 063 17 waveSize 325 480 175 20 1 Wave size

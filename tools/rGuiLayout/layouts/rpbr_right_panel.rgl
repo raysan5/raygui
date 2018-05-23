@@ -21,10 +21,10 @@ c 004 4 Label004 40 185 55 20 1 Color Tint:
 c 005 20 DummyRec012 100 185 50 20 1 col
 c 006 1 GroupBox009 0 0 150 170 4 Normals
 c 007 20 DummyRec001 10 10 130 130 4 <NORMAL MAP>
-c 008 15 sldrNormal 10 150 130 10 4 
+c 008 15 sldrNormal 10 150 100 10 4 
 c 009 1 GroupBox010 0 0 150 170 2 Metalness
 c 010 20 DummyRec002 10 10 130 130 2 <METALNESS MAP>
-c 011 15 sldrMetalness 10 150 130 10 2 
+c 011 15 sldrMetalness 10 150 100 10 2 
 c 012 1 GroupBox011 0 0 150 170 3 Roughness
 c 013 20 DummyRec003 10 10 130 130 3 <ROUGHNESS MAP>
-c 014 15 sldrRoughness 10 150 130 10 3 
+c 014 15 sldrRoughness 10 150 100 10 3 

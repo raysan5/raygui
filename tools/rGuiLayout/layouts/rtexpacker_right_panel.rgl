@@ -1,55 +1,48 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     40
+# Total number of controls:     33
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
 a 000 0 0 1
 a 001 50 50 1
 a 002 60 95 1
-a 003 60 305 1
-a 004 60 465 1
+a 003 60 285 1
+a 004 60 445 1
 a 005 0 0 0
 a 006 0 0 0
 a 007 0 0 0
-c 000 20 titleSettings 0 0 231 30 1 ATLAS SETTINGS
-c 001 3 Panel039 50 80 230 580 0 
-c 002 1 GroupPacking 0 0 210 195 2 Packing
+c 000 20 titleSettings 0 0 230 30 1 ATLAS SETTINGS
+c 001 3 Panel039 50 80 230 545 0 
+c 002 1 GroupPacking 0 0 210 175 2 Packing
 c 003 4 lblAlgorythm 10 15 60 25 2 Algorythm:
 c 004 9 algorythm 70 15 130 25 2 
 c 005 4 lblHeuristics 10 50 60 25 2 Heuristics:
 c 006 9 heuristics 70 50 130 25 2 
 c 007 4 lblPadding 10 85 60 25 2 Padding:
 c 008 11 padding 70 85 130 25 2 
-c 009 8 trimSprites 10 120 15 15 2 
-c 010 4 lblTrimSprites 30 118 135 20 2 Trim sprites
-c 011 8 allowRotation 10 145 15 15 2 
-c 012 4 lblAllowRotation 30 143 135 20 2 Allow rotation
-c 013 8 removeDups 10 170 15 15 2 
-c 014 4 lblRemoveDups 30 168 135 20 2 Remove duplicates
-c 015 1 GroupTexture 0 0 210 145 3 Texture
-c 016 4 lblSize 10 15 30 25 3 Size:
-c 017 12 width 65 15 60 25 3 
-c 018 4 lblx 130 15 10 25 3 x
-c 019 12 height 140 15 60 25 3 
-c 020 8 forcePOT 10 50 15 15 3 
-c 021 4 lblForcePOT 30 48 56 20 3 Force POT
-c 022 8 clearAlpha 115 50 15 15 3 
-c 023 4 lblClearAlpha 135 48 65 20 3 Clear alpha
-c 024 8 forceSquared 10 75 15 15 3 
-c 025 4 lblForceSquared 30 73 76 20 3 Force squared
-c 026 5 ExportImage 10 105 190 30 3 Export Image
-c 027 1 GroupFont 0 0 210 180 4 Font
-c 028 4 lblCharHeight 10 10 100 25 4 Char size (Height):
-c 029 4 lblPixels 165 10 36 25 4 pixels
-c 030 4 lblCharRange 10 35 100 25 4 Characters Range:
-c 031 11 minChar 10 60 85 25 4 
-c 032 4 lblto 100 60 15 25 4 to
-c 033 11 maxChar 115 60 85 25 4 
-c 034 5 ImportCharset 10 95 190 25 4 Import Charset
-c 035 8 generateSDF 10 130 15 15 4 
-c 036 4 lblGenerateSDF 30 126 135 25 4 Generate SDF
-c 037 8 oversampling 10 155 15 15 4 
-c 038 4 lblOversampling 30 151 135 25 4 Generate Oversampling
-c 039 12 charHeight 115 10 45 25 4 
+c 009 8 trimSprites 10 125 15 15 2 Trim sprites
+c 010 8 allowRotation 110 125 15 15 2 Allow rotation
+c 011 8 removeDups 10 150 15 15 2 Detect Duplicates and use Alias
+c 012 1 GroupTexture 0 0 210 145 3 Texture
+c 013 4 lblSize 10 15 30 25 3 Size:
+c 014 12 width 55 15 65 25 3 
+c 015 4 lblx 125 15 10 25 3 x
+c 016 12 height 135 15 65 25 3 
+c 017 8 forcePOT 10 50 15 15 3 Force POT
+c 018 8 clearAlpha 10 75 15 15 3 Alpha Clear
+c 019 8 forceSquared 105 50 15 15 3 Force Square
+c 020 5 ExportImage 10 105 190 30 3 Export Image
+c 021 1 GroupFont 0 0 210 165 4 Font
+c 022 4 lblCharHeight 10 10 100 25 4 Char size (Height):
+c 023 4 lblPixels 170 10 31 25 4 pixels
+c 024 4 lblCharRange 10 35 100 25 4 Characters Range:
+c 025 11 minChar 10 60 85 25 4 
+c 026 4 lblto 100 60 15 25 4 to
+c 027 11 maxChar 115 60 85 25 4 
+c 028 5 ImportCharset 10 95 190 25 4 Import Charset
+c 029 8 generateSDF 10 135 15 15 4 Generate SDF
+c 030 12 charHeight 115 10 50 25 4 
+c 031 8 CheckBox032 105 75 15 15 3 Alpha Premult.
+c 032 11 Spinner033 115 130 85 25 4 
