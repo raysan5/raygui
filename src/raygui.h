@@ -260,20 +260,20 @@ typedef enum GuiProperty {
     PROGRESSBAR_BORDER_COLOR_DISABLED,
     PROGRESSBAR_BASE_COLOR_DISABLED,
     // Spinner
-    SPINNER_BUTTON_PADDING,
-    SPINNER_BUTTONS_WIDTH,
-    SPINNER_BORDER_COLOR_NORMAL,
-    SPINNER_BASE_COLOR_NORMAL,
-    SPINNER_TEXT_COLOR_NORMAL,
-    SPINNER_BORDER_COLOR_FOCUSED,
-    SPINNER_BASE_COLOR_FOCUSED,
-    SPINNER_TEXT_COLOR_FOCUSED,
-    SPINNER_BORDER_COLOR_PRESSED,
-    SPINNER_BASE_COLOR_PRESSED,
-    SPINNER_TEXT_COLOR_PRESSED,
-    SPINNER_BORDER_COLOR_DISABLED,
-    SPINNER_BASE_COLOR_DISABLED,
-    SPINNER_TEXT_COLOR_DISABLED,
+    VALUEBOX_BUTTON_PADDING,
+    VALUEBOX_BUTTONS_WIDTH,
+    VALUEBOX_BORDER_COLOR_NORMAL,
+    VALUEBOX_BASE_COLOR_NORMAL,
+    VALUEBOX_TEXT_COLOR_NORMAL,
+    VALUEBOX_BORDER_COLOR_FOCUSED,
+    VALUEBOX_BASE_COLOR_FOCUSED,
+    VALUEBOX_TEXT_COLOR_FOCUSED,
+    VALUEBOX_BORDER_COLOR_PRESSED,
+    VALUEBOX_BASE_COLOR_PRESSED,
+    VALUEBOX_TEXT_COLOR_PRESSED,
+    VALUEBOX_BORDER_COLOR_DISABLED,
+    VALUEBOX_BASE_COLOR_DISABLED,
+    VALUEBOX_TEXT_COLOR_DISABLED,
     // ComboBox
     COMBOBOX_BORDER_WIDTH,
     COMBOBOX_BUTTON_PADDING,
@@ -535,20 +535,20 @@ static int style[NUM_PROPERTIES] = {
     0x97e8ffff,     // PROGRESSBAR_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0xb5c1c2ff,     // PROGRESSBAR_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0xe6e9e9ff,     // PROGRESSBAR_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x2,            // SPINNER_BUTTON_PADDING
-    0x23,           // SPINNER_BUTTONS_WIDTH
-    0x838383ff,     // SPINNER_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
-    0xc9c9c9ff,     // SPINNER_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
-    0x686868ff,     // SPINNER_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
-    0x5bb2d9ff,     // SPINNER_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
-    0xc9effeff,     // SPINNER_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
-    0x6c9bbcff,     // SPINNER_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
-    0x0492c7ff,     // SPINNER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
-    0x97e8ffff,     // SPINNER_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
-    0x368bafff,     // SPINNER_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
-    0xb5c1c2ff,     // SPINNER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
-    0xe6e9e9ff,     // SPINNER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0xaeb7b8ff,     // SPINNER_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
+    0x2,            // VALUEBOX_BUTTON_PADDING
+    0x23,           // VALUEBOX_BUTTONS_WIDTH
+    0x838383ff,     // VALUEBOX_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
+    0xf5f5f5ff,     // VALUEBOX_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
+    0x686868ff,     // VALUEBOX_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
+    0x5bb2d9ff,     // VALUEBOX_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
+    0xc9effeff,     // VALUEBOX_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
+    0x6c9bbcff,     // VALUEBOX_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
+    0x0492c7ff,     // VALUEBOX_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
+    0x97e8ffff,     // VALUEBOX_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
+    0x368bafff,     // VALUEBOX_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+    0xb5c1c2ff,     // VALUEBOX_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+    0xe6e9e9ff,     // VALUEBOX_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+    0xaeb7b8ff,     // VALUEBOX_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // COMBOBOX_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x2,            // COMBOBOX_BUTTON_PADDING
     0x23,           // COMBOBOX_SELECTOR_WIDTH
@@ -693,20 +693,20 @@ static int style[NUM_PROPERTIES] = {
     0x3b6357ff,     // PROGRESSBAR_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
     0x5b6462ff,     // PROGRESSBAR_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x2c3334ff,     // PROGRESSBAR_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x2,            // SPINNER_BUTTON_PADDING
-    0x23,           // SPINNER_BUTTONS_WIDTH
-    0x60827dff,     // SPINNER_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
-    0x2c3334ff,     // SPINNER_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
-    0x82a29fff,     // SPINNER_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
-    0x5f9aa8ff,     // SPINNER_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
-    0x334e57ff,     // SPINNER_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
-    0x6aa9b8ff,     // SPINNER_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
-    0xa9cb8dff,     // SPINNER_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
-    0x3b6357ff,     // SPINNER_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
-    0x97af81ff,     // SPINNER_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
-    0x5b6462ff,     // SPINNER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
-    0x2c3334ff,     // SPINNER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x666b69ff,     // SPINNER_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
+    0x2,            // VALUEBOX_BUTTON_PADDING
+    0x23,           // VALUEBOX_BUTTONS_WIDTH
+    0x60827dff,     // VALUEBOX_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
+    0x2c3334ff,     // VALUEBOX_BASE_COLOR_NORMAL ----> DEFAULT_BASE_COLOR_NORMAL
+    0x82a29fff,     // VALUEBOX_TEXT_COLOR_NORMAL ----> DEFAULT_TEXT_COLOR_NORMAL
+    0x5f9aa8ff,     // VALUEBOX_BORDER_COLOR_FOCUSED ----> DEFAULT_BORDER_COLOR_FOCUSED
+    0x334e57ff,     // VALUEBOX_BASE_COLOR_FOCUSED ----> DEFAULT_BASE_COLOR_FOCUSED
+    0x6aa9b8ff,     // VALUEBOX_TEXT_COLOR_FOCUSED ----> DEFAULT_TEXT_COLOR_FOCUSED
+    0xa9cb8dff,     // VALUEBOX_BORDER_COLOR_PRESSED ----> DEFAULT_BORDER_COLOR_PRESSED
+    0x3b6357ff,     // VALUEBOX_BASE_COLOR_PRESSED ----> DEFAULT_BASE_COLOR_PRESSED
+    0x97af81ff,     // VALUEBOX_TEXT_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
+    0x5b6462ff,     // VALUEBOX_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
+    0x2c3334ff,     // VALUEBOX_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
+    0x666b69ff,     // VALUEBOX_TEXT_COLOR_DISABLED ----> DEFAULT_TEXT_COLOR_DISABLED
     0x1,            // COMBOBOX_BORDER_WIDTH ----> DEFAULT_BORDER_WIDTH
     0x2,            // COMBOBOX_BUTTON_PADDING
     0x23,           // COMBOBOX_SELECTOR_WIDTH
@@ -1723,14 +1723,14 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
 RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth)
 {
-    #define GUISPINNER_BUTTON_BORDER_WIDTH   1
+    #define GUIVALUEBOX_BUTTON_BORDER_WIDTH   1
     
     GuiControlState state = guiState;
     
     int buttonBorderWidth = style[BUTTON_BORDER_WIDTH];
-    style[BUTTON_BORDER_WIDTH] = GUISPINNER_BUTTON_BORDER_WIDTH;
+    style[BUTTON_BORDER_WIDTH] = GUIVALUEBOX_BUTTON_BORDER_WIDTH;
     
-    Rectangle spinner = { bounds.x + btnWidth + style[SPINNER_BUTTON_PADDING], bounds.y, bounds.width - 2*(btnWidth + style[SPINNER_BUTTON_PADDING]), bounds.height };
+    Rectangle spinner = { bounds.x + btnWidth + style[VALUEBOX_BUTTON_PADDING], bounds.y, bounds.width - 2*(btnWidth + style[VALUEBOX_BUTTON_PADDING]), bounds.height };
     Rectangle leftButtonBound = { bounds.x, bounds.y, btnWidth, bounds.height };
     Rectangle rightButtonBound = { bounds.x + bounds.width - btnWidth, bounds.y, btnWidth, bounds.height };
 
@@ -1814,24 +1814,24 @@ RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
     {
         case NORMAL:
         {
-            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_NORMAL]), guiAlpha));
-            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_NORMAL]), guiAlpha));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BORDER_COLOR_NORMAL]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BASE_COLOR_NORMAL]), guiAlpha));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[VALUEBOX_TEXT_COLOR_NORMAL]), guiAlpha));
         } break;
         case FOCUSED:
         {
-            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
-            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]), guiAlpha));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BASE_COLOR_FOCUSED]), guiAlpha));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[VALUEBOX_TEXT_COLOR_PRESSED]), guiAlpha));
             
             if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + GUIVALUEBOX_LINE_PADDING + bounds.width/2 + textWidth/2, bounds.y + GUIVALUEBOX_LINE_PADDING/2, 1, bounds.height - GUIVALUEBOX_LINE_PADDING, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
         {
-            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BORDER_COLOR_DISABLED]), guiAlpha));
-            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_DISABLED]), guiAlpha));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_DISABLED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BORDER_COLOR_DISABLED]), guiAlpha));
+            DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BASE_COLOR_DISABLED]), guiAlpha));
+            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[VALUEBOX_TEXT_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
     }
@@ -2153,8 +2153,8 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiLabel((Rectangle){ bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_WIDTH_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
-    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_WIDTH_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
+    GuiLabel((Rectangle){ bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
+    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
     
     switch (state)
     {
@@ -3360,20 +3360,20 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[PROGRESSBAR_BORDER_COLOR_DISABLED] = style[DEFAULT_BORDER_COLOR_DISABLED];
     style[PROGRESSBAR_BASE_COLOR_DISABLED] = style[DEFAULT_BASE_COLOR_DISABLED];
     // Spinner
-    style[SPINNER_BUTTON_PADDING] = 2;
-    style[SPINNER_BUTTONS_WIDTH] = 35;
-    style[SPINNER_BORDER_COLOR_NORMAL] = style[DEFAULT_BORDER_COLOR_NORMAL];
-    style[SPINNER_BASE_COLOR_NORMAL] = style[DEFAULT_BASE_COLOR_NORMAL];
-    style[SPINNER_TEXT_COLOR_NORMAL] = style[DEFAULT_TEXT_COLOR_NORMAL];
-    style[SPINNER_BORDER_COLOR_FOCUSED] = style[DEFAULT_BORDER_COLOR_FOCUSED];
-    style[SPINNER_BASE_COLOR_FOCUSED] = style[DEFAULT_BASE_COLOR_FOCUSED];
-    style[SPINNER_TEXT_COLOR_FOCUSED] = style[DEFAULT_TEXT_COLOR_FOCUSED];
-    style[SPINNER_BORDER_COLOR_PRESSED] = style[DEFAULT_BORDER_COLOR_PRESSED];
-    style[SPINNER_BASE_COLOR_PRESSED] = style[DEFAULT_BASE_COLOR_PRESSED];
-    style[SPINNER_TEXT_COLOR_PRESSED] = style[DEFAULT_TEXT_COLOR_PRESSED];
-    style[SPINNER_BORDER_COLOR_DISABLED] = style[DEFAULT_BORDER_COLOR_DISABLED];
-    style[SPINNER_BASE_COLOR_DISABLED] = style[DEFAULT_BASE_COLOR_DISABLED];
-    style[SPINNER_TEXT_COLOR_DISABLED] = style[DEFAULT_TEXT_COLOR_DISABLED];
+    style[VALUEBOX_BUTTON_PADDING] = 2;
+    style[VALUEBOX_BUTTONS_WIDTH] = 35;
+    style[VALUEBOX_BORDER_COLOR_NORMAL] = style[DEFAULT_BORDER_COLOR_NORMAL];
+    style[VALUEBOX_BASE_COLOR_NORMAL] = style[DEFAULT_BASE_COLOR_NORMAL];
+    style[VALUEBOX_TEXT_COLOR_NORMAL] = style[DEFAULT_TEXT_COLOR_NORMAL];
+    style[VALUEBOX_BORDER_COLOR_FOCUSED] = style[DEFAULT_BORDER_COLOR_FOCUSED];
+    style[VALUEBOX_BASE_COLOR_FOCUSED] = style[DEFAULT_BASE_COLOR_FOCUSED];
+    style[VALUEBOX_TEXT_COLOR_FOCUSED] = style[DEFAULT_TEXT_COLOR_FOCUSED];
+    style[VALUEBOX_BORDER_COLOR_PRESSED] = style[DEFAULT_BORDER_COLOR_PRESSED];
+    style[VALUEBOX_BASE_COLOR_PRESSED] = style[DEFAULT_BASE_COLOR_PRESSED];
+    style[VALUEBOX_TEXT_COLOR_PRESSED] = style[DEFAULT_TEXT_COLOR_PRESSED];
+    style[VALUEBOX_BORDER_COLOR_DISABLED] = style[DEFAULT_BORDER_COLOR_DISABLED];
+    style[VALUEBOX_BASE_COLOR_DISABLED] = style[DEFAULT_BASE_COLOR_DISABLED];
+    style[VALUEBOX_TEXT_COLOR_DISABLED] = style[DEFAULT_TEXT_COLOR_DISABLED];
     // ComboBox
     style[COMBOBOX_BORDER_WIDTH] = style[DEFAULT_BORDER_WIDTH];
     style[COMBOBOX_BUTTON_PADDING] = 2;              
