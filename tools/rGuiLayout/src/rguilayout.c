@@ -186,6 +186,8 @@ int main()
     Vector2 panControlOffset = { 0 };
     Vector2 prevControlPosition = { 0 };
     
+    int textArrayPos = 0;
+    
     const char *listData[3] = { "ONE", "TWO", "THREE" };    // ToggleGroup, ComboBox, DropdownBox default data
     const char *listViewData[4] = { "WINDOWBOX", "GROUPBOX", "LINE", "PANEL" }; // ListView default data
 
@@ -334,8 +336,6 @@ int main()
     // Delete current layout and reset variables
     bool resetWindowActive = false;
     bool resetLayout = false;
-    
-
     
     SetTargetFPS(120);
     //--------------------------------------------------------------------------------------
@@ -782,24 +782,60 @@ int main()
             selectedControl = storedControl;
             int key = GetKeyPressed();
             int keyCount = strlen(layout.controls[selectedControl].text); // Keeps track of text length
-       
+
+            if (IsKeyPressed(KEY_LEFT)) textArrayPos--;
+            else if (IsKeyPressed(KEY_RIGHT)) textArrayPos++;
+            
+            if (textArrayPos >= 0) textArrayPos = 0;
+            else if (textArrayPos <= keyCount*(-1)) textArrayPos = keyCount*(-1);
+            
             // Replaces characters with pressed keys or '\0' in case of backspace
             // NOTE: Only allow keys in range [32..125]
             if (((key >= 32) && (key <= 125)) && (keyCount < MAX_CONTROL_TEXT_LENGTH - 1))
             {
-                layout.controls[selectedControl].text[keyCount] = (unsigned char)key;
+                for (int i = keyCount; i > keyCount + textArrayPos; i--)
+                {
+                    layout.controls[selectedControl].text[i] = layout.controls[selectedControl].text[i - 1];
+                }
+                layout.controls[selectedControl].text[keyCount + textArrayPos] = (unsigned char)key;
             }
             
-            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+            if ((textArrayPos == 0))
             {
-                layout.controls[selectedControl].text[keyCount - 1] = '\0';
-                framesCounterSnap = 0;
-                if (keyCount < 0) keyCount = 0;
+                if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    layout.controls[selectedControl].text[keyCount - 1] = '\0';
+                    framesCounterSnap = 0;
+                    if (keyCount < 0) keyCount = 0;
+                }
+                else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
+                {
+                    if ((framesCounterSnap > 60) && ((framesCounterSnap%4) == 0)) layout.controls[selectedControl].text[keyCount - 1] = '\0';
+                    if (keyCount < 0) keyCount = 0;
+                }
             }
-            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
+            else if(textArrayPos*(-1) != keyCount)
             {
-                if ((framesCounterSnap > 60) && (framesCounterSnap%4) == 0) layout.controls[selectedControl].text[keyCount - 1] = '\0';
-                if (keyCount < 0) keyCount = 0;
+                if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    framesCounterSnap = 0;
+                    for (int i = -1; i <= -textArrayPos; i++)
+                    {
+                        layout.controls[selectedControl].text[keyCount + textArrayPos + i] = layout.controls[selectedControl].text[keyCount + textArrayPos + i + 1];
+                        if (i == -textArrayPos) layout.controls[selectedControl].text[keyCount - 1] = '\0';
+                    }
+                }
+                else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
+                {
+                    if ((framesCounterSnap > 60) && ((framesCounterSnap%4) == 0))
+                    {
+                        for (int i = -1; i <= -textArrayPos; i++)
+                        {
+                            layout.controls[selectedControl].text[keyCount + textArrayPos + i] = layout.controls[selectedControl].text[keyCount + textArrayPos + i + 1];
+                            if (i == -textArrayPos) layout.controls[selectedControl].text[keyCount - 1] = '\0';
+                        }
+                    }
+                }
             }
             
             // Used to show the cursor('|') in textEditMode 
@@ -864,6 +900,7 @@ int main()
            ((layout.controls[selectedControl].type == LABEL) || (layout.controls[selectedControl].type == CHECKBOX) || (layout.controls[selectedControl].type == SLIDERBAR) || (layout.controls[selectedControl].type == SLIDER) || (layout.controls[selectedControl].type == TEXTBOX) || (layout.controls[selectedControl].type == BUTTON) || (layout.controls[selectedControl].type == TOGGLE) || (layout.controls[selectedControl].type == GROUPBOX) || (layout.controls[selectedControl].type == WINDOWBOX) || (layout.controls[selectedControl].type == STATUSBAR) || (layout.controls[selectedControl].type == DUMMYREC)))
         {   
             textEditMode = true;
+            textArrayPos = 0;
             storedControl = selectedControl;
             strcpy(prevControlText, layout.controls[selectedControl].text);
         }
@@ -2147,14 +2184,13 @@ static void GenerateCode(const char *fileName, GuiLayoutConfig config)
     fprintf(ftool, "\t\t\t//----------------------------------------------------------------------------------\n");
     
     // Draw all controls
-    // TODO: Use config.fullComments to add extra comments
     if (!config.defineRecs)
     {
         for (int i = 0; i < layout.controlsCount; i++)
         {
             switch (layout.controls[i].type)
             {
-                case LABEL: 
+                case LABEL:
                 {
                     if (config.defineTexts) fprintf(ftool, "\t\t\tGuiLabel(%s, %sText);\n", GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].name);
                     else fprintf(ftool, "\t\t\tGuiLabel(%s, \"%s\");\n", GetControlAnchorRec(layout.controls[i].ap->id, layout.controls[i].rec, config), layout.controls[i].text);
