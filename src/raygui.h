@@ -259,7 +259,7 @@ typedef enum GuiProperty {
     PROGRESSBAR_BASE_COLOR_PRESSED,
     PROGRESSBAR_BORDER_COLOR_DISABLED,
     PROGRESSBAR_BASE_COLOR_DISABLED,
-    // Spinner
+    // ValueBox
     VALUEBOX_BUTTON_PADDING,
     VALUEBOX_BUTTONS_WIDTH,
     VALUEBOX_BORDER_COLOR_NORMAL,
@@ -1347,8 +1347,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int
 {
     for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], true);
-        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], false) == true) active = i;
+        if (i == active) GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (int)(bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], true);
+        else if (GuiToggleButton((Rectangle){ bounds.x + i*(bounds.width/count + style[TOGGLEGROUP_PADDING]), bounds.y, (int)(bounds.width - style[TOGGLEGROUP_PADDING]*(count -1))/count, bounds.height }, text[i], false) == true) active = i;
     }
 
     return active;
@@ -1706,6 +1706,8 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         } break;
         case DISABLED:
         {
+            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[DEFAULT_BASE_COLOR_DISABLED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, DROPDOWNBOX_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
             GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], false);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
@@ -2139,16 +2141,23 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
                 state = PRESSED;
                 
                 // Get equivalent value and slider position from mousePoint.x
-                value = (((maxValue - minValue)*(mousePoint.x - (float)bounds.x))/(float)bounds.width) + minValue;
+                value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + slider.width)))/(float)(bounds.width - slider.width*2) + minValue;
                 slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
-                
+
                 // Snap to limits if mouse down moved outside limits
                 //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
                 //else if ((slider.x + slider.width) > (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH])) slider.x = (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH]) - slider.width;
             }
             else state = FOCUSED;
         }
+        
+        if (value > maxValue) value = maxValue;
+        else if (value < minValue) value = minValue;
+
     }
+    
+    if (slider.x <= bounds.x + style[SLIDER_BORDER_WIDTH]) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
+    else if (slider.x + slider.width >= bounds.x + bounds.width) slider.x = bounds.x + bounds.width - slider.width - style[SLIDER_BORDER_WIDTH];
     //--------------------------------------------------------------------
 
     // Draw control
@@ -2164,7 +2173,7 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
+            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case FOCUSED:
         {
@@ -2172,7 +2181,7 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_FOCUSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]), guiAlpha));
+            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED:
         {
@@ -2180,7 +2189,7 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
+            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case DISABLED:
         {
@@ -3359,11 +3368,11 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     style[PROGRESSBAR_BASE_COLOR_PRESSED] = style[DEFAULT_BASE_COLOR_PRESSED];
     style[PROGRESSBAR_BORDER_COLOR_DISABLED] = style[DEFAULT_BORDER_COLOR_DISABLED];
     style[PROGRESSBAR_BASE_COLOR_DISABLED] = style[DEFAULT_BASE_COLOR_DISABLED];
-    // Spinner
+    // ValueBox
     style[VALUEBOX_BUTTON_PADDING] = 2;
     style[VALUEBOX_BUTTONS_WIDTH] = 35;
     style[VALUEBOX_BORDER_COLOR_NORMAL] = style[DEFAULT_BORDER_COLOR_NORMAL];
-    style[VALUEBOX_BASE_COLOR_NORMAL] = style[DEFAULT_BASE_COLOR_NORMAL];
+    style[VALUEBOX_BASE_COLOR_NORMAL] = style[DEFAULT_BACKGROUND_COLOR];
     style[VALUEBOX_TEXT_COLOR_NORMAL] = style[DEFAULT_TEXT_COLOR_NORMAL];
     style[VALUEBOX_BORDER_COLOR_FOCUSED] = style[DEFAULT_BORDER_COLOR_FOCUSED];
     style[VALUEBOX_BASE_COLOR_FOCUSED] = style[DEFAULT_BASE_COLOR_FOCUSED];
