@@ -8,8 +8,8 @@
 *
 *   CONTRIBUTORS:
 *       Ramon Santamaria:   Supervision, review, design, update and maintenance...
-*       Adria Arranz:       Design and implementation v1.0 (2018)
-*       Jordi Jorba:        Design and implementation v1.0 (2018)
+*       Adria Arranz:       Design and implementation (2018)
+*       Jordi Jorba:        Design and implementation (2018)
 *
 *   LICENSE: zlib/libpng
 *
@@ -163,7 +163,7 @@ int main()
     // Initialization
     //--------------------------------------------------------------------------------------
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "rGuiLayout v1.0");
+    InitWindow(screenWidth, screenHeight, "rGuiLayout v1.1");
     SetExitKey(0);
 
     // General app variables
@@ -1156,7 +1156,7 @@ int main()
                 selectedControl = -1;
                 LoadLayoutRGL(droppedFileName);
                 strcpy(loadedFileName, droppedFileName);
-                SetWindowTitle(FormatText("rGuiLayout v1.0 - %s", GetFileName(loadedFileName)));
+                SetWindowTitle(FormatText("rGuiLayout v1.1 - %s", GetFileName(loadedFileName)));
             }
             else if (IsFileExtension(droppedFileName, ".rgs")) GuiLoadStyle(droppedFileName);
             else if (IsFileExtension(droppedFileName, ".png"))
@@ -1353,7 +1353,7 @@ int main()
                 layout.anchors[i].hidding = false;
             }
             
-            SetWindowTitle("rGuiLayout v1.0");
+            SetWindowTitle("rGuiLayout v1.1");
             strcpy(loadedFileName, "\0");
             layout.controlsCount = 0;
             resetWindowActive = false;
@@ -1428,7 +1428,7 @@ int main()
             }
             
             // Draws the defaultRec[selectedType] of the control selected
-            if ((selectedControl == -1) && (focusedControl == -1 )&& !anchorMode && !tracemapEditMode && !closingWindowActive && !generateWindowActive)
+            if ((selectedControl == -1) && (focusedControl == -1 )&& !anchorMode && !tracemapEditMode && !closingWindowActive && !generateWindowActive && !(CheckCollisionPointRec(mouse, palettePanel)))
             {
                 GuiFade(0.5f);
                 switch (selectedTypeDraw)
@@ -1768,7 +1768,7 @@ static void ShowSaveLayoutDialog(void)
         if (GetExtension(fileName) == NULL) strcat(outFileName, ".rgl\0");     // No extension provided
         SaveLayoutRGL(outFileName, false);
         strcpy(loadedFileName, outFileName);
-        SetWindowTitle(FormatText("rGuiLayout v1.0 - %s", GetFileName(loadedFileName)));
+        SetWindowTitle(FormatText("rGuiLayout v1.1 - %s", GetFileName(loadedFileName)));
         cancelSave = true;
     }
 }
