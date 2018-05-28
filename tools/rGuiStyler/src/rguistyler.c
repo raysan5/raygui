@@ -348,6 +348,7 @@ int main(int argc, char *argv[])
     
     //SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "rGuiStyler v2.0 - raygui style editor");
+    SetExitKey(0);
 
     int dropsCount = 0;
     char **droppedFiles;
@@ -384,9 +385,6 @@ int main(int argc, char *argv[])
     // Keep a backup for style    
     memcpy(styleBackup, style, NUM_PROPERTIES*sizeof(int));
     
-    SetTargetFPS(60);
-    //------------------------------------------------------------
-
     // Gui controls data
     //-----------------------------------------------------------
     bool toggle = false;
@@ -435,9 +433,9 @@ int main(int argc, char *argv[])
     // Exit variables
     bool exitWindow = false;
     bool closingWindowActive = false;
-    
-    
-    //--------------------------------------------------------------------------------------
+
+    SetTargetFPS(60);
+    //------------------------------------------------------------
     
     // Main game loop
     while (!exitWindow)    // Detect window close button or ESC key
@@ -446,14 +444,14 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         framesCounter++;
         
-         // Check for changed controls 
+        if (WindowShouldClose()) exitWindow = true;
+        
+        // Check for changed controls 
         if ((framesCounter%120) == 0) 
         {
             changedControlsCounter = 0;
             for (int i = 0; i < NUM_PROPERTIES; i++) if (styleBackup[i] != style[i]) changedControlsCounter++;
         }
-
-        if (WindowShouldClose()) exitWindow = true;
         
         // Show save layout message window on ESC
         if (IsKeyPressed(KEY_ESCAPE))
@@ -600,7 +598,7 @@ int main(int argc, char *argv[])
 
             if (checked) GuiDisable();
 
-            GuiLabel((Rectangle){ anchor02.x + 11, anchor02.y + 35, 80, 30 }, "rGuiStyler");
+            GuiLabel((Rectangle){ anchor02.x + 11, anchor02.y + 35, 80, 25 }, "rGuiStyler");
 
             if (GuiLabelButton(bounds[LABELBUTTON], "github.com/raysan5/raygui")) {}
             
@@ -622,7 +620,7 @@ int main(int argc, char *argv[])
             
             progressValue = GuiProgressBarEx(bounds[PROGRESSBAR], progressValue, 0, 1, true);
 
-            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 32, 35);
+            spinnerValue = GuiSpinner(bounds[SPINNER], spinnerValue, 32, 24);
             
             comboActive = GuiComboBox(bounds[COMBOBOX], comboText, comboNum, comboActive);
 
@@ -728,8 +726,10 @@ static void BtnSaveStyle(const char *defaultName, bool binary)
 
     if (fileName != NULL)
     {
-        if (GetExtension(fileName) == NULL) strcat(fileName, ".rgs\0");     // No extension provided
-        if (fileName != NULL) SaveStyleRGS(fileName, binary);               // Save style file (text or binary)
+        char outFileName[64] = { 0 };
+        strcpy(outFileName, fileName);
+        if (GetExtension(outFileName) == NULL) strcat(outFileName, ".rgs\0");     // No extension provided
+        if (outFileName != NULL) SaveStyleRGS(outFileName, binary);               // Save style file (text or binary)
         cancelSave = true;
     }
 }
