@@ -30,26 +30,27 @@ int main(int argc, char *argv[0])
     
     // File format combo box
     int formatCount = 3;
-    int formatSelected = 0;
-    const char *formatText[3] = { "PNG", "RAW", "CODE"};
+    int fileFormatActive = 0;
+    const char *fileFormatTextList[3] = { "PNG", "RAW", "CODE"};
     
     // Pixel format combo box
     int pixelFormatCount = 6;
-    int pixelActiveSelected = 0;
-    const char *pixelFormatText[6] = { "R8G8B8A8", "R8", "R5G5B5A1" ,"R5G6B5", "R8A8", "R4G4B4A4" };
-    
-    // Toggle buttons
-    bool toggleRed = true;
-    bool toggleGreen = true;
-    bool toggleBlue = true;
-    bool toggleAlpha = true;
+    int pixelFormatActive = 0;
+    const char *pixelFormatTextList[6] = { "R8G8B8A8", "R8", "R5G5B5A1" ,"R5G6B5", "R8A8", "R4G4B4A4" };
     
     // Text box
-    char fileNameText[32] = "Untitled";
+    char fileName[32] = "Untitled";
 
     //int dropdownSelected = 0;
     SetConfigFlags(0x11100000);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "image exporter");
+    
+    int format = -1;
+    int pixelFormat = 0;
+    bool btnExport = false;
+    
+    Image image;
+    Texture2D texture;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -59,7 +60,41 @@ int main(int argc, char *argv[0])
     {
         // Update
         //----------------------------------------------------------------------------------
-        // ...
+        if (IsFileDropped())
+        {
+            int fileCount = 0;
+            char **droppedFiles = GetDroppedFiles(&fileCount);
+
+            // Check file extensions for drag-and-drop
+            if ((fileCount == 1) && ((IsFileExtension(droppedFiles[0], ".raw") || IsFileExtension(droppedFiles[0], ".png"))))
+            {
+                strcpy(fileName, GetFileName(droppedFiles[0]));
+                
+                image = LoadImage(fileName);
+            }
+            
+            if (btnExport)
+            {
+                format = fileFormatActive;
+                pixelFormat = pixelFormatActive;
+                
+                //ImageFormat(image, pixelFormat);
+                if (format == 0) ExportImage(fileName, image);
+                else if (format == 1) 
+                {
+                    
+                }
+                else if (format == 2) 
+                {
+                    
+                }
+                
+                UnloadImage(image);
+            }
+            
+
+            ClearDroppedFiles();
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -71,35 +106,23 @@ int main(int argc, char *argv[0])
             // Draw message box (testing)
             //GuiMessageBox((Rectangle){600, 100, 150, 100}, "Image export options", "Hello World!\nHello World!");
             
+            DrawText("Drag & drop your image!", 300, 200, 10, DARKGRAY);
+            
             if (GuiButton((Rectangle){ 20, 20, 150, 30 }, "Show Export Window")) windowBoxActive = true;
             
             // Draw window box: windowBoxName
             //-----------------------------------------------------------------------------
             if (windowBoxActive)
             {
-                windowBoxActive = !GuiWindowBox(windowBoxRec, "Image export options");
+                windowBoxActive = !GuiWindowBox((Rectangle){ windowBoxRec.x + 0, windowBoxRec.y + 0, 220, 190 }, "Image Export Options");
             
-                // Draw file format options
-                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 20, 0, 0 }, FormatText("File format"));
-                formatSelected = GuiComboBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 10, 150, 30 }, formatText, formatCount, formatSelected);
-                
-                // Draw pixel format options
-                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 60, 0, 0 }, FormatText("Pixel format"));
-                pixelActiveSelected = GuiComboBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 50, 150, 30 }, pixelFormatText, pixelFormatCount, pixelActiveSelected); 
-                
-                // Draw active channels options
-                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 100, 0, 0 }, FormatText("Active channels"));
-                toggleRed = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 90, 36, 30}, "R", toggleRed);
-                toggleGreen = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 128, windowBoxRec.y + 20 + 90, 36, 30}, "G", toggleGreen);
-                toggleBlue = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 166, windowBoxRec.y + 20 + 90, 36, 30}, "B", toggleBlue);
-                toggleAlpha = GuiToggleButton((Rectangle){ windowBoxRec.x + 10 + 204, windowBoxRec.y + 20 + 90, 36, 30}, "A", toggleAlpha);
-
-                //Draw file name options
-                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 140, 0, 0 }, FormatText("File name"));
-                GuiTextBox((Rectangle){ windowBoxRec.x + 10 + 90, windowBoxRec.y + 20 + 130, 150, 30 }, fileNameText, 32, false);
-                
-                // Draw export image button
-                if (GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 20 + 170, 150 + 90, 30 }, "Export Image")) { /* Call function */ }
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 35, 60, 25 }, "File format:");
+                fileFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 },  fileFormatTextList, 3, fileFormatActive); 
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 70, 63, 25 }, "Pixel format:");
+                pixelFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 70, 130, 25 },  pixelFormatTextList, 6, pixelFormatActive); 
+                GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 105, 50, 25 }, "File name:");
+                GuiTextBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 105, 130, 25 }, fileName, 64, true);
+                btnExport = GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 145, 200, 30 }, "Export Image");
             }
             //-----------------------------------------------------------------------------
             
