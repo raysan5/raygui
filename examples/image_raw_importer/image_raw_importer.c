@@ -19,7 +19,7 @@
 //----------------------------------------------------------------------------------
 // Controls Functions Declaration
 //----------------------------------------------------------------------------------
-static void ImportRAW();		// Button: ImportRAW logic
+static void ImportRAW();        // Button: ImportRAW logic
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -42,9 +42,19 @@ int main()
     bool importWindowActive = false;
     int widthValue = 0;
     int heightValue = 0;
-    int pixelFormatActive = 0;
-    const char *pixelFormatTextList[3] = { "ONE", "TWO", "THREE" };
-    int channelsActive = 0;
+    int pixelFormatActive = 7;
+    const char *pixelFormatTextList[8] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8", "R8G8B8", "CUSTOM" };
+    /*
+        UNCOMPRESSED_GRAYSCALE = 1,     // 8 bit per pixel (no alpha)
+    UNCOMPRESSED_GRAY_ALPHA,        // 8*2 bpp (2 channels)
+    UNCOMPRESSED_R5G6B5,            // 16 bpp
+    UNCOMPRESSED_R8G8B8,            // 24 bpp
+    UNCOMPRESSED_R5G5B5A1,          // 16 bpp (1 bit alpha)
+    UNCOMPRESSED_R4G4B4A4,          // 16 bpp (4 bit alpha)
+    UNCOMPRESSED_R8G8B8A8,          // 32 bpp
+    CUSTOM
+    */
+    int channelsActive = 3;
     const char *channelsTextList[4] = { "1", "2", "3", "4" };
     int bitDepthActive = 0;
     const char *bitDepthTextList[3] = { "8", "16", "32" };
@@ -101,35 +111,49 @@ int main()
         // Check if load button has been pressed
         if (btnLoadPressed)
         {
-            // Convert input textImageWidth, textImageHeight to int
-
-            int format = UNCOMPRESSED_R8G8B8A8;
-            int channels = atoi(channelsTextList[channelsActive]);
-            int bpp = atoi(bitDepthTextList[bitDepthActive]);
-            
             // Depending on channels and bit depth, select correct pixel format
-            if ((widthValue != 0) && (heightValue != 0) && (bpp == 8))
+            if ((widthValue != 0) && (heightValue != 0))
             {
-                switch (channels)
+                int format = -1;
+
+                if (pixelFormatActive == 7)
                 {
-                    case 1: format = UNCOMPRESSED_GRAYSCALE; break;
-                    case 2: format = UNCOMPRESSED_GRAY_ALPHA; break;
-                    case 3: format = UNCOMPRESSED_R8G8B8; break;
-                    case 4: format = UNCOMPRESSED_R8G8B8A8; break;
-                    default: break;
+                    int channels = atoi(channelsTextList[channelsActive]);
+                    int bpp = atoi(bitDepthTextList[bitDepthActive]);
+            
+                    // Select correct format depending on channels and bpp
+                    if (bpp == 8)
+                    {
+                        if (channels == 1) format = UNCOMPRESSED_GRAYSCALE;
+                        else if (channels == 2) format = UNCOMPRESSED_GRAY_ALPHA;
+                        else if (channels == 3) format = UNCOMPRESSED_R8G8B8;
+                        else if (channels == 4) format = UNCOMPRESSED_R8G8B8A8;
+                    }
+                    else if (bpp == 32)
+                    {
+                        if (channels == 1) format = UNCOMPRESSED_R32;
+                        else if (channels == 2) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
+                        else if (channels == 3) format = UNCOMPRESSED_R32G32B32;
+                        else if (channels == 4) format = UNCOMPRESSED_R32G32B32A32;
+                    }
+                    else if (bpp == 16) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
                 }
+                else format = pixelFormatActive;
                 
-                Image image = LoadImageRaw(fileName, widthValue, heightValue, format, headerSizeValue);
-                texture = LoadTextureFromImage(image);
-                UnloadImage(image);
-                
-                importWindowActive = false;
-                btnLoadPressed = false;
-                
-                if (texture.id > 0)
+                if (format != -1)
                 {
-                    imageLoaded = true;
-                    imageScale = (float)(screenHeight - 100)/texture.height;
+                    Image image = LoadImageRaw(fileName, widthValue, heightValue, format, headerSizeValue);
+                    texture = LoadTextureFromImage(image);
+                    UnloadImage(image);
+                    
+                    importWindowActive = false;
+                    btnLoadPressed = false;
+                    
+                    if (texture.id > 0)
+                    {
+                        imageLoaded = true;
+                        imageScale = (float)(screenHeight - 100)/texture.height;
+                    }
                 }
             }
         }
@@ -142,17 +166,24 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            
+            if (texture.id != 0) 
+            {
+                DrawTextureEx(texture, (Vector2){ screenWidth/2 - texture.width*imageScale/2, screenHeight/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
+                DrawText(FormatText("SCALE x%.0f", imageScale), 20, screenHeight - 40, 20, GetColor(style[DEFAULT_LINES_COLOR]));
+            }
+            else DrawText("drag & drop RAW image file", 320, 180, 10, GetColor(style[DEFAULT_LINES_COLOR]));
 
-			// raygui: controls drawing
-			//----------------------------------------------------------------------------------
-			if (importWindowActive)
-			{
-				importWindowActive = !GuiWindowBox((Rectangle){ windowOffset.x + 0, windowOffset.y + 0, 200, 465 }, "Image RAW Import Options");
-			
+            // raygui: controls drawing
+            //----------------------------------------------------------------------------------
+            if (importWindowActive)
+            {
+                importWindowActive = !GuiWindowBox((Rectangle){ windowOffset.x + 0, windowOffset.y + 0, 200, 465 }, "Image RAW Import Options");
+            
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 30, 65, 20 }, "Import file:");
-                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 30, 75, 20 }, "Untitled.raw");
+                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 30, 75, 20 }, fileName);
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 50, 65, 20 }, "File size:");
-                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, "2132421 bytes");
+                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, FormatText("%i bytes", dataSize));
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 85, 180, 80 }, "Resolution");
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 100, 33, 25 }, "Width:");
                 widthValue = GuiValueBox((Rectangle){ windowOffset.x + 60, windowOffset.y + 100, 80, 25 }, widthValue, 100); 
@@ -161,12 +192,16 @@ int main()
                 heightValue = GuiValueBox((Rectangle){ windowOffset.x + 60, windowOffset.y + 130, 80, 25 }, heightValue, 100); 
                 GuiLabel((Rectangle){ windowOffset.x + 145, windowOffset.y + 130, 30, 25 }, "pixels");
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 180, 180, 160 }, "Pixel Format");
-                pixelFormatActive = GuiComboBox((Rectangle){ windowOffset.x + 20, windowOffset.y + 195, 160, 25 },  pixelFormatTextList, 3, pixelFormatActive); 
+                pixelFormatActive = GuiComboBox((Rectangle){ windowOffset.x + 20, windowOffset.y + 195, 160, 25 },  pixelFormatTextList, 8, pixelFormatActive);
                 GuiLine((Rectangle){ windowOffset.x + 20, windowOffset.y + 220, 160, 20 }, 1);
+                
+                if (pixelFormatActive != 7) GuiDisable();
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 235, 50, 20 }, "Channels:");
                 channelsActive = GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 255, 159, 25 }, channelsTextList, 4, channelsActive);
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 285, 50, 20 }, "Bit Depth:");
-                bitDepthActive = GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 305, 159, 25 }, bitDepthTextList, 3, bitDepthActive); 
+                bitDepthActive = GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 305, 159, 25 }, bitDepthTextList, 3, bitDepthActive);
+                GuiEnable();
+                
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 355, 180, 50 }, "Header");
                 GuiLabel((Rectangle){ windowOffset.x + 25, windowOffset.y + 370, 27, 25 }, "Size:");
                 headerSizeValue = GuiValueBox((Rectangle){ windowOffset.x + 55, windowOffset.y + 370, 85, 25 }, headerSizeValue, 100); 
@@ -174,8 +209,7 @@ int main()
                 
                 btnLoadPressed = GuiButton((Rectangle){ windowOffset.x + 10, windowOffset.y + 420, 180, 30 }, "Import RAW");
             }
-
-			//----------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------
 
         EndDrawing();
         //----------------------------------------------------------------------------------
