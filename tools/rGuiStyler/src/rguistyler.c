@@ -564,7 +564,7 @@ int main(int argc, char *argv[])
             GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 0, 720, 24 }, "CHOOSE CONTROL     >      CHOOSE PROPERTY STYLE      >                            STYLE VIEWER", 35);
 
             // Draw status bar bottom
-   			//GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
+            //GuiStatusBar((Rectangle){ anchor01.x + 334, anchor01.y + 616, 386, 24 }, FormatText("EDITION TIME: %02i:%02i:%02i", (framesCounter/60)/(60*60), ((framesCounter/60)/60)%60, (framesCounter/60)%60), 10);
         #if defined(RAYGUI_STYLE_DEFAULT_LIGHT)
             GuiStatusBar((Rectangle){ anchor01.x + 0, anchor01.y + 616, 150, 24 }, "BASE STYLE: LIGHT", 10);
         #elif defined(RAYGUI_STYLE_DEFAULT_DARK)
@@ -629,21 +629,21 @@ int main(int argc, char *argv[])
             GuiLine((Rectangle){ anchor02.x + 10, anchor02.y + 275, 345, 20 }, 1);
             
             // Draw labels for GuiColorPicker information (RGBA)
-            GuiGroupBox((Rectangle){ anchor02.x + 290, anchor02.y + 300, 65, 55 }, "RGBA");
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 305, 20, 20 }, FormatText("R:   %03i", colorPickerValue.r));
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 320, 20, 20 }, FormatText("G:   %03i", colorPickerValue.g));
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 335, 20, 20 }, FormatText("B:   %03i", colorPickerValue.b));
+            GuiGroupBox((Rectangle){ anchor02.x + 295, anchor02.y + 300, 60, 55 }, "RGBA");
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 305, 15, 20 }, FormatText("R:   %03i", colorPickerValue.r));
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 320, 15, 20 }, FormatText("G:   %03i", colorPickerValue.g));
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 335, 15, 20 }, FormatText("B:   %03i", colorPickerValue.b));
            
             // Draw labels for GuiColorPicker information (HSV)
-            GuiGroupBox((Rectangle){ anchor02.x + 290, anchor02.y + 365, 65, 55 }, "HSV");
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 370, 20, 20 }, FormatText("H:  %.0f", colorHSV.x));
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 385, 20, 20 }, FormatText("S:  %.0f%%", colorHSV.y*100));
-			GuiLabel((Rectangle){ anchor02.x + 300, anchor02.y + 400, 20, 20 }, FormatText("V:  %.0f%%", colorHSV.z*100));
+            GuiGroupBox((Rectangle){ anchor02.x + 295, anchor02.y + 365, 60, 55 }, "HSV");
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 370, 15, 20 }, FormatText("H:  %.0f", colorHSV.x));
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 385, 15, 20 }, FormatText("S:  %.0f%%", colorHSV.y*100));
+            GuiLabel((Rectangle){ anchor02.x + 305, anchor02.y + 400, 15, 20 }, FormatText("V:  %.0f%%", colorHSV.z*100));
 
-            if (GuiTextBox((Rectangle){ anchor02.x + 290, anchor02.y + 520, 65, 20 }, colorHex, 8, editHexColorText)) colorPickerValue = GetColor((int)strtoul(colorHex, NULL, 16));
+            if (GuiTextBox((Rectangle){ anchor02.x + 295, anchor02.y + 520, 60, 20 }, colorHex, 8, editHexColorText)) colorPickerValue = GetColor((int)strtoul(colorHex, NULL, 16));
             
-            for (int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 290 + 20*(i%3), anchor02.y + 430 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
-            DrawRectangleLinesEx((Rectangle){ anchor02.x + 290, anchor02.y + 430, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            for (int i = 0; i < 12; i++) colorBoxValue[i] = ColorBox((Rectangle){ anchor02.x + 295 + 20*(i%3), anchor02.y + 430 + 20*(i/3), 20, 20 }, &colorPickerValue, colorBoxValue[i]);
+            DrawRectangleLinesEx((Rectangle){ anchor02.x + 295, anchor02.y + 430, 60, 80 }, 2, GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
 
             GuiEnable();
             
