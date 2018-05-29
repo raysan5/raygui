@@ -2061,16 +2061,18 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
                 state = PRESSED;
                 
                 // Get equivalent value and slider position from mousePoint.x
-                value = (((maxValue - minValue)*(mousePoint.x - (float)bounds.x))/(float)bounds.width) + minValue;
-                slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
-                
-                // Snap to limits if mouse down moved outside limits
-                //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
-                //else if ((slider.x + slider.width) > (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH])) slider.x = (bounds.x + bounds.width - 2*style[SLIDER_BORDER_WIDTH]) - slider.width;
+                value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + slider.width/2)))/(float)(bounds.width - slider.width) + minValue;
+                slider.x = mousePoint.x - slider.width/2;
             }
             else state = FOCUSED;
         }
+        
+        if (value > maxValue) value = maxValue;
+        else if (value < minValue) value = minValue;
     }
+    
+    if (slider.x <= bounds.x + style[SLIDER_BORDER_WIDTH]) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
+    else if (slider.x + slider.width >= bounds.x + bounds.width) slider.x = bounds.x + bounds.width - slider.width - style[SLIDER_BORDER_WIDTH];
     //--------------------------------------------------------------------
 
     // Draw control
@@ -2083,7 +2085,6 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case FOCUSED:
         {
@@ -2091,7 +2092,6 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_FOCUSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED:
         {
@@ -2099,7 +2099,6 @@ RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float m
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case DISABLED:
         {
@@ -2141,8 +2140,9 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
                 state = PRESSED;
                 
                 // Get equivalent value and slider position from mousePoint.x
-                value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + slider.width)))/(float)(bounds.width - slider.width*2) + minValue;
-                slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
+                value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + slider.width/2)))/(float)(bounds.width - slider.width) + minValue;
+                //slider.x = bounds.x + (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*style[SLIDER_BORDER_WIDTH])) - slider.width/2;
+                slider.x = mousePoint.x - slider.width/2;
 
                 // Snap to limits if mouse down moved outside limits
                 //if (slider.x < (bounds.x + style[SLIDER_BORDER_WIDTH])) slider.x = bounds.x + style[SLIDER_BORDER_WIDTH];
@@ -2161,19 +2161,17 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
     //--------------------------------------------------------------------
 
     // Draw control
-    //--------------------------------------------------------------------
-    GuiLabel((Rectangle){ bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
-    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
-    
+    //--------------------------------------------------------------------    
     switch (state)
     {
         case NORMAL: 
         {
             DrawRectangleLinesEx(bounds, style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BORDER_COLOR_NORMAL]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
-            
+
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]), guiAlpha));
         } break;
         case FOCUSED:
         {
@@ -2181,7 +2179,8 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_FOCUSED]), guiAlpha));
-            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED:
         {
@@ -2189,13 +2188,16 @@ RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_NORMAL]), guiAlpha));
             
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDER_BASE_COLOR_PRESSED]), guiAlpha));
-            //DrawRectangle(slider.x + slider.width/2, slider.y, SLIDER_SLIDER_LINE_THICK, slider.height, Fade(GetColor(style[SLIDER_BORDER_COLOR_PRESSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]), guiAlpha));
         } break;
         case DISABLED:
         {
             DrawRectangleLinesEx(bounds, style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BORDER_COLOR_DISABLED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDEREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDER_BORDER_WIDTH], bounds.y + style[SLIDER_BORDER_WIDTH], bounds.width - 2*style[SLIDER_BORDER_WIDTH], bounds.height - 2*style[SLIDER_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_DISABLED]), guiAlpha));
             DrawRectangleRec(slider, Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
     }
@@ -2309,9 +2311,6 @@ RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, fl
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiLabel((Rectangle){ bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text);
-    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + SLIDERBAREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, FormatText("%.02f", value));
-    
     switch (state)
     {
         case NORMAL:
@@ -2319,24 +2318,32 @@ RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, fl
             DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]), guiAlpha));
         } break;
         case FOCUSED:
         {
             DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_FOCUSED]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
             DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED:
         {
             DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_PRESSED]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
-            DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha)); 
-        } break;
+            DrawRectangleRec(slider, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]), guiAlpha));
+            } break;
         case DISABLED:
         {
             DrawRectangleLinesEx(bounds, style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_DISABLED]), guiAlpha));
             DrawRectangle(bounds.x + style[SLIDERBAR_BORDER_WIDTH], bounds.y + style[SLIDERBAR_BORDER_WIDTH], bounds.width - 2*style[SLIDERBAR_BORDER_WIDTH], bounds.height - 2*style[SLIDERBAR_BORDER_WIDTH], Fade(GetColor(style[SLIDER_BASE_COLOR_DISABLED]), guiAlpha));
             DrawRectangleRec(slider, Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
+            DrawText(text, bounds.x - SLIDERBAREX_WIDTH_PADDING - textWidth, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDERBAREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
+            if (showValue) DrawText(FormatText("%.02f", value), bounds.x + bounds.width + SLIDEREX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + SLIDEREX_HEIGHT_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
     }    
