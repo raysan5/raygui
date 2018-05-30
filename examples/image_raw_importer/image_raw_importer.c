@@ -54,7 +54,8 @@ int main()
     
     // Image file info
     int dataSize = 0;
-    char fileName[32] = "\0";
+    char fileNamePath[256] = "\0";
+    char fileName[64] = "\0";
     
     bool btnLoadPressed = false;
     
@@ -85,6 +86,7 @@ int main()
                 
                 // NOTE: Returned string is just a pointer to droppedFiles[0],
                 // we need to make a copy of that data somewhere else: fileName
+                strcpy(fileNamePath, droppedFiles[0]);
                 strcpy(fileName, GetFileName(droppedFiles[0]));
                 
                 // Try to guess possible raw values
@@ -92,6 +94,7 @@ int main()
                 widthValue = round(sqrt(dataSize/4));
                 heightValue = widthValue;
                 headerSizeValue = dataSize - widthValue*heightValue*4;
+                if (headerSizeValue < 0) headerSizeValue = 0;
 
                 importWindowActive = true;
             }
@@ -133,7 +136,7 @@ int main()
                 
                 if (format != -1)
                 {
-                    Image image = LoadImageRaw(fileName, widthValue, heightValue, format, headerSizeValue);
+                    Image image = LoadImageRaw(fileNamePath, widthValue, heightValue, format, headerSizeValue);
                     texture = LoadTextureFromImage(image);
                     UnloadImage(image);
                     
