@@ -42,18 +42,9 @@ int main()
     bool importWindowActive = false;
     int widthValue = 0;
     int heightValue = 0;
-    int pixelFormatActive = 7;
-    const char *pixelFormatTextList[8] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8", "R8G8B8", "CUSTOM" };
-    /*
-        UNCOMPRESSED_GRAYSCALE = 1,     // 8 bit per pixel (no alpha)
-    UNCOMPRESSED_GRAY_ALPHA,        // 8*2 bpp (2 channels)
-    UNCOMPRESSED_R5G6B5,            // 16 bpp
-    UNCOMPRESSED_R8G8B8,            // 24 bpp
-    UNCOMPRESSED_R5G5B5A1,          // 16 bpp (1 bit alpha)
-    UNCOMPRESSED_R4G4B4A4,          // 16 bpp (4 bit alpha)
-    UNCOMPRESSED_R8G8B8A8,          // 32 bpp
-    CUSTOM
-    */
+    int pixelFormatActive = 0;
+    const char *pixelFormatTextList[8] = { "CUSTOM", "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
+
     int channelsActive = 3;
     const char *channelsTextList[4] = { "1", "2", "3", "4" };
     int bitDepthActive = 0;
@@ -116,7 +107,7 @@ int main()
             {
                 int format = -1;
 
-                if (pixelFormatActive == 7)
+                if (pixelFormatActive == 0)
                 {
                     int channels = atoi(channelsTextList[channelsActive]);
                     int bpp = atoi(bitDepthTextList[bitDepthActive]);
@@ -195,7 +186,7 @@ int main()
                 pixelFormatActive = GuiComboBox((Rectangle){ windowOffset.x + 20, windowOffset.y + 195, 160, 25 },  pixelFormatTextList, 8, pixelFormatActive);
                 GuiLine((Rectangle){ windowOffset.x + 20, windowOffset.y + 220, 160, 20 }, 1);
                 
-                if (pixelFormatActive != 7) GuiDisable();
+                if (pixelFormatActive != 0) GuiDisable();
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 235, 50, 20 }, "Channels:");
                 channelsActive = GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 255, 159, 25 }, channelsTextList, 4, channelsActive);
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 285, 50, 20 }, "Bit Depth:");
