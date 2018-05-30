@@ -36,7 +36,7 @@ int main(int argc, char *argv[0])
     InitWindow(screenWidth, screenHeight, "image exporter");
     
     // Image export window variables
-    Rectangle windowBoxRec = { screenWidth/2 - 130, screenHeight/2 - 110, 260, 230 };
+    Rectangle windowBoxRec = { screenWidth/2 - 110, screenHeight/2 - 100, 220, 190 };
     bool windowBoxActive = false;
     int fileFormatActive = 0;
     const char *fileFormatTextList[3] = { "IMAGE (.png)", "DATA (.raw)", "CODE (.h)" };
@@ -46,9 +46,12 @@ int main(int argc, char *argv[0])
     //Texture2D texture = LoadTextureFromImage(image);
     Image image = { 0 };
     Texture2D texture = { 0 };
+    
     bool imageLoaded = false;
-    bool btnExport = false;
     float imageScale = 1.0f;
+    Rectangle imageRec = { 0.0f };
+    
+    bool btnExport = false;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -122,6 +125,8 @@ int main(int argc, char *argv[0])
             imageScale += (float)GetMouseWheelMove()*0.05f;   // Image scale control
             if (imageScale <= 0.1f) imageScale = 0.1f;
             else if (imageScale >= 5) imageScale = 5;
+            
+            imageRec = (Rectangle){ screenWidth/2 - (float)image.width*imageScale/2, screenHeight/2 - (float)image.height*imageScale/2, (float)image.width*imageScale, (float)image.height*imageScale };
         }
         //----------------------------------------------------------------------------------
 
@@ -134,23 +139,25 @@ int main(int argc, char *argv[0])
             if (texture.id > 0)
             {
                 DrawTextureEx(texture, (Vector2){ screenWidth/2 - (float)texture.width*imageScale/2, screenHeight/2 - (float)texture.height*imageScale/2 }, 0.0f, imageScale, WHITE);
+                
+                DrawRectangleLinesEx(imageRec, 1, CheckCollisionPointRec(GetMousePosition(), imageRec) ? RED : DARKGRAY); 
                 DrawText(FormatText("SCALE: %.2f%%", imageScale*100.0f), 20, screenHeight - 40, 20, GetColor(style[DEFAULT_LINES_COLOR]));
             }
             else
             {
-                DrawText("Drag & drop your image!", 300, 200, 10, DARKGRAY);
+                DrawText("DRAG & DROP YOUR IMAGE!", 350, 200, 10, DARKGRAY);
                 GuiDisable();
             }
             
-            if (GuiButton((Rectangle){ screenWidth - 170, screenHeight - 50, 150, 30 }, "Show Export Window")) windowBoxActive = true;
+            if (GuiButton((Rectangle){ screenWidth - 170, screenHeight - 50, 150, 30 }, "Image Export")) windowBoxActive = true;
             GuiEnable();
             
             // Draw window box: windowBoxName
             //-----------------------------------------------------------------------------
             if (windowBoxActive)
             {
-                DrawRectangle(0,0, screenWidth, screenHeight, Fade(GetColor(style[DEFAULT_BACKGROUND_COLOR]), 0.7f));
-                windowBoxActive = !GuiWindowBox((Rectangle){ windowBoxRec.x + 0, windowBoxRec.y + 0, 220, 190 }, "Image Export Options");
+                DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(style[DEFAULT_BACKGROUND_COLOR]), 0.7f));
+                windowBoxActive = !GuiWindowBox((Rectangle){ windowBoxRec.x, windowBoxRec.y, 220, 190 }, "Image Export Options");
             
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 35, 60, 25 }, "File format:");
                 fileFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 },  fileFormatTextList, 3, fileFormatActive); 
