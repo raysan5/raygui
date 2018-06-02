@@ -1,10 +1,11 @@
 /*******************************************************************************************
 *
-*   raw_importer - image raw importer
+*   raygui - image raw importer example
 *
-*   LICENSE: zlib/libpng
+*   This example has been created using raylib v2.0 (www.raylib.com)
+*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
-*   Copyright (c) 2018 raylib technologies
+*   Copyright (c) 2018 raylib technologies (@raylibtech)
 *
 **********************************************************************************************/
 

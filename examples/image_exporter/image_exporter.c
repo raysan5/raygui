@@ -1,11 +1,11 @@
 /*******************************************************************************************
 *
-*   raygui - image exporter window box test
+*   raygui - image exporter example
 *
-*   This example has been created using raylib v1.9 (www.raylib.com)
+*   This example has been created using raylib v2.0 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
-*   Copyright (c) 2018 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2018 raylib technologies (@raylibtech)
 *
 ********************************************************************************************/
 
