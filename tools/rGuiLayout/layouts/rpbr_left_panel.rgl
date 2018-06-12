@@ -1,7 +1,7 @@
 #
 # rgl text file (v1.0) - raygui layout text file generated using rGuiLayout
 #
-# Total number of controls:     64
+# Total number of controls:     44
 # Anchor info:   a <id> <posx> <posy> <enabled>
 # Control info:  c <id> <type> <name> <rectangle> <anchor_id> <text>
 #
@@ -15,65 +15,45 @@ a 006 0 0 0
 a 007 0 0 0
 c 000 17 StatusBar000 0 0 210 25 1 SCENE SETTINGS
 c 001 3 Panel063 50 50 210 775 0 
-c 002 9 ComboBox001 95 50 95 25 1 
+c 002 1 GroupBox010 10 40 190 135 1 Render Settings
 c 003 4 Label002 20 50 80 25 1 Render Mode:
-c 004 14 Slider003 95 85 95 10 1 
-c 005 15 SliderBar004 95 105 95 10 1 
-c 006 4 Label005 20 80 80 20 1 Wordl Scale:
-c 007 4 Label006 35 100 65 20 1 Wireframe:
-c 008 8 CheckBox007 20 105 10 10 1 
-c 009 4 Label008 20 120 86 20 1 Render elements:
-c 010 7 ToggleGroup009 20 138 170 25 1 
-c 011 1 GroupBox010 10 40 190 135 1 Render Settings
-c 012 20 DummyRec011 10 10 170 110 2 
-c 013 4 Label012 10 125 55 20 2 Parallax:
-c 014 14 Slider013 65 130 115 10 2 
-c 015 15 SliderBar014 65 150 115 10 2 
-c 016 4 Label015 10 145 55 20 2 Blurry:
-c 017 1 GroupBox016 0 0 190 170 2 Environment
-c 018 7 ToggleGroup017 10 13 170 25 3 
-c 019 4 Label018 10 40 40 20 3 FOV:
-c 020 15 SliderBar019 50 45 130 10 3 
-c 021 1 GroupBox020 0 0 190 65 3 Camera
-c 022 4 Label021 25 10 28 20 4 Key
-c 023 4 Label022 25 30 28 20 4 Fill
-c 024 4 Label023 25 50 29 20 4 Back
-c 025 8 CheckBox024 10 15 10 10 4 
-c 026 8 CheckBox025 10 35 10 10 4 
-c 027 8 CheckBox026 10 55 10 10 4 
-c 028 15 SliderBar027 55 15 90 10 4 
-c 029 15 SliderBar028 55 35 90 10 4 
-c 030 15 SliderBar029 55 55 90 10 4 
-c 031 20 DummyRec030 150 10 30 20 4 -
-c 032 20 DummyRec031 150 30 30 20 4 -
-c 033 20 DummyRec032 150 50 30 20 4 -
-c 034 1 GroupBox033 0 0 190 80 4 Lights
-c 035 8 CheckBox034 10 15 10 10 5 
-c 036 8 CheckBox035 10 35 10 10 5 
-c 037 8 CheckBox036 10 55 10 10 5 
-c 038 8 CheckBox037 10 75 10 10 5 
-c 039 8 CheckBox038 10 95 10 10 5 
-c 040 8 CheckBox039 10 115 10 10 5 
-c 041 4 Label040 25 10 110 20 5 Antialiasing (FXAAv3)
-c 042 4 Label041 25 30 60 20 5 Bloom:
-c 043 4 Label042 25 50 60 20 5 Vignette:
-c 044 4 Label043 25 70 60 20 5 DOF:
-c 045 4 Label044 25 90 55 20 5 Grain:
-c 046 4 Label045 25 110 90 20 5 Color correction:
-c 047 15 SliderBar046 80 35 100 10 5 
-c 048 15 SliderBar047 80 55 100 10 5 
-c 049 15 SliderBar048 80 95 100 10 5 
-c 050 14 Slider049 80 75 100 10 5 
-c 051 4 Label050 25 125 30 20 5 Hue:
-c 052 4 Label051 25 140 20 20 5 Sat:
-c 053 4 Label052 25 155 20 20 5 Lum:
-c 054 14 Slider053 55 130 125 10 5 
-c 055 14 Slider054 55 145 125 10 5 
-c 056 14 Slider055 55 160 125 10 5 
-c 057 15 SliderBar056 80 180 100 10 5 
-c 058 15 SliderBar057 80 200 100 10 5 
-c 059 15 SliderBar058 80 220 100 10 5 
-c 060 4 Label059 10 175 75 20 5 Brightness:
-c 061 4 Label060 10 195 75 20 5 Contrast:
-c 062 4 Label061 10 215 75 20 5 Gamma:
-c 063 1 GroupBox062 0 0 190 240 5 Postpro FX
+c 004 9 ComboBox001 95 50 95 25 1 
+c 005 14 Slider003 90 85 80 10 1 World scale:
+c 006 8 CheckBox007 20 105 10 10 1 
+c 007 15 SliderBar004 90 105 80 10 1 Wireframe
+c 008 4 Label008 20 120 86 20 1 Render elements:
+c 009 7 ToggleGroup009 20 138 170 25 1 
+c 010 1 GroupBox016 0 0 190 170 2 Environment
+c 011 20 DummyRec011 10 10 170 110 2 
+c 012 14 Slider013 60 130 90 10 2 Parallax:
+c 013 15 SliderBar014 60 150 90 10 2 Blurry:
+c 014 1 GroupBox020 0 0 190 65 3 Camera
+c 015 7 ToggleGroup017 10 13 170 25 3 
+c 016 15 SliderBar019 45 45 105 10 3 FOV:
+c 017 1 GroupBox033 0 0 190 80 4 Lights
+c 018 8 CheckBox024 10 15 10 10 4 Key
+c 019 15 SliderBar027 55 15 90 10 4 
+c 020 20 DummyRec030 150 10 30 20 4 -
+c 021 8 CheckBox025 10 35 10 10 4 Fill
+c 022 15 SliderBar028 55 35 90 10 4 
+c 023 20 DummyRec031 150 30 30 20 4 -
+c 024 8 CheckBox026 10 55 10 10 4 Back
+c 025 15 SliderBar029 55 55 90 10 4 
+c 026 20 DummyRec032 150 50 30 20 4 -
+c 027 1 GroupBox062 0 0 190 240 5 Postpro FX
+c 028 8 CheckBox034 10 15 10 10 5 Antialiasing (FXAAv3)
+c 029 8 CheckBox035 10 35 10 10 5 Bloom:
+c 030 8 CheckBox036 10 55 10 10 5 Vignette:
+c 031 8 CheckBox037 10 75 10 10 5 DOF:
+c 032 8 CheckBox038 10 95 10 10 5 Grain:
+c 033 8 CheckBox039 10 115 10 10 5 Color correction:
+c 034 15 SliderBar046 75 35 80 10 5 
+c 035 15 SliderBar047 75 55 80 10 5 
+c 036 15 SliderBar048 75 95 80 10 5 
+c 037 14 Slider049 75 75 80 10 5 
+c 038 14 Slider054 55 145 100 10 5 Sat:
+c 039 14 Slider055 55 160 100 10 5 Lum:
+c 040 15 SliderBar056 60 180 95 10 5 Bright:
+c 041 15 SliderBar057 60 200 95 10 5 Contrast:
+c 042 15 SliderBar058 60 220 95 10 5 Gamma:
+c 043 14 Slider048 55 130 100 10 5 Hue:
