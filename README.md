@@ -71,6 +71,6 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 ## Acknowledgements
 The following people has invested their time and effort into raygui project. Big thanks to them!
 
- - Adria Arranz and Jordi Jorba for improving raygui, adding new controls and working hard on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) tools redesign and rewrite.
+ - [Adria Arranz](https://github.com/Adri102) and [Jordi Jorba](https://github.com/KoroBli) for improving raygui, adding new controls and working hard on [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) tools redesign and rewrite.
  - [Sergio Martinez](https://github.com/anidealgift) for improving raygui and working on original [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool.
  - Daniel Nicolas and [Kevin Gato](https://github.com/Gatonevermind) for working on initial development.
