@@ -1983,7 +1983,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                     }
                 }
                 
-                currentLine = MeasureTextEx(GetDefaultFont(), text, style[DEFAULT_TEXT_SIZE], 1).y/10 - 1;
+                currentLine = MeasureTextEx(GetFontDefault(), text, style[DEFAULT_TEXT_SIZE], 1).y/10 - 1;
                 
                 // NOTE: Only allow keys in range [32..125]
                 if ((key >= 32) && (key <= 125) && (keyCount < textSize))
@@ -3045,12 +3045,12 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
     GuiControlState state = guiState;
     bool clicked = false;
 
-    Vector2 textSize = MeasureTextEx(GetDefaultFont(), windowTitle, style[DEFAULT_TEXT_SIZE], 1);
+    Vector2 textSize = MeasureTextEx(GetFontDefault(), windowTitle, style[DEFAULT_TEXT_SIZE], 1);
     int offsetX = 20;
 
     if (bounds.width < textSize.x + offsetX + STATUSBAR_BUTTON) bounds.width = textSize.x + offsetX + STATUSBAR_BUTTON;
     
-    textSize = MeasureTextEx(GetDefaultFont(), message, style[DEFAULT_TEXT_SIZE], 1);
+    textSize = MeasureTextEx(GetFontDefault(), message, style[DEFAULT_TEXT_SIZE], 1);
     if (bounds.width < textSize.x + offsetX) bounds.width = textSize.x + offsetX;
 
     if (bounds.height < (BUTTON_HEIGHT + BUTTON_PADDING*2 + STATUSBAR_HEIGHT + STATUSBAR_BUTTON + textSize.y)) bounds.height = (BUTTON_HEIGHT + BUTTON_PADDING*2 + STATUSBAR_HEIGHT + STATUSBAR_BUTTON + textSize.y);
