@@ -330,6 +330,7 @@ static void BtnLoadStyle(void);                                 // Button load s
 static void BtnSaveStyle(const char *defaultName, bool binary); // Button save style function
 
 static void SaveStyleRGS(const char *fileName, bool binary);    // Save raygui style file (.rgs), text or binary
+static void GenImageControlsTable(void);                        // Generate controls table image
 
 static int GetGuiStylePropertyIndex(int control, int property);
 static Color ColorBox(Rectangle bounds, Color *colorPicker, Color color);
@@ -466,7 +467,8 @@ int main(int argc, char *argv[])
         // Get mouse position each frame
         mousePos = GetMousePosition();
         
-       
+        // Export controls table image
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) GenImageControlsTable();
 
         // Check for dropped files
         if (IsFileDropped())
@@ -866,4 +868,28 @@ static void SaveStyleRGS(const char *fileName, bool binary)
             fclose(rgsFile);
         }
     }
+}
+
+// Generate controls table image
+static void GenImageControlsTable(void)
+{
+    Image image = LoadImage("raygui_style_table_light.png");
+    
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BACKGROUND_COLOR]), GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_LINES_COLOR]), GetColor(style[DEFAULT_LINES_COLOR]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_NORMAL]), GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_NORMAL]), GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_NORMAL]), GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_FOCUSED]), GetColor(style[DEFAULT_BORDER_COLOR_FOCUSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_FOCUSED]), GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_FOCUSED]), GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_PRESSED]), GetColor(style[DEFAULT_BORDER_COLOR_PRESSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_PRESSED]), GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_PRESSED]), GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_DISABLED]), GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_DISABLED]), GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
+    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_DISABLED]), GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));
+    
+    ExportImage("raygui_style_table_new.png", image);
+    UnloadImage(image);
 }
