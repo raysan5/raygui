@@ -2,14 +2,16 @@
 
 **raygui** is a simple and easy-to-use immediate-mode-gui single-file header-only library.
 
-raygui was inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
+raygui was initially inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
 raygui was originated as an auxiliar module for [raylib](https://github.com/raysan5/raylib) to create simple GUI interfaces using raylib graphic style (simple colors, plain rectangular shapes, wide borders, raylib default font...).
 
 raygui is intended for **tools development**; it has already been used on tools like [rFXGen](https://github.com/raysan5/rFXGen), [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools) and [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools).
 
+<br>
+
 ## raygui styles
-raygui comes with two predefined styles, selectable at compile time just defining `RAYGUI_STYLE_DEFAULT_LIGHT` or `RAYGUI_STYLE_DEFAULT_DARK` but additional custom styles can be created using [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) tool and imported at runtime using `GuiLoadStyle()`, `GuiLoadStyleImage()` or `GuiLoadStylePalette()` functions.
+raygui comes with two predefined styles, selectable at compile time just defining `RAYGUI_STYLE_DEFAULT_LIGHT` or `RAYGUI_STYLE_DEFAULT_DARK` but additional custom styles can be created using [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) and loaded at runtime using `GuiLoadStyle()`, `GuiLoadStyleImage()` or `GuiLoadStylePalette()` functions.
 
 ![raygui light design](design/raygui_style_table_light_REV10.png)
 
@@ -20,13 +22,13 @@ raygui comes with two predefined styles, selectable at compile time just definin
 ![raygui cherry design](design/raygui_style_table_cherry_REV1.png)
 
 ## raygui history
-raygui development started on December 2014 by two intenship students (Kevin Gato and Daniel Nicolas) guided by me, the objective was creating a simple and easy-to-use raylib immediate-mode-gui module, intended for tools development. On June 2015, library was mostly functional (including all planned controls) and work started into the styling options for the library, focusing on an easy way to style some controls properties. Consequently, development of [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib) development.
+raygui development started on December 2014 by two intenship students (Kevin and Daniel) guided by me, the objective was creating a simple and easy-to-use immediate-mode-gui module for raylib, intended for tools development. On June 2015, library was mostly functional (including all basic planned controls) and we started working in the styling options for the library, focusing on an easy way to style some controls properties. Consequently, development of [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib) development.
 
-On June 2016, project was picked up again and raygui 1.0 was released at the end of that month. During August 2016, raygui was used to develop [rFXGen](https://github.com/raysan5/rFXGen) and an early protoype of [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout), mainly as an usage prove test. After that, raygui project remained stopped for the following months.
+On June 2016, project was picked up again and raygui 1.0 was released at the end of that month. During August 2016, raygui was used to develop [rFXGen](https://github.com/raysan5/rFXGen) and also an early protoype of [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout), mainly as an usage prove test. After that, raygui project was stopped again for the coming months.
 
-On June 2017, started a complete redesign of the library, almost from scratch, all functions were reviewed and mostly rewritten and a brand new styling system was developed. The objective was using raygui professionally in several tools planned for raylib.
+On June 2017, a complete redesign of the library started, almost from scratch, all functions were reviewed and mostly rewritten and a brand new styling system was developed. The objective was using raygui professionally in several tools.
 
-On January 2018, two students (Adria and Jordi) started working on raygui and related tools. Consequently, library and tools evolved A LOT in the following months. [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) was completely redesigned and rewritten from scratch. [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) turned from a protoype into a professional software and raygui reached version 2.0 with plenty of new controls and features.
+On January 2018, two students (Adria and Jordi) started working on raygui and related tools. Consequently, library and tools evolved A LOT in the following months. [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) was [completely redesigned](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler/design) and rewritten from scratch. [rGuiLayout](https://github.com/raysan5/raygui/tree/master/tools/rGuiLayout) turned from a protoype into a professional software and raygui reached version 2.0 with plenty of new controls and features.
 
 ## raygui 2.0 provided controls
 
