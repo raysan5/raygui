@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   rGuiStyler v2.0 - raygui Style Editor
+*   rGuiStyler v2.1 - raygui Style Editor
 *
 *   Compile this program using:
 *       gcc -o rguistyler.exe rguistyler.c external/tinyfiledialogs.c -I..\.. \ 
@@ -348,7 +348,7 @@ int main(int argc, char *argv[])
     const int screenHeight = 640;
     
     //SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(screenWidth, screenHeight, "rGuiStyler v2.0 - raygui style editor");
+    InitWindow(screenWidth, screenHeight, "rGuiStyler v2.1 - raygui style editor");
     SetExitKey(0);
 
     int dropsCount = 0;
