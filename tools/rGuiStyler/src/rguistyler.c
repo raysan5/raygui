@@ -42,6 +42,8 @@
 
 #include "external/tinyfiledialogs.h"   // Open/Save file dialogs
 
+#include "raygui_style_table_light.h"   // Image table data
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -871,25 +873,23 @@ static void SaveStyleRGS(const char *fileName, bool binary)
 }
 
 // Generate controls table image
+// NOTE: We use embedded image raygui_style_table_light 
 static void GenImageControlsTable(void)
-{
-    Image image = LoadImage("raygui_style_table_light.png");
+{   
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BACKGROUND_COLOR]), GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_LINES_COLOR]), GetColor(style[DEFAULT_LINES_COLOR]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BORDER_COLOR_NORMAL]), GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BASE_COLOR_NORMAL]), GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_TEXT_COLOR_NORMAL]), GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BORDER_COLOR_FOCUSED]), GetColor(style[DEFAULT_BORDER_COLOR_FOCUSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BASE_COLOR_FOCUSED]), GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_TEXT_COLOR_FOCUSED]), GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BORDER_COLOR_PRESSED]), GetColor(style[DEFAULT_BORDER_COLOR_PRESSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BASE_COLOR_PRESSED]), GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_TEXT_COLOR_PRESSED]), GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BORDER_COLOR_DISABLED]), GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_BASE_COLOR_DISABLED]), GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
+    ImageColorReplace(&image_raygui_style_table_light, GetColor(styleBackup[DEFAULT_TEXT_COLOR_DISABLED]), GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));
     
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BACKGROUND_COLOR]), GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_LINES_COLOR]), GetColor(style[DEFAULT_LINES_COLOR]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_NORMAL]), GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_NORMAL]), GetColor(style[DEFAULT_BASE_COLOR_NORMAL]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_NORMAL]), GetColor(style[DEFAULT_TEXT_COLOR_NORMAL]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_FOCUSED]), GetColor(style[DEFAULT_BORDER_COLOR_FOCUSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_FOCUSED]), GetColor(style[DEFAULT_BASE_COLOR_FOCUSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_FOCUSED]), GetColor(style[DEFAULT_TEXT_COLOR_FOCUSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_PRESSED]), GetColor(style[DEFAULT_BORDER_COLOR_PRESSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_PRESSED]), GetColor(style[DEFAULT_BASE_COLOR_PRESSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_PRESSED]), GetColor(style[DEFAULT_TEXT_COLOR_PRESSED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BORDER_COLOR_DISABLED]), GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_BASE_COLOR_DISABLED]), GetColor(style[DEFAULT_BASE_COLOR_DISABLED]));
-    ImageColorReplace(&image, GetColor(styleBackup[DEFAULT_TEXT_COLOR_DISABLED]), GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]));
-    
-    ExportImage("raygui_style_table_new.png", image);
-    UnloadImage(image);
+    ExportImage("raygui_style_table.png", image_raygui_style_table_light);
 }
