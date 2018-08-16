@@ -2,11 +2,11 @@
 
 ### rGuiStyler - tool evolution
 
-*raygui_styler* tool development begin on mid-2015, [raygui](https://github.com/raysan5/raygui) project had started on December 2014 and after some time developing the library, a visual tool to customize style was a requirement.
+*raygui_styler* tool development begin on mid-2015, [raygui](https://github.com/raysan5/raygui) project was started on December 2014 and after some time developing the library, a visual tool to customize style was required.
 
 <br>
 
-After some weeks of work a first functional version of a visual style editor tool was presented:
+After some weeks of work, a first functional version of the visual style editor tool was released:
 
 ![raygui_styler - June 2015](https://raw.githubusercontent.com/raysan5/raygui/master/tools/rGuiStyler/design/old/001_raygui_styler_july2015a.png)
 
