@@ -1,8 +1,4 @@
-license
-=======
-
-raygui is licensed under an unmodified zlib/libpng license, which is an OSI-certified, 
-BSD-like license that allows static linking with closed source software:
+zlib License
 	
 Copyright (c) 2014-2017 Ramon Santamaria (@raysan5)
 
