@@ -403,8 +403,9 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 RAYGUIDEF void GuiSaveStyle(const char *fileName, bool binary);         // Save style file (.rgs), text or binary
 RAYGUIDEF void GuiLoadStyle(const char *fileName);                      // Load style file (.rgs), text or binary
-RAYGUIDEF void GuiLoadStyleImage(const char *fileName);                 // Load style from an image style file
-RAYGUIDEF void GuiLoadStylePalette(Color *palette);                     // Load style from a color palette array (14 values required)
+RAYGUIDEF void GuiLoadStylePalette(int *palette);                       // Load style from a color palette array (14 values required)
+RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName);          // Load style from an image palette file (64x16)
+
 RAYGUIDEF void GuiUpdateStyleComplete(void);                            // Updates full style properties set with generic values
 #endif
 
@@ -829,9 +830,9 @@ static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color
 static void DrawTexture(Texture2D texture, int posX, int posY, Color tint);         // -- GuiTexture()
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
-static Image LoadImage(const char *fileName);       // -- GuiLoadStyleImage()
-static Color *GetImageData(Image image);            // -- GuiLoadStyleImage()
-static void UnloadImage(Image image);               // -- GuiLoadStyleImage()
+static Image LoadImage(const char *fileName);       // -- GuiLoadStylePaletteImage()
+static Color *GetImageData(Image image);            // -- GuiLoadStylePaletteImage()
+static void UnloadImage(Image image);               // -- GuiLoadStylePaletteImage()
 #endif
 
 #endif      // RAYGUI_STANDALONE
@@ -877,7 +878,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 
     int offsetX = 10;
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
-    int textHeight = style[DEFAULT_TEXT_SIZE];
+    //int textHeight = style[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth + offsetX*2 + 16) bounds.width = textWidth + offsetX*2 + 16;
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, 24 };
@@ -1043,6 +1044,8 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
 RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll)
 {
     // TODO: Implement
+    
+    return viewScroll;
 }
 
 // Label control
@@ -1727,8 +1730,6 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth
 {
     #define GUIVALUEBOX_BUTTON_BORDER_WIDTH   1
     
-    GuiControlState state = guiState;
-    
     int buttonBorderWidth = style[BUTTON_BORDER_WIDTH];
     style[BUTTON_BORDER_WIDTH] = GUIVALUEBOX_BUTTON_BORDER_WIDTH;
     
@@ -2366,11 +2367,10 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, fl
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
-        Vector2 mousePoint = GetMousePosition();
-
-        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
-
+        //Vector2 mousePoint = GetMousePosition();
         //if (CheckCollisionPointRec(mousePoint, bounds)) state = FOCUSED;      // State not required on ProgressBar
+        
+        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
     }
     //--------------------------------------------------------------------
 
@@ -2416,11 +2416,10 @@ RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, 
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
-        Vector2 mousePoint = GetMousePosition();
-
-        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
-
+        //Vector2 mousePoint = GetMousePosition();
         //if (CheckCollisionPointRec(mousePoint, bounds)) state = FOCUSED;      // State not required on ProgressBar
+        
+        progress.width = (int)(value/(maxValue - minValue)*(float)(bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH]));
     }
     //--------------------------------------------------------------------
 
@@ -2999,37 +2998,16 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
 // NOTE: bounds define GuiColorPanel() size
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 {    
-    GuiControlState state = guiState;
-    
     color = GuiColorPanel(bounds, color);
     
-    Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width, style[COLORPICKER_BARS_THICK] };
     Rectangle boundsHue = { bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y, style[COLORPICKER_BARS_THICK], bounds.height };
-    
+    //Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width, style[COLORPICKER_BARS_THICK] };
+ 
     Vector3 hsv = ConvertRGBtoHSV((Vector3){ color.r/255.0f, color.g/255.0f, color.b/255.0f });
     hsv.x = GuiColorBarHue(boundsHue, hsv.x);
     //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
     color = (Color){ (unsigned char)(rgb.x*255.0f), (unsigned char)(rgb.y*255.0f), (unsigned char)(rgb.z*255.0f), color.a };
-    
-    /*
-    // Draw control: color select panel
-    //--------------------------------------------------------------------
-    if (state != DISABLED)
-    {
-        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%((int)bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? Fade(Fade(GRAY, 0.4f), guiAlpha) : Fade(Fade(RAYWHITE, 0.4f), guiAlpha));
-        for (int i = 0; i < 2; i++) DrawRectangle(bounds.x + style[COLORPICKER_BARS_PADDING]*(i%((int)bounds.width/(style[COLORPICKER_BARS_THICK]/2))) + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + style[COLORPICKER_BARS_PADDING] + bounds.height + style[COLORPICKER_BARS_PADDING], bounds.width/(bounds.width/(style[COLORPICKER_BARS_THICK]/2)), style[COLORPICKER_BARS_THICK]/2, (i%2) ? Fade(Fade(RAYWHITE, 0.4f), guiAlpha) : Fade(Fade(GRAY, 0.4f), guiAlpha));
-        DrawRectangle(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], Fade(color, guiAlpha));
-        DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], Fade(GetColor(style[COLORPICKER_BORDER_COLOR_NORMAL]), guiAlpha));
-    }
-    else 
-    {
-        //DrawRectangleGradientEx((Rectangle){ bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK] }, WHITE, GRAY, BLACK, GRAY);
-        DrawRectangle(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], Fade(GetColor(style[COLORPICKER_BASE_COLOR_DISABLED]), guiAlpha));
-        DrawRectangleLines(bounds.x + bounds.width + style[COLORPICKER_BARS_PADDING], bounds.y + bounds.height + style[COLORPICKER_BARS_PADDING], style[COLORPICKER_BARS_THICK], style[COLORPICKER_BARS_THICK], Fade(GetColor(style[COLORPICKER_BORDER_COLOR_DISABLED]), guiAlpha));
-    }
-    //--------------------------------------------------------------------
-    */
 
     return color;
 }
@@ -3042,7 +3020,6 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
     #define STATUSBAR_BUTTON 16
     #define STATUSBAR_HEIGHT 24
     
-    GuiControlState state = guiState;
     bool clicked = false;
 
     Vector2 textSize = MeasureTextEx(GetFontDefault(), windowTitle, style[DEFAULT_TEXT_SIZE], 1);
@@ -3158,7 +3135,6 @@ RAYGUIDEF void GuiSaveStyle(const char *fileName, bool binary)
     {
         #define RGS_FILE_VERSION_TEXT   "2.0"
         
-        int counter = 0;
         FILE *rgsFile = fopen(fileName, "wt");
         
         if (rgsFile != NULL)
@@ -3181,8 +3157,6 @@ RAYGUIDEF void GuiSaveStyle(const char *fileName, bool binary)
 // NOTE: File is tried to be loaded as text first
 RAYGUIDEF void GuiLoadStyle(const char *fileName)
 {
-    short id = 0;
-    int value = 0;
     int counter = 0;
     char buffer[256];
     bool tryBinary = false;
@@ -3195,6 +3169,9 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
         if (buffer[0] != 'R')   // Text file!
         {
+            int id = 0;
+            int value = 0;
+    
             while (!feof(rgsFile))
             {
                 if ((buffer[0] != '\n') && (buffer[0] != '#'))
@@ -3218,6 +3195,9 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     
         if (rgsFile != NULL)
         {
+            short id = 0;
+            int value = 0;
+            
             char signature[5] = "";
             short version = 0;
             short reserved = 0;
@@ -3252,8 +3232,31 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     TraceLog(LOG_INFO, "[raygui] Style properties loaded: %i", counter);
 }
 
+// Load style from a color palette array (14 values required)
+RAYGUIDEF void GuiLoadStylePalette(int *palette)
+{
+    // Load generic style color palette
+    style[DEFAULT_BACKGROUND_COLOR] = palette[0];
+    style[DEFAULT_LINES_COLOR] = palette[1];
+    style[DEFAULT_BORDER_COLOR_NORMAL] = palette[2];
+    style[DEFAULT_BASE_COLOR_NORMAL] = palette[3];
+    style[DEFAULT_TEXT_COLOR_NORMAL] = palette[4];
+    style[DEFAULT_BORDER_COLOR_FOCUSED] = palette[5];
+    style[DEFAULT_BASE_COLOR_FOCUSED] = palette[6];
+    style[DEFAULT_TEXT_COLOR_FOCUSED] = palette[7];
+    style[DEFAULT_BORDER_COLOR_PRESSED] = palette[8];
+    style[DEFAULT_BASE_COLOR_PRESSED] = palette[9];
+    style[DEFAULT_TEXT_COLOR_PRESSED] = palette[10];
+    style[DEFAULT_BORDER_COLOR_DISABLED] = palette[11];
+    style[DEFAULT_BASE_COLOR_DISABLED] = palette[12];
+    style[DEFAULT_TEXT_COLOR_DISABLED] = palette[13];
+    
+    // Update full style with generic values
+    GuiUpdateStyleComplete();
+}
+
 // Load GUI style from an image style file
-RAYGUIDEF void GuiLoadStyleImage(const char *fileName)
+RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName)
 {
     // NOTE: Image data only defines color properties
     Image imStyle = LoadImage(fileName);
@@ -3279,29 +3282,6 @@ RAYGUIDEF void GuiLoadStyleImage(const char *fileName)
     GuiUpdateStyleComplete();
 
     UnloadImage(imStyle);
-}
-
-// Load style from a color palette array (14 values required)
-RAYGUIDEF void GuiLoadStylePalette(Color *palette)
-{
-    // Load generic style color palette
-    style[DEFAULT_BACKGROUND_COLOR] = ColorToInt(palette[0]);
-    style[DEFAULT_LINES_COLOR] = ColorToInt(palette[1]);
-    style[DEFAULT_BORDER_COLOR_NORMAL] = ColorToInt(palette[2]);
-    style[DEFAULT_BASE_COLOR_NORMAL] = ColorToInt(palette[3]);
-    style[DEFAULT_TEXT_COLOR_NORMAL] = ColorToInt(palette[4]);
-    style[DEFAULT_BORDER_COLOR_FOCUSED] = ColorToInt(palette[5]);
-    style[DEFAULT_BASE_COLOR_FOCUSED] = ColorToInt(palette[6]);
-    style[DEFAULT_TEXT_COLOR_FOCUSED] = ColorToInt(palette[7]);
-    style[DEFAULT_BORDER_COLOR_PRESSED] = ColorToInt(palette[8]);
-    style[DEFAULT_BASE_COLOR_PRESSED] = ColorToInt(palette[9]);
-    style[DEFAULT_TEXT_COLOR_PRESSED] = ColorToInt(palette[10]);
-    style[DEFAULT_BORDER_COLOR_DISABLED] = ColorToInt(palette[11]);
-    style[DEFAULT_BASE_COLOR_DISABLED] = ColorToInt(palette[12]);
-    style[DEFAULT_TEXT_COLOR_DISABLED] = ColorToInt(palette[13]);
-    
-    // Update full style with generic values
-    GuiUpdateStyleComplete();
 }
 
 // Updates full style property set with generic values
