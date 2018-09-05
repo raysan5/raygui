@@ -13,13 +13,13 @@ raygui is intended for **tools development**; it has already been used on tools 
 ## raygui styles
 raygui comes with two predefined styles, selectable at compile time just defining `RAYGUI_STYLE_DEFAULT_LIGHT` or `RAYGUI_STYLE_DEFAULT_DARK` but additional custom styles can be created using [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) and loaded at runtime using `GuiLoadStyle()`, `GuiLoadStyleImage()` or `GuiLoadStylePalette()` functions.
 
-![raygui light design](design/raygui_style_table_light_REV10.png)
+![raygui light design](styles_design/raygui_style_table_light_REV10.png)
 
-![raygui dark design](design/raygui_style_table_dark_REV9.png)
+![raygui dark design](styles_design/raygui_style_table_dark_REV9.png)
 
-![raygui candy design](design/raygui_style_table_candy_REV1.png)
+![raygui candy design](styles_design/raygui_style_table_candy_REV1.png)
 
-![raygui cherry design](design/raygui_style_table_cherry_REV1.png)
+![raygui cherry design](styles_design/raygui_style_table_cherry_REV1.png)
 
 ## raygui history
 raygui development started on December 2014 by two intenship students (Kevin and Daniel) guided by me, the objective was creating a simple and easy-to-use immediate-mode-gui module for raylib, intended for tools development. On June 2015, library was mostly functional (including all basic planned controls) and we started working in the styling options for the library, focusing on an easy way to style some controls properties. Consequently, development of [rGuiStyler](https://github.com/raysan5/raygui/tree/master/tools/rGuiStyler) also started at that point but resources were quite limited and project didn't move much during the following year, most of the time was invested in [raylib](https://github.com/raysan5/raylib) development.
@@ -34,7 +34,7 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 
 #### Container/separator controls, useful for controls organization
 
-<img align="right" src="design/raygui_messagebox.png">
+<img align="right" src="images/raygui_messagebox.png">
 
  - WindowBox
  - GroupBox
@@ -43,7 +43,7 @@ On January 2018, two students (Adria and Jordi) started working on raygui and re
 
 #### Basic controls
 
-<img align="right" src="tools/rGuiStyler/design/rguistyler2_light_REV9.png">
+<img align="right" src="images/rguistyler_v210_light_shot01.png">
 
  - Label
  - Button
