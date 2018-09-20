@@ -450,7 +450,7 @@ typedef enum GuiControlState {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-static int guiState = NORMAL;
+static GuiControlState guiState = NORMAL;
 static float guiAlpha = 1.0f;
 
 // Current GUI style (light or dark)
