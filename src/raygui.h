@@ -1615,9 +1615,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     #define DROPDOWNBOX_ARROW_RIGHT_PADDING    16
     
     GuiControlState state = guiState;
-    bool dropActive = false;
     static bool dropOpen = false;
-    static bool clicked = false;
    
     int textWidth = MeasureText(text[active], style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
@@ -1633,17 +1631,21 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     {
         Vector2 mousePoint = GetMousePosition();
         
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePoint, bounds))
-        {
-            clicked = true;
-        }
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = false;
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePoint, bounds)) dropOpen = true;
         
-        if (clicked)
+        if (dropOpen)
         {
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                for (int i = 1; i < (count + 1); i++)
+                {
+                    if (CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y + i*bounds.height, bounds.width, bounds.height })) active = i - 1;
+                }
+                
+                dropOpen = false;
+            }
+            
             bounds.height *= (count + 1);
-            dropActive = true;
-            dropOpen = true;
         }
 
         if (CheckCollisionPointRec(mousePoint, bounds))
@@ -1652,14 +1654,6 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
             else state = FOCUSED;
         }
         else state = NORMAL;
-        
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && dropOpen)
-        {
-            for (int i = 1; i < (count + 1); i++)
-            {
-                if (CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y + i*bounds.height, bounds.width, bounds.height })) active = i - 1;
-            }
-        }
     }
     //--------------------------------------------------------------------
 
@@ -1669,7 +1663,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     {
         case NORMAL:
         {
-            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            if (dropOpen) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else 
             {
                 DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[DEFAULT_BASE_COLOR_NORMAL]), guiAlpha));
@@ -1683,7 +1677,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         } break;
         case FOCUSED:
         {
-            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            if (dropOpen) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
@@ -1693,17 +1687,16 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         case PRESSED:
         {
             GuiPanel(bounds);
-            if (dropActive) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
+            if (dropOpen) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/(count + 1) }, text[active], true);
             else GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[active], true);
 
-            if (clicked)
+            if (dropOpen)
             {
                 for(int i = 0; i < count; i++)
                 {
                     GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height/(count + 1)*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height/(count + 1) - DROPDOWNBOX_PADDING }, text[i], false);
                 }
             }
-            
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + boundsHeight0/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + boundsHeight0/2 - 2 + 5 }, 
@@ -3623,6 +3616,6 @@ static const char *FormatText(const char *text, ...)
 
     return buffer;
 }
-#endif
+#endif      // RAYGUI_STANDALONE
 
-#endif // RAYGUI_IMPLEMENTATION
+#endif      // RAYGUI_IMPLEMENTATION
