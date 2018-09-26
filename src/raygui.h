@@ -108,14 +108,14 @@
     #include "raylib.h"
 #endif
 
-#define RAYGUI_STATIC
+// #define RAYGUI_STATIC
 #ifdef RAYGUI_STATIC
     #define RAYGUIDEF static            // Functions just visible to module including this file
 #else
     #ifdef __cplusplus
         #define RAYGUIDEF extern "C"    // Functions visible from other files (no name mangling of functions in C++)
     #else
-        #define RAYGUIDEF extern        // Functions visible from other files
+        #define RAYGUIDEF __declspec(dllexport) extern        // Functions visible from other files
     #endif
 #endif
 
