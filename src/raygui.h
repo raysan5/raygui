@@ -1616,6 +1616,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
     
     GuiControlState state = guiState;
     bool dropActive = false;
+    static bool dropOpen = false;
     static bool clicked = false;
    
     int textWidth = MeasureText(text[active], style[DEFAULT_TEXT_SIZE]);
@@ -1642,6 +1643,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         {
             bounds.height *= (count + 1);
             dropActive = true;
+            dropOpen = true;
         }
 
         if (CheckCollisionPointRec(mousePoint, bounds))
@@ -1651,7 +1653,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
         }
         else state = NORMAL;
         
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && dropOpen)
         {
             for (int i = 1; i < (count + 1); i++)
             {
