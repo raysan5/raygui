@@ -1659,6 +1659,7 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
             {
                 if (CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y + i*bounds.height, bounds.width, bounds.height })) active = i - 1;
             }
+            dropOpen = false;
         }
     }
     //--------------------------------------------------------------------
