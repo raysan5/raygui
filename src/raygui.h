@@ -1295,8 +1295,6 @@ RAYGUIDEF bool GuiToggleButton(Rectangle bounds, const char *text, bool active)
                 active = !active;
             }
             else state = FOCUSED;
-            
-            // TODO: DrawTextureV(texCursor, mousePoint, WHITE);
         }
     }
     //--------------------------------------------------------------------
@@ -3044,7 +3042,7 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 // NOTE: Returns mouse position on grid
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
 {
-    #define GRID_COLOR_ALPHA    0.1f        // Grid lines alpha amount
+    #define GRID_COLOR_ALPHA    0.15f        // Grid lines alpha amount
     
     GuiControlState state = guiState;
     Vector2 mousePoint = GetMousePosition();
@@ -3054,9 +3052,18 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
     if (state != DISABLED)
     {
         // Check mouse position if snap
-        if (snap)
+        if (CheckCollisionPointRec(mousePoint, bounds) && snap)
         {
-            // TODO: Mouse point snap
+            // Mouse snap to grid points
+            // NOTE: Point changes when spacing/2 has been surpassed in X and Y
+            int offsetX = (int)mousePoint.x%spacing;
+            int offsetY = (int)mousePoint.y%spacing;
+            
+            if (offsetX >= spacing/2) mousePoint.x += (spacing - offsetX);
+            else mousePoint.x -= offsetX;
+            
+            if (offsetY >= spacing/2) mousePoint.y += (spacing - offsetY);
+            else mousePoint.y -= offsetY;
         }
     }
     //--------------------------------------------------------------------
@@ -3070,14 +3077,15 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
             // Draw vertical grid lines
             for (int i = 0; i < (bounds.width/spacing + 1)*subdivs; i++)
             {
-                DrawRectangle(bounds.x + spacing*i, bounds.y, 1, bounds.height, ((i%subdivs) == 0) ? Fade(BLACK, GRID_COLOR_ALPHA*2) : Fade(GRAY, GRID_COLOR_ALPHA));
+                DrawRectangle(bounds.x + spacing*i, bounds.y, 1, bounds.height, ((i%subdivs) == 0) ? Fade(GetColor(style[DEFAULT_LINES_COLOR]), GRID_COLOR_ALPHA*4) : Fade(GetColor(style[DEFAULT_LINES_COLOR]), GRID_COLOR_ALPHA));
             }
 
             // Draw horizontal grid lines
             for (int i = 0; i < (bounds.height/spacing + 1)*subdivs; i++)
             {
-                DrawRectangle(bounds.x, bounds.y + spacing*i, bounds.width, 1, ((i%subdivs) == 0) ? Fade(BLACK, GRID_COLOR_ALPHA*2) : Fade(GRAY, GRID_COLOR_ALPHA));
+                DrawRectangle(bounds.x, bounds.y + spacing*i, bounds.width, 1, ((i%subdivs) == 0) ? Fade(GetColor(style[DEFAULT_LINES_COLOR]), GRID_COLOR_ALPHA*4) : Fade(GetColor(style[DEFAULT_LINES_COLOR]), GRID_COLOR_ALPHA));
             }
+            
         } break;
         default: break;
     }
