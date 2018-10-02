@@ -3039,31 +3039,24 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 }
 
 // Grid control
-// NOTE: Returns mouse position on grid
-RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
+// NOTE: Returns mouse position on grid, selected cell
+RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs)
 {
-    #define GRID_COLOR_ALPHA    0.15f        // Grid lines alpha amount
+    #define GRID_COLOR_ALPHA    0.15f           // Grid lines alpha amount
     
     GuiControlState state = guiState;
     Vector2 mousePoint = GetMousePosition();
+    Vector2 currentCell = { -1, -1 };
 
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
         // Check mouse position if snap
-        if (CheckCollisionPointRec(mousePoint, bounds) && snap)
+        if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            // Mouse snap to grid points
-            // NOTE: Point changes when spacing/2 has been surpassed in X and Y
-            int offsetX = (int)mousePoint.x%spacing;
-            int offsetY = (int)mousePoint.y%spacing;
-            
-            if (offsetX >= spacing/2) mousePoint.x += (spacing - offsetX);
-            else mousePoint.x -= offsetX;
-            
-            if (offsetY >= spacing/2) mousePoint.y += (spacing - offsetY);
-            else mousePoint.y -= offsetY;
+            currentCell.x = (int)((mousePoint.x - bounds.x)/spacing);
+            currentCell.y = (int)((mousePoint.y - bounds.y)/spacing);
         }
     }
     //--------------------------------------------------------------------
@@ -3090,7 +3083,7 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs, bool snap)
         default: break;
     }
     
-    return mousePoint;
+    return currentCell;
 }
 
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
