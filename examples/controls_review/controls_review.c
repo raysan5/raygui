@@ -42,7 +42,10 @@ int main()
     const char *ListView004TextList[3] = { "ONE", "TWO", "THREE" };
     char TextBox006Text[64] = "SAMPLE TEXT";
     
-    bool editMode = false;
+    
+    bool spinnerEditMode = false;
+    bool valueBoxEditMode = false;
+    bool textBoxEditMode = false;
     //----------------------------------------------------------------------------------
 
     SetTargetFPS(60);
@@ -65,9 +68,9 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             DropdownBox000Active = GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, DropdownBox000Active);
-            Spinner001Value = GuiSpinner((Rectangle){ 25, 75, 125, 30 }, Spinner001Value, 100, 25);
-            ValueBox002Value = GuiValueBox((Rectangle){ 25, 125, 125, 30 }, ValueBox002Value, 100);
-            if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, editMode)) editMode = !editMode;
+            if (GuiSpinner((Rectangle){ 25, 75, 125, 30 }, &Spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
+            if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
+            if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
             ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 325 }, ListView004TextList, 3, ListView004Active);
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 

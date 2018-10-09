@@ -126,7 +126,7 @@
 //----------------------------------------------------------------------------------
 #define NUM_PROPERTIES            155
 #define VALIGN_OFFSET(h)    ((int)h%2)  // Vertical alignment for pixel perfect
-
+#define BACKSPACE_FRAMES 20
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 // NOTE: Some types are required for RAYGUI_STANDALONE usage
@@ -382,8 +382,8 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                     
 RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text);                         // Check Box control with text, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int active);               // Dropdown Box control, returns selected item
-RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth);                      // Spinner control, returns selected value
-RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue);                                   // Value Box control, updates input text with numbers
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value,int minValue, int maxValue, int btnWidth, bool editMode);                      // Spinner control, returns selected value
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                               // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
@@ -1719,9 +1719,10 @@ RAYGUIDEF int GuiDropdownBox(Rectangle bounds, const char **text, int count, int
 
 // Spinner control, returns selected value
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
-RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth)
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int btnWidth, bool editMode)
 {
     #define GUIVALUEBOX_BUTTON_BORDER_WIDTH   1
+    bool pressed = false;
     
     int buttonBorderWidth = style[BUTTON_BORDER_WIDTH];
     style[BUTTON_BORDER_WIDTH] = GUIVALUEBOX_BUTTON_BORDER_WIDTH;
@@ -1730,7 +1731,7 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth
     Rectangle leftButtonBound = { bounds.x, bounds.y, btnWidth, bounds.height };
     Rectangle rightButtonBound = { bounds.x + bounds.width - btnWidth, bounds.y, btnWidth, bounds.height };
 
-    int textWidth = MeasureText(FormatText("%i", value), style[DEFAULT_TEXT_SIZE]);
+    int textWidth = MeasureText(FormatText("%i", *value), style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth) bounds.width = textWidth;
@@ -1738,34 +1739,44 @@ RAYGUIDEF int GuiSpinner(Rectangle bounds, int value, int maxValue, int btnWidth
 
     // Update control
     //--------------------------------------------------------------------
-    if (value < 0) value = 0;
-    if (value > maxValue) value = maxValue;
+    if (!editMode)
+    {
+        if (*value < minValue) *value = minValue;
+        if (*value > maxValue) *value = maxValue;
+    }
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    value = GuiValueBox(spinner, value, maxValue);
-    
-    if (GuiButton(leftButtonBound, "<")) value--;
-    if (GuiButton(rightButtonBound, ">")) value++;
+    int newValue = *value;    
+    pressed = GuiValueBox(spinner, &newValue, minValue, maxValue, editMode);
 
+    if (GuiButton(leftButtonBound, "<")) newValue--;
+    if (GuiButton(rightButtonBound, ">")) newValue++;
+    
+    *value = newValue;
+    
     style[BUTTON_BORDER_WIDTH] = buttonBorderWidth;
     //--------------------------------------------------------------------
 
-    return value;
+    return pressed;
 }
 
 // Value Box control, updates input text with numbers
 // NOTE: Requires static variables: framesCounter
-RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
 {
-    #define GUIVALUEBOX_LINE_PADDING 4
-    #define GUIVALUEBOX_CHAR_COUNT 5
-
+    //#define GUIVALUEBOX_LINE_PADDING 2
+    #define GUIVALUEBOX_CHAR_COUNT 8
+    #define LINE_PADDING    2
+    #define PADDING         4
+    
+    bool pressed = false;
+    
     GuiControlState state = guiState;
     static int framesCounter = 0;               // Required for blinking cursor
     char text[GUIVALUEBOX_CHAR_COUNT + 1] = "\0";
-    sprintf(text, "%i", value);
+    sprintf(text, "%i", *value);
     
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
 
@@ -1777,29 +1788,54 @@ RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
 
         #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (editMode)
         {
             state = FOCUSED;        // NOTE: PRESSED state is not used on this control
 
             framesCounter++;
-            
+
             int key = GetKeyPressed();
             int keyCount = strlen(text);
+
+            // NOTE: Only allow keys in range [32..125]           
             
-            // NOTE: Only allow keys in range [32..125]
-            if ((key >= 48) && (key <= 57) && (keyCount < GUIVALUEBOX_CHAR_COUNT) && (value < maxValue))
+            if ((key >= 48) && (key <= 57) && (keyCount < GUIVALUEBOX_CHAR_COUNT))
             {
                 text[keyCount] = (char)key;
                 keyCount++;
             }
-            
-            if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+
+            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
             {
                 keyCount--;
                 text[keyCount] = '\0';
-                
+                framesCounter = 0;
                 if (keyCount < 0) keyCount = 0;
             }
+            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
+            {
+                if ((framesCounter > BACKSPACE_FRAMES) && (framesCounter%2) == 0) keyCount--;
+                text[keyCount] = '\0';
+                if (keyCount < 0) keyCount = 0;
+            }
+            
+            *value = atoi(text);            
+        }
+        else
+        {
+            if (*value > maxValue) *value = maxValue;
+            else if(*value < minValue) *value = minValue;  
+        }         
+        
+        // Note: Changing editMode
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {            
+            if (!editMode && (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0))) pressed = true;
+            else if (IsKeyPressed(KEY_ENTER)) pressed = true;
+        }
+        else if (editMode)
+        {
+            if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0)) pressed = true;
         }
     }
     //--------------------------------------------------------------------
@@ -1820,7 +1856,7 @@ RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[VALUEBOX_BASE_COLOR_FOCUSED]), guiAlpha));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + VALIGN_OFFSET(bounds.height), style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[VALUEBOX_TEXT_COLOR_FOCUSED]), guiAlpha));
             
-            if ((framesCounter/20)%2 == 0) DrawRectangle(bounds.x + GUIVALUEBOX_LINE_PADDING + bounds.width/2 + textWidth/2, bounds.y + GUIVALUEBOX_LINE_PADDING/2, 1, bounds.height - GUIVALUEBOX_LINE_PADDING, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + LINE_PADDING + bounds.width/2 + textWidth/2, bounds.y + LINE_PADDING/2, 1, bounds.height - LINE_PADDING, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
@@ -1833,7 +1869,7 @@ RAYGUIDEF int GuiValueBox(Rectangle bounds, int value, int maxValue)
     }
     //--------------------------------------------------------------------
     
-    return atoi(text);
+    return pressed;
 }
 
 // Text Box control, updates input text
@@ -1843,7 +1879,6 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
 {
     #define GUITEXTBOX_PADDING              4
     #define GUITEXTBOX_LINE_PADDING         4
-    #define GUITEXTBOX_BACKSPACE_SPEED      2      // Deleting speed
 
     GuiControlState state = guiState;
     static int framesCounter = 0;         // Required for blinking cursor
@@ -1857,49 +1892,47 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
 
         #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (editMode)
         {
-            state = FOCUSED;        // NOTE: PRESSED state is not used on this control
+            state = FOCUSED; // NOTE: PRESSED state is not used on this control
             
-            if (editMode)
+            framesCounter++;
+            
+            int key = GetKeyPressed();
+            int keyCount = strlen(text);
+            
+            // NOTE: Only allow keys in range [32..125]
+            if ((key >= 32) && (key <= 125) && (keyCount < textSize))
             {
-                framesCounter++;
-                
-                int key = GetKeyPressed();
-                int keyCount = strlen(text);
-                
-                // NOTE: Only allow keys in range [32..125]
-                if ((key >= 32) && (key <= 125) && (keyCount < textSize))
-                {
-                    text[keyCount] = (char)key;
-                    keyCount++;
-                }
-                
-                // if (IsKeyPressed(KEY_BACKSPACE_TEXT))
-                // {
-                    // keyCount--;
-                    // text[keyCount] = '\0';
-                    
-                    // if (keyCount < 0) keyCount = 0;
-                // }
-                
-                if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
-                {
-                    keyCount--;
-                    text[keyCount] = '\0';
-                    framesCounter = 0;
-                    if (keyCount < 0) keyCount = 0;
-                }
-                else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
-                {
-                    if ((framesCounter > 30) && (framesCounter%2) == 0) keyCount--;
-                    text[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
-                }
+                text[keyCount] = (char)key;
+                keyCount++;
             }
+            
+            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+            {
+                keyCount--;
+                text[keyCount] = '\0';
+                framesCounter = 0;
+                if (keyCount < 0) keyCount = 0;
+            }
+            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
+            {
+                if ((framesCounter > BACKSPACE_FRAMES) && (framesCounter%2) == 0) keyCount--;
+                text[keyCount] = '\0';
+                if (keyCount < 0) keyCount = 0;
+            }
+        }
+        
+        // Note: Changing editMode
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {            
+            if (!editMode && (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0))) pressed = true;
             else if (IsKeyPressed(KEY_ENTER)) pressed = true;
         }
-        else editMode = false;
+        else if (editMode)
+        {
+            if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0)) pressed = true;
+        }
     }
     //--------------------------------------------------------------------
 
