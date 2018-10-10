@@ -758,7 +758,7 @@ static int style[NUM_PROPERTIES] = {
     0x97af81ff,     // COLORPICKER_BASE_COLOR_PRESSED ----> DEFAULT_TEXT_COLOR_PRESSED
     0x5b6462ff,     // COLORPICKER_BORDER_COLOR_DISABLED ----> DEFAULT_BORDER_COLOR_DISABLED
     0x2c3334ff,     // COLORPICKER_BASE_COLOR_DISABLED ----> DEFAULT_BASE_COLOR_DISABLED
-    0x1e,           // LISTVIEW_ELEMENTS_HEIGHT
+    0x1a,           // LISTVIEW_ELEMENTS_HEIGHT
     0x2,            // LISTVIEW_ELEMENTS_PADDING
     0xa,            // LISTVIEW_BAR_WIDTH
     0x60827dff,     // LISTVIEW_BORDER_COLOR_NORMAL ----> DEFAULT_BORDER_COLOR_NORMAL
@@ -2699,33 +2699,34 @@ RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
 // List Element control, returns element state
 static bool GuiListElement(Rectangle bounds, const char *text, bool active)
 {
-    #define GUILISTELEMENT_PADDING          2
-    #define GUILISTELEMENT_BORDER_WIDTH     1
+    #define LISTELEMENT_PADDING          2
+    #define LISTELEMENT_BORDER_WIDTH     1
     
     GuiControlState state = guiState;
     
     int textWidth = MeasureText(text, style[DEFAULT_TEXT_SIZE]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
-    
-    if (bounds.width < textWidth) bounds.width = textWidth + GUILISTELEMENT_PADDING*2;
-    if (bounds.height < textHeight) bounds.height = textHeight;
-    
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
+        if (bounds.width < textWidth) bounds.width = textWidth + LISTELEMENT_PADDING*2;
+        if (bounds.height < textHeight) bounds.height = textHeight;
+    
         Vector2 mousePoint = GetMousePosition();
 
-        // Check toggle button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 state = NORMAL;
                 active = !active;
             }
-            else state = FOCUSED;
+            
+            if (!active)
+            {
+                state = FOCUSED;
+            }
         }
     }
     //--------------------------------------------------------------------
@@ -2739,7 +2740,7 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active)
             if (active)
             {
                 DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[LISTVIEW_BASE_COLOR_PRESSED]), guiAlpha));
-                DrawRectangleLinesEx(bounds, GUILISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
+                DrawRectangleLinesEx(bounds, LISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
                 DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[LISTVIEW_TEXT_COLOR_PRESSED]), guiAlpha));
             }
             else
@@ -2750,15 +2751,12 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active)
         case FOCUSED:
         {
             DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[LISTVIEW_BASE_COLOR_FOCUSED]), guiAlpha));
-            DrawRectangleLinesEx(bounds, GUILISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, LISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[LISTVIEW_TEXT_COLOR_FOCUSED]), guiAlpha));
         } break;
-        case PRESSED:
+        /*case PRESSED: // NOT USED
         {
-            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[LISTVIEW_BASE_COLOR_PRESSED]), guiAlpha));
-            DrawRectangleLinesEx(bounds, GUILISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
-            DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[LISTVIEW_TEXT_COLOR_PRESSED]), guiAlpha));
-        } break;
+        } break;*/
         case DISABLED:
         {
             DrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[LISTVIEW_TEXT_COLOR_DISABLED]), guiAlpha));
@@ -2787,11 +2785,12 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         for(int i = 0; i < count; i++)
         {
             int textWidth = MeasureText(text[i], style[DEFAULT_TEXT_SIZE]);
+            
             if (bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK < textWidth)
             {
-                 bounds.width = textWidth + style[LISTVIEW_BAR_WIDTH] + 2*style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK;
+                bounds.width = textWidth + style[LISTVIEW_BAR_WIDTH] + 2*style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK;
             }               
-       }
+        }
       
         Vector2 mousePoint = GetMousePosition();
         
@@ -2812,6 +2811,7 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         
         if (endIndex > count) endIndex = count;
         
+        // Comprueba si caben todas las listas en la caja sin necesitar scrollbar.
         if (count*style[LISTVIEW_ELEMENTS_HEIGHT] <= bounds.height) startIndex = 0;
         
         if (CheckCollisionPointRec(mousePoint, bounds))
@@ -2824,10 +2824,6 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
             }
             else state = FOCUSED;
         }
-        
-        //(maxIndexCount + indexOffset) > count) ? count : (maxIndexCount + indexOffset)
-        //if (maxIndexCount + indexOffset) > count) return count;
-        //else return (maxIndexCount + indexOffset);
     }
     //--------------------------------------------------------------------
 
@@ -2847,6 +2843,7 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     
     DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(LIGHTGRAY, guiAlpha));
     
+    // Revisar esto...
     int barHeight = bounds.height - (count - (endIndex - startIndex))*style[LISTVIEW_ELEMENTS_HEIGHT];
     
     // TODO: Review bar logic when bar size should be shorter than LISTVIEW_ELEMENT_HEIGHT

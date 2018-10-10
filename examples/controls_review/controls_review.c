@@ -39,7 +39,7 @@ int main()
     int ValueBox002Value = 0;
     char TextBox003Text[64] = "SAMPLE TEXT";
     int ListView004Active = 0;
-    const char *ListView004TextList[3] = { "ONE", "TWO", "THREE" };
+    const char *ListView004TextList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
     char TextBox006Text[141] = "SAMPLE TEXT";
     
     bool spinnerEditMode = false;
@@ -72,7 +72,7 @@ int main()
             if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
-            ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 325 }, ListView004TextList, 3, ListView004Active);
+            ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 115 }, ListView004TextList, 6, ListView004Active);
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;;
