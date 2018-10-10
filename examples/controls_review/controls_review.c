@@ -40,7 +40,7 @@ int main()
     char TextBox003Text[64] = "SAMPLE TEXT";
     int ListView004Active = 0;
     const char *ListView004TextList[3] = { "ONE", "TWO", "THREE" };
-    char TextBox006Text[128] = "SAMPLE TEXT";
+    char TextBox006Text[141] = "SAMPLE TEXT";
     
     bool spinnerEditMode = false;
     bool valueBoxEditMode = false;
@@ -75,7 +75,7 @@ int main()
             ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 325 }, ListView004TextList, 3, ListView004Active);
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
-            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 128, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;;
+            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;;
             //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
             //----------------------------------------------------------------------------------
 

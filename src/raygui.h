@@ -405,7 +405,7 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 #if defined(RAYGUI_STYLE_SAVE_LOAD)
 RAYGUIDEF void GuiSaveStyle(const char *fileName, bool binary);         // Save style file (.rgs), text or binary
 RAYGUIDEF void GuiLoadStyle(const char *fileName);                      // Load style file (.rgs), text or binary
-RAYGUIDEF void GuiLoadStylePalette(int *palette);                       // Load style from a color palette array (14 values required)
+RAYGUIDEF void GuiLoadStylePalette(const int *palette);                 // Load style from a color palette array (14 values required)
 RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName);          // Load style from an image palette file (64x16)
 
 RAYGUIDEF void GuiUpdateStyleComplete(void);                            // Updates full style properties set with generic values
@@ -1768,7 +1768,8 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 // NOTE: Requires static variables: framesCounter
 RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
 {
-    #define GUIVALUEBOX_CHAR_COUNT 8
+    #define GUIVALUEBOX_CHAR_COUNT 32
+    #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
     
     bool pressed = false;
     
@@ -1786,41 +1787,53 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
     if (state != DISABLED)
     {
         Vector2 mousePoint = GetMousePosition();
-
-        #define KEY_BACKSPACE_TEXT    259     // GLFW BACKSPACE: 3 + 256
-
+        
+        bool valueHasChanged = false;
+        
         if (editMode)
         {
             state = FOCUSED;        // NOTE: PRESSED state is not used on this control
 
             framesCounter++;
-
-            int key = GetKeyPressed();
-            int keyCount = strlen(text);
-
-            // NOTE: Only allow keys in range [48..57]           
             
-            if ((key >= 48) && (key <= 57) && (keyCount < GUIVALUEBOX_CHAR_COUNT))
-            {
-                text[keyCount] = (char)key;
-                keyCount++;
-            }
+            int keyCount = strlen(text);            
 
-            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+            // Only allow keys in range [48..57]    
+            if (keyCount < GUIVALUEBOX_CHAR_COUNT)
             {
-                keyCount--;
-                text[keyCount] = '\0';
-                framesCounter = 0;
-                if (keyCount < 0) keyCount = 0;
-            }
-            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
-            {
-                if ((framesCounter > LINE_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                text[keyCount] = '\0';
-                if (keyCount < 0) keyCount = 0;
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                if (MeasureText(text, style[DEFAULT_TEXT_SIZE]) < maxWidth)
+                {
+                    int key = GetKeyPressed();
+                    if ((key >= 48) && (key <= 57))
+                    {
+                        text[keyCount] = (char)key;
+                        keyCount++;
+                        valueHasChanged = true;
+                    }
+                }
             }
             
-            *value = atoi(text);             
+            // Delete text
+            if (keyCount > 0)
+            {
+                if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    keyCount--;
+                    text[keyCount] = '\0';
+                    framesCounter = 0;
+                    if (keyCount < 0) keyCount = 0;
+                    valueHasChanged = true;
+                }
+                else if (IsKeyDown(KEY_BACKSPACE_TEXT))
+                {
+                    if ((framesCounter > LINE_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
+                    text[keyCount] = '\0';
+                    if (keyCount < 0) keyCount = 0;
+                    valueHasChanged = true;
+                }
+            }
+            if (valueHasChanged) *value = atoi(text);             
         }
         else
         {
@@ -1900,25 +1913,36 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             int key = GetKeyPressed();
             int keyCount = strlen(text);
             
-            // NOTE: Only allow keys in range [32..125]
-            if ((key >= 32) && (key <= 125) && (keyCount < (textSize - 1)))
+            // Only allow keys in range [32..125]
+            if (keyCount < (textSize - 1))
             {
-                text[keyCount] = (char)key;
-                keyCount++;
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                if (MeasureText(text, style[DEFAULT_TEXT_SIZE]) < maxWidth - style[DEFAULT_TEXT_SIZE])
+                {
+                    if ((key >= 32) && (key <= 125))
+                    {
+                        text[keyCount] = (char)key;
+                        keyCount++;
+                    }
+                }
             }
             
-            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE_TEXT))
+            // Delete text
+            if (keyCount > 0)
             {
-                keyCount--;
-                text[keyCount] = '\0';
-                framesCounter = 0;
-                if (keyCount < 0) keyCount = 0;
-            }
-            else if ((keyCount > 0) && IsKeyDown(KEY_BACKSPACE_TEXT))
-            {
-                if ((framesCounter > LINE_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                text[keyCount] = '\0';
-                if (keyCount < 0) keyCount = 0;
+                if (IsKeyPressed(KEY_BACKSPACE_TEXT))
+                {
+                    keyCount--;
+                    text[keyCount] = '\0';
+                    framesCounter = 0;
+                    if (keyCount < 0) keyCount = 0;
+                }
+                else if (IsKeyDown(KEY_BACKSPACE_TEXT))
+                {
+                    if ((framesCounter > LINE_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
+                    text[keyCount] = '\0';
+                    if (keyCount < 0) keyCount = 0;
+                }
             }
         }
         
@@ -1978,8 +2002,10 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
     GuiControlState state = guiState;
     static int framesCounter = 0;           // Required for blinking cursor
     bool pressed = false;
+    bool textHasChange = false;
     int currentLine = 0;
-
+    
+    const char *numChars = "";
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
@@ -1995,91 +2021,37 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
             framesCounter++;
             
             int keyCount = strlen(text);
+            int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING*2));
+            int maxHeight = (bounds.height - (DEFAULT_TEXT_PADDING*2));
             
-            char *lastLine = strrchr(text, '\n');
-            
-            int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
-            
-            if (lastLine != NULL)
-            {
-                if (MeasureText(lastLine, style[DEFAULT_TEXT_SIZE]) > maxWidth)
-                {
-                    int firstIndex = lastLine - text;
-                    
-                    char *lastSpace = strrchr(lastLine, 32);
-                    
-                    if (lastSpace != NULL)
-                    {
-                        int secondIndex = lastSpace - lastLine;
-                        text[firstIndex + secondIndex] = '\n';
-                    }
-                    else
-                    {
-                        int len = strlen(lastLine);
-                        char lastChar = lastLine[len - 1];
-                        lastLine[len - 1] = '\n';
-                        lastLine[len] = lastChar;
-                        lastLine[len + 1] = '\0';
-                        keyCount++;
-                    }
-                }
-            }
-            else
-            {
-                if (MeasureText(text, style[DEFAULT_TEXT_SIZE]) > maxWidth)
-                {
-                    char *lastSpace = strrchr(text, 32);
-                    if (lastSpace != NULL)
-                    {
-                        int index = lastSpace - text;
-                        text[index] = '\n';
-                    }
-                    else
-                    {
-                        int len = strlen(lastLine);
-                        char lastChar = lastLine[len - 1];
-                        lastLine[len - 1] = '\n';
-                        lastLine[len] = lastChar;
-                        lastLine[len + 1] = '\0';
-                        keyCount++;
-                    }
-                }
-            }
-            
-            /*if (((MeasureText(text, style[DEFAULT_TEXT_SIZE])) > bounds.width - DEFAULT_TEXT_PADDING))
-            {
-                char *ptr = strrchr(text, '\n');
-                
-                if (MeasureText(ptr, style[DEFAULT_TEXT_SIZE]) > bounds.width - DEFAULT_TEXT_PADDING)
-                {
-                    
-                }
-                else if (ptr != NULL)
-                {
-                    int index = ptr - text;
-                    text[index] = '\n';
-                }
-            }*/
-            
-            // Counting how many new lines
-            for (int i = 0; i < keyCount; i++)
-            {
-                if (text[i] == '\n') currentLine++;
-            }
+            numChars = FormatText("%i/%i", keyCount, textSize - 1);
             
             // Only allow keys in range [32..125]   
             if (keyCount < (textSize - 1))
             {
                 int key = GetKeyPressed();
-                if (IsKeyPressed(KEY_ENTER))
-                {
-                    text[keyCount] = '\n';
-                    keyCount++;
-                }
-                else if ((key >= 32) && (key <= 125))
-                {
-                    text[keyCount] = (char)key;
-                    keyCount++;
+                if (MeasureTextEx(GetFontDefault(), text, style[DEFAULT_TEXT_SIZE], 1).y < (maxHeight - style[DEFAULT_TEXT_SIZE]))
+                {                    
+                    if (IsKeyPressed(KEY_ENTER))
+                    {
+                        text[keyCount] = '\n';
+                        keyCount++;
+                    }
+                    else if ((key >= 32) && (key <= 125))
+                    {
+                        text[keyCount] = (char)key;
+                        keyCount++;
+                        textHasChange = true;
+                    }
+                } 
+                else if(MeasureText(strrchr(text, '\n'), style[DEFAULT_TEXT_SIZE]) < (maxWidth - style[DEFAULT_TEXT_SIZE]))
+                {                    
+                    if ((key >= 32) && (key <= 125))
+                    {
+                        text[keyCount] = (char)key;
+                        keyCount++;
+                        textHasChange = true;
+                    }
                 }
             }
             
@@ -2092,14 +2064,77 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                     text[keyCount] = '\0';
                     framesCounter = 0;
                     if (keyCount < 0) keyCount = 0;
+                    textHasChange = true;
                 }
                 else if (IsKeyDown(KEY_BACKSPACE_TEXT))
                 {
                     if ((framesCounter > LINE_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
                     text[keyCount] = '\0';
                     if (keyCount < 0) keyCount = 0;
+                    textHasChange = true;
                 }
             }
+            
+            // Introduce automatic new line if necessary
+            if (textHasChange)
+            {
+                textHasChange = false;
+                
+                char *lastLine = strrchr(text, '\n');
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                
+                if (lastLine != NULL)
+                {
+                    if (MeasureText(lastLine, style[DEFAULT_TEXT_SIZE]) > maxWidth)
+                    {
+                        int firstIndex = lastLine - text;
+                        
+                        char *lastSpace = strrchr(lastLine, 32);
+                        
+                        if (lastSpace != NULL)
+                        {
+                            int secondIndex = lastSpace - lastLine;
+                            text[firstIndex + secondIndex] = '\n';
+                        }
+                        else
+                        {
+                            int len = strlen(lastLine);
+                            char lastChar = lastLine[len - 1];
+                            lastLine[len - 1] = '\n';
+                            lastLine[len] = lastChar;
+                            lastLine[len + 1] = '\0';
+                            keyCount++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (MeasureText(text, style[DEFAULT_TEXT_SIZE]) > maxWidth)
+                    {
+                        char *lastSpace = strrchr(text, 32);
+                        if (lastSpace != NULL)
+                        {
+                            int index = lastSpace - text;
+                            text[index] = '\n';
+                        }
+                        else
+                        {
+                            int len = strlen(lastLine);
+                            char lastChar = lastLine[len - 1];
+                            lastLine[len - 1] = '\n';
+                            lastLine[len] = lastChar;
+                            lastLine[len + 1] = '\0';
+                            keyCount++;
+                        }
+                    }
+                }
+            }            
+            
+            // Counting how many new lines
+            for (int i = 0; i < keyCount; i++)
+            {
+                if (text[i] == '\n') currentLine++;
+            }            
         }
         
         // Changing editMode
@@ -2136,7 +2171,20 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
             DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH], bounds.y + style[TEXTBOX_BORDER_WIDTH], bounds.width - 2*style[TEXTBOX_BORDER_WIDTH], bounds.height - 2*style[TEXTBOX_BORDER_WIDTH], Fade(GetColor(style[TEXTBOX_BASE_COLOR_FOCUSED]), guiAlpha));
             DrawText(text, bounds.x + GUITEXTBOXMULTI_PADDING, bounds.y + GUITEXTBOXMULTI_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha));
             
-            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GUITEXTBOXMULTI_LINE_PADDING + MeasureText(text, style[DEFAULT_TEXT_SIZE]), bounds.y + GUITEXTBOXMULTI_PADDING + (style[DEFAULT_TEXT_SIZE] + GUITEXTBOXMULTI_LINE_PADDING)*currentLine, 1, style[DEFAULT_TEXT_SIZE]*2, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+            if (editMode) 
+            {
+                if ((framesCounter/20)%2 == 0)
+                {
+                    char *line;
+                    if (currentLine > 0) line = strrchr(text, '\n');
+                    else line = text;
+                    
+                    DrawRectangle(bounds.x + style[TEXTBOX_BORDER_WIDTH] + DEFAULT_TEXT_PADDING + MeasureText(line, style[DEFAULT_TEXT_SIZE]), bounds.y + style[TEXTBOX_BORDER_WIDTH] + DEFAULT_TEXT_PADDING/2 + ((style[DEFAULT_TEXT_SIZE] + DEFAULT_TEXT_LINE_PADDING)*currentLine), 1, style[DEFAULT_TEXT_SIZE] + DEFAULT_TEXT_PADDING, Fade(GetColor(style[TEXTBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
+                }
+                
+                DrawText(numChars, bounds.x + bounds.width - MeasureText(numChars, style[DEFAULT_TEXT_SIZE]) - DEFAULT_TEXT_LINE_PADDING, bounds.y + bounds.height - style[DEFAULT_TEXT_SIZE] - DEFAULT_TEXT_LINE_PADDING, style[DEFAULT_TEXT_SIZE], Fade(GetColor(style[TEXTBOX_TEXT_COLOR_PRESSED]), guiAlpha/2));
+            }
+            
         } break;
         case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
@@ -3349,7 +3397,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 }
 
 // Load style from a color palette array (14 values required)
-RAYGUIDEF void GuiLoadStylePalette(int *palette)
+RAYGUIDEF void GuiLoadStylePalette(const int *palette)
 {
     // Load generic style color palette
     style[DEFAULT_BACKGROUND_COLOR] = palette[0];
