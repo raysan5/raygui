@@ -40,12 +40,12 @@ int main()
     char TextBox003Text[64] = "SAMPLE TEXT";
     int ListView004Active = 0;
     const char *ListView004TextList[3] = { "ONE", "TWO", "THREE" };
-    char TextBox006Text[64] = "SAMPLE TEXT";
-    
+    char TextBox006Text[128] = "SAMPLE TEXT";
     
     bool spinnerEditMode = false;
     bool valueBoxEditMode = false;
     bool textBoxEditMode = false;
+    bool multiTextBoxEditMode = false;
     //----------------------------------------------------------------------------------
 
     SetTargetFPS(60);
@@ -64,7 +64,7 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(style[DEFAULT_BACKGROUND_COLOR]));
-
+ 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             DropdownBox000Active = GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, DropdownBox000Active);
@@ -75,7 +75,7 @@ int main()
             ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 325 }, ListView004TextList, 3, ListView004Active);
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
-            GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 64, true);
+            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 128, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;;
             //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
             //----------------------------------------------------------------------------------
 
