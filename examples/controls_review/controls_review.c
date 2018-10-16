@@ -34,6 +34,7 @@ int main()
     //----------------------------------------------------------------------------------
 
     int DropdownBox000Active = 0;
+    int DropdownBox001Active = 0;
     const char *DropdownBox000TextList[3] = { "ONE", "TWO", "THREE" };
     int Spinner001Value = 0;
     int ValueBox002Value = 0;
@@ -46,6 +47,8 @@ int main()
     bool valueBoxEditMode = false;
     bool textBoxEditMode = false;
     bool multiTextBoxEditMode = false;
+    bool dropDown000EditMode = false;
+    bool dropDown001EditMode = false;
     //----------------------------------------------------------------------------------
 
     SetTargetFPS(60);
@@ -67,16 +70,23 @@ int main()
  
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            DropdownBox000Active = GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, DropdownBox000Active);
-            if (GuiSpinner((Rectangle){ 25, 75, 125, 30 }, &Spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
+            if (dropDown000EditMode || dropDown001EditMode) GuiLock();
+            
+            //if (GuiSpinner((Rectangle){ 25, 75, 125, 30 }, &Spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
             if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
             ListView004Active = GuiListView((Rectangle){ 175, 25, 125, 115 }, ListView004TextList, 6, ListView004Active);
-            if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
+            if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
+    
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;;
             //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
+            if (GuiDropdownBox((Rectangle){ 25, 75, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            
+            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
+            
+            GuiUnlock();
             //----------------------------------------------------------------------------------
 
         EndDrawing();
