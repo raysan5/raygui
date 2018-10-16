@@ -398,7 +398,7 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);   
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 
 // Advance controls set
-RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active);                  // List View control, returns selected list element index
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *active, bool editMode);                  // List View control, returns selected list element index
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 
@@ -1848,7 +1848,7 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
         }
         else
         {
-            if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0)) pressed = true;
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
         
         if (pressed) framesCounter = 0;
@@ -1953,7 +1953,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
         }
         else
         {
-            if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(0)) pressed = true;
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
         
         if (pressed) framesCounter = 0;
@@ -2144,7 +2144,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
         }
         else
         {
-            if (IsMouseButtonPressed(0)) pressed = true;
+            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;
         }
         
         if (pressed) 
@@ -2710,8 +2710,14 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active)
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
-        if (bounds.width < textWidth) bounds.width = textWidth + LISTELEMENT_PADDING*2;
-        if (bounds.height < textHeight) bounds.height = textHeight;
+        if (bounds.width < textWidth)
+        {
+            // TODO: Remove character if they dont fit inside bounds. We have the same problem with others GUIs.
+        }
+        
+        
+        //if (bounds.width < textWidth) bounds.width = textWidth + LISTELEMENT_PADDING*2;
+       // if (bounds.height < textHeight) bounds.height = textHeight;
     
         Vector2 mousePoint = GetMousePosition();
 
@@ -2769,7 +2775,7 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active)
 }
 
 // List View control, returns selected list element index  // int *startIndex)
-RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int active)
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *active, bool editMode)
 {
     #define LISTVIEW_LINE_THICK       1
     
@@ -2777,25 +2783,42 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     
     static int startIndex = 0;
     int endIndex = count;
+    bool pressed = false;
+    int auxActive = *active;
 
     // Update control
     //--------------------------------------------------------------------
     if (state != DISABLED)
     {
-        for(int i = 0; i < count; i++)
-        {
-            int textWidth = MeasureText(text[i], style[DEFAULT_TEXT_SIZE]);
-            
-            if (bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK < textWidth)
-            {
-                bounds.width = textWidth + style[LISTVIEW_BAR_WIDTH] + 2*style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK;
-            }               
-        }
-      
         Vector2 mousePoint = GetMousePosition();
         
+        if (editMode)
+        {
+            state = FOCUSED;
+            
+            // Change active with keys
+            if (IsKeyPressed(KEY_UP))
+            {
+                if (auxActive > 0) auxActive--;
+            }
+            else if(IsKeyPressed(KEY_DOWN))
+            {
+                if (auxActive < count - 1) auxActive++;
+            }            
+            
+            // REVISAR ------------------------------------------------------------------------------------
+            /*for(int i = 0; i < count; i++)
+            {
+                int textWidth = MeasureText(text[i], style[DEFAULT_TEXT_SIZE]);
+                
+                if (bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK < textWidth)
+                {
+                    bounds.width = textWidth + style[LISTVIEW_BAR_WIDTH] + 2*style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK;
+                }               
+            }*/
+        }        
         endIndex = bounds.height/(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]);
-        
+            
         if (endIndex < count)
         {
             startIndex -= GetMouseWheelMove();
@@ -2813,38 +2836,47 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
         
         // Comprueba si caben todas las listas en la caja sin necesitar scrollbar.
         if (count*style[LISTVIEW_ELEMENTS_HEIGHT] <= bounds.height) startIndex = 0;
+            
+        // ------------------------------------------------------------------------------------       
         
-        if (CheckCollisionPointRec(mousePoint, bounds))
+         // Note: Changing editMode
+        if (!editMode)
+        {            
+            if (CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;              
+        }
+        else
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
-            {
-                //active += 1;
-                //if (active >= count) active = 0;
-            }
-            else state = FOCUSED;
+            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;
         }
     }
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    for (int i = startIndex; i < endIndex; i++)
+    if (editMode)
     {
-        if (i == active) 
+        for (int i = startIndex; i < endIndex; i++)
         {
-            if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true) == false) active = -1;
-        }
-        else
-        {
-            if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false) == true) active = i;
+            if (i == auxActive) 
+            {
+                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true) == false) auxActive = -1;
+            }
+            else
+            {
+                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false) == true) auxActive = i;
+            }
         }
     }
+    else
+    {
+       for (int i = startIndex; i < endIndex; i++) if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false) == true) auxActive = i;
+    }
+
     
     DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(LIGHTGRAY, guiAlpha));
     
     // Revisar esto...
-    int barHeight = bounds.height - (count - (endIndex - startIndex))*style[LISTVIEW_ELEMENTS_HEIGHT];
+    int barHeight = bounds.height / (count - (endIndex - startIndex));
     
     // TODO: Review bar logic when bar size should be shorter than LISTVIEW_ELEMENT_HEIGHT
     if (bounds.height < ((count - (endIndex - startIndex))*style[LISTVIEW_ELEMENTS_HEIGHT]))
@@ -2885,7 +2917,8 @@ RAYGUIDEF int GuiListView(Rectangle bounds, const char **text, int count, int ac
     }
     //--------------------------------------------------------------------
     
-    return active;
+    *active = auxActive;
+    return pressed;
 }
 
 // Color Panel control
