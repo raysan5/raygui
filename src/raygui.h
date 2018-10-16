@@ -124,11 +124,12 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define NUM_PROPERTIES              155
-#define VALIGN_OFFSET(h)        (   (int)h%2)  // Vertical alignment for pixel perfect
+#define NUM_PROPERTIES              156
+#define VALIGN_OFFSET(h)           ((int)h%2)  // Vertical alignment for pixel perfect
 #define LINE_BLINK_FRAMES           20
 #define DEFAULT_TEXT_PADDING        4
 #define DEFAULT_TEXT_LINE_PADDING   5
+
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 // NOTE: Some types are required for RAYGUI_STANDALONE usage
@@ -180,6 +181,7 @@ typedef enum GuiProperty {
     DEFAULT_LINES_COLOR,
     DEFAULT_TEXT_FONT,
     DEFAULT_TEXT_SIZE,
+    DEFAULT_TEXT_SPACING,
     DEFAULT_BORDER_WIDTH,
     DEFAULT_BORDER_COLOR_NORMAL,
     DEFAULT_BASE_COLOR_NORMAL,
@@ -358,8 +360,8 @@ typedef enum GuiProperty {
 // Global gui modification functions
 RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
-RAYGUIDEF void GuiLock(void);                                        // Disable gui controls (global state)
-RAYGUIDEF void GuiUnlock(void);                                        // Disable gui controls (global state)
+RAYGUIDEF void GuiLock(void);                                           // Disable gui controls (global state)
+RAYGUIDEF void GuiUnlock(void);                                         // Disable gui controls (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 
 // Style set/get functions
@@ -457,6 +459,7 @@ typedef enum GuiControlState {
 //----------------------------------------------------------------------------------
 static GuiControlState guiState = NORMAL;
 static float guiAlpha = 1.0f;
+static Font guiFont = { 0 };
 
 // Current GUI style (light or dark)
 static int style[NUM_PROPERTIES] = {
@@ -466,6 +469,7 @@ static int style[NUM_PROPERTIES] = {
     0x90abb5ff,     // DEFAULT_LINES_COLOR
     0,              // DEFAULT_TEXT_FONT
     10,             // DEFAULT_TEXT_SIZE
+    0,              // DEFAULT_TEXT_SPACING                  WARNING!!!!!!!!!!!!! need to update rguilayout!!!!
     1,              // DEFAULT_BORDER_WIDTH
     0x838383ff,     // DEFAULT_BORDER_COLOR_NORMAL
     0xc9c9c9ff,     // DEFAULT_BASE_COLOR_NORMAL
@@ -624,6 +628,7 @@ static int style[NUM_PROPERTIES] = {
     0x638465ff,     // DEFAULT_LINES_COLOR
     0,              // DEFAULT_TEXT_FONT
     10,             // DEFAULT_TEXT_SIZE
+    0,              // DEFAULT_TEXT_SPACING                  WARNING!!!!!!!!!!!!! need to update rguilayout!!!!
     1,              // DEFAULT_BORDER_WIDTH
     0x60827dff,     // DEFAULT_BORDER_COLOR_NORMAL
     0x2c3334ff,     // DEFAULT_BASE_COLOR_NORMAL

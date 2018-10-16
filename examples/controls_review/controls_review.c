@@ -49,6 +49,8 @@ int main()
     bool multiTextBoxEditMode = false;
     bool dropDown000EditMode = false;
     bool dropDown001EditMode = false;
+    
+    //TODO: Substituir DrawText por DrawTextEx y MeasureText por MeasureTextEx
     //----------------------------------------------------------------------------------
 
     SetTargetFPS(60);
