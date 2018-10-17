@@ -2833,10 +2833,14 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
     
     GuiControlState state = guiState;
     
-    static int startIndex = 0;
-    int endIndex = count;
+    static int startIndex = 0;    
+    int visibleElements = bounds.height/(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]);
+    int endIndex = startIndex + visibleElements;
     bool pressed = false;
     int auxActive = *active;
+    float barHeight = bounds.height;
+    float minBarHeight = 10;
+    
 
     // Update control
     //--------------------------------------------------------------------
@@ -2851,40 +2855,42 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
             // Change active with keys
             if (IsKeyPressed(KEY_UP))
             {
-                if (auxActive > 0) auxActive--;
+                if (auxActive > 0) 
+                {
+                    auxActive--;
+                    if (auxActive < startIndex) startIndex--;
+                }
             }
             else if(IsKeyPressed(KEY_DOWN))
             {
-                if (auxActive < count - 1) auxActive++;
-            }            
-            
-            // REVISAR ------------------------------------------------------------------------------------
-            /*for(int i = 0; i < count; i++)
-            {
-                int textWidth = MeasureText(text[i], style[DEFAULT_TEXT_SIZE]);
-                
-                if (bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK < textWidth)
+                if (auxActive < count - 1) 
                 {
-                    bounds.width = textWidth + style[LISTVIEW_BAR_WIDTH] + 2*style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK;
-                }               
-            }*/
-        }        
-        endIndex = bounds.height/(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]);
+                    auxActive++;
+                    if (auxActive >= endIndex) startIndex++; 
+                }
+            }   
             
-        if (endIndex < count)
-        {
-            startIndex -= GetMouseWheelMove();
-            if (startIndex < 0) startIndex = 0;
-
-            endIndex += startIndex;
+                     
             
-            if (startIndex > (count - (endIndex - startIndex)))
+            int wheel = GetMouseWheelMove();
+            
+            if (wheel < 0 && endIndex < count)
             {
-                startIndex = count - (endIndex - startIndex);
+                startIndex -= wheel;                
+            }   
+            else if(wheel > 0 && startIndex > 0)
+            {
+                startIndex -= wheel;
+                if (startIndex < 0) startIndex = 0;
+                else if (startIndex > (count - (endIndex - startIndex)))
+                {
+                    startIndex = count - (endIndex - startIndex);
+                }
             }
-        }
-        
-        if (endIndex > count) endIndex = count;
+            endIndex = startIndex + visibleElements;  
+            if (endIndex > count) endIndex = count; 
+        }        
+           
         
         // Comprueba si caben todas las listas en la caja sin necesitar scrollbar.
         if (count*style[LISTVIEW_ELEMENTS_HEIGHT] <= bounds.height) startIndex = 0;
@@ -2901,79 +2907,72 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
             if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;
         }
     }
+    
+    // Calculamos el porcentaje de elementos visibles, y aplicamos el mismo porcentaje al tamaño de la barra original.
+    // Hay que tener en cuenta un valor mínimo para que la barra no sea de 1 px nunca y también que no sea mayor que la altura máxima. 
+    float percentVisible = (endIndex - startIndex)*100/count;
+    barHeight *= percentVisible/100;
+    if (barHeight < minBarHeight) barHeight = minBarHeight;
+    else if(barHeight > bounds.height) barHeight = bounds.height;  
+    // Posición  Y a la que dibujamos la barra.    
+    float barPosY = bounds.y + startIndex*((bounds.height - barHeight)/(count - (endIndex - startIndex)));
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
     if (editMode)
     {
-<<<<<<< HEAD
         for (int i = startIndex; i < endIndex; i++)
         {
             if (i == auxActive) 
             {
-                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true) == false) auxActive = -1;
+                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) auxActive -1;
             }
             else
             {
-                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false) == true) auxActive = i;
+                if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, true) == true) auxActive = i;
             }
-=======
-        if (i == active) 
-        {
-            if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) active = -1;
-        }
-        else
-        {
-            if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, true) == true) active = i;
->>>>>>> 296bc577f5898d4a9f01c1eab190ac92384687f1
         }
     }
     else
     {
-       for (int i = startIndex; i < endIndex; i++) if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false) == true) auxActive = i;
+       for (int i = startIndex; i < endIndex; i++) if (GuiListElement((Rectangle){ bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING], bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, true) == true) auxActive = i;
     }
 
     
-    DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(LIGHTGRAY, guiAlpha));
+    DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(LIGHTGRAY, guiAlpha));   
     
-    // Revisar esto...
-    int barHeight = bounds.height / (count - (endIndex - startIndex));
     
     // TODO: Review bar logic when bar size should be shorter than LISTVIEW_ELEMENT_HEIGHT
-    if (bounds.height < ((count - (endIndex - startIndex))*style[LISTVIEW_ELEMENTS_HEIGHT]))
-    {
-        float newHeight = (float)(endIndex - startIndex)*(float)(style[LISTVIEW_ELEMENTS_HEIGHT]/2)/(float)(endIndex - startIndex);
-        barHeight = (float)bounds.height - (float)((count - (endIndex - startIndex))*newHeight);
-    }
+    // if (bounds.height < ((count - (endIndex - startIndex))*style[LISTVIEW_ELEMENTS_HEIGHT]))
+    // {
+        // float newHeight = (float)(endIndex - startIndex)*(float)(style[LISTVIEW_ELEMENTS_HEIGHT]/2)/(float)(endIndex - startIndex);
+        // barHeight = (float)bounds.height - (float)((count - (endIndex - startIndex))*newHeight);
+    // }
     
     switch (state)
     {
         case NORMAL:
         case LOCKED:
         {
-            if (barHeight >= bounds.height) DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
-            else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_NORMAL]), guiAlpha));
-            
+            DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]), guiAlpha));
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_NORMAL]), guiAlpha));
         } break;
         case FOCUSED:
         {
-            if (barHeight >= bounds.height) DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
-            else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
             
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
         } break;
         case PRESSED:
         {
-            if (barHeight >= bounds.height) DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
-            else DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
+            DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
             
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case DISABLED:
         {
-            DrawRectangle(bounds.x, startIndex*style[LISTVIEW_ELEMENTS_HEIGHT] + bounds.y, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
+            DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
