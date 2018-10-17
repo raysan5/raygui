@@ -82,7 +82,7 @@ int main()
             if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
 
-            if (GuiListView((Rectangle){ 175, 25, 120, 135 }, ListView004TextList, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListView((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
