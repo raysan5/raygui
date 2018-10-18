@@ -894,9 +894,12 @@ RAYGUIDEF void GuiUnlock(void) { guiState = NORMAL; }
 // Define custom gui font
 RAYGUIDEF void GuiFont(Font font)
 { 
-    guiFont = font;
-    style[DEFAULT_TEXT_SIZE] = font.baseSize;
-    style[DEFAULT_TEXT_SPACING] = 1;
+    if (font.texture.id > 0) 
+    {
+        guiFont = font;
+        style[DEFAULT_TEXT_SIZE] = font.baseSize;
+        style[DEFAULT_TEXT_SPACING] = 1;
+    }
 }
 
 // Set gui controls alpha global state

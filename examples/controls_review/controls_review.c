@@ -52,12 +52,9 @@ int main()
 
     bool dropDown000EditMode = false;
     bool dropDown001EditMode = false;
-    
-    //TODO: Substituir DrawText por DrawTextEx y MeasureText por MeasureTextEx
-
     //----------------------------------------------------------------------------------
     
-    Font font = LoadFontEx("fonts/PixelOperator8.ttf", 8, 0, 0);
+    Font font = LoadFontEx("fonts/pixelpoiiz10.ttf", 10, 0, 0);
     GuiFont(font);
 
     SetTargetFPS(60);
