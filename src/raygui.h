@@ -388,16 +388,16 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                     
 RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text);                         // Check Box control with text, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, int *active, bool editMode);  // Dropdown Box control, returns selected item
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value,int minValue, int maxValue, int btnWidth, bool editMode);                      // Spinner control, returns selected value
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                               // Value Box control, updates input text with numbers
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int btnWidth, bool editMode);   // Spinner control, returns selected value
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
-RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);          // Text Box control with multiple lines
+RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
-RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue); // Slider control, returns selected value
+RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue);       // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
-RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue); // Slider Bar control, returns selected value
+RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue);    // Slider Bar control, returns selected value
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
-RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, float maxValue, bool showValue); // Progress Bar control, shows current progress value
+RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, float maxValue, bool showValue);    // Progress Bar control, shows current progress value
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 
@@ -1748,7 +1748,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
             GuiPanel(openBounds);
             GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], true, true);
 
-            for(int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], false, true);
             }
@@ -1858,7 +1858,7 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
             // Only allow keys in range [48..57]    
             if (keyCount < GUIVALUEBOX_CHAR_COUNT)
             {
-                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING*2));
                 if (GuiTextWidth(text) < maxWidth)
                 {
                     int key = GetKeyPressed();
@@ -1895,7 +1895,7 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
         else
         {
             if (*value > maxValue) *value = maxValue;
-            else if(*value < minValue) *value = minValue;  
+            else if (*value < minValue) *value = minValue;  
         }         
         
         // Note: Changing editMode
@@ -1974,7 +1974,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             // Only allow keys in range [32..125]
             if (keyCount < (textSize - 1))
             {
-                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING*2));
                 if (GuiTextWidth(text) < maxWidth - style[DEFAULT_TEXT_SIZE])
                 {
                     if ((key >= 32) && (key <= 125))
@@ -2145,7 +2145,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                 textHasChange = false;
                 
                 char *lastLine = strrchr(text, '\n');
-                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING * 2));
+                int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING*2));
                 
                 if (lastLine != NULL)
                 {
@@ -2897,7 +2897,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
                 }
                 pressedKey = true;
             }
-            else if(IsKeyPressed(KEY_DOWN))
+            else if (IsKeyPressed(KEY_DOWN))
             {
                 if (auxActive < count - 1) 
                 {
@@ -2913,7 +2913,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
                 int wheel = GetMouseWheelMove();
             
                 if (wheel < 0 && endIndex < count) startIndex -= wheel;
-                else if(wheel > 0 && startIndex > 0)  startIndex -= wheel;
+                else if (wheel > 0 && startIndex > 0)  startIndex -= wheel;
                 
                 if (pressedKey)
                 {
@@ -2951,7 +2951,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
         float percentVisible = (endIndex - startIndex)*100/count;
         barHeight *= percentVisible/100;
         if (barHeight < minBarHeight) barHeight = minBarHeight;
-        else if(barHeight > bounds.height) barHeight = bounds.height;  
+        else if (barHeight > bounds.height) barHeight = bounds.height;  
         // Posición  Y a la que dibujamos la barra.    
         barPosY = bounds.y + startIndex*((bounds.height - barHeight)/(count - (endIndex - startIndex)));
     }
