@@ -39,7 +39,7 @@ int main()
     int Spinner001Value = 0;
     int ValueBox002Value = 0;
     char TextBox003Text[64] = "SAMPLE TEXT";
-    int ListView004Active = 1;
+    int ListView004Active = -1;
     const char *ListView004TextList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
     char TextBox006Text[141] = "SAMPLE TEXT";
     
@@ -54,7 +54,7 @@ int main()
     bool dropDown001EditMode = false;
     //----------------------------------------------------------------------------------
     
-    Font font = LoadFontEx("fonts/pixelpoiiz10.ttf", 10, 0, 0);
+    Font font = LoadFontEx("fonts/NorthernLights.ttf", 30, 0, 0);
     GuiFont(font);
 
     SetTargetFPS(60);
@@ -92,6 +92,12 @@ int main()
             
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
+            GuiLock();
+            GuiState(0); if (GuiButton((Rectangle){ 25, 400, 125, 30 }, "SAMPLE TEXT")) Button005();
+            GuiState(1); if (GuiButton((Rectangle){ 25, 440, 125, 30 }, "SAMPLE TEXT")) Button005();
+            GuiState(2); if (GuiButton((Rectangle){ 25, 480, 125, 30 }, "SAMPLE TEXT")) Button005();
+            GuiState(3); if (GuiButton((Rectangle){ 25, 520, 125, 30 }, "SAMPLE TEXT")) Button005();
+            GuiState(1);            
             GuiUnlock();
             //----------------------------------------------------------------------------------
 
