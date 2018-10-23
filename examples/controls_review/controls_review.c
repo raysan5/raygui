@@ -52,6 +52,8 @@ int main()
 
     bool dropDown000EditMode = false;
     bool dropDown001EditMode = false;
+    
+     bool forceSquaredChecked = false;
     //----------------------------------------------------------------------------------
     
     Font font = LoadFontEx("fonts/NorthernLights.ttf", 30, 0, 0);
@@ -89,8 +91,10 @@ int main()
 
             //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
             if (GuiDropdownBox((Rectangle){ 25, 75, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
-            
+            //forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 65, 15, 15 }, forceSquaredChecked, "Force Square");
+            GuiDisable();
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
+            GuiEnable();
             
             GuiLock();
             GuiState(0); if (GuiButton((Rectangle){ 25, 400, 125, 30 }, "SAMPLE TEXT")) Button005();

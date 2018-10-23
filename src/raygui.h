@@ -1197,7 +1197,7 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
 {
     GuiControlState state = guiState;
-    bool clicked = false;
+    bool pressed = false;
     
     int textWidth = GuiTextWidth(text);
     int textHeight = style[DEFAULT_TEXT_SIZE];
@@ -1211,12 +1211,13 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     {
         Vector2 mousePoint = GetMousePosition();
 
-        // Check label state
+        // Check checkbox state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
             else state = FOCUSED;
+            
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
         }
     }
     //--------------------------------------------------------------------
@@ -1233,7 +1234,7 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
     }
     //--------------------------------------------------------------------
 
-    return clicked;
+    return pressed;
 }
 
 // Image button control, returns true when clicked
@@ -1495,8 +1496,9 @@ RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
             else state = FOCUSED;
+            
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) checked = !checked;
         }
     }
     //--------------------------------------------------------------------
@@ -1755,7 +1757,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         {
             DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[DEFAULT_BASE_COLOR_DISABLED]), guiAlpha));
             DrawRectangleLinesEx(bounds, DROPDOWNBOX_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], false, true);
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], false, false);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + bounds.height/2 - 2 + 5 }, 
