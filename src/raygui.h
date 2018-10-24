@@ -3010,6 +3010,10 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
 
     // Draw control
     //--------------------------------------------------------------------
+    
+    // Draw background
+    DrawRectangleRec(bounds, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+    
     int posX = bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING];
     int elementWidth = bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK;
     if (!useScrollBar)
@@ -3034,7 +3038,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
     // Draw scrollBar background
     if (useScrollBar) DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));   
     
-    // Draw ListView states
+    // Draw ListView states    
     switch (state)
     {
         case NORMAL:
@@ -3047,7 +3051,6 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
         case FOCUSED:
         {
             if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
-            
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
             
             if(auxActive >= startIndex && auxActive < endIndex) GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (auxActive - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[auxActive], true, false);
@@ -3055,12 +3058,12 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
         case PRESSED:
         {
             if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
-            
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
         } break;
         case DISABLED:
         {
             if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
+            
             DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
         } break;
         default: break;
