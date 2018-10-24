@@ -1701,15 +1701,16 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
             if (CheckCollisionPointRec(mousePoint, closeBounds))
             {
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-                else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;   
+                
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;   
                 else state = FOCUSED;
             }         
         }
         else
         {
-            if (CheckCollisionPointRec(mousePoint, openBounds))
+            if (CheckCollisionPointRec(mousePoint, closeBounds))
             {
-                 if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
+                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
             }            
             
             else if (!CheckCollisionPointRec(mousePoint, openBounds))
@@ -1760,7 +1761,11 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
                     }
                     else 
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], false, true))  auxActive = i;
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], false, true))
+                        {
+                            auxActive = i;
+                            pressed = true;
+                        }                            
                     }
                 }
             }
