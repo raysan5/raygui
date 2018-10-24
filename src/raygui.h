@@ -108,18 +108,23 @@
     #include "raylib.h"
 #endif
 
-// #define RAYGUI_STATIC
-#ifdef RAYGUI_STATIC
-    #define RAYGUIDEF static            // Functions just visible to module including this file
-#else
-    #ifdef __cplusplus
-        #define RAYGUIDEF extern "C"    // Functions visible from other files (no name mangling of functions in C++)
+#if defined(RAYGUI_IMPLEMENTATION)
+    #if defined(_WIN32) && defined(BUILD_LIBTYPE_SHARED)
+        #define RAYGUIDEF __declspec(dllexport) extern  // We are building raygui as a Win32 shared library (.dll).
+    #elif defined(_WIN32) && defined(USE_LIBTYPE_SHARED) 
+        #define RAYGUIDEF __declspec(dllimport)         // We are using raygui as a Win32 shared library (.dll)
     #else
-        #define RAYGUIDEF __declspec(dllexport) extern        // Functions visible from other files
+        #ifdef __cplusplus
+            #define RAYGUIDEF extern "C"    // Functions visible from other files (no name mangling of functions in C++)
+        #else
+            #define RAYGUIDEF extern        // Functions visible from other files
+        #endif
     #endif
+#elif defined(RAYGUI_STATIC)
+    #define RAYGUIDEF static                // Functions just visible to module including this file
 #endif
 
-#include <stdlib.h>                     // Required for: atoi()
+#include <stdlib.h>                         // Required for: atoi()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
