@@ -1757,7 +1757,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
                 {
                     if (i == auxActive && editMode) 
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], true, true)); //auxActive = i;
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], true, true) == false) pressed = true; //auxActive = i;
                     }
                     else 
                     {
@@ -3129,14 +3129,13 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
 
     // Draw control
     //--------------------------------------------------------------------
-    if ((state != DISABLED) && !guiLocked)
+    if (state != DISABLED)
     {
         DrawRectangleGradientEx(bounds, Fade(WHITE, guiAlpha), Fade(WHITE, guiAlpha), Fade(maxHueCol, guiAlpha), Fade(maxHueCol, guiAlpha));
         DrawRectangleGradientEx(bounds, Fade(BLACK, 0), Fade(BLACK, guiAlpha), Fade(BLACK, guiAlpha), Fade(BLACK, 0));
         
         // Draw color picker: selector
         DrawRectangle(pickerSelector.x - GUICOLORPANEL_SELECTOR_THICK/2, pickerSelector.y - GUICOLORPANEL_SELECTOR_THICK/2, GUICOLORPANEL_SELECTOR_THICK, GUICOLORPANEL_SELECTOR_THICK, Fade(WHITE, guiAlpha));
-        
     }
     else 
     {
@@ -3197,7 +3196,7 @@ RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
     // Draw control
     //--------------------------------------------------------------------
     // Draw alpha bar: checked background
-    if ((state != DISABLED) && !guiLocked)
+    if (state != DISABLED)
     {
         for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%((int)bounds.width/CHECKER_SIZE)), bounds.y, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? Fade(Fade(GRAY, 0.4f), guiAlpha) : Fade(Fade(RAYWHITE, 0.4f), guiAlpha));
         for (int i = 0; i < bounds.width/CHECKER_SIZE; i++) DrawRectangle(bounds.x + CHECKER_SIZE*(i%((int)bounds.width/CHECKER_SIZE)), bounds.y + CHECKER_SIZE, bounds.width/(bounds.width/CHECKER_SIZE), CHECKER_SIZE, (i%2) ? Fade(Fade(RAYWHITE, 0.4f), guiAlpha) : Fade(Fade(GRAY, 0.4f), guiAlpha));
@@ -3281,7 +3280,7 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
     //--------------------------------------------------------------------
     // Draw control
     //--------------------------------------------------------------------
-    if ((state != DISABLED) && !guiLocked)
+    if (state != DISABLED)
     {
         //Draw hue bar:color bars
         DrawRectangleGradientV(bounds.x + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.y + GUICOLORBARHUE_SELECTOR_PADDING/2, bounds.width - GUICOLORBARHUE_SELECTOR_PADDING, (int)bounds.height/6, Fade((Color){ 255,0,0,255 }, guiAlpha), Fade((Color){ 255,255,0,255 }, guiAlpha));
