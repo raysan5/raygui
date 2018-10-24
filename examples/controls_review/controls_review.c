@@ -91,8 +91,8 @@ int main()
 
             //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
             if (GuiDropdownBox((Rectangle){ 25, 75, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
-            //forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 65, 15, 15 }, forceSquaredChecked, "Force Square");
-            GuiDisable();
+            forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 65, 15, 15 }, forceSquaredChecked, "Force Square");
+            //GuiDisable();
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             GuiEnable();
             

@@ -451,7 +451,8 @@ typedef enum GuiControlState {
     DISABLED = 0, 
     NORMAL, 
     FOCUSED, 
-    PRESSED
+    PRESSED,
+    WASPRESSED
 } GuiControlState;
 
 //----------------------------------------------------------------------------------
@@ -1153,7 +1154,7 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else state = FOCUSED;
             
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
         }
     }
     //--------------------------------------------------------------------
@@ -1217,7 +1218,7 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else state = FOCUSED;
             
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
         }
     }
     //--------------------------------------------------------------------
@@ -1498,7 +1499,7 @@ RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
             else state = FOCUSED;
             
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) checked = !checked;
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
         }
     }
     //--------------------------------------------------------------------
@@ -1656,11 +1657,11 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
     #define DROPDOWNBOX_ARROW_RIGHT_PADDING    16
     
     bool pressed = false;
-    int activeAux = *active;
+    int auxActive = *active;
     
     GuiControlState state = guiState;
    
-    int textWidth = GuiTextWidth(text[activeAux]);
+    int textWidth = GuiTextWidth(text[auxActive]);
     int textHeight = style[DEFAULT_TEXT_SIZE];
 
     if (bounds.width < textWidth) bounds.width = textWidth;
@@ -1682,16 +1683,16 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         {
             state = PRESSED; 
             
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                for (int i = 1; i < (count + 1); i++)
-                {
-                    if (CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y + i*bounds.height, bounds.width, bounds.height })) 
-                    {
-                        activeAux = i - 1;
-                    }
-                }
-            }
+            // if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            // {
+                // for (int i = 1; i < (count + 1); i++)
+                // {
+                    // if (CheckCollisionPointRec(mousePoint, (Rectangle){ bounds.x, bounds.y + i*bounds.height, bounds.width, bounds.height })) 
+                    // {
+                        // auxActive = i - 1;
+                    // }
+                // }
+            // }
         }  
         
          // Note: Changing editMode
@@ -1699,19 +1700,21 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         {            
             if (CheckCollisionPointRec(mousePoint, closeBounds))
             {
-                state = FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;    
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+                else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;   
+                else state = FOCUSED;
             }         
         }
         else
         {
-            if (CheckCollisionPointRec(mousePoint, closeBounds))
+            if (CheckCollisionPointRec(mousePoint, openBounds))
             {
-                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
-            }
-            else if (!CheckCollisionPointRec(mousePoint, bounds))
+                 if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
+            }            
+            
+            else if (!CheckCollisionPointRec(mousePoint, openBounds))
             {
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
             }
         }
     }
@@ -1725,7 +1728,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         {
             DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[DEFAULT_BASE_COLOR_NORMAL]), guiAlpha));
             DrawRectangleLinesEx(bounds, DROPDOWNBOX_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_NORMAL]), guiAlpha));
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], false, false);
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], false, false);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + bounds.height/2 - 2 + 5 }, 
@@ -1733,7 +1736,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         } break;
         case FOCUSED:
         {
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], false, true);
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], false, true);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + bounds.height/2 - 2 + 5 }, 
@@ -1741,12 +1744,25 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         } break;
         case PRESSED:
         {
-            GuiPanel(openBounds);
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], true, true);
-
-            for (int i = 0; i < count; i++)
-            {
-                GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], false, true);
+            
+            if (!editMode) GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], true, true);
+            if (editMode)
+            {                
+                GuiPanel(openBounds);
+                
+                GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], true, true);
+            
+                for (int i = 0; i < count; i++)
+                {
+                    if (i == auxActive && editMode) 
+                    {
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], true, true)); //auxActive = i;
+                    }
+                    else 
+                    {
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + DROPDOWNBOX_PADDING, bounds.width, bounds.height - DROPDOWNBOX_PADDING }, text[i], false, true))  auxActive = i;
+                    }
+                }
             }
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 }, 
@@ -1757,7 +1773,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         {
             DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[DEFAULT_BASE_COLOR_DISABLED]), guiAlpha));
             DrawRectangleLinesEx(bounds, DROPDOWNBOX_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[activeAux], false, false);
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], false, false);
             
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 }, 
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + bounds.height/2 - 2 + 5 }, 
@@ -1768,7 +1784,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
     //--------------------------------------------------------------------
     
     
-    *active = activeAux;
+    *active = auxActive;
     return pressed;
 }
 
@@ -2785,6 +2801,8 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
     
     GuiControlState state = guiState;
     
+    bool pressed = false;
+    
     int textWidth = GuiTextWidth(text);
     int textHeight = style[DEFAULT_TEXT_SIZE];
     
@@ -2807,16 +2825,13 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
 
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                state = NORMAL;
-                active = !active;
-            }
-            
             if (!active)
             {
-                state = FOCUSED;
+                if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
+                else state = FOCUSED;
             }
+                       
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) active = !active;
         }
     }
     //--------------------------------------------------------------------
@@ -2844,9 +2859,12 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
             DrawRectangleLinesEx(bounds, LISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
             GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, Fade(GetColor(style[LISTVIEW_TEXT_COLOR_FOCUSED]), guiAlpha));
         } break;
-        /*case PRESSED: // NOT USED
+        case PRESSED:
         {
-        } break;*/
+                DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(style[LISTVIEW_BASE_COLOR_PRESSED]), guiAlpha));
+                DrawRectangleLinesEx(bounds, LISTELEMENT_BORDER_WIDTH, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
+                GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, Fade(GetColor(style[LISTVIEW_TEXT_COLOR_PRESSED]), guiAlpha));
+        } break;
         case DISABLED:
         {
             GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2, Fade(GetColor(style[LISTVIEW_TEXT_COLOR_DISABLED]), guiAlpha));
@@ -3000,7 +3018,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
     {
         if (i == auxActive && editMode) 
         {
-            if (GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) auxActive -1;
+            if (GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) auxActive = -1;
         }
         else
         {
