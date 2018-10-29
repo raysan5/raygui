@@ -55,6 +55,14 @@ int main()
     
      bool forceSquaredChecked = false;
      
+    //int *enableElements = (int *)malloc(6*sizeof(int));
+    int enableElements[6] = {0, 0, 0, 0, 0, 0};
+    
+    for (int i = 0; i < 6; i++)
+    {
+        enableElements[i] = 1;
+    }
+     
      Color colorPickerValue = RED;
     //----------------------------------------------------------------------------------
     
@@ -81,12 +89,13 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
-            
+            GuiDisable();
             //if (GuiSpinner((Rectangle){ 25, 75, 125, 30 }, &Spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
             if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
 
-            if (GuiListView((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            //if (GuiListView((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListViewEx((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, enableElements, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
             if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
 
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
@@ -113,7 +122,7 @@ int main()
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-
+    //free(enableElements);
     // De-Initialization
     //--------------------------------------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context

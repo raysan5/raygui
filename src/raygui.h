@@ -408,7 +408,8 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);   
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 
 // Advance controls set
-RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *active, bool editMode);                  // List View control, returns selected list element index
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *active, bool editMode);                     // List View control, returns selected list element index
+RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enableElements, int count, int *active, bool editMode);
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 
@@ -3037,6 +3038,208 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
         else
         {
             if (GuiListElement((Rectangle){ posX, bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, true) == true) auxActive = i;
+        }
+    }
+
+    // Draw scrollBar background
+    if (useScrollBar) DrawRectangle(bounds.x, bounds.y, style[LISTVIEW_BAR_WIDTH], bounds.height, Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));   
+    
+    // Draw ListView states    
+    switch (state)
+    {
+        case NORMAL:
+        {
+            if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BORDER_COLOR_NORMAL]), guiAlpha));
+            DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_NORMAL]), guiAlpha));
+            
+            if(auxActive >= startIndex && auxActive < endIndex) GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (auxActive - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[auxActive], true, false);
+        } break;
+        case FOCUSED:
+        {
+            if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_FOCUSED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_FOCUSED]), guiAlpha));
+            
+            if(auxActive >= startIndex && auxActive < endIndex) GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (auxActive - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[auxActive], true, false);
+        } break;
+        case PRESSED:
+        {
+            if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[SLIDERBAR_BASE_COLOR_PRESSED]), guiAlpha));
+            DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_PRESSED]), guiAlpha));
+        } break;
+        case DISABLED:
+        {
+            if (useScrollBar) DrawRectangle(bounds.x, barPosY, style[LISTVIEW_BAR_WIDTH], barHeight, Fade(GetColor(style[LISTVIEW_BASE_COLOR_DISABLED]), guiAlpha));
+            
+            DrawRectangleLinesEx(bounds, LISTVIEW_LINE_THICK, Fade(GetColor(style[LISTVIEW_BORDER_COLOR_DISABLED]), guiAlpha));
+        } break;
+        default: break;
+    }
+    //--------------------------------------------------------------------
+    
+    *active = auxActive;
+    return pressed;
+}
+
+RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enableElements, int count, int *active, bool editMode)
+{
+    #define LISTVIEW_LINE_THICK       1
+    
+    bool enableList = false;    
+    if (enableElements != NULL) enableList = true;
+    
+    GuiControlState state = guiState;
+    
+    bool pressed = false;
+    
+    static int startIndex = 0;    
+    bool useScrollBar = true;
+    bool pressedKey = false;
+    
+    int visibleElements = bounds.height/(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]);
+    int endIndex = startIndex + visibleElements;    
+    
+    int auxActive = *active;
+    
+    float barHeight = bounds.height;
+    float minBarHeight = 10;
+    float barPosY = 0;
+    
+    // All the elements fit inside ListView and dont need scrollbar.
+    if (visibleElements >= count) 
+    {
+        useScrollBar = false;
+        startIndex = 0;
+        endIndex = count;
+    }
+    
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != DISABLED) && !guiLocked) // && !guiLocked
+    {
+        Vector2 mousePoint = GetMousePosition();
+        
+        if (editMode)
+        {
+            state = PRESSED;            
+            
+            // Change active with keys
+            if (IsKeyPressed(KEY_UP))
+            {
+                if (auxActive > 0) 
+                {
+                    auxActive--;
+                    if ((useScrollBar) && (auxActive < startIndex)) startIndex--;
+                }
+                pressedKey = true;
+            }
+            else if (IsKeyPressed(KEY_DOWN))
+            {
+                if (auxActive < count - 1) 
+                {
+                    auxActive++;
+                    if ((useScrollBar) && (auxActive >= endIndex)) startIndex++;                     
+                }
+                pressedKey = true;
+            }   
+            
+            if (useScrollBar)
+            {
+                endIndex = startIndex + visibleElements;  
+                int wheel = GetMouseWheelMove();
+            
+                if (wheel < 0 && endIndex < count) startIndex -= wheel;
+                else if (wheel > 0 && startIndex > 0)  startIndex -= wheel;
+                
+                if (pressedKey)
+                {
+                    pressedKey = false;
+                    if ((auxActive < startIndex) || (auxActive  >= endIndex)) startIndex = auxActive;
+                } 
+                
+                if (startIndex < 0) startIndex = 0;
+                else if (startIndex > (count - (endIndex - startIndex)))
+                {
+                    startIndex = count - (endIndex - startIndex);
+                }
+                
+                endIndex = startIndex + visibleElements;  
+                if (endIndex > count) endIndex = count; 
+            }
+        }                    
+        // ------------------------------------------------------------------------------------       
+        
+         // Note: Changing editMode
+        if (!editMode)
+        {            
+            if (CheckCollisionPointRec(mousePoint, bounds))
+            {
+                state = FOCUSED;
+                if (IsMouseButtonPressed(0)) pressed = true; 
+                
+                int wheel = GetMouseWheelMove();
+                if (wheel) 
+                {
+                    startIndex -= wheel;
+                    if (startIndex < 0) startIndex = 0;
+                    else if (startIndex > (count - (endIndex - startIndex)))
+                    {
+                        startIndex = count - (endIndex - startIndex);
+                    }
+                    pressed = true;
+                }
+            }
+        }
+        else
+        {
+            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;
+        }
+    }
+    
+    // Calculamos el porcentaje de elementos visibles, y aplicamos el mismo porcentaje al tamaño de la barra original.
+    // Hay que tener en cuenta un valor mínimo para que la barra no sea de 1 px nunca y también que no sea mayor que la altura máxima. 
+    if (useScrollBar)
+    {
+        float percentVisible = (endIndex - startIndex)*100/count;
+        barHeight *= percentVisible/100;
+        if (barHeight < minBarHeight) barHeight = minBarHeight;
+        else if (barHeight > bounds.height) barHeight = bounds.height;  
+        // Posición  Y a la que dibujamos la barra.    
+        barPosY = bounds.y + startIndex*((bounds.height - barHeight)/(count - (endIndex - startIndex)));
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    
+    // Draw background
+    DrawRectangleRec(bounds, GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+    
+    int posX = bounds.x + style[LISTVIEW_BAR_WIDTH]  + style[LISTVIEW_ELEMENTS_PADDING];
+    int elementWidth = bounds.width - style[LISTVIEW_BAR_WIDTH] - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK;
+    if (!useScrollBar)
+    {
+        posX = bounds.x + style[LISTVIEW_ELEMENTS_PADDING];
+        elementWidth = bounds.width - 2*style[LISTVIEW_ELEMENTS_PADDING] - LISTVIEW_LINE_THICK; 
+    }
+    
+    // Draw GuiListElements
+    for (int i = startIndex; i < endIndex; i++)
+    {
+        if (enableList && enableElements[i] == 0)
+        {
+            GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, false);
+        }   
+        else
+        {
+            if (i == auxActive && editMode) 
+            {
+                if (GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) auxActive = -1;
+            }
+            else
+            {
+                if (GuiListElement((Rectangle){ posX, bounds.y  + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, true) == true) auxActive = i;
+            }
         }
     }
 
