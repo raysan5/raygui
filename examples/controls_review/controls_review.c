@@ -32,42 +32,42 @@ int main()
 
     // layout_file_name: controls initialization
     //----------------------------------------------------------------------------------
-
-    int DropdownBox000Active = 0;
-    int DropdownBox001Active = 0;
-    const char *DropdownBox000TextList[3] = { "ONE", "TWO", "THREE" };
-    int Spinner001Value = 0;
-    int ValueBox002Value = 0;
-    char TextBox003Text[64] = "SAMPLE TEXT";
-    int ListView004Active = -1;
-    const char *ListView004TextList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
-    char TextBox006Text[141] = "SAMPLE TEXT";
-    
-    bool spinnerEditMode = false;
-    bool valueBoxEditMode = false;
-    bool textBoxEditMode = false;
-    bool multiTextBoxEditMode = false;
-
-    bool listViewEditMode = false;
-
+    int dropdownBox000Active = 0;
+    const char *dropdownBox000TextList[3] = { "ONE", "TWO", "THREE" };
     bool dropDown000EditMode = false;
-    bool dropDown001EditMode = false;
     
-     bool forceSquaredChecked = false;
-     
-    //int *enableElements = (int *)malloc(6*sizeof(int));
-    int enableElements[6] = {0, 0, 0, 0, 0, 0};
+    int dropdownBox001Active = 0;
+    const char *dropdownBox001TextList[5] = { "ONE", "TWO", "THREE", "FOUR", "FIVE" };
+    bool dropDown001EditMode = false;    
     
-    for (int i = 0; i < 6; i++)
-    {
-        enableElements[i] = 1;
-    }
-     
-     Color colorPickerValue = RED;
+    int spinner001Value = 0;
+    bool spinnerEditMode = false;
+    
+    int valueBox002Value = 0;
+    bool valueBoxEditMode = false;
+    
+    char textBoxText[64] = "Text box";
+    bool textBoxEditMode = false;
+    
+    int listViewScrollIndex = 1;
+    int listViewActive = -1;
+    const char *listViewList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
+    bool listViewEditMode = false;
+    
+    int listViewExScrollIndex = 0;
+    int listViewExActive = -1;
+    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    int listViewExElementsEnable[8] = {1, 0, 1, 1, 0, 0, 1};
+    bool listViewExEditMode = false;
+    
+    char multiTextBoxText[141] = "Multi text box";    
+    bool multiTextBoxEditMode = false;    
+    
+    bool forceSquaredChecked = false;
     //----------------------------------------------------------------------------------
     
-    Font font = LoadFontEx("fonts/NorthernLights.ttf", 30, 0, 0);
-    GuiFont(font);
+    //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
+    //GuiFont(font);
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -89,32 +89,34 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
-            GuiDisable();
-            //if (GuiSpinner((Rectangle){ 25, 75, 125, 30 }, &Spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
-            if (GuiValueBox((Rectangle){ 25, 125, 125, 30 }, &ValueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
-            if (GuiTextBox((Rectangle){ 25, 175, 125, 30 }, TextBox003Text, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
-
-            //if (GuiListView((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiListViewEx((Rectangle){ 175, 25, 120, 100 }, ListView004TextList, enableElements, 6, &ListView004Active, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiButton((Rectangle){ 25, 225, 125, 30 }, "SAMPLE TEXT")) Button005(); 
-
-            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, TextBox006Text, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
-
-            //GuiScrollPanel((Rectangle){ 325, 225, 225, 125 }, "SAMPLE TEXT");
-            if (GuiDropdownBox((Rectangle){ 25, 75, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
-            forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 65, 15, 15 }, forceSquaredChecked, "Force Square");
             //GuiDisable();
-            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, DropdownBox000TextList, 3, &DropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
-            colorPickerValue = GuiColorPicker((Rectangle){ 325, 220, 240, 240 }, colorPickerValue);
-            GuiEnable();
+            // First GUI column
+            forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 108, 15, 15 }, forceSquaredChecked, "Force Square");
+            if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, &spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
+            if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
+            if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
+            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "SAMPLE TEXT")) Button005(); 
+                // NOTE: GuiDropdownBox must draw at the end of the column
+            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;            
+            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;           
+            
+            // Second GUI column      
+            if (GuiListView((Rectangle){ 185, 25, 120, 100 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListViewEx((Rectangle){ 185, 155, 120, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
+            
+            // Third GUI column
+            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
+            
+            //GuiEnable();
             GuiUnlock();
             
+            // Fourth GUI column
             GuiLock();
-            GuiState(0); if (GuiButton((Rectangle){ 25, 400, 125, 30 }, "SAMPLE TEXT")) Button005();
-            GuiState(1); if (GuiButton((Rectangle){ 25, 440, 125, 30 }, "SAMPLE TEXT")) Button005();
-            GuiState(2); if (GuiButton((Rectangle){ 25, 480, 125, 30 }, "SAMPLE TEXT")) Button005();
-            GuiState(3); if (GuiButton((Rectangle){ 25, 520, 125, 30 }, "SAMPLE TEXT")) Button005();
+            GuiState(0); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "DISABLE")) Button005();
+            GuiState(1); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "NORMAL")) Button005();
+            GuiState(2); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "FOCUSED")) Button005();
+            GuiState(3); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "PRESSED")) Button005();
             GuiState(1);            
             GuiUnlock();
             //----------------------------------------------------------------------------------
@@ -139,4 +141,3 @@ static void Button005()
 {
     // TODO: Implement control logic
 }
-
