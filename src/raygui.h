@@ -470,7 +470,7 @@ static float guiAlpha = 1.0f;
 static Font guiFont = { 0 };
 
 // Current GUI style (light or dark)
-static int style[NUM_PROPERTIES] = {
+static unsigned int style[NUM_PROPERTIES] = {
 #if defined(RAYGUI_STYLE_DEFAULT_LIGHT)
     //----------------------------------------------
     0xf5f5f5ff,     // DEFAULT_BACKGROUND_COLOR
@@ -2006,7 +2006,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             if (keyCount < (textSize - 1))
             {
                 int maxWidth = (bounds.width - (DEFAULT_TEXT_PADDING*2));
-                if (GuiTextWidth(text) < maxWidth - style[DEFAULT_TEXT_SIZE])
+                if (GuiTextWidth(text) < (maxWidth - style[DEFAULT_TEXT_SIZE]))
                 {
                     if ((key >= 32) && (key <= 125))
                     {
@@ -2811,8 +2811,6 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
     #define LISTELEMENT_BORDER_WIDTH     1
     
     GuiControlState state = guiState;
-    
-    bool pressed = false;
     
     int textWidth = GuiTextWidth(text);
     int textHeight = style[DEFAULT_TEXT_SIZE];
