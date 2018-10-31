@@ -56,6 +56,7 @@ int main()
     
     int listViewExScrollIndex = 0;
     int listViewExActive = -1;
+    int listViewExFocus = -1;
     const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
     int listViewExElementsEnable[8] = {1, 0, 1, 1, 0, 0, 1};
     bool listViewExEditMode = false;
@@ -103,7 +104,8 @@ int main()
             
             // Second GUI column      
             if (GuiListView((Rectangle){ 185, 25, 120, 100 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiListViewEx((Rectangle){ 185, 155, 120, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
+            if (GuiListViewEx((Rectangle){ 185, 155, 120, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
+            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(listViewExList[listViewExFocus], 195, 370, 20, RED);
             
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
