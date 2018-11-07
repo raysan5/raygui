@@ -2852,27 +2852,21 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
 }
 
 // List View control
-RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int*scrollIndex, int *active, bool editMode)
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *scrollIndex, int *active, bool editMode)
 {
-    int focusDefault = 0;
-    return GuiListViewEx(bounds, text, NULL, count, scrollIndex, active, &focusDefault, editMode);
+    return GuiListViewEx(bounds, text, NULL, count, scrollIndex, active, NULL, editMode);
 }
 
 // List View control extended parameters
-RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledElements, int count, int *scrollIndex, int *active, int*focus, bool editMode)
+RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledElements, int count, int *scrollIndex, int *active, int *focus, bool editMode)
 {
     #define LISTVIEW_LINE_THICK       1
 
-    bool usingEnableList = false;
-    if (enabledElements != NULL) usingEnableList = true;
-
-    int focusElement = -1;
-
     GuiControlState state = guiState;
-
     bool pressed = false;
-
-    int startIndex = *scrollIndex;
+    
+    int focusElement = -1;
+    int startIndex = (scrollIndex == NULL) ? 1 : *scrollIndex;
     bool useScrollBar = true;
     bool pressedKey = false;
 
@@ -3028,7 +3022,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if (usingEnableList && enabledElements[i] == 0)
+                if ((enabledElements != NULL) && (enabledElements[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, false);
@@ -3050,7 +3044,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if (usingEnableList && enabledElements[i] == 0)
+                if ((enabledElements != NULL) && (enabledElements[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, false);
@@ -3067,13 +3061,13 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if (usingEnableList && enabledElements[i] == 0)
+                if ((enabledElements != NULL) && (enabledElements[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], false, false);
                     GuiEnable();
                 }
-                else if (i == auxActive && editMode)
+                else if ((i == auxActive) && editMode)
                 {
                     if (GuiListElement((Rectangle){ posX, bounds.y + style[LISTVIEW_ELEMENTS_PADDING] + LISTVIEW_LINE_THICK + (i - startIndex)*(style[LISTVIEW_ELEMENTS_HEIGHT] + style[LISTVIEW_ELEMENTS_PADDING]), elementWidth, style[LISTVIEW_ELEMENTS_HEIGHT] }, text[i], true, true) == false) auxActive = -1;
                 }
@@ -3100,7 +3094,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
     //--------------------------------------------------------------------
     
     *scrollIndex = startIndex;
-    *focus = focusElement;
+    if (focus != NULL) *focus = focusElement;
     *active = auxActive;
     return pressed;
 }
