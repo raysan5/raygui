@@ -2866,7 +2866,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
     bool pressed = false;
     
     int focusElement = -1;
-    int startIndex = (scrollIndex == NULL) ? 1 : *scrollIndex;
+    int startIndex = (scrollIndex == NULL) ? 0 : *scrollIndex;
     bool useScrollBar = true;
     bool pressedKey = false;
 
@@ -3093,9 +3093,10 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
     }
     //--------------------------------------------------------------------
     
-    *scrollIndex = startIndex;
+    if (scrollIndex != NULL) *scrollIndex = startIndex;
     if (focus != NULL) *focus = focusElement;
     *active = auxActive;
+    
     return pressed;
 }
 
