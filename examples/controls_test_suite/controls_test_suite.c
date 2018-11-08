@@ -11,8 +11,8 @@
 *       - GuiListView()
 *
 *   DEPENDENCIES:
-*       raylib 2.1-dev  - Windowing/input management and drawing.
-*       raygui 2.1-dev  - Immediate-mode GUI controls.
+*       raylib 2.1  - Windowing/input management and drawing.
+*       raygui 2.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
