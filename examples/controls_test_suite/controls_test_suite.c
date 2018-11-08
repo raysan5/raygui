@@ -1,10 +1,25 @@
 /*******************************************************************************************
 *
-*   layout_file_name - tool description
+*   raygui - controls test suite
+*
+*   TEST CONTROLS:
+*       - GuiDropdownBox()
+*       - GuiValueBox()
+*       - GuiSpinner()
+*       - GuiTextBox()
+*       - GuiTextBoxMulti()
+*       - GuiListView()
+*
+*   DEPENDENCIES:
+*       raylib 2.1-dev  - Windowing/input management and drawing.
+*       raygui 2.1-dev  - Immediate-mode GUI controls.
+*
+*   COMPILATION (Windows - MinGW):
+*       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2018 raylib technologies
+*   Copyright (c) 2018 raylib technologies (@raylibtech)
 *
 **********************************************************************************************/
 
@@ -13,10 +28,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "../../src/raygui.h"
 
-//----------------------------------------------------------------------------------
-// Controls Functions Declaration
-//----------------------------------------------------------------------------------
-static void Button005();        // Button: Button005 logic
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -28,9 +39,9 @@ int main()
     int screenWidth = 800;
     int screenHeight = 600;
 
-    InitWindow(screenWidth, screenHeight, "layout_file_name");
+    InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
 
-    // layout_file_name: controls initialization
+    // GUI controls initialization
     //----------------------------------------------------------------------------------
     int dropdownBox000Active = 0;
     const char *dropdownBox000TextList[3] = { "ONE", "TWO", "THREE" };
@@ -67,6 +78,7 @@ int main()
     bool forceSquaredChecked = false;
     //----------------------------------------------------------------------------------
     
+    // Custom GUI font loading
     //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
     //GuiFont(font);
 
@@ -97,7 +109,7 @@ int main()
             if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, &spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
-            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "SAMPLE TEXT")) Button005(); 
+            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "SAMPLE TEXT")) { }
                 // NOTE: GuiDropdownBox must draw at the end of the column
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;            
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;           
@@ -115,10 +127,10 @@ int main()
             
             // Fourth GUI column
             GuiLock();
-            GuiState(0); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "DISABLE")) Button005();
-            GuiState(1); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "NORMAL")) Button005();
-            GuiState(2); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "FOCUSED")) Button005();
-            GuiState(3); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "PRESSED")) Button005();
+            GuiState(0); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "DISABLE")) { }
+            GuiState(1); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "NORMAL")) { }
+            GuiState(2); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "FOCUSED")) { }
+            GuiState(3); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "PRESSED")) { }
             GuiState(1);            
             GuiUnlock();
             //----------------------------------------------------------------------------------
@@ -126,20 +138,11 @@ int main()
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-    //free(enableElements);
+
     // De-Initialization
     //--------------------------------------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return 0;
-}
-
-//------------------------------------------------------------------------------------
-// Controls Functions Definitions (local)
-//------------------------------------------------------------------------------------
-// Button: Button005 logic
-static void Button005()
-{
-    // TODO: Implement control logic
 }

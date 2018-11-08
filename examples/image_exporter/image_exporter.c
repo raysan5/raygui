@@ -1,9 +1,13 @@
 /*******************************************************************************************
 *
-*   raygui - image exporter example
+*   raygui - image exporter
 *
-*   This example has been created using raylib v2.0 (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
+*   DEPENDENCIES:
+*       raylib 2.1-dev  - Windowing/input management and drawing.
+*       raygui 2.1-dev  - Immediate-mode GUI controls.
+*
+*   COMPILATION (Windows - MinGW):
+*       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   Copyright (c) 2018 raylib technologies (@raylibtech)
 *
@@ -14,13 +18,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-//#include "untitled.h"
-
-// Static functions
-static void ImageToCode(Image image, char *fileName);       // Exports image to code (.h)
-
-const char *pixelFormatTextList[7] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
-int pixelFormatActive = 0;
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -32,18 +29,22 @@ int main(int argc, char *argv[0])
     const int screenWidth = 800;
     const int screenHeight = 450;
     
-    //SetConfigFlags();
-    InitWindow(screenWidth, screenHeight, "image exporter");
+    InitWindow(screenWidth, screenHeight, "raygui - image exporter");
     
-    // Image export window variables
+    // GUI controls initialization
+    //----------------------------------------------------------------------------------
     Rectangle windowBoxRec = { screenWidth/2 - 110, screenHeight/2 - 100, 220, 190 };
     bool windowBoxActive = false;
+    
     int fileFormatActive = 0;
     const char *fileFormatTextList[3] = { "IMAGE (.png)", "DATA (.raw)", "CODE (.h)" };
-    char fileName[32] = "untitled";
 
-    //Image image = { untitled_data, untitled_width, untitled_height, 1, untitled_format };
-    //Texture2D texture = LoadTextureFromImage(image);
+    int pixelFormatActive = 0;
+    const char *pixelFormatTextList[7] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
+
+    char fileName[32] = "untitled";
+    //--------------------------------------------------------------------------------------
+    
     Image image = { 0 };
     Texture2D texture = { 0 };
     
@@ -66,7 +67,6 @@ int main(int argc, char *argv[0])
             int fileCount = 0;
             char **droppedFiles = GetDroppedFiles(&fileCount);
 
-            // Check file extensions for drag-and-drop
             if (fileCount == 1)
             {
                 Image imTemp = LoadImage(droppedFiles[0]);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[0])
                 if (fileFormatActive == 0)        // PNG
                 {
                     if ((GetExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".png"))) strcat(fileName, ".png\0");     // No extension provided
-                    ExportImage(fileName, image);
+                    ExportImage(image, fileName);
                 }
                 else if (fileFormatActive == 1)   // RAW
                 {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[0])
                 }
                 else if (fileFormatActive == 2)   // CODE
                 {
-                    ImageToCode(image, fileName);
+                    ExportImageAsCode(image, fileName);
                 }
             }
             
@@ -126,7 +126,9 @@ int main(int argc, char *argv[0])
             if (imageScale <= 0.1f) imageScale = 0.1f;
             else if (imageScale >= 5) imageScale = 5;
             
-            imageRec = (Rectangle){ screenWidth/2 - (float)image.width*imageScale/2, screenHeight/2 - (float)image.height*imageScale/2, (float)image.width*imageScale, (float)image.height*imageScale };
+            imageRec = (Rectangle){ screenWidth/2 - (float)image.width*imageScale/2, 
+                                    screenHeight/2 - (float)image.height*imageScale/2, 
+                                    (float)image.width*imageScale, (float)image.height*imageScale };
         }
         //----------------------------------------------------------------------------------
 
@@ -186,28 +188,4 @@ int main(int argc, char *argv[0])
     //--------------------------------------------------------------------------------------
 
     return 0;
-}
-
-static void ImageToCode(Image image, char *fileName)
-{
-    char outName[32] = "\0";
-    
-    strcpy(outName, fileName);
-    if ((GetExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".h"))) strcat(fileName, ".h\0");     // No extension provided
-    
-    int dataSize = GetPixelDataSize(image.width, image.height, image.format);
-    
-    FILE *txtFile = fopen(fileName, "wt");
-    
-    // TODO: Add image information
-    fprintf(txtFile, "//\n//  Image exported using raygui image_exporter example\n//\n//  Copyright (c) 2018 raylib technologies (@raylibtech)\n//\n\n");
-    fprintf(txtFile, "#define %s_width    %i\n", outName, image.width);
-    fprintf(txtFile, "#define %s_height   %i\n", outName, image.height);
-    fprintf(txtFile, "#define %s_format   %i    // raylib internal pixel format: %s\n\n", outName, pixelFormatActive + 1, pixelFormatTextList[pixelFormatActive]);
-
-    fprintf(txtFile, "static unsigned char %s_data[%i] = { ", outName, dataSize);
-    for (int i = 0; i < dataSize - 1; i++) fprintf(txtFile, "0x%x, ", ((unsigned char *)image.data)[i]);
-    fprintf(txtFile, "0x%x };\n", ((unsigned char *)image.data)[dataSize - 1]);
-
-    fclose(txtFile);
 }

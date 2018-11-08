@@ -1,10 +1,17 @@
 /*******************************************************************************************
 *
-*   window - tool description
+*   raygui - standalone window
+*
+*   DEPENDENCIES:
+*       raylib 2.1-dev  - Windowing/input management and drawing.
+*       raygui 2.1-dev  - Immediate-mode GUI controls.
+*
+*   COMPILATION (Windows - MinGW):
+*       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2018 raylib technologies
+*   Copyright (c) 2018 raylib technologies (@raylibtech)
 *
 **********************************************************************************************/
 
@@ -13,9 +20,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-//----------------------------------------------------------------------------------
-// Controls Functions Declaration
-//----------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -28,10 +32,9 @@ int main()
     int screenHeight = 600;
     
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+    InitWindow(screenWidth, screenHeight, "raygui - standalone window");
 
-    InitWindow(screenWidth, screenHeight, "window");
-
-    // window: controls initialization
+    // GUI controls initialization
     //----------------------------------------------------------------------------------
     bool exitWindow = false;
     //----------------------------------------------------------------------------------
@@ -51,8 +54,6 @@ int main()
     {
         // Update
         //----------------------------------------------------------------------------------
-        // TODO: Implement required update logic
-        //----------------------------------------------------------------------------------
         mousePos = GetMousePosition();
         
         if ((CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 })) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -68,8 +69,7 @@ int main()
                 position.x = prevPosition.x + (mousePos.x - panOffset.x),
                 position.y = prevPosition.y + (mousePos.y - panOffset.y);
             }
-
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
             {
                 prevPosition = position;
                 dragWindow = false;
@@ -77,10 +77,7 @@ int main()
         }
         
         SetWindowPosition(position.x, position.y);
-        // printf("mouse: %f, %f\n", mousePos.x, mousePos.y);
-        // printf("panOffset: %f, %f\n", panOffset.x, panOffset.y);
-        // printf("prevPosition: %f, %f\n", prevPosition.x, prevPosition.y);
-        // printf("position: %f, %f\n\n", position.x, position.y);
+        //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -90,9 +87,7 @@ int main()
 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            
-            exitWindow = GuiWindowBox((Rectangle){ 1, 0, screenWidth - 2, screenHeight - 1 }, "EXAMPLE WINDOW");
-            
+            exitWindow = GuiWindowBox((Rectangle){ 1, 0, screenWidth - 2, screenHeight - 1 }, "STANDALONE WINDOW");
             //----------------------------------------------------------------------------------
 
         EndDrawing();
@@ -106,7 +101,3 @@ int main()
 
     return 0;
 }
-
-//------------------------------------------------------------------------------------
-// Controls Functions Definitions (local)
-//------------------------------------------------------------------------------------
