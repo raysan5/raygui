@@ -1413,69 +1413,7 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int
 // Check Box control, returns true when active
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked)
 {
-    GuiControlState state = guiState;
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        // Check checkbox state
-        if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) checked = !checked;
-            else state = FOCUSED;
-        }
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    switch (state)
-    {
-        case NORMAL:
-        {
-            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_NORMAL]), guiAlpha));
-            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
-            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]),
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]), guiAlpha));
-        } break;
-        case FOCUSED:
-        {
-            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_FOCUSED]), guiAlpha));
-            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[TOGGLE_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
-            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]),
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_FOCUSED]), guiAlpha));
-        } break;
-        case PRESSED:
-        {
-            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BORDER_COLOR_PRESSED]), guiAlpha));
-            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_NORMAL]), guiAlpha));
-            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]),
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[CHECKBOX_BASE_COLOR_PRESSED]), guiAlpha));
-        } break;
-        case DISABLED:
-        {
-            DrawRectangleLinesEx(bounds, style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));
-            DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH], bounds.y + style[CHECKBOX_BORDER_WIDTH], bounds.width - 2*style[CHECKBOX_BORDER_WIDTH], bounds.height - 2*style[CHECKBOX_BORDER_WIDTH], Fade(GetColor(style[CHECKBOX_BASE_COLOR_DISABLED]), guiAlpha));
-            if (checked) DrawRectangle(bounds.x + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.y + style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING],
-                                       bounds.width - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]),
-                                       bounds.height - 2*(style[CHECKBOX_BORDER_WIDTH] + style[CHECKBOX_INNER_PADDING]), Fade(GetColor(style[DEFAULT_TEXT_COLOR_DISABLED]), guiAlpha));
-        } break;
-        default: break;
-    }
-    //--------------------------------------------------------------------
-
-    return checked;
+    return GuiCheckBoxEx(bounds, checked, NULL);
 }
 
 // Check Box extended control, returns true when active
@@ -1485,7 +1423,7 @@ RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
     #define GUICHECKBOXEX_HEIGHT_PADDING    1
 
     GuiControlState state = guiState;
-    int textWidth = GuiTextWidth(text);
+    int textWidth = (text == NULL) ? 0 : GuiTextWidth(text);
 
     // Update control
     //--------------------------------------------------------------------
@@ -1506,7 +1444,7 @@ RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    if (GuiLabelButton((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + GUICHECKBOXEX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text)) checked = !checked;
+    if (text != NULL) if (GuiLabelButton((Rectangle){ bounds.x + bounds.width + GUICHECKBOXEX_WIDTH_PADDING, bounds.y + bounds.height/2 - style[DEFAULT_TEXT_SIZE]/2 + GUICHECKBOXEX_HEIGHT_PADDING, textWidth, style[DEFAULT_TEXT_SIZE] }, text)) checked = !checked;
 
     switch (state)
     {
