@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.0 - A simple and easy-to-use immedite-mode-gui library for raylib (www.raylib.com)
+*   raygui v2.1-dev - A simple and easy-to-use immedite-mode-gui library
 *
 *   DESCRIPTION:
 *
@@ -61,7 +61,8 @@
 *
 *
 *   VERSIONS HISTORY:
-*       2.0 (01-Nov-2018) Lot of rework and redesign! Lots of new controls!
+*       2.1 (xx-Nov-2018) Complete review of new controls and improvements on usage -WIP-
+*       2.0 (01-May-2018) Lot of rework and redesign! Lots of new controls!
 *       1.5 (21-Jun-2017) Working in an improved styles system
 *       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
 *       1.3 (12-Jun-2017) Redesigned styles system
@@ -104,6 +105,8 @@
 
 #ifndef RAYGUI_H
 #define RAYGUI_H
+
+#define RAYGUI_VERSION  "2.1-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
