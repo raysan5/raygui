@@ -181,6 +181,14 @@
     } Rectangle;
 #endif
 
+// Gui global state enum
+typedef enum GuiStateMode {
+    GUI_STATE_NORMAL = 0,
+    GUI_STATE_FOCUSED,
+    GUI_STATE_PRESSED,
+    GUI_STATE_DISABLE,
+} GuiStateMode;
+
 // Gui properties enumeration
 typedef enum GuiProperty {
     //--------------------------------------------
@@ -459,10 +467,10 @@ RAYGUIDEF void GuiUpdateStyleComplete(void);                            // Updat
 
 // GUI controls state
 typedef enum GuiControlState {
-    DISABLED = 0,
-    NORMAL,
+    NORMAL = 0,
     FOCUSED,
     PRESSED,
+    DISABLED
 } GuiControlState;
 
 //----------------------------------------------------------------------------------
@@ -1018,6 +1026,8 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
     switch (state)
     {
         case NORMAL:
+        case FOCUSED:
+        case PRESSED:
         {
             DrawRectangle(bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height, Fade(GetColor(style[DEFAULT_LINES_COLOR]), guiAlpha));
             DrawRectangle(bounds.x, bounds.y + bounds.height - 1, bounds.width, GROUPBOX_LINE_THICK, Fade(GetColor(style[DEFAULT_LINES_COLOR]), guiAlpha));
@@ -1030,8 +1040,6 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
                 GuiDrawText(text, bounds.x + GROUPBOX_TEXT_PADDING + 2*GROUPBOX_PADDING, bounds.y - 2*GROUPBOX_PADDING - GROUPBOX_LINE_THICK, Fade(GetColor(style[LABEL_TEXT_COLOR_NORMAL]), guiAlpha));
             }
         } break;
-        case FOCUSED: break; // NOTE: State not used on this control
-        case PRESSED: break; // NOTE: State not used on this control
         case DISABLED:
         {
             DrawRectangle(bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height, Fade(GetColor(style[DEFAULT_BORDER_COLOR_DISABLED]), guiAlpha));
@@ -1675,7 +1683,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, in
         } break;
         case FOCUSED:
         {
-            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], false, true);
+            GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, text[auxActive], false, editMode);
 
             DrawTriangle((Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING, bounds.y + bounds.height/2 - 2 },
                          (Vector2){ bounds.x + bounds.width - DROPDOWNBOX_ARROW_RIGHT_PADDING + 5, bounds.y + bounds.height/2 - 2 + 5 },
@@ -2446,13 +2454,13 @@ RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, 
     switch (state)
     {
         case NORMAL:
+        case FOCUSED:
+        case PRESSED:
         {
             DrawRectangleLinesEx(bounds, style[PROGRESSBAR_BORDER_WIDTH], Fade(GetColor(style[PROGRESSBAR_BORDER_COLOR_NORMAL]), guiAlpha));
             DrawRectangle(bounds.x + style[PROGRESSBAR_BORDER_WIDTH], bounds.y + style[PROGRESSBAR_BORDER_WIDTH], bounds.width - 2*style[PROGRESSBAR_BORDER_WIDTH], bounds.height - 2*style[PROGRESSBAR_BORDER_WIDTH], Fade(GetColor(style[DEFAULT_BACKGROUND_COLOR]), guiAlpha));
             DrawRectangleRec(progress, Fade(GetColor(style[PROGRESSBAR_BASE_COLOR_NORMAL]), guiAlpha));
         } break;
-        case FOCUSED: break;    // NOTE: State not used on this control
-        case PRESSED: break;    // NOTE: State not used on this control
         case DISABLED:
         {
             DrawRectangleLinesEx(bounds, style[PROGRESSBAR_BORDER_WIDTH], Fade(GetColor(style[PROGRESSBAR_BORDER_COLOR_DISABLED]), guiAlpha));

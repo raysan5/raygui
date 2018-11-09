@@ -127,11 +127,11 @@ int main()
             
             // Fourth GUI column
             GuiLock();
-            GuiState(0); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "DISABLE")) { }
-            GuiState(1); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "NORMAL")) { }
-            GuiState(2); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "FOCUSED")) { }
-            GuiState(3); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "PRESSED")) { }
-            GuiState(1);            
+            GuiState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "NORMAL")) { }
+            GuiState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "FOCUSED")) { }
+            GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "PRESSED")) { }
+            GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "DISABLED")) { }
+            GuiState(GUI_STATE_NORMAL);            
             GuiUnlock();
             //----------------------------------------------------------------------------------
 
