@@ -36,7 +36,7 @@ int main()
 {
     // Initialization
     //---------------------------------------------------------------------------------------
-    int screenWidth = 800;
+    int screenWidth = 600;
     int screenHeight = 600;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
@@ -60,7 +60,7 @@ int main()
     char textBoxText[64] = "Text box";
     bool textBoxEditMode = false;
     
-    int listViewScrollIndex = 1;
+    int listViewScrollIndex = 0;
     int listViewActive = -1;
     const char *listViewList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
     bool listViewEditMode = false;
@@ -74,8 +74,11 @@ int main()
     
     char multiTextBoxText[141] = "Multi text box";    
     bool multiTextBoxEditMode = false;
-
     Color colorPickerValue = RED;
+    
+    int sliderValue = 50;
+    int sliderBarValue = 60;
+    float progressValue = 0.4f;
     
     bool forceSquaredChecked = false;
     //----------------------------------------------------------------------------------
@@ -127,14 +130,17 @@ int main()
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
-            if (GuiListView((Rectangle){ 185, 25, 120, 100 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiListViewEx((Rectangle){ 185, 155, 120, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
-            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(listViewExList[listViewExFocus], 195, 370, 20, RED);
+            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
+            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
             // Third GUI column
-            if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
+            if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
+            colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
             
-            colorPickerValue = GuiColorPicker((Rectangle){ 325, 220, 196, 192 }, colorPickerValue);
+            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, sliderValue, 0, 100, "SLIDER", true);
+            sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, sliderBarValue, 0, 100, "SLIDERBAR", true);
+            progressValue = GuiProgressBarEx((Rectangle){ 320, 460, 200, 20 }, progressValue, 0, 1, true);
             
             //GuiEnable();
             GuiUnlock();
