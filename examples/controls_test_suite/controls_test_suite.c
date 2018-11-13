@@ -73,7 +73,9 @@ int main()
     bool listViewExEditMode = false;
     
     char multiTextBoxText[141] = "Multi text box";    
-    bool multiTextBoxEditMode = false;    
+    bool multiTextBoxEditMode = false;
+
+    Color colorPickerValue = RED;
     
     bool forceSquaredChecked = false;
     //----------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ int main()
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            ClearBackground(GetColor(style[DEFAULT_BACKGROUND_COLOR]));
+            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
  
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
@@ -110,9 +112,19 @@ int main()
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "SAMPLE TEXT")) { }
-                // NOTE: GuiDropdownBox must draw at the end of the column
-            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;            
-            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;           
+            
+            GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "CONTROL STATES");
+            GuiLock();
+            GuiState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320, 115, 30 }, "NORMAL")) { }
+            GuiState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355, 115, 30 }, "FOCUSED")) { }
+            GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "PRESSED")) { }
+            GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
+            GuiState(GUI_STATE_NORMAL);            
+            GuiUnlock();
+            
+            // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
+            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
             if (GuiListView((Rectangle){ 185, 25, 120, 100 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
@@ -122,16 +134,9 @@ int main()
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 325, 25, 225, 175 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             
-            //GuiEnable();
-            GuiUnlock();
+            colorPickerValue = GuiColorPicker((Rectangle){ 325, 220, 196, 192 }, colorPickerValue);
             
-            // Fourth GUI column
-            GuiLock();
-            GuiState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 600, 25, 125, 30 }, "NORMAL")) { }
-            GuiState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 600, 65, 125, 30 }, "FOCUSED")) { }
-            GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 600, 105, 125, 30 }, "PRESSED")) { }
-            GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 600, 145, 125, 30 }, "DISABLED")) { }
-            GuiState(GUI_STATE_NORMAL);            
+            //GuiEnable();
             GuiUnlock();
             //----------------------------------------------------------------------------------
 
