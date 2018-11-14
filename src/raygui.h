@@ -56,12 +56,8 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
-*   #define RAYGUI_STYLE_SAVE_LOAD
-*       Include style customization and save/load functions, useful when required.
-*
-*   #define RAYGUI_STYLE_SAVE_AS_TEXT
-*       Save raygui style file (.rgs) as text file instead of default binary format.
-*       Intended for DEBUG pourpose, on this mode, custom style font can not be embedded.
+*   #define RAYGUI_STYLE_LOADING
+*       Include style loading functionality, useful to load custom styles.
 *
 *   VERSIONS HISTORY:
 *       2.0 (xx-Nov-2018) Complete review of new controls, redesigned style system
@@ -359,13 +355,12 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 
-#if defined(RAYGUI_STYLE_SAVE_LOAD)
-RAYGUIDEF void GuiSaveStyle(const char *fileName);              // Save style file (.rgs)
+#if defined(RAYGUI_STYLE_LOADING)
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
 RAYGUIDEF void GuiLoadStylePalette(const int *palette);         // Load style from a color palette array (14 values required)
 RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName);  // Load style from an image palette file (64x16)
 
-RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with generic values
+RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
 #endif
 
 #endif // RAYGUI_H
@@ -404,7 +399,7 @@ static GuiControlState guiState = GUI_STATE_NORMAL;
 static unsigned int *guiStyle = NULL;
 static bool guiLocked = false;
 static float guiAlpha = 1.0f;
-static Font guiFont = { 0 };        // NOTE: Highly coupled to raylib
+static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
 
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
@@ -461,7 +456,7 @@ static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color
 
 static void DrawTextureRec(Texture2D texture, int posX, int posY, Color tint);  // -- GuiImageButtonEx()
 
-#if defined(RAYGUI_STYLE_SAVE_LOAD)
+#if defined(RAYGUI_STYLE_LOADING)
 static Image LoadImage(const char *fileName);       // -- GuiLoadStylePaletteImage()
 static Color *GetImageData(Image image);            // -- GuiLoadStylePaletteImage()
 static void UnloadImage(Image image);               // -- GuiLoadStylePaletteImage()
@@ -473,7 +468,8 @@ static void UnloadImage(Image image);               // -- GuiLoadStylePaletteIma
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
 
-static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool editMode);    // List Element control, returns element state
+// List Element control, returns element state
+static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool editMode);
 
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);        // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);        // Convert color data from RGB to HSV
@@ -553,7 +549,7 @@ RAYGUIDEF void GuiSetStyle(int control, int property, int value)
     style[control*(NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX) + property] = value; 
 }
 
-// Get control style property value - RAII
+// Get control style property value
 RAYGUIDEF int GuiGetStyle(int control, int property)
 {
     // Get current style, initialized automatically if required (RAII)
@@ -2152,7 +2148,7 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
     {
         if (bounds.width < textWidth)
         {
-            // TODO: Remove character if they dont fit inside bounds. We have the same problem with others GUIs.
+            // TODO: Remove/edit character if they dont fit inside bounds
         }
 
         Vector2 mousePoint = GetMousePosition();
@@ -2709,7 +2705,7 @@ RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float hue)
 }
 
 // TODO: Color GuiColorBarSat() [WHITE->color]
-// TODO: Color GuiColorBarValue() [BLACK->color)), HSV / HSL
+// TODO: Color GuiColorBarValue() [BLACK->color], HSV / HSL
 // TODO: float GuiColorBarLuminance() [BLACK->WHITE]
 
 // Color Picker control
@@ -2816,93 +2812,8 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs)
     return currentCell;
 }
 
-#if defined(RAYGUI_STYLE_SAVE_LOAD)
-// Save raygui style file (.rgs)
-RAYGUIDEF void GuiSaveStyle(const char *fileName)
-{
-    FILE *rgsFile = NULL;
-#if defined(RAYGUI_STYLE_SAVE_AS_TEXT)
-    rgsFile = fopen(fileName, "wt");
-    
-    if (rgsFile != NULL)
-    {
-        // Write some description comments
-        fprintf(rgsFile, "\n//////////////////////////////////////////////////////////////////////////////////\n");
-        fprintf(rgsFile, "//                                                                              //\n");
-        fprintf(rgsFile, "// raygui style exporter v2.0 - Style export as text file                       //\n");
-        fprintf(rgsFile, "// more info and bugs-report: github.com/raysan5/raygui                         //\n");
-        fprintf(rgsFile, "//                                                                              //\n");
-        fprintf(rgsFile, "// Copyright (c) 2018 Ramon Santamaria (@raysan5)                               //\n");
-        fprintf(rgsFile, "//                                                                              //\n");
-        fprintf(rgsFile, "//////////////////////////////////////////////////////////////////////////////////\n\n");
-        
-        fprintf(rgsFile, "## Style information\n");
-        fprintf(rgsFile, "NUM_CONTROLS                       %i\n", NUM_CONTROLS);
-        fprintf(rgsFile, "NUM_CONTROL_PROPERTIES_DEFAULT    %i\n", NUM_CONTROL_PROPS_DEFAULT);
-        fprintf(rgsFile, "NUM_CONTROL_PROPERTIES_EXTENDED   %i\n", NUM_CONTROL_PROPS_EX);
-
-        // NOTE: Control properties are just written as hexadecimal values, no control name info provided
-        // To print control properties names, enum values hould be stored as string arrays also;
-        // as long as .rgs text save mode is just intended for debug pourpose, not included that info.
-        for (int i = 0; i < NUM_CONTROLS; i++)
-        {
-            if (i == 0) fprintf(rgsFile, "## DEFAULT properties\n");
-            else fprintf(rgsFile, "## CONTROL %02i default properties\n", i);
-            
-            for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX; j++) 
-            {
-                if (j == NUM_CONTROL_PROPS_DEFAULT) fprintf(rgsFile, "## CONTROL %02i extended properties\n", i);
-                fprintf(rgsFile, "0x%08x\n", GuiGetStyle(i, j));
-            }
-            
-            fprintf(rgsFile, "\n");
-        }
-    }
-#else
-    rgsFile = fopen(fileName, "wb");
-
-    if (rgsFile != NULL)
-    {
-        // Write some header info (12 bytes)
-        // id: "RGS "           - 4 bytes
-        // version: 200         - 2 bytes
-        // # Controls           - 2 bytes
-        // # Props Default      - 4 bytes
-        // # Props Extended     - 4 bytes
-        // Custom font
-
-        unsigned char value = 0;
-        
-        char signature[5] = "RGS ";
-        short version = 200;
-        short numControls = NUM_CONTROLS;
-        short numPropsDefault = NUM_CONTROL_PROPS_DEFAULT;
-        short numPropsExtended = NUM_CONTROL_PROPS_EX;
-
-        fwrite(signature, 1, 4, rgsFile);
-        fwrite(&version, 1, sizeof(short), rgsFile);
-        fwrite(&numControls, 1, sizeof(short), rgsFile);
-        fwrite(&numPropsDefault, 1, sizeof(short), rgsFile);
-        fwrite(&numPropsExtended, 1, sizeof(short), rgsFile);
-
-        for (int i = 0; i < NUM_CONTROLS; i++)
-        {
-            for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX; j++) 
-            {
-                value = GuiGetStyle(i, j);
-                fwrite(&value, 1, 4, rgsFile);
-            }
-        }
-        
-        // TODO: Write font data (embedding)
-        // Need to save IMAGE data (GRAYSCALE?) and CHAR data
-    }
-#endif
-    if (rgsFile != NULL) fclose(rgsFile);
-}
-
-// Load raygui style file (.rgs), text or binary
-// NOTE: File is tried to be loaded as text first
+#if defined(RAYGUI_STYLE_LOADING)
+// Load raygui style file (.rgs)
 RAYGUIDEF void GuiLoadStyle(const char *fileName)
 {
     FILE *rgsFile = fopen(fileName, "rb");
@@ -2923,7 +2834,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
         fread(&numPropsDefault, 1, sizeof(short), rgsFile);
         fread(&numPropsExtended, 1, sizeof(short), rgsFile);
 
-        if ((signature[0] == 'R') &&
+        if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
             (signature[2] == 'S') &&
             (signature[3] == ' '))
@@ -3009,13 +2920,13 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
         for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT; j++)GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
 }
-#endif  // defined(RAYGUI_STYLE_SAVE_LOAD)
+#endif  // defined(RAYGUI_STYLE_LOADING)
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
 
-// Get default style, if not available load LIGHT style
+// Get default style, if not available load LIGHT style (RAII)
 static unsigned int *GetStyleDefault(void)
 {
     if (guiStyle == NULL)
