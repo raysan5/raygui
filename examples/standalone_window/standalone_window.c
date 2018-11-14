@@ -56,7 +56,8 @@ int main()
         //----------------------------------------------------------------------------------
         mousePos = GetMousePosition();
         
-        if ((CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 })) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if ((CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 })) && 
+             IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             dragWindow = true;
             panOffset = mousePos;
@@ -76,6 +77,8 @@ int main()
             }
         }
         
+        // NOTE: Input reading and window positioning should be executed in a second thread,
+        // actually, full drawing should probably be in the second thread...
         SetWindowPosition(position.x, position.y);
         //----------------------------------------------------------------------------------
 
@@ -83,11 +86,11 @@ int main()
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            ClearBackground(GetColor(style[DEFAULT_BORDER_COLOR_NORMAL]));
+            ClearBackground(RAYWHITE);
 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            exitWindow = GuiWindowBox((Rectangle){ 1, 0, screenWidth - 2, screenHeight - 1 }, "STANDALONE WINDOW");
+            exitWindow = GuiWindowBox((Rectangle){ 0, 0, screenWidth, screenHeight }, "STANDALONE WINDOW");
             //----------------------------------------------------------------------------------
 
         EndDrawing();
