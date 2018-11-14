@@ -41,12 +41,12 @@ int main()
     
     // General variables
     Vector2 mousePos = { 0 };
-    Vector2 position = { 500, 200 };
-    Vector2 prevPosition = position;
+    Vector2 windowPos = { 500, 200 };
     Vector2 panOffset = mousePos;
     bool dragWindow = false;
-
-    SetTargetFPS(120);
+    
+    SetWindowPosition(windowPos.x, windowPos.y);
+    SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -56,30 +56,24 @@ int main()
         //----------------------------------------------------------------------------------
         mousePos = GetMousePosition();
         
-        if ((CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 })) && 
-             IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            dragWindow = true;
-            panOffset = mousePos;
+            if (CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 }))
+            {
+                dragWindow = true;
+                panOffset = mousePos;
+            }
         }
-            
+
         if (dragWindow)
-        {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-            {
-                position.x = prevPosition.x + (mousePos.x - panOffset.x),
-                position.y = prevPosition.y + (mousePos.y - panOffset.y);
-            }
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
-            {
-                prevPosition = position;
-                dragWindow = false;
-            }
+        {            
+            windowPos.x += (mousePos.x - panOffset.x);
+            windowPos.y += (mousePos.y - panOffset.y);
+            
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) dragWindow = false;
+
+            SetWindowPosition(windowPos.x, windowPos.y);
         }
-        
-        // NOTE: Input reading and window positioning should be executed in a second thread,
-        // actually, full drawing should probably be in the second thread...
-        SetWindowPosition(position.x, position.y);
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -91,6 +85,7 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             exitWindow = GuiWindowBox((Rectangle){ 0, 0, screenWidth, screenHeight }, "STANDALONE WINDOW");
+            DrawText(FormatText("Mouse Position: [ %.0f, %.0f ]", mousePos.x, mousePos.y), 10, 40, 10, DARKGRAY);
             //----------------------------------------------------------------------------------
 
         EndDrawing();
