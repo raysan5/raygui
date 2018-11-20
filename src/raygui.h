@@ -136,8 +136,8 @@
 #define LINE_BLINK_FRAMES           20      // Text edit controls cursor blink timming
 
 #define NUM_CONTROLS                12      // Number of standard controls
-#define NUM_CONTROL_PROPS_DEFAULT   16      // Number of standard properties
-#define NUM_CONTROL_PROPS_EX         8      // Number of extended properties
+#define NUM_PROPS_DEFAULT   16      // Number of standard properties
+#define NUM_PROPS_EXTENDED         8      // Number of extended properties
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -548,7 +548,7 @@ RAYGUIDEF void GuiSetStyle(int control, int property, int value)
     // Get current style, initialized automatically if required (RAII)
     unsigned int *style = GetStyleDefault();
     
-    style[control*(NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX) + property] = value; 
+    style[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value; 
 }
 
 // Get control style property value
@@ -557,7 +557,7 @@ RAYGUIDEF int GuiGetStyle(int control, int property)
     // Get current style, initialized automatically if required (RAII)
     unsigned int *style = GetStyleDefault();
 
-    return style[control*(NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX) + property];
+    return style[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
 }
 
 // Window Box control
@@ -2845,7 +2845,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
         {
             for (int i = 0; i < NUM_CONTROLS; i++)
             {
-                for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX; j++)
+                for (int j = 0; j < NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED; j++)
                 {
                     fread(&value, 1, sizeof(unsigned int), rgsFile);
                     GuiSetStyle(i, j, value);
@@ -2921,7 +2921,7 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     // NOTE: Extended style properties are ignored
     for (int i = 1; i < NUM_CONTROLS; i++)
     {
-        for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT; j++)GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
+        for (int j = 0; j < NUM_PROPS_DEFAULT; j++)GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
 }
 #endif  // defined(RAYGUI_STYLE_LOADING)
@@ -2935,7 +2935,7 @@ static unsigned int *GetStyleDefault(void)
 {
     if (guiStyle == NULL)
     {
-        guiStyle = (unsigned int *)calloc(NUM_CONTROLS*(NUM_CONTROL_PROPS_DEFAULT + NUM_CONTROL_PROPS_EX), sizeof(unsigned int));
+        guiStyle = (unsigned int *)calloc(NUM_CONTROLS*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED), sizeof(unsigned int));
         
         // Initialize default LIGHT style property values
         GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
@@ -2958,7 +2958,7 @@ static unsigned int *GetStyleDefault(void)
         // Populate all controls with default style 
         for (int i = 1; i < NUM_CONTROLS; i++)
         {
-            for (int j = 0; j < NUM_CONTROL_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
+            for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
         }
 
         // Initialize extended property values
