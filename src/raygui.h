@@ -1144,7 +1144,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
     else if (active > count - 1) active = count - 1;
 
     int textWidth = GuiTextWidth(text[active]);
-    int textHeight = GuiGetStyle(COMBOBOX, TEXT_SIZE);
+    int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
     if (bounds.width < textWidth) bounds.width = textWidth;
     if (bounds.height < textHeight) bounds.height = textHeight;
