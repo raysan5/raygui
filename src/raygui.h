@@ -228,13 +228,13 @@ typedef enum {
 // Gui extended properties depending on control type
 // NOTE: We reserve a fixed size of additional properties per control (8)
 
-// Generic
+// Default properties
 typedef enum {
     TEXT_SIZE = 16,
     TEXT_SPACING,
     LINES_COLOR,
     BACKGROUND_COLOR,
-} GuiGenericProperty;
+} GuiDefaultProperty;
 
 // Label
 //typedef enum { } GuiLabelProperty;
@@ -2852,7 +2852,57 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 }
             }
             
-            // TODO: Load custom font if available
+            // Load custom font if available
+            int fontDataSize = 0;
+            fwrite(&fontDataSize, 1, sizeof(int), rgsFile);
+            
+            if (fontDataSize > 0)
+            {
+                Font font = { 0 };
+                int fontType = 0;   // 0-Normal, 1-SDF
+                Rectangle whiteRec = { 0 };
+                
+                fread(&font.baseSize, 1, sizeof(int), rgsFile);
+                fread(&font.charsCount, 1, sizeof(int), rgsFile);
+                fread(&fontType, 1, sizeof(int), rgsFile);
+                
+                // Load font white rectangle
+                fread(&whiteRec, 1, sizeof(Rectangle), rgsFile);
+                
+                // Load font image parameters
+                int fontImageSize = 0;
+                fread(&fontImageSize, 1, sizeof(int), rgsFile);
+                
+                if (fontImageSize > 0)
+                {
+                    Image imFont = { 0 };
+                    imFont.mipmaps = 1;
+                    fread(&imFont.width, 1, sizeof(int), rgsFile);
+                    fread(&imFont.height, 1, sizeof(int), rgsFile);
+                    fread(&imFont.format, 1, sizeof(int), rgsFile);
+                    fread(&imFont.data, 1, fontImageSize, rgsFile);
+                    
+                    font.texture = LoadTextureFromImage(imFont);
+                    UnloadImage(imFont);
+                }
+                
+                // Load font chars data
+                font.chars = (CharInfo *)calloc(font.charsCount, sizeof(CharInfo));
+                for (int i = 0; i < font.charsCount; i++)
+                {
+                    fread(&font.chars[i].rec, 1, sizeof(Rectangle), rgsFile);
+                    fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
+                    fread(&font.chars[i].offsetX, 1, sizeof(int), rgsFile);
+                    fread(&font.chars[i].offsetY, 1, sizeof(int), rgsFile);
+                    fread(&font.chars[i].advanceX, 1, sizeof(int), rgsFile);
+                }
+                
+                GuiFont(font);
+                
+                // Set font texture source rectangle to be used as white texture to draw shapes
+                // NOTE: This way, all gui can be draw using a single draw call
+                if ((whiteRec.width != 0) && (whiteRec.height != 0)) SetShapesTexture(font.texture, whiteRec);
+            }
         }
         else TraceLog(LOG_WARNING, "[raygui] Invalid style properties file");
 
@@ -2860,27 +2910,13 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     }
 }
 
-// Load style from a color palette array (14 values required)
+// Load style from a palette array (DEFAULT - 24 values required)
 RAYGUIDEF void GuiLoadStylePalette(const int *palette)
 {
     // Load default style color palette
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, palette[0]);
-    GuiSetStyle(DEFAULT, LINES_COLOR, palette[1]);
-    
-    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, palette[2]);
-    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, palette[3]);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, palette[4]);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, palette[5]);
-    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, palette[6]);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, palette[7]);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, palette[8]);
-    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, palette[9]);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, palette[10]);
-    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, palette[11]);
-    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, palette[12]);
-    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, palette[13]);
+    for (int i = 0; i < (NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED); i++) GuiSetStyle(DEFAULT, i, palette[i]);
 
-    // Update controls style with default values
+    // Update all controls style with default values
     GuiUpdateStyleComplete();
 }
 
