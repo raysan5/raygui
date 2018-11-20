@@ -81,6 +81,8 @@ int main()
     float progressValue = 0.4f;
     
     bool forceSquaredChecked = false;
+    
+    int comboBoxActive = 1;
     //----------------------------------------------------------------------------------
     
     // Custom GUI font loading
@@ -124,6 +126,8 @@ int main()
             GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
             GuiState(GUI_STATE_NORMAL);            
             GuiUnlock();
+            
+            comboBoxActive = GuiComboBox((Rectangle){25, 470, 115, 30}, dropdownBox001TextList, 5, comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
