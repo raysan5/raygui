@@ -219,10 +219,10 @@ typedef enum {
     BORDER_COLOR_DISABLED,
     BASE_COLOR_DISABLED,
     TEXT_COLOR_DISABLED,
-    TEXT_SIZE,
-    TEXT_SPACING,
     BORDER_WIDTH,
     INNER_PADDING,
+    RESERVED01,
+    RESERVED02
 } GuiControlProperty;
 
 // Gui extended properties depending on control type
@@ -230,7 +230,9 @@ typedef enum {
 
 // Generic
 typedef enum {
-    LINES_COLOR = 16,
+    TEXT_SIZE = 16,
+    TEXT_SPACING,
+    LINES_COLOR,
     BACKGROUND_COLOR,
 } GuiGenericProperty;
 
