@@ -127,7 +127,7 @@ int main()
             GuiState(GUI_STATE_NORMAL);            
             GuiUnlock();
             
-            comboBoxActive = GuiComboBox((Rectangle){25, 470, 115, 30}, dropdownBox001TextList, 5, comboBoxActive);
+            comboBoxActive = GuiComboBox((Rectangle){25, 470, 125, 30}, dropdownBox001TextList, 5, comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;

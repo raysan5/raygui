@@ -1136,7 +1136,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
     bounds.width -= (GuiGetStyle(COMBOBOX, SELECTOR_WIDTH) + GuiGetStyle(COMBOBOX, SELECTOR_PADDING));
 
     Rectangle selector = { bounds.x + bounds.width + GuiGetStyle(COMBOBOX, SELECTOR_PADDING),
-                               bounds.y, GuiGetStyle(COMBOBOX, SELECTOR_WIDTH), bounds.height };
+                           bounds.y, GuiGetStyle(COMBOBOX, SELECTOR_WIDTH), bounds.height };
 
     if (active < 0) active = 0;
     else if (active > count - 1) active = count - 1;
@@ -1174,9 +1174,11 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
     {
         case GUI_STATE_NORMAL:
         {
+            // Draw combo box main
             DrawRectangleLinesEx(bounds, GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BORDER_COLOR_NORMAL)), guiAlpha));
             DrawRectangle(bounds.x + GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BASE_COLOR_NORMAL)), guiAlpha));
 
+            // Draw selector
             DrawRectangleLinesEx(selector, GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BORDER_COLOR_NORMAL)), guiAlpha));
             DrawRectangle(selector.x + GuiGetStyle(COMBOBOX, BORDER_WIDTH), selector.y + GuiGetStyle(COMBOBOX, BORDER_WIDTH), selector.width - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), selector.height - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BASE_COLOR_NORMAL)), guiAlpha));
 
@@ -1607,7 +1609,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
             GuiDrawText(text, bounds.x + GuiGetStyle(TEXTBOX, INNER_PADDING), bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT_COLOR_PRESSED)), guiAlpha));
 
-            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, INNER_PADDING) + GuiTextWidth(text) + 2, bounds.y + GuiGetStyle(TEXTBOX, INNER_PADDING), 1, bounds.height - GuiGetStyle(TEXTBOX, INNER_PADDING)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+            if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, INNER_PADDING) + GuiTextWidth(text) + 2, bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE), 1, GuiGetStyle(DEFAULT, TEXT_SIZE)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
         } break;
         case GUI_STATE_DISABLED:
         {
@@ -1728,7 +1730,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                         }
                         else
                         {
-                            int len = strlen(lastLine);
+                            int len = (lastLine != NULL) ? strlen(lastLine) : 0;
                             char lastChar = lastLine[len - 1];
                             lastLine[len - 1] = '\n';
                             lastLine[len] = lastChar;
@@ -1750,7 +1752,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                         }
                         else
                         {
-                            int len = strlen(lastLine);
+                            int len = (lastLine != NULL) ? strlen(lastLine) : 0;
                             char lastChar = lastLine[len - 1];
                             lastLine[len - 1] = '\n';
                             lastLine[len] = lastChar;
@@ -2966,6 +2968,7 @@ static unsigned int *GetStyleDefault(void)
         GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
         GuiSetStyle(SLIDER, EX_TEXT_PADDING, 5);
         GuiSetStyle(CHECKBOX, CHECK_TEXT_PADDING, 5);
+        GuiSetStyle(COMBOBOX, SELECTOR_WIDTH, 30);
         GuiSetStyle(COMBOBOX, SELECTOR_PADDING, 2);
         GuiSetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING, 16);
         GuiSetStyle(TEXTBOX, INNER_PADDING, 4);
@@ -2981,6 +2984,8 @@ static unsigned int *GetStyleDefault(void)
         GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
         GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
         GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
+        
+        // TODO: Allocated memory must be freed!
     }
 
     return guiStyle;
