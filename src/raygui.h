@@ -1845,22 +1845,20 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, float value, float minValue, floa
     GuiControlState state = guiState;
 
     int textWidth = (text == NULL) ? 0: GuiTextWidth(text);
+    int sliderValue = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
-    Rectangle slider = { 0 };
+    Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, INNER_PADDING), 
+                         0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, INNER_PADDING) };
     
     if (sliderWidth > 0)        // Slider
     {
-        slider = (Rectangle){ bounds.x + (int)((value/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH))) - GuiGetStyle(SLIDER, SLIDER_WIDTH)/2,
-                         bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH), 
-                         sliderWidth, 
-                         bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) };
+        slider.x += (sliderValue - sliderWidth/2);
+        slider.width = sliderWidth;
     }
     else if (sliderWidth == 0)  // SliderBar
     {
-        slider = (Rectangle){ bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH), 
-                         bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, INNER_PADDING),
-                         (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH))),
-                         bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, INNER_PADDING) };
+        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
+        slider.width = sliderValue;
     }
     
     // Update control
@@ -1876,16 +1874,10 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, float value, float minValue, floa
                 state = GUI_STATE_PRESSED;
 
                 // Get equivalent value and slider position from mousePoint.x
-                if (sliderWidth > 0)        // Slider
-                {
-                    value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + slider.width/2)))/(float)(bounds.width - slider.width) + minValue;
-                    slider.x = mousePoint.x - slider.width/2;
-                }
-                else if (sliderWidth == 0)  // SliderBar
-                {
-                    value = (maxValue - minValue)*((mousePoint.x - (float)bounds.x)/(float)bounds.width) + minValue;
-                    slider.width = (int)(((value - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
-                }
+                value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
+
+                if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;  // Slider
+                else if (sliderWidth == 0) slider.width = sliderValue;          // SliderBar
             }
             else state = GUI_STATE_FOCUSED;
         }
@@ -1893,10 +1885,11 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, float value, float minValue, floa
         if (value > maxValue) value = maxValue;
         else if (value < minValue) value = minValue;
         
+        // Bar limits check
         if (sliderWidth > 0)        // Slider
         {
-            if (slider.x <= bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH)) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
-            else if (slider.x + slider.width >= bounds.x + bounds.width) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
+            if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
+            else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
         }
         else if (sliderWidth == 0)  // SliderBar
         {

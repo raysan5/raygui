@@ -142,7 +142,7 @@ int main()
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
             
-            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, sliderValue, 0, 100, "SLIDER", true);
+            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, sliderValue, -50, 100, "SLIDER", true);
             sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, sliderBarValue, 0, 100, "SLIDERBAR", true);
             progressValue = GuiProgressBarEx((Rectangle){ 320, 460, 200, 20 }, progressValue, 0, 1, true);
             
