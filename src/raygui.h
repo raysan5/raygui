@@ -360,7 +360,6 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 #if defined(RAYGUI_STYLE_LOADING)
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
 RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style from a color palette array (14 values required)
-RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName);  // Load style from an image palette file (64x16)
 
 RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
 #endif
@@ -457,12 +456,6 @@ static void DrawRectangleGradientH(int posX, int posY, int width, int height, Co
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);        // -- GuiColorPicker()
 
 static void DrawTextureRec(Texture2D texture, int posX, int posY, Color tint);  // -- GuiImageButtonEx()
-
-#if defined(RAYGUI_STYLE_LOADING)
-static Image LoadImage(const char *fileName);       // -- GuiLoadStylePaletteImage()
-static Color *GetImageData(Image image);            // -- GuiLoadStylePaletteImage()
-static void UnloadImage(Image image);               // -- GuiLoadStylePaletteImage()
-#endif
 
 #endif      // RAYGUI_STANDALONE
 
@@ -2882,36 +2875,6 @@ RAYGUIDEF void GuiLoadStyleProps(const int *props, int count)
     
     // Load style palette values from array (uncomplete property set)
     for (int k = 0; k < uncompleteSetProps; k++) GuiSetStyle(completeSets, k, props[completeSets*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + k]);
-}
-
-// Load GUI style from an image style file
-RAYGUIDEF void GuiLoadStylePaletteImage(const char *fileName)
-{
-    // NOTE: Image data only defines color properties
-    Image imStyle = LoadImage(fileName);
-    Color *pixels = GetImageData(imStyle);
-
-    // Load default style color palette
-    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, ColorToInt(pixels[2 + imStyle.width*2]));
-    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, ColorToInt(pixels[3 + imStyle.width*3]));
-    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, ColorToInt(pixels[9 + imStyle.width*4]));
-    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, ColorToInt(pixels[17 + imStyle.width*2]));
-    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, ColorToInt(pixels[18 + imStyle.width*3]));
-    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, ColorToInt(pixels[24 + imStyle.width*4]));
-    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, ColorToInt(pixels[32 + imStyle.width*2]));
-    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, ColorToInt(pixels[33 + imStyle.width*3]));
-    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, ColorToInt(pixels[39 + imStyle.width*4]));
-    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, ColorToInt(pixels[47 + imStyle.width*2]));
-    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, ColorToInt(pixels[48 + imStyle.width*3]));
-    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, ColorToInt(pixels[54 + imStyle.width*4]));
-    
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, ColorToInt(pixels[1 + imStyle.width*1]));
-    GuiSetStyle(DEFAULT, LINES_COLOR, ColorToInt(pixels[0 + imStyle.width*0]));
-
-    // Update full style with default values
-    GuiUpdateStyleComplete();
-
-    UnloadImage(imStyle);
 }
 
 // Updates controls style with default values
