@@ -83,6 +83,8 @@ int main()
     bool forceSquaredChecked = false;
     
     int comboBoxActive = 1;
+    
+    int toggleGroupActive = 0;
     //----------------------------------------------------------------------------------
     
     // Custom GUI font loading
@@ -127,7 +129,7 @@ int main()
             GuiState(GUI_STATE_NORMAL);            
             GuiUnlock();
             
-            comboBoxActive = GuiComboBox((Rectangle){25, 470, 125, 30}, dropdownBox001TextList, 5, comboBoxActive);
+            comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, dropdownBox001TextList, 5, comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
@@ -138,12 +140,14 @@ int main()
             if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
             if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
+            toggleGroupActive = GuiToggleGroupPro((Rectangle){ 165, 400, 140, 25 }, dropdownBox001TextList, 4, toggleGroupActive, 4, 1);
+            
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
             
-            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, sliderValue, -50, 100, "SLIDER", true);
-            sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, sliderBarValue, 0, 100, "SLIDERBAR", true);
+            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, sliderValue, -50, 100, " ", true);
+            sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, sliderBarValue, 0, 100, " ", true);
             progressValue = GuiProgressBarEx((Rectangle){ 320, 460, 200, 20 }, progressValue, 0, 1, true);
             
             //GuiEnable();

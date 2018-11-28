@@ -334,6 +334,7 @@ RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);             
 RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle texSource, const char *text);        // Image button extended control, returns true when clicked
 RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool toggle);                              // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active);               // Toggle Group control, returns toggled button index
+RAYGUIDEF int GuiToggleGroupEx(Rectangle bounds, const char **text, int count, int active, int padding, int columns); // Toggle Group with extended parameters
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, bool checked);                                             // Check Box control, returns true when active
 RAYGUIDEF bool GuiCheckBoxEx(Rectangle bounds, bool checked, const char *text);                         // Check Box control with text, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int active);                  // Combo Box control, returns selected item index
@@ -1040,10 +1041,30 @@ RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active)
 // Toggle Group control, returns toggled button index
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char **text, int count, int active)
 {
+    return GuiToggleGroupEx(bounds, text, count, active, GuiGetStyle(TOGGLE, GROUP_PADDING), 512);
+}
+
+// Toggle Group with pro parameters, returns toggled button index
+// NOTE: bounds refer to an individual toggle size, spacing refers to toggles separation and columns defines number of columns
+RAYGUIDEF int GuiToggleGroupEx(Rectangle bounds, const char **text, int count, int active, int padding, int columns)
+{
+    float initBoundsX = bounds.x;
+    int currentColumn = 0;
+    
     for (int i = 0; i < count; i++)
     {
-        if (i == active) GuiToggle((Rectangle){ bounds.x + i*(bounds.width/count + GuiGetStyle(TOGGLE, GROUP_PADDING)), bounds.y, (int)(bounds.width - GuiGetStyle(TOGGLE, GROUP_PADDING)*(count -1))/count, bounds.height }, text[i], true);
-        else if (GuiToggle((Rectangle){ bounds.x + i*(bounds.width/count + GuiGetStyle(TOGGLE, GROUP_PADDING)), bounds.y, (int)(bounds.width - GuiGetStyle(TOGGLE, GROUP_PADDING)*(count -1))/count, bounds.height }, text[i], false) == true) active = i;
+        if (i == active) GuiToggle(bounds, text[i], true);
+        else if (GuiToggle(bounds, text[i], false) == true) active = i;
+
+        bounds.x += (bounds.width + padding);
+        currentColumn++;
+        
+        if ((currentColumn + 1) > columns)
+        {
+            currentColumn = 0;
+            bounds.y += (bounds.height + padding);
+            bounds.x = initBoundsX;
+        }
     }
 
     return active;
