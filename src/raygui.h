@@ -56,9 +56,6 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
-*   #define RAYGUI_STYLE_LOADING
-*       Include style loading functionality, useful to load custom styles.
-*
 *   VERSIONS HISTORY:
 *       2.0 (xx-Nov-2018) Complete review of new controls, redesigned style system
 *       1.9 (01-May-2018) Lot of rework and redesign! Lots of new controls!
@@ -136,8 +133,8 @@
 #define LINE_BLINK_FRAMES           20      // Text edit controls cursor blink timming
 
 #define NUM_CONTROLS                12      // Number of standard controls
-#define NUM_PROPS_DEFAULT   16      // Number of standard properties
-#define NUM_PROPS_EXTENDED         8      // Number of extended properties
+#define NUM_PROPS_DEFAULT           16      // Number of standard properties
+#define NUM_PROPS_EXTENDED           8      // Number of extended properties
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -358,12 +355,17 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 
-#if defined(RAYGUI_STYLE_LOADING)
+// Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
 RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style from a color palette array (14 values required)
-
+RAYGUIDEF void GuiLoadStyleDefault(void);                       // Load style default over global style
 RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
-#endif
+
+/*
+typedef GuiStyle (unsigned int *)
+RAYGUIDEF GuiStyle LoadGuiStyle(const char *fileName);          // Load style from file (.rgs)
+RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
+*/
 
 #endif // RAYGUI_H
 
@@ -398,10 +400,17 @@ RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full 
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 static GuiControlState guiState = GUI_STATE_NORMAL;
-static unsigned int *guiStyle = NULL;
+
+static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
 static bool guiLocked = false;
 static float guiAlpha = 1.0f;
-static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
+
+// Global gui style array (allocated on heap by default)
+// NOTE: In raygui we manage a single int array with all the possible style properties.
+// When a new style is loaded, it loads over the global style... but default gui style
+// could always be recovered with GuiLoadStyleDefault()
+static unsigned int guiStyle[NUM_CONTROLS*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED)] = { 0 };
+static bool guiStyleLoaded = false;
 
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
@@ -489,9 +498,6 @@ static int GuiTextWidth(const char *text)
     return (int)size.x;
 }
 
-// Get default style, if not available load LIGHT style (RAII)
-static unsigned int *GetStyleDefault(void);
-
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
@@ -539,19 +545,15 @@ RAYGUIDEF void GuiFade(float alpha)
 // Set control style property value
 RAYGUIDEF void GuiSetStyle(int control, int property, int value)
 {
-    // Get current style, initialized automatically if required (RAII)
-    unsigned int *style = GetStyleDefault();
-    
-    style[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value; 
+    if (!guiStyleLoaded) GuiLoadStyleDefault();
+    guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value;
 }
 
 // Get control style property value
 RAYGUIDEF int GuiGetStyle(int control, int property)
 {
-    // Get current style, initialized automatically if required (RAII)
-    unsigned int *style = GetStyleDefault();
-
-    return style[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
+    if (!guiStyleLoaded) GuiLoadStyleDefault();
+    return guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
 }
 
 // Window Box control
@@ -2789,7 +2791,6 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs)
     return currentCell;
 }
 
-#if defined(RAYGUI_STYLE_LOADING)
 // Load raygui style file (.rgs)
 RAYGUIDEF void GuiLoadStyle(const char *fileName)
 {
@@ -2899,6 +2900,65 @@ RAYGUIDEF void GuiLoadStyleProps(const int *props, int count)
     for (int k = 0; k < uncompleteSetProps; k++) GuiSetStyle(completeSets, k, props[completeSets*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + k]);
 }
 
+// Load style default over global style
+RAYGUIDEF void GuiLoadStyleDefault(void)
+{
+    // We set this variable first to avoid cyclic function calls
+    // when calling GuiSetStyle() and GuiGetStyle()
+    guiStyleLoaded = true;
+    
+    // Initialize default LIGHT style property values
+    GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, 0x5bb2d9ff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, 0xc9effeff);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x6c9bbcff);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, 0x0492c7ff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, 0x97e8ffff);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, 0x368bafff);
+    GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
+    GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
+    GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
+    GuiSetStyle(DEFAULT, INNER_PADDING, 1);
+           
+    // Populate all controls with default style 
+    for (int i = 1; i < NUM_CONTROLS; i++)
+    {
+        for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
+    }
+
+    // Initialize extended property values
+    // NOTE: By default, extended property values are initialized to 0
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
+    GuiSetStyle(DEFAULT, LINES_COLOR, 0x90abb5ff);          // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
+    
+    GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
+    GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
+    GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
+    GuiSetStyle(SLIDER, EX_TEXT_PADDING, 5);
+    GuiSetStyle(CHECKBOX, CHECK_TEXT_PADDING, 5);
+    GuiSetStyle(COMBOBOX, SELECTOR_WIDTH, 30);
+    GuiSetStyle(COMBOBOX, SELECTOR_PADDING, 2);
+    GuiSetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING, 16);
+    GuiSetStyle(TEXTBOX, INNER_PADDING, 4);
+    GuiSetStyle(TEXTBOX, MULTILINE_PADDING, 5);
+    GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 20);       // SPINNER specific property
+    GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property
+    GuiSetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH, 1);   // SPINNER specific property
+    GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
+    GuiSetStyle(COLORPICKER, BAR_WIDTH, 0x14);
+    GuiSetStyle(COLORPICKER, BAR_PADDING, 0xa);
+    GuiSetStyle(COLORPICKER, BAR_SELECTOR_HEIGHT, 6);
+    GuiSetStyle(COLORPICKER, BAR_SELECTOR_PADDING, 2);
+    GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
+    GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
+    GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
+}
+
 // Updates controls style with default values
 RAYGUIDEF void GuiUpdateStyleComplete(void)
 {
@@ -2909,75 +2969,10 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
         for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
 }
-#endif  // defined(RAYGUI_STYLE_LOADING)
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
-
-// Get default style, if not available load LIGHT style (RAII)
-static unsigned int *GetStyleDefault(void)
-{
-    if (guiStyle == NULL)
-    {
-        guiStyle = (unsigned int *)calloc(NUM_CONTROLS*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED), sizeof(unsigned int));
-        
-        // Initialize default LIGHT style property values
-        GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
-        GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff);
-        GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff);
-        GuiSetStyle(DEFAULT, BORDER_COLOR_FOCUSED, 0x5bb2d9ff);
-        GuiSetStyle(DEFAULT, BASE_COLOR_FOCUSED, 0xc9effeff);
-        GuiSetStyle(DEFAULT, TEXT_COLOR_FOCUSED, 0x6c9bbcff);
-        GuiSetStyle(DEFAULT, BORDER_COLOR_PRESSED, 0x0492c7ff);
-        GuiSetStyle(DEFAULT, BASE_COLOR_PRESSED, 0x97e8ffff);
-        GuiSetStyle(DEFAULT, TEXT_COLOR_PRESSED, 0x368bafff);
-        GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
-        GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
-        GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
-        GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
-        GuiSetStyle(DEFAULT, INNER_PADDING, 1);
-               
-        // Populate all controls with default style 
-        for (int i = 1; i < NUM_CONTROLS; i++)
-        {
-            for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
-        }
-
-        // Initialize extended property values
-        // NOTE: By default, extended property values are initialized to 0
-        GuiSetStyle(DEFAULT, TEXT_SIZE, 10);
-        GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
-        GuiSetStyle(DEFAULT, LINES_COLOR, 0x90abb5ff);          // DEFAULT specific property
-        GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
-        
-        GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
-        GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
-        GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
-        GuiSetStyle(SLIDER, EX_TEXT_PADDING, 5);
-        GuiSetStyle(CHECKBOX, CHECK_TEXT_PADDING, 5);
-        GuiSetStyle(COMBOBOX, SELECTOR_WIDTH, 30);
-        GuiSetStyle(COMBOBOX, SELECTOR_PADDING, 2);
-        GuiSetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING, 16);
-        GuiSetStyle(TEXTBOX, INNER_PADDING, 4);
-        GuiSetStyle(TEXTBOX, MULTILINE_PADDING, 5);
-        GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 20);       // SPINNER specific property
-        GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property
-        GuiSetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH, 1);   // SPINNER specific property
-        GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
-        GuiSetStyle(COLORPICKER, BAR_WIDTH, 0x14);
-        GuiSetStyle(COLORPICKER, BAR_PADDING, 0xa);
-        GuiSetStyle(COLORPICKER, BAR_SELECTOR_HEIGHT, 6);
-        GuiSetStyle(COLORPICKER, BAR_SELECTOR_PADDING, 2);
-        GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
-        GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
-        GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
-        
-        // TODO: Allocated memory must be freed!
-    }
-
-    return guiStyle;
-}
 
 // Convert color data from RGB to HSV
 // NOTE: Color data should be passed normalized
