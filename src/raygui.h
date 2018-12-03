@@ -379,7 +379,6 @@ RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #include <stdio.h>          // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
-#include <math.h>           // Required for: NAN
 #include <string.h>         // Required for: strlen() on GuiTextBox()
 
 #if defined(RAYGUI_STANDALONE)
@@ -2978,14 +2977,16 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
 // NOTE: Color data should be passed normalized
 static Vector3 ConvertRGBtoHSV(Vector3 rgb)
 {
-    Vector3 hsv;
-    float min, max, delta;
+    Vector3 hsv = { 0.0f };
+    float min = 0.0f;
+    float max = 0.0f;
+    float delta = 0.0f;
 
-    min = rgb.x < rgb.y ? rgb.x : rgb.y;
-    min = min  < rgb.z ? min  : rgb.z;
+    min = (rgb.x < rgb.y) ? rgb.x : rgb.y;
+    min = (min < rgb.z) ? min  : rgb.z;
 
-    max = rgb.x > rgb.y ? rgb.x : rgb.y;
-    max = max  > rgb.z ? max  : rgb.z;
+    max = (rgb.x > rgb.y) ? rgb.x : rgb.y;
+    max = (max > rgb.z) ? max  : rgb.z;
 
     hsv.z = max;            // Value
     delta = max - min;
@@ -3006,7 +3007,7 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb)
     {
         // NOTE: If max is 0, then r = g = b = 0, s = 0, h is undefined
         hsv.y = 0.0f;
-        hsv.x = NAN;        // Undefined
+        hsv.x = 0.0f;        // Undefined, maybe NAN?
         return hsv;
     }
 
@@ -3029,9 +3030,9 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb)
 // NOTE: Color data should be passed normalized
 static Vector3 ConvertHSVtoRGB(Vector3 hsv)
 {
-    Vector3 rgb;
-    float hh, p, q, t, ff;
-    long i;
+    Vector3 rgb = { 0.0f };
+    float hh = 0.0f, p = 0.0f, q = 0.0f, t = 0.0f, ff = 0.0f;
+    long i = 0;
 
     // NOTE: Comparing float values could not work properly
     if (hsv.y <= 0.0f)
