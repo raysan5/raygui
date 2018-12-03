@@ -140,7 +140,7 @@ int main()
             if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
             if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
-            toggleGroupActive = GuiToggleGroupPro((Rectangle){ 165, 400, 140, 25 }, dropdownBox001TextList, 4, toggleGroupActive, 4, 1);
+            toggleGroupActive = GuiToggleGroupEx((Rectangle){ 165, 400, 140, 25 }, dropdownBox001TextList, 4, toggleGroupActive, 4, 1);
             
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
