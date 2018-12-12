@@ -483,7 +483,6 @@ static void GuiDrawText(const char *text, int posX, int posY, Color tint)
 {
     if (guiFont.texture.id == 0) guiFont = GetFontDefault();
 
-    // TODO: Support custom TEXT_SIZE and TEXT_SPACING by control
     DrawTextEx(guiFont, text, (Vector2){ posX, posY }, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
 }
 
