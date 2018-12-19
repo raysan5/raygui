@@ -338,7 +338,7 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char **text, int count, int ac
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char **text, int count, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int btnWidth, bool editMode);   // Spinner control, returns selected value
 RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                // Value Box control, updates input text with numbers
-RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool freeEdit);                   // Text Box control, updates input text
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
 RAYGUIDEF float GuiSliderEx(Rectangle bounds, float value, float minValue, float maxValue, const char *text, bool showValue);       // Slider control, returns selected value
