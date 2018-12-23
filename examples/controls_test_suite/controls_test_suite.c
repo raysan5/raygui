@@ -44,11 +44,9 @@ int main()
     // GUI controls initialization
     //----------------------------------------------------------------------------------
     int dropdownBox000Active = 0;
-    const char *dropdownBox000TextList[3] = { "ONE", "TWO", "THREE" };
     bool dropDown000EditMode = false;
     
     int dropdownBox001Active = 0;
-    const char *dropdownBox001TextList[5] = { "ONE", "TWO", "THREE", "FOUR", "FIVE" };
     bool dropDown001EditMode = false;    
     
     int spinner001Value = 0;
@@ -114,7 +112,7 @@ int main()
             //GuiDisable();
             
             // First GUI column
-            forceSquaredChecked = GuiCheckBoxEx((Rectangle){ 25, 108, 15, 15 }, forceSquaredChecked, "Force Square");
+            forceSquaredChecked = GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "Force Square", forceSquaredChecked);
             if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, &spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
@@ -129,19 +127,18 @@ int main()
             GuiState(GUI_STATE_NORMAL);            
             GuiUnlock();
             
-            //comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, dropdownBox001TextList, 5, comboBoxActive);
-            comboBoxActive = GuiComboBox2((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
+            comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
-            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, dropdownBox001TextList, 5, &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
-            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, dropdownBox000TextList, 3, &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "ONE;TWO;THREE;FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
             if (GuiListView((Rectangle){ 165, 25, 140, 140 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
             if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
             if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
-            toggleGroupActive = GuiToggleGroupEx((Rectangle){ 165, 400, 140, 25 }, dropdownBox001TextList, 4, toggleGroupActive, 4, 1);
+            toggleGroupActive = GuiToggleGroupEx((Rectangle){ 165, 400, 140, 25 }, "ONE;TWO;THREE;FOUR", toggleGroupActive, 4, 1);
             
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
