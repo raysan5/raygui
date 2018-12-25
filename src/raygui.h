@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.1-dev - A simple and easy-to-use immedite-mode-gui library
+*   raygui v2.0-dev - A simple and easy-to-use immedite-mode-gui library
 *
 *   DESCRIPTION:
 *
@@ -57,8 +57,7 @@
 *       the user (check library implementation for further details).
 *
 *   VERSIONS HISTORY:
-*       2.1 (23-Dec-2018) Redesigned several controls to simplify usage
-*       2.0 (xx-Nov-2018) Complete review of new controls, redesigned style system
+*       2.0 (xx-Dec-2018) Complete review of new controls, redesigned style system
 *       1.9 (01-May-2018) Lot of rework and redesign! Lots of new controls!
 *       1.5 (21-Jun-2017) Working in an improved styles system
 *       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
@@ -1596,9 +1595,11 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             if (keyCount < (textSize - 1))
             {
                 int maxWidth = (bounds.width - (GuiGetStyle(DEFAULT, INNER_PADDING)*2));
+                
                 if (GuiTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
                 {
-                    if ((key >= 32) && (key <= 125))
+                    if (((key >= 32) && (key <= 125)) ||
+                        ((key >= 128) && (key < 255)))
                     {
                         text[keyCount] = (char)key;
                         keyCount++;
@@ -1722,7 +1723,8 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                         text[keyCount] = '\n';
                         keyCount++;
                     }
-                    else if ((key >= 32) && (key <= 125))
+                    else if (((key >= 32) && (key <= 125)) ||
+                        ((key >= 128) && (key < 255)))
                     {
                         text[keyCount] = (char)key;
                         keyCount++;
@@ -1731,7 +1733,8 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                 }
                 else if (GuiTextWidth(strrchr(text, '\n')) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
                 {
-                    if ((key >= 32) && (key <= 125))
+                    if (((key >= 32) && (key <= 125)) ||
+                        ((key >= 128) && (key < 255)))
                     {
                         text[keyCount] = (char)key;
                         keyCount++;
