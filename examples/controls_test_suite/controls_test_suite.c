@@ -36,8 +36,8 @@ int main()
 {
     // Initialization
     //---------------------------------------------------------------------------------------
-    int screenWidth = 600;
-    int screenHeight = 600;
+    int screenWidth = 690;
+    int screenHeight = 540;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
 
@@ -83,6 +83,8 @@ int main()
     int comboBoxActive = 1;
     
     int toggleGroupActive = 0;
+    
+    Vector2 viewScroll = { 0, 0 };
     //----------------------------------------------------------------------------------
     
     // Custom GUI font loading
@@ -147,6 +149,8 @@ int main()
             sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, NULL, sliderValue, -50, 100, true);
             sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBarEx((Rectangle){ 320, 460, 200, 20 }, progressValue, 0, 1, true);
+            
+            viewScroll = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, viewScroll);
             
             //GuiEnable();
             GuiUnlock();

@@ -729,7 +729,62 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
 // NOTE: bounds define the view area, content defines size of internal data
 RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll)
 {
-    // TODO: Implement scroll panel control
+    GuiControlState state = guiState;
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
+            else state = GUI_STATE_FOCUSED;
+
+            viewScroll.y += GetMouseWheelMove()*10;
+            if (viewScroll.y > 0) viewScroll.y = 0;
+            if (viewScroll.y < (bounds.height - content.height)) viewScroll.y = bounds.height - content.height;
+        }
+    }
+    //--------------------------------------------------------------------
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    DrawRectangleRec(bounds, RAYWHITE);
+    
+    switch (state)
+    {
+        case GUI_STATE_NORMAL:
+        {
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_NORMAL)), guiAlpha));
+        
+        } break;
+        case GUI_STATE_FOCUSED:
+        {
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), guiAlpha));
+        
+        } break;
+        case GUI_STATE_PRESSED:
+        {
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), guiAlpha));
+        
+        } break;
+        case GUI_STATE_DISABLED: 
+        {
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), guiAlpha));
+
+        } break;
+        default: break;
+    }
+    
+    DrawRectangle(content.x, content.y + viewScroll.y, content.width, content.height, Fade(RED, 0.4f));
+    
+    // Draw scroll bar
+    DrawRectangle(bounds.x + bounds.width - 11, bounds.y + 1, 10, bounds.height - 2, LIGHTGRAY);
+    DrawRectangle(bounds.x + bounds.width - 11, bounds.y - (bounds.height/content.height)*viewScroll.y, 10, (bounds.height/content.height)*bounds.height, DARKGRAY);   
+    //--------------------------------------------------------------------
 
     return viewScroll;
 }
@@ -2256,7 +2311,6 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
 
     // Update control
     //--------------------------------------------------------------------
-
     // All the elements fit inside ListView and dont need scrollbar.
     if (visibleElements >= count)
     {
@@ -2291,6 +2345,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
                     auxActive--;
                     if ((useScrollBar) && (auxActive < startIndex)) startIndex--;
                 }
+                
                 pressedKey = true;
             }
             else if (IsKeyPressed(KEY_DOWN))
@@ -2300,6 +2355,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
                     auxActive++;
                     if ((useScrollBar) && (auxActive >= endIndex)) startIndex++;
                 }
+                
                 pressedKey = true;
             }
 
@@ -2324,6 +2380,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
                 }
 
                 endIndex = startIndex + visibleElements;
+                
                 if (endIndex > count) endIndex = count;
             }
         }
@@ -2335,24 +2392,22 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledEl
                 state = GUI_STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
 
-                int wheel = GetMouseWheelMove();
-                if (wheel)
+                startIndex -= GetMouseWheelMove();
+                
+                if (startIndex < 0) startIndex = 0;
+                else if (startIndex > (count - (endIndex - startIndex)))
                 {
-                    startIndex -= wheel;
-                    if (startIndex < 0) startIndex = 0;
-                    else if (startIndex > (count - (endIndex - startIndex)))
-                    {
-                        startIndex = count - (endIndex - startIndex);
-                    }
-                    pressed = true;
+                    startIndex = count - (endIndex - startIndex);
                 }
+                
+                pressed = true;
             }
         }
         else
         {
             if (!CheckCollisionPointRec(mousePoint, bounds))
             {
-                if (IsMouseButtonPressed(0) || GetMouseWheelMove() != 0) pressed = true;
+                if (IsMouseButtonPressed(0) || (GetMouseWheelMove() != 0)) pressed = true;
             }
         }
 
