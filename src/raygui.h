@@ -354,6 +354,7 @@ RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *
 RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledElements, int count, int *scrollIndex, int *active, int *focus, bool editMode); // with List View extended parameters
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
+RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
@@ -2836,13 +2837,18 @@ RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const ch
 
 // Grid control
 // NOTE: Returns grid mouse-hover selected cell
-RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs)
+// About drawing lines at subpixel spacing, simple put, not easy solution:
+// https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
+RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 {
     #define GRID_COLOR_ALPHA    0.15f           // Grid lines alpha amount
 
     GuiControlState state = guiState;
     Vector2 mousePoint = GetMousePosition();
     Vector2 currentCell = { -1, -1 };
+    
+    int linesV = ((int)(bounds.width/spacing) + 1)*subdivs;
+    int linesH = ((int)(bounds.height/spacing) + 1)*subdivs;
 
     // Update control
     //--------------------------------------------------------------------
@@ -2863,15 +2869,15 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, int spacing, int subdivs)
         case GUI_STATE_NORMAL:
         {
             // Draw vertical grid lines
-            for (int i = 0; i < (bounds.width/spacing + 1)*subdivs; i++)
+            for (int i = 0; i < linesV; i++)
             {
-                DrawRectangle(bounds.x + spacing*i, bounds.y, 1, bounds.height, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA));
+                DrawRectangleRec((Rectangle){ bounds.x + spacing*i, bounds.y, 1, bounds.height }, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA));
             }
 
             // Draw horizontal grid lines
-            for (int i = 0; i < (bounds.height/spacing + 1)*subdivs; i++)
+            for (int i = 0; i < linesH; i++)
             {
-                DrawRectangle(bounds.x, bounds.y + spacing*i, bounds.width, 1, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA));
+                DrawRectangleRec((Rectangle){ bounds.x, bounds.y + spacing*i, bounds.width, 1 }, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINES_COLOR)), GRID_COLOR_ALPHA));
             }
 
         } break;
