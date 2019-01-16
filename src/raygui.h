@@ -350,8 +350,8 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);   
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 
 // Advance controls set
-RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *scrollIndex, int *active, bool editMode);           // List View control, returns selected list element index
-RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledElements, int count, int *scrollIndex, int *active, int *focus, bool editMode); // with List View extended parameters
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);   // List View control, returns selected list element index
+RAYGUIDEF bool GuiListViewEx(Rectangle bounds, char **text, int count, int *enabled, int *active, int *focus, int *scrollIndex, bool editMode); // List View with extended parameters
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
@@ -2277,13 +2277,25 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
 }
 
 // List View control
-RAYGUIDEF bool GuiListView(Rectangle bounds, const char **text, int count, int *scrollIndex, int *active, bool editMode)
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode)
 {
-    return GuiListViewEx(bounds, text, NULL, count, scrollIndex, active, NULL, editMode);
+    bool result = 0;
+    int count = 0;
+    char **textList = TextSplit(text, ';', &count);
+    
+    result = GuiListViewEx(bounds, textList, count, NULL, active, NULL, scrollIndex, editMode);
+    
+    for (int i = 0; i < count; i++) free(textList[i]);
+    if (textList != NULL) free(textList);
+    
+    return result;
 }
 
 // List View control extended parameters
-RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int *enabledElements, int count, int *scrollIndex, int *active, int *focus, bool editMode)
+// NOTE: Elements could be disabled individually and focused element could be obtained:
+//  int *enabled defines an array with enabled elements inside the list
+//  int *focus returns focused element (may be not pressed)    
+RAYGUIDEF bool GuiListViewEx(Rectangle bounds, char **text, int count, int *enabled, int *active, int *focus, int *scrollIndex, bool editMode)
 {
     GuiControlState state = guiState;
     bool pressed = false;

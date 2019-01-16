@@ -60,13 +60,12 @@ int main()
     
     int listViewScrollIndex = 0;
     int listViewActive = -1;
-    const char *listViewList[6] = { "Charmander", "Bulbasaur", "Squirtel", "Pikachu", "Eevee", "Pidgey" };
     bool listViewEditMode = false;
     
     int listViewExScrollIndex = 0;
     int listViewExActive = -1;
     int listViewExFocus = -1;
-    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
     int listViewExElementsEnable[8] = {1, 0, 1, 1, 0, 0, 1};
     bool listViewExEditMode = false;
     
@@ -136,8 +135,8 @@ int main()
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
-            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, listViewList, 6, &listViewScrollIndex, &listViewActive, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, listViewExElementsEnable, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
+            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;Squirtel;Pikachu;Eevee;Pidgey", &listViewActive, &listViewScrollIndex, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, listViewExElementsEnable, &listViewExActive, &listViewExFocus, &listViewExScrollIndex, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
             if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
             toggleGroupActive = GuiToggleGroupEx((Rectangle){ 165, 400, 140, 25 }, "ONE;TWO;THREE;FOUR", toggleGroupActive, 4, 1);
