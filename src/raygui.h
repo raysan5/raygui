@@ -340,12 +340,9 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
-RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue);               // Slider control, returns selected value
-RAYGUIDEF float GuiSliderEx(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);       // Slider control, returns selected value
-RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue);            // Slider Bar control, returns selected value
-RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);    // Slider Bar control, returns selected value
-RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue);          // Progress Bar control, shows current progress value
-RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, float maxValue, bool showValue);                    // Progress Bar control, shows current progress value
+RAYGUIDEF float GuiSlider(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);       // Slider control, returns selected value
+RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);    // Slider Bar control, returns selected value
+RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);  // Progress Bar control, shows current progress value
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 
@@ -358,7 +355,7 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);        
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
-RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style from a color palette array (14 values required)
+RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style properties from array
 RAYGUIDEF void GuiLoadStyleDefault(void);                       // Load style default over global style
 RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
 
@@ -2042,41 +2039,24 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     return value;
 }
 
-// Slider control, returns selected value
-RAYGUIDEF float GuiSlider(Rectangle bounds, float value, float minValue, float maxValue)
-{
-    return GuiSliderPro(bounds, NULL, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH), false);
-}
-
 // Slider control extended, returns selected value and has text
-RAYGUIDEF float GuiSliderEx(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue)
+RAYGUIDEF float GuiSlider(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue)
 {
     return GuiSliderPro(bounds, text, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH), showValue);
 }
 
-// Slider Bar control, returns selected value
-RAYGUIDEF float GuiSliderBar(Rectangle bounds, float value, float minValue, float maxValue)
-{
-    return GuiSliderPro(bounds, NULL, value, minValue, maxValue, 0, false);
-}
-
 // Slider Bar control extended, returns selected value
-RAYGUIDEF float GuiSliderBarEx(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue)
+RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue)
 {
     return GuiSliderPro(bounds, text, value, minValue, maxValue, 0, showValue);
 }
 
-// Progress Bar control, shows current progress value
-RAYGUIDEF float GuiProgressBar(Rectangle bounds, float value, float minValue, float maxValue)
-{
-    return GuiProgressBarEx(bounds, value, minValue, maxValue, false);
-}
-
 // Progress Bar control extended, shows current progress value
-RAYGUIDEF float GuiProgressBarEx(Rectangle bounds, float value, float minValue, float maxValue, bool showValue)
+RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue)
 {
     GuiControlState state = guiState;
 
+    int textWidth = (text == NULL) ? 0: GuiTextWidth(text);
     Rectangle progress = { bounds.x + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH),
                            bounds.y + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) + GuiGetStyle(PROGRESSBAR, INNER_PADDING), 0,
                            bounds.height - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) - 2*GuiGetStyle(PROGRESSBAR, INNER_PADDING) };
