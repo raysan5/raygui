@@ -727,6 +727,8 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
 // NOTE: bounds define the view area, content defines size of internal data
 RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll)
 {
+    #define SCROLLPANEL_SCROLL_SPEED    20
+    
     GuiControlState state = guiState;
     
     bool useScrollBar = false;
@@ -744,7 +746,11 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 vi
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
             else state = GUI_STATE_FOCUSED;
 
-            viewScroll.y += GetMouseWheelMove()*10;
+            viewScroll.y += GetMouseWheelMove()*SCROLLPANEL_SCROLL_SPEED;
+            
+            if (IsKeyDown(KEY_DOWN)) viewScroll.y -= SCROLLPANEL_SCROLL_SPEED;
+            if (IsKeyDown(KEY_UP)) viewScroll.y += SCROLLPANEL_SCROLL_SPEED;
+            
             if (viewScroll.y > 0) viewScroll.y = 0;
             if (viewScroll.y < (bounds.height - content.height)) viewScroll.y = bounds.height - content.height;
         }
