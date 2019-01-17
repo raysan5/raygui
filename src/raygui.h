@@ -2460,7 +2460,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, char **text, int count, int *enab
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if ((enabledElements != NULL) && (enabledElements[i] == 0))
+                if ((enabled != NULL) && (enabled[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH) + (i - startIndex)*(GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING)), elementWidth, GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) }, text[i], false, false);
@@ -2481,7 +2481,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, char **text, int count, int *enab
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if ((enabledElements != NULL) && (enabledElements[i] == 0))
+                if ((enabled != NULL) && (enabled[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH) + (i - startIndex)*(GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING)), elementWidth, GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) }, text[i], false, false);
@@ -2497,7 +2497,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, char **text, int count, int *enab
 
             for (int i = startIndex; i < endIndex; i++)
             {
-                if ((enabledElements != NULL) && (enabledElements[i] == 0))
+                if ((enabled != NULL) && (enabled[i] == 0))
                 {
                     GuiDisable();
                     GuiListElement((Rectangle){ posX, bounds.y + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH) + (i - startIndex)*(GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING)), elementWidth, GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) }, text[i], false, false);
