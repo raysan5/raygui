@@ -134,6 +134,7 @@
 
 #define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
 
+#define NUM_CONTROLS                    13      // Number of standard controls
 #define NUM_PROPS_DEFAULT               16      // Number of standard properties
 #define NUM_PROPS_EXTENDED               8      // Number of extended properties
 
@@ -201,8 +202,7 @@ typedef enum {
     TEXTBOX,        // VALUEBOX, SPINNER
     LISTVIEW,
     COLORPICKER,
-    SCROLLBAR,
-    NUM_CONTROLS
+    SCROLLBAR
 } GuiControlStandard;
 
 // Gui default properties for every control
