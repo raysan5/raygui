@@ -36,7 +36,7 @@
 *       - ColorPicker   --> ColorPanel, ColorBarHue
 *       - MessageBox
 *       - DummyRec
-*	- ScrollBar
+*       - ScrollBar
 *       - Grid
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
