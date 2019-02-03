@@ -36,6 +36,7 @@
 *       - ColorPicker   --> ColorPanel, ColorBarHue
 *       - MessageBox
 *       - DummyRec
+*	- ScrollBar
 *       - Grid
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
@@ -133,7 +134,6 @@
 
 #define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
 
-#define NUM_CONTROLS                    12      // Number of standard controls
 #define NUM_PROPS_DEFAULT               16      // Number of standard properties
 #define NUM_PROPS_EXTENDED               8      // Number of extended properties
 
@@ -200,7 +200,9 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // VALUEBOX, SPINNER
     LISTVIEW,
-    COLORPICKER
+    COLORPICKER,
+    SCROLLBAR,
+    NUM_CONTROLS
 } GuiControlStandard;
 
 // Gui default properties for every control
@@ -294,6 +296,17 @@ typedef enum {
     SCROLLBAR_WIDTH,
 } GuiListViewProperty;
 
+// Scrollbar
+typedef enum {
+    SCROLLBAR_BORDER = 16,
+    SCROLLBAR_SHOW_SPINNER_BUTTONS,
+    SCROLLBAR_ARROWS_SIZE,
+    SCROLLBAR_PADDING,
+    SCROLLBAR_SLIDER_PADDING,
+    SCROLLBAR_SLIDER_SIZE,
+    SCROLLBAR_SCROLL_SPEED,
+} GuiScrollBarProperty;
+
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
@@ -345,6 +358,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *text, float value, fl
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);  // Progress Bar control, shows current progress value
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
+RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);
 
 // Advance controls set
 RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);   // List View control, returns selected list element index
@@ -2181,6 +2195,173 @@ RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
     //------------------------------------------------------------------
 }
 
+RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue) 
+{
+    GuiControlState state = guiState;
+    
+    // Is the scrollbar horizontal or vertical?
+    bool isVertical = (bounds.width > bounds.height) ? false : true;
+    // The size (width or height depending on scrollbar type) of the spinner buttons
+    const int spinnerSize = GuiGetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS) ? (isVertical ? bounds.width - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) : bounds.height - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER)) : 0;
+    
+    //the spinner buttons [<] [>] [∧] [∨]
+    Rectangle spinnerUpLeft, spinnerDownRight;
+    //actual area of the scrollbar excluding the spinner buttons
+    Rectangle scrollbar;        //  ------------
+    //the slider bar that moves     --[///]-----
+    Rectangle slider;
+    
+    //normalize value
+    if (value > maxValue) value = maxValue;
+    if (value < minValue) value = minValue;
+    
+    const int range = maxValue - minValue;
+    //calculate rectangles for all of the components
+    spinnerUpLeft = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize };
+    if(isVertical) 
+    {
+        spinnerDownRight = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
+        scrollbar = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), spinnerUpLeft.y + spinnerUpLeft.height, bounds.width - 2 * (GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING)), bounds.height - spinnerUpLeft.height - spinnerDownRight.height - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER)};
+        slider = (Rectangle){bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING),scrollbar.y + (int)(((float)(value - minValue) / range) * (scrollbar.height - GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE))),bounds.width - 2 * (GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)),GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE)};
+    } 
+    else 
+    {
+        spinnerDownRight = (Rectangle){ bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
+        scrollbar = (Rectangle){ spinnerUpLeft.x + spinnerUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), bounds.width - spinnerUpLeft.width - spinnerDownRight.width - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.height - 2 * (GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING))};
+        slider = (Rectangle){ scrollbar.x + (int)(((float)(value - minValue) / range) * (scrollbar.width - GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE))), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING), GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE), bounds.height - 2 * (GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)) };
+    }
+    
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            state = GUI_STATE_FOCUSED;
+            
+            //handle mouse wheel
+            int wheel = GetMouseWheelMove();
+            if(wheel != 0) value += wheel;
+            
+            if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+            {
+                if(CheckCollisionPointRec(mousePoint, spinnerUpLeft))
+                    value -= range/GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                else if(CheckCollisionPointRec(mousePoint, spinnerDownRight))
+                    value += range/GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                state = GUI_STATE_PRESSED;
+            }
+            else if(IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
+            {
+                if(!isVertical)
+                {
+                    Rectangle scrollArea = { spinnerUpLeft.x + spinnerUpLeft.width, spinnerUpLeft.y, scrollbar.width, bounds.height - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER)};
+                    if(CheckCollisionPointRec(mousePoint, scrollArea))
+                        value = ((float)(mousePoint.x - scrollArea.x - slider.width/2) * range) / (scrollArea.width - slider.width) + minValue;
+                } 
+                else 
+                {
+                    Rectangle scrollArea = { spinnerUpLeft.x, spinnerUpLeft.y+spinnerUpLeft.height, bounds.width - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER),  scrollbar.height};
+                    if(CheckCollisionPointRec(mousePoint, scrollArea))
+                        value = ((float)(mousePoint.y - scrollArea.y - slider.height/2) * range) / (scrollArea.height - slider.height) + minValue;
+                }
+            }
+        }
+        
+        //normalize value
+        if (value > maxValue) value = maxValue;
+        if (value < minValue) value = minValue;
+    }
+    //--------------------------------------------------------------------
+    
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    DrawRectangleRec(bounds,  Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   //Draw the background
+    DrawRectangleRec(scrollbar, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));      //Draw the scrollbar active area background
+    
+    Color lineColor, sliderbarColor;
+    switch(state) // Draw border for all states
+    {
+        case GUI_STATE_NORMAL:
+        DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_NORMAL)), guiAlpha));
+        lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_NORMAL)), guiAlpha);
+        sliderbarColor = Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_NORMAL)), guiAlpha);
+        break;
+        
+        case GUI_STATE_FOCUSED:
+        DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), guiAlpha));
+        lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_FOCUSED)), guiAlpha);
+        sliderbarColor = Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_FOCUSED)), guiAlpha);
+        break;
+        
+        case GUI_STATE_PRESSED:
+        DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), guiAlpha));
+        lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_PRESSED)), guiAlpha);
+        sliderbarColor = Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_PRESSED)), guiAlpha);
+        break;
+        
+        case GUI_STATE_DISABLED:
+        DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), guiAlpha));
+        lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_DISABLED)), guiAlpha);
+        sliderbarColor = Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_DISABLED)), guiAlpha);
+        break;
+    }
+    
+    DrawRectangleRec(slider, sliderbarColor); //draw the slider bar
+    
+    const int padding = (spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_ARROWS_SIZE))/2;
+    const Vector2 lineCoords[] = 
+    {
+        //coordinates for <     0,1,2
+        {spinnerUpLeft.x + padding, spinnerUpLeft.y + spinnerSize / 2}, 
+        {spinnerUpLeft.x + spinnerSize - padding, spinnerUpLeft.y + padding },
+        {spinnerUpLeft.x + spinnerSize - padding, spinnerUpLeft.y + spinnerSize - padding},
+        
+        //coordinates for >     3,4,5
+        {spinnerDownRight.x + padding, spinnerDownRight.y + padding}, 
+        {spinnerDownRight.x + spinnerSize - padding, spinnerDownRight.y + spinnerSize / 2 },
+        {spinnerDownRight.x + padding, spinnerDownRight.y + spinnerSize - padding},
+        
+        //coordinates for ∧     6,7,8
+        {spinnerUpLeft.x + spinnerSize / 2, spinnerUpLeft.y + padding},
+        {spinnerUpLeft.x + padding, spinnerUpLeft.y + spinnerSize - padding},
+        {spinnerUpLeft.x + spinnerSize - padding, spinnerUpLeft.y + spinnerSize - padding},
+        
+        //coordinates for ∨     9,10,11
+        {spinnerDownRight.x + padding, spinnerDownRight.y + padding}, 
+        {spinnerDownRight.x + spinnerSize / 2, spinnerDownRight.y + spinnerSize - padding },
+        {spinnerDownRight.x + spinnerSize - padding, spinnerDownRight.y + padding}
+    };
+    
+    if(GuiGetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS)) 
+    {
+        if(isVertical)
+        {
+            //draw ∧
+            DrawLineEx(lineCoords[6], lineCoords[7], 3.0f, lineColor); 
+            DrawLineEx(lineCoords[6], lineCoords[8], 3.0f, lineColor);
+            
+            //draw ∨
+            DrawLineEx(lineCoords[9], lineCoords[10], 3.0f, lineColor); 
+            DrawLineEx(lineCoords[11], lineCoords[10], 3.0f, lineColor);
+        } 
+        else 
+        {
+            //draw <
+            DrawLineEx(lineCoords[0], lineCoords[1], 3.0f, lineColor); 
+            DrawLineEx(lineCoords[0], lineCoords[2], 3.0f, lineColor);
+            //draw >
+            DrawLineEx(lineCoords[3], lineCoords[4], 3.0f, lineColor); 
+            DrawLineEx(lineCoords[5], lineCoords[4], 3.0f, lineColor);
+        }
+    }
+    
+    //--------------------------------------------------------------------
+    return value;
+}
+
 // List Element control, returns element state
 static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool editMode)
 {
@@ -3043,6 +3224,13 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
     GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_BORDER, 0);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS, 0);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_ARROWS_SIZE, 6);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, 16);
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, 10);
 }
 
 // Updates controls style with default values
