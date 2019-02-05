@@ -117,7 +117,8 @@ int main()
             if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, &spinner001Value, 0, 100, 25, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
-            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "SAMPLE TEXT")) { }
+            
+            if (IsKeyDown(KEY_SPACE)) GuiDisable(); if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#001#SAMPLE TEXT")) { } GuiEnable();
             
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "CONTROL STATES");
             GuiLock();
@@ -145,9 +146,9 @@ int main()
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
             
-            sliderValue = GuiSliderEx((Rectangle){ 320, 400, 200, 20 }, NULL, sliderValue, -50, 100, true);
-            sliderBarValue = GuiSliderBarEx((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
-            progressValue = GuiProgressBarEx((Rectangle){ 320, 460, 200, 20 }, progressValue, 0, 1, true);
+            sliderValue = GuiSlider((Rectangle){ 320, 400, 200, 20 }, NULL, sliderValue, -50, 100, true);
+            sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
+            progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
             
             viewScroll = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, viewScroll);
             
