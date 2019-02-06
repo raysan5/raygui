@@ -354,7 +354,6 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 vi
 
 // Basic controls set
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
-RAYGUIDEF void GuiLabelEx(Rectangle bounds, const char *text, int alignment, int padding);              // Label control extended
 RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
 RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);                                     // Image button control, returns true when clicked
@@ -891,25 +890,9 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 vi
 // Label control
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 {
-    GuiLabelEx(bounds, text, 0, 0);    // Left-alignment, no-padding
-}
-
-// Label control extended
-// NOTE: Alignment and padding are just considered on horizontal
-RAYGUIDEF void GuiLabelEx(Rectangle bounds, const char *text, int alignment, int padding)
-{
     GuiControlState state = guiState;
-
-    int textWidth = GuiTextWidth(text);
-    int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-
-    if (bounds.width < textWidth) bounds.width = textWidth;
-    if (bounds.height < textHeight) bounds.height = textHeight;
-
-    Vector2 textPosition = { bounds.x + padding, bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height) };   // Left alignment
-
-    if (alignment == 1) textPosition.x = bounds.x + bounds.width/2 - textWidth/2 + padding;     // Middle-alignment
-    else if (alignment == 2) textPosition.x = bounds.x + bounds.width - textWidth + padding;    // Right alignment
+    
+    Vector2 textPosition = GetTextPosition(bounds, text, false);
 
     // Update control
     //--------------------------------------------------------------------
