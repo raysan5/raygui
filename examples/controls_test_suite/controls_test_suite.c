@@ -118,7 +118,9 @@ int main()
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
-            if (IsKeyDown(KEY_SPACE)) GuiDisable(); if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#001#SAMPLE TEXT")) { } GuiEnable();
+            GuiTextAlign(GUI_TEXT_ALIGN_LEFT);
+            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#001#SAMPLE TEXT")) { };
+            GuiTextAlign(GUI_TEXT_ALIGN_CENTER);
             
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "CONTROL STATES");
             GuiLock();

@@ -57,6 +57,10 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
+*   #define RAYGUI_RICONS_SUPPORT
+*       Includes ricons.h header defining a set of 128 icons (binary format) to be used on
+*       multiple controls and following raygui styles
+*
 *   VERSIONS HISTORY:
 *       2.0 (xx-Dec-2018) Complete review of new controls, redesigned style system
 *       1.9 (01-May-2018) Lot of rework and redesign! Lots of new controls!
@@ -104,6 +108,7 @@
 #define RAYGUI_H
 
 #define RAYGUI_VERSION  "2.0-dev"
+#define RAYGUI_RICONS_SUPPORT
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -188,6 +193,13 @@ typedef enum {
     GUI_STATE_DISABLED,
 } GuiControlState;
 
+// Gui global text alignment
+typedef enum {
+    GUI_TEXT_ALIGN_LEFT = 0,
+    GUI_TEXT_ALIGN_CENTER,
+    GUI_TEXT_ALIGN_RIGHT,
+} GuiTextAlignment;
+
 // Gui standard controls
 typedef enum {
     DEFAULT = 0,
@@ -241,6 +253,9 @@ typedef enum {
 
 // Button
 //typedef enum { } GuiButtonProperty;
+
+// Line
+//typedef enum { } GuiLineProperty
 
 // Toggle / ToggleGroup
 typedef enum {
@@ -322,6 +337,7 @@ RAYGUIDEF void GuiDisable(void);                                        // Disab
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
 RAYGUIDEF void GuiState(int state);                                     // Set gui state (global state)
+RAYGUIDEF void GuiTextAlign(int align);                                 // Set gui text alignment (global state)
 RAYGUIDEF void GuiFont(Font font);                                      // Set gui custom font (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 
@@ -390,6 +406,11 @@ RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
+#if defined(RAYGUI_RICONS_SUPPORT)
+    #define RICONS_IMPLEMENTATION
+    #include "ricons.h"     // Required for: raygui icons
+#endif
+
 #include <stdio.h>          // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
 #include <string.h>         // Required for: strlen() on GuiTextBox()
 
@@ -415,6 +436,7 @@ static GuiControlState guiState = GUI_STATE_NORMAL;
 static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
 static bool guiLocked = false;
 static float guiAlpha = 1.0f;
+static int guiTextAlign = GUI_TEXT_ALIGN_CENTER;
 
 // Global gui style array (allocated on heap by default)
 // NOTE: In raygui we manage a single int array with all the possible style properties.
@@ -509,6 +531,69 @@ static int GuiTextWidth(const char *text)
     return (int)size.x;
 }
 
+// Gui draw ricon if supported
+static void GuiDrawIcon(int iconId, Vector2 position, Color color)
+{
+#if defined(RAYGUI_RICONS_SUPPORT)
+    DrawIcon(iconId, position, 1, color);
+#endif
+}
+
+// Get text icon if provided and move text cursor
+static const char *GetTextIcon(const char *text, int *iconId)
+{
+#if defined(RAYGUI_RICONS_SUPPORT)
+    if (text[0] == '#')
+    {
+        char iconValue[4] = { 0 };
+        for (int i = 1; i < 4; i++) iconValue[i - 1] = text[i];
+        iconValue[3] = '\0';
+        *iconId = TextToInteger(iconValue);  // Custom implementation, returns -1 in case conversion fails!
+        if (*iconId >= 0) text += 5;         // Move text pointer after icon (it must be always 5 characters)
+    }
+#endif
+
+    return text;
+}
+
+// Calculate text drawing position
+// NOTE: It depends on global alignment
+static Vector2 GetTextPosition(Rectangle bounds, const char *text, bool icon)
+{
+    #define ICON_TEXT_PADDING   4
+    
+    Vector2 position = { bounds.x, bounds.y };
+
+    int textWidth = GuiTextWidth(text);
+    int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    
+    // Check guiTextAlign global variables
+    switch (guiTextAlign)
+    {
+        case GUI_TEXT_ALIGN_LEFT:
+        {
+            position.x = bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH) + GuiGetStyle(DEFAULT, INNER_PADDING);
+            position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+        } break;
+        case GUI_TEXT_ALIGN_CENTER:
+        {
+            position.x = bounds.x + bounds.width/2 - textWidth/2;
+            position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+        } break;
+        case GUI_TEXT_ALIGN_RIGHT:
+        {
+            // TODO: not working properly with icon
+            position.x = bounds.x + bounds.width - textWidth - GuiGetStyle(BUTTON, BORDER_WIDTH) - GuiGetStyle(DEFAULT, INNER_PADDING);
+            position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+        } break;
+        default: break;
+    }
+    
+    if (icon) { position.x += (RICONS_SIZE + ICON_TEXT_PADDING); }
+
+    return position;
+}
+
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
@@ -527,6 +612,9 @@ RAYGUIDEF void GuiUnlock(void) { guiLocked = false; }
 
 // Set gui state (global state)
 RAYGUIDEF void GuiState(int state) { guiState = (GuiControlState)state; }
+
+// Set gui text alignment (global state)
+RAYGUIDEF void GuiTextAlign(int align) { guiTextAlign = (GuiTextAlignment)align; }
 
 // Define custom gui font
 RAYGUIDEF void GuiFont(Font font)
@@ -846,12 +934,13 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
 {
     GuiControlState state = guiState;
     bool pressed = false;
-
-    int textWidth = GuiTextWidth(text);
-    int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-
-    if (bounds.width < textWidth) bounds.width = textWidth;
-    if (bounds.height < textHeight) bounds.height = textHeight;
+    int iconId = 0;
+    
+    // Check if text includes icon (returns moved text pointer)
+    text = GetTextIcon(text, &iconId);
+    
+    // Calculate text drawing position
+    Vector2 textPos = GetTextPosition(bounds, text, (iconId > 0));
 
     // Update control
     //--------------------------------------------------------------------
@@ -878,25 +967,34 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
         {
             DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_NORMAL)), guiAlpha));
             DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));
-            GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height), Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_NORMAL)), guiAlpha));
+            
+            if (iconId > 0) GuiDrawIcon(iconId, (Vector2){ bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH) + 4, bounds.y + bounds.height/2 - RICONS_SIZE/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_NORMAL)), guiAlpha));
+            GuiDrawText(text, textPos.x, textPos.y, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_NORMAL)), guiAlpha));
+            
         } break;
         case GUI_STATE_FOCUSED:
         {
             DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_FOCUSED)), guiAlpha));
             DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_FOCUSED)), guiAlpha));
-            GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height), Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_FOCUSED)), guiAlpha));
+            
+            if (iconId > 0) GuiDrawIcon(iconId, (Vector2){ bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH) + 4, bounds.y + bounds.height/2 - RICONS_SIZE/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_FOCUSED)), guiAlpha));
+            GuiDrawText(text, textPos.x, textPos.y, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_FOCUSED)), guiAlpha));
         } break;
         case GUI_STATE_PRESSED:
         {
             DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_PRESSED)), guiAlpha));
             DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_PRESSED)), guiAlpha));
-            GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height), Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_PRESSED)), guiAlpha));
+            
+            if (iconId > 0) GuiDrawIcon(iconId, (Vector2){ bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH) + 4, bounds.y + bounds.height/2 - RICONS_SIZE/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_PRESSED)), guiAlpha));
+            GuiDrawText(text, textPos.x, textPos.y, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_PRESSED)), guiAlpha));
         } break;
         case GUI_STATE_DISABLED:
         {
             DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_DISABLED)), guiAlpha));
             DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_DISABLED)), guiAlpha));
-            GuiDrawText(text, bounds.x + bounds.width/2 - textWidth/2, bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height), Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_DISABLED)), guiAlpha));
+            
+            if (iconId > 0) GuiDrawIcon(iconId, (Vector2){ bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH) + 4, bounds.y + bounds.height/2 - RICONS_SIZE/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_DISABLED)), guiAlpha));
+            GuiDrawText(text, textPos.x, textPos.y, Fade(GetColor(GuiGetStyle(BUTTON, TEXT_COLOR_DISABLED)), guiAlpha));
         } break;
         default: break;
     }
@@ -2076,7 +2174,6 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, 
 {
     GuiControlState state = guiState;
 
-    int textWidth = (text == NULL) ? 0: GuiTextWidth(text);
     Rectangle progress = { bounds.x + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH),
                            bounds.y + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) + GuiGetStyle(PROGRESSBAR, INNER_PADDING), 0,
                            bounds.height - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) - 2*GuiGetStyle(PROGRESSBAR, INNER_PADDING) };
