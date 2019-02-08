@@ -360,12 +360,11 @@ RAYGUIDEF bool GuiImageButton(Rectangle bounds, Texture2D texture);             
 RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle texSource, const char *text);        // Image button extended control, returns true when clicked
 RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active);                              // Toggle Button control, returns true when active
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
-RAYGUIDEF int GuiToggleGroupEx(Rectangle bounds, const char *text, int active, int padding, int columns); // Toggle Group with extended parameters
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int btnWidth, bool editMode);   // Spinner control, returns selected value
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);                // Value Box control, updates input text with numbers
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);       // Slider control, returns selected value
@@ -373,7 +372,7 @@ RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *text, float value, fl
 RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);  // Progress Bar control, shows current progress value
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text, int offsetX);                           // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
-RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);
+RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
 
 // Advance controls set
 RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);   // List View control, returns selected list element index
@@ -1189,18 +1188,23 @@ RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active)
 // Toggle Group control, returns toggled button index
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 {
-    return GuiToggleGroupEx(bounds, text, active, GuiGetStyle(TOGGLE, GROUP_PADDING), 32);
-}
-
-// Toggle Group with pro parameters, returns toggled button index
-// NOTE: bounds refer to an individual toggle size, spacing refers to toggles separation and columns defines number of columns
-RAYGUIDEF int GuiToggleGroupEx(Rectangle bounds, const char *text, int active, int padding, int columns)
-{
     #define TOGGLEGROUP_MAX_ELEMENTS        16
     #define TOGGLEGROUP_ELEMENTS_DELIMITER  ';'
 
     float initBoundsX = bounds.x;
     int currentColumn = 0;
+    
+    // TODO: columns parameter
+    int textLen = strlen(text);
+    int currrentRow = 0;
+    int currentElement = 0;
+    bool elementRow[TOGGLEGROUP_MAX_ELEMENTS] = { 0 };
+    for (int i = 0; i < textLen; i++)
+    {
+        elementRow[currentElement] = currrentRow;
+        if (text[i] == ';') currentElement++;
+        if (text[i] == '\n') currrentRow++;
+    }
 
     // Get substrings elements from text (elements pointers, lengths and count)
     const char *elementsPtrs[TOGGLEGROUP_MAX_ELEMENTS] = { NULL };
@@ -1213,15 +1217,18 @@ RAYGUIDEF int GuiToggleGroupEx(Rectangle bounds, const char *text, int active, i
         if (i == active) GuiToggle(bounds, TextSubtext(elementsPtrs[i], 0, elementsLen[i]), true);
         else if (GuiToggle(bounds, TextSubtext(elementsPtrs[i], 0, elementsLen[i]), false) == true) active = i;
 
-        bounds.x += (bounds.width + padding);
+        bounds.x += (bounds.width + GuiGetStyle(TOGGLE, GROUP_PADDING));
         currentColumn++;
 
-        if ((currentColumn + 1) > columns)
+        // TODO: Implement columns logic
+        /*
+        if ((currentColumn + 1) > columns)  
         {
             currentColumn = 0;
-            bounds.y += (bounds.height + padding);
+            bounds.y += (bounds.height + GuiGetStyle(TOGGLE, GROUP_PADDING));
             bounds.x = initBoundsX;
         }
+        */
     }
 
     return active;
@@ -1545,15 +1552,16 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
 // Spinner control, returns selected value
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int btnWidth, bool editMode)
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
 {
     bool pressed = false;
     int tempValue = *value;
     int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
 
-    Rectangle spinner = { bounds.x + btnWidth + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING), bounds.y, bounds.width - 2*(btnWidth + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING)), bounds.height };
-    Rectangle leftButtonBound = { bounds.x, bounds.y, btnWidth, bounds.height };
-    Rectangle rightButtonBound = { bounds.x + bounds.width - btnWidth, bounds.y, btnWidth, bounds.height };
+    Rectangle spinner = { bounds.x + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING), bounds.y, 
+                          bounds.width - 2*(GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING)), bounds.height };
+    Rectangle leftButtonBound = { bounds.x, bounds.y, GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH), bounds.height };
+    Rectangle rightButtonBound = { bounds.x + bounds.width - GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH), bounds.y, GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH), bounds.height };
 
     int textWidth = GuiTextWidth(TextFormat("%i", tempValue));
     int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
@@ -2275,6 +2283,7 @@ RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
     //------------------------------------------------------------------
 }
 
+// Scroll Bar control
 RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue) 
 {
     GuiControlState state = guiState;
@@ -3293,7 +3302,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING, 16);
     GuiSetStyle(TEXTBOX, INNER_PADDING, 4);
     GuiSetStyle(TEXTBOX, MULTILINE_PADDING, 5);
-    GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 20);       // SPINNER specific property
+    GuiSetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH, 20);         // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH, 1);   // SPINNER specific property
     GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
