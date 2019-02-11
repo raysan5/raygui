@@ -314,7 +314,7 @@ typedef enum {
     ELEMENTS_HEIGHT = 16,
     ELEMENTS_PADDING,
     SCROLLBAR_WIDTH,
-    SCROLLBAR_SIDE,  // Is the vertical scrollbar drawn on the left or on the right (SCROLLBAR_LEFT_SIDE or SCROLLBAR_RIGHT_SIDE)
+    SCROLLBAR_SIDE,             // This property defines vertical scrollbar side (SCROLLBAR_LEFT_SIDE or SCROLLBAR_RIGHT_SIDE)
 } GuiListViewProperty;
 
 // Scrollbar
@@ -356,7 +356,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiLine(Rectangle bounds, int thick);                                                    // Line separator control
 RAYGUIDEF void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
-RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 scroll, Rectangle* view); // Scroll Panel control
+RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll);               // Scroll Panel control
 
 // Basic controls set
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
@@ -830,7 +830,7 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
 }
 
 // Scroll Panel control
-RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 scroll, Rectangle* view)
+RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
 {    
     GuiControlState state = guiState;
     
@@ -849,13 +849,13 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 sc
     const Rectangle verticalScrollBar = {((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) : bounds.x + bounds.width - verticalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH)), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), verticalScrollBarWidth, bounds.height - horizontalScrollBarWidth - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) };
     
     // Calculate view area (area without the scrollbars)
-    *view = (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? 
+    Rectangle view = (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? 
                 (Rectangle){ bounds.x + verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth, bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth} :
                 (Rectangle){ bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth, bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth};
     
     // Clip view area to the actual content size
-    if (view->width > content.width) view->width = content.width;
-    if (view->height > content.height) view->height = content.height;
+    if (view.width > content.width) view.width = content.width;
+    if (view.height > content.height) view.height = content.height;
     
     //TODO: review these !
     const int horizontalMin = hasHorizontalScrollBar ? ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? -verticalScrollBarWidth : 0) - GuiGetStyle(DEFAULT, BORDER_WIDTH) : ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? -verticalScrollBarWidth : 0) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
@@ -878,23 +878,23 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 sc
             
             if (hasHorizontalScrollBar)
             {
-				if (IsKeyDown(KEY_RIGHT)) scroll.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_LEFT)) scroll.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_RIGHT)) scroll->x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_LEFT)) scroll->x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
             
             if (hasVerticalScrollBar)
             {
-                if (IsKeyDown(KEY_DOWN)) scroll.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_UP)) scroll.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_DOWN)) scroll->y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_UP)) scroll->y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
         }
     }
     
     // Normalize scroll values
-    if (scroll.x > -horizontalMin) scroll.x = -horizontalMin;
-    if (scroll.x < -horizontalMax) scroll.x = -horizontalMax;
-    if (scroll.y > -verticalMin) scroll.y = -verticalMin;
-    if (scroll.y < -verticalMax) scroll.y = -verticalMax;
+    if (scroll->x > -horizontalMin) scroll->x = -horizontalMin;
+    if (scroll->x < -horizontalMax) scroll->x = -horizontalMax;
+    if (scroll->y > -verticalMin) scroll->y = -verticalMin;
+    if (scroll->y < -verticalMax) scroll->y = -verticalMax;
     //--------------------------------------------------------------------
     
     
@@ -910,7 +910,7 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 sc
     {
         // Change scrollbar slider size to show the diff in size between the content width and the widget width
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
-        scroll.x = -GuiScrollBar(horizontalScrollBar, -scroll.x, horizontalMin, horizontalMax );
+        scroll->x = -GuiScrollBar(horizontalScrollBar, -scroll->x, horizontalMin, horizontalMax );
     }
 	
     // Draw vertical scrollbar if visible
@@ -918,7 +918,7 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 sc
     {
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
-        scroll.y = -GuiScrollBar(verticalScrollBar, -scroll.y, verticalMin, verticalMax);
+        scroll->y = -GuiScrollBar(verticalScrollBar, -scroll->y, verticalMin, verticalMax);
     }
     
     // Set scrollbar slider size back to the way it was before
@@ -934,7 +934,7 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 sc
     }
     //--------------------------------------------------------------------
 
-    return scroll;
+    return view;
 }
 
 // Label control
