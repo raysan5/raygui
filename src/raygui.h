@@ -304,11 +304,17 @@ typedef enum {
     BAR_SELECTOR_PADDING        // Lateral bar selector outer padding
 } GuiColorPickerProperty;
 
+typedef enum {
+    SCROLLBAR_LEFT_SIDE = 0,
+    SCROLLBAR_RIGHT_SIDE
+} GuiScrollBarSide;
+
 // ListView
 typedef enum {
     ELEMENTS_HEIGHT = 16,
     ELEMENTS_PADDING,
     SCROLLBAR_WIDTH,
+    SCROLLBAR_SIDE,  // Is the vertical scrollbar drawn on the left or on the right (SCROLLBAR_LEFT_SIDE or SCROLLBAR_RIGHT_SIDE)
 } GuiListViewProperty;
 
 // Scrollbar
@@ -350,7 +356,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text);                
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with title name
 RAYGUIDEF void GuiLine(Rectangle bounds, int thick);                                                    // Line separator control
 RAYGUIDEF void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
-RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll);              // Scroll Panel control
+RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 scroll, Rectangle* view); // Scroll Panel control
 
 // Basic controls set
 RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
@@ -824,54 +830,99 @@ RAYGUIDEF void GuiPanel(Rectangle bounds)
 }
 
 // Scroll Panel control
-// NOTE: bounds define the view area, content defines size of internal data
-RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 viewScroll)
-{
-    #define SCROLLPANEL_SCROLL_SPEED    20
-    
+RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 scroll, Rectangle* view)
+{    
     GuiControlState state = guiState;
     
-    bool useScrollBar = false;
-    if (content.height > bounds.height) useScrollBar = true;
-            
+	bool hasHorizontalScrollBar = (content.width > bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
+	bool hasVerticalScrollBar = (content.height > bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
+    
+    // Recheck to account for the other scrollbar being visible
+    if (!hasHorizontalScrollBar)
+        hasHorizontalScrollBar = (hasVerticalScrollBar && content.width > (bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH))) ? true : false;
+    if (!hasVerticalScrollBar)
+        hasVerticalScrollBar = (hasHorizontalScrollBar && content.height > (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH))) ? true : false;
+    
+    const int horizontalScrollBarWidth = hasHorizontalScrollBar ? GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) : 0;
+    const int verticalScrollBarWidth =  hasVerticalScrollBar ? GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) : 0;
+    const Rectangle horizontalScrollBar = {((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? bounds.x + verticalScrollBarWidth : bounds.x) + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + bounds.height - horizontalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - verticalScrollBarWidth - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH), horizontalScrollBarWidth};
+    const Rectangle verticalScrollBar = {((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) : bounds.x + bounds.width - verticalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH)), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), verticalScrollBarWidth, bounds.height - horizontalScrollBarWidth - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) };
+    
+    // Calculate view area (area without the scrollbars)
+    *view = (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? 
+                (Rectangle){ bounds.x + verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth, bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth} :
+                (Rectangle){ bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth, bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth};
+    
+    // Clip view area to the actual content size
+    if (view->width > content.width) view->width = content.width;
+    if (view->height > content.height) view->height = content.height;
+    
+    //TODO: review these !
+    const int horizontalMin = hasHorizontalScrollBar ? ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? -verticalScrollBarWidth : 0) - GuiGetStyle(DEFAULT, BORDER_WIDTH) : ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? -verticalScrollBarWidth : 0) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    const int horizontalMax = hasHorizontalScrollBar ? content.width - bounds.width + verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH) - ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE) ? verticalScrollBarWidth : 0) : -GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    const int verticalMin = hasVerticalScrollBar ? -GuiGetStyle(DEFAULT, BORDER_WIDTH) : -GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    const int verticalMax = hasVerticalScrollBar ? content.height - bounds.height + horizontalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH) : -GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    
+    
     // Update control
     //--------------------------------------------------------------------
     if ((state != GUI_STATE_DISABLED) && !guiLocked)
     {
         Vector2 mousePoint = GetMousePosition();
-
+        
         // Check button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
             else state = GUI_STATE_FOCUSED;
-
-            viewScroll.y += GetMouseWheelMove()*SCROLLPANEL_SCROLL_SPEED;
             
-            if (IsKeyDown(KEY_DOWN)) viewScroll.y -= SCROLLPANEL_SCROLL_SPEED;
-            if (IsKeyDown(KEY_UP)) viewScroll.y += SCROLLPANEL_SCROLL_SPEED;
+            if (hasHorizontalScrollBar)
+            {
+				if (IsKeyDown(KEY_RIGHT)) scroll.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_LEFT)) scroll.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+            }
             
-            if (viewScroll.y > 0) viewScroll.y = 0;
-            if (viewScroll.y < (bounds.height - content.height)) viewScroll.y = bounds.height - content.height;
+            if (hasVerticalScrollBar)
+            {
+                if (IsKeyDown(KEY_DOWN)) scroll.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_UP)) scroll.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+            }
         }
     }
+    
+    // Normalize scroll values
+    if (scroll.x > -horizontalMin) scroll.x = -horizontalMin;
+    if (scroll.x < -horizontalMax) scroll.x = -horizontalMax;
+    if (scroll.y > -verticalMin) scroll.y = -verticalMin;
+    if (scroll.y < -verticalMax) scroll.y = -verticalMax;
     //--------------------------------------------------------------------
+    
     
     // Draw control
     //--------------------------------------------------------------------
-    // TODO: Draw scroll panel content --> This functionally should be outside function!
-    //BeginScissorMode(bounds.x + 1, bounds.y + 1, bounds.width - 2 - 10, bounds.height - 2);  
-        //DrawRectangle(content.x, content.y + viewScroll.y, content.width, content.height, Fade(RED, 0.4f));
-    //EndScissorMode();
-    
     DrawRectangleRec(bounds, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
-
-    // Draw scroll bars if required
-    if (useScrollBar) 
+    
+    // Save size of the scrollbar slider
+    const int slider = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE);
+    
+    // Draw horizontal scrollbar if visible
+    if (hasHorizontalScrollBar)
     {
-        DrawRectangle(bounds.x, bounds.y, GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), bounds.height, Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));
-        if (state != GUI_STATE_DISABLED) DrawRectangle(bounds.x, bounds.y - (bounds.height/content.height)*viewScroll.y, GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), (bounds.height/content.height)*bounds.height, Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_NORMAL)), guiAlpha));
+        // Change scrollbar slider size to show the diff in size between the content width and the widget width
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
+        scroll.x = -GuiScrollBar(horizontalScrollBar, -scroll.x, horizontalMin, horizontalMax );
     }
+	
+    // Draw vertical scrollbar if visible
+	if (hasVerticalScrollBar) 
+    {
+        // Change scrollbar slider size to show the diff in size between the content height and the widget height
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
+        scroll.y = -GuiScrollBar(verticalScrollBar, -scroll.y, verticalMin, verticalMax);
+    }
+    
+    // Set scrollbar slider size back to the way it was before
+    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, slider);
     
     switch (state)
     {
@@ -883,7 +934,7 @@ RAYGUIDEF Vector2 GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 vi
     }
     //--------------------------------------------------------------------
 
-    return viewScroll;
+    return scroll;
 }
 
 // Label control
@@ -3313,6 +3364,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
     GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
+    GuiSetStyle(LISTVIEW, SCROLLBAR_SIDE, SCROLLBAR_RIGHT_SIDE);
     GuiSetStyle(SCROLLBAR, SCROLLBAR_BORDER, 0);
     GuiSetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS, 0);
     GuiSetStyle(SCROLLBAR, SCROLLBAR_ARROWS_SIZE, 6);
