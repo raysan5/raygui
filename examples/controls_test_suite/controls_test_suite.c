@@ -65,7 +65,7 @@ int main()
     int listViewExScrollIndex = 0;
     int listViewExActive = -1;
     int listViewExFocus = -1;
-    char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
     int listViewExElementsEnable[8] = {1, 0, 1, 1, 0, 0, 1};
     bool listViewExEditMode = false;
     
@@ -152,7 +152,7 @@ int main()
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
             
-            viewScroll = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, viewScroll);
+            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, &viewScroll);
             
             //GuiEnable();
             GuiUnlock();
