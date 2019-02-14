@@ -233,7 +233,7 @@ typedef enum {
     TEXT_COLOR_DISABLED,
     BORDER_WIDTH,
     INNER_PADDING,
-    RESERVED01,
+    TEXT_ALIGNMENT,
     RESERVED02
 } GuiControlProperty;
 
@@ -342,7 +342,6 @@ RAYGUIDEF void GuiDisable(void);                                        // Disab
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
 RAYGUIDEF void GuiState(int state);                                     // Set gui state (global state)
-RAYGUIDEF void GuiTextAlign(int align);                                 // Set gui text alignment (global state)
 RAYGUIDEF void GuiFont(Font font);                                      // Set gui custom font (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 
@@ -440,7 +439,6 @@ static GuiControlState guiState = GUI_STATE_NORMAL;
 static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
 static bool guiLocked = false;
 static float guiAlpha = 1.0f;
-static int guiTextAlign = GUI_TEXT_ALIGN_CENTER;
 
 // Global gui style array (allocated on heap by default)
 // NOTE: In raygui we manage a single int array with all the possible style properties.
@@ -552,49 +550,6 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     return textBounds;
 }
 
-// Gui get text drawing position
-// NOTE: It depends on global alignment
-static Vector2 GetTextPosition(Rectangle bounds, const char *text, bool icon)
-{
-    #define ICON_TEXT_PADDING   4
-    
-    Vector2 position = { bounds.x, bounds.y };
-
-    int textWidth = GetTextWidth(text);
-    int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-    
-    if (icon) 
-    {
-        textWidth += RICONS_SIZE;
-        
-        // WARNING: If only icon provided, text could be pointing to eof character!
-        if ((text != NULL) && (text[0] != '\0')) textWidth += ICON_TEXT_PADDING;
-    }
-
-    // Check guiTextAlign global variables
-    switch (guiTextAlign)
-    {
-        case GUI_TEXT_ALIGN_LEFT:
-        {
-            position.x = bounds.x;
-            position.y = bounds.y + bounds.height/2 - textHeight/2;// + VALIGN_OFFSET(bounds.height);
-        } break;
-        case GUI_TEXT_ALIGN_CENTER:
-        {
-            position.x = bounds.x + bounds.width/2 - textWidth/2;
-            position.y = bounds.y + bounds.height/2 - textHeight/2;// + VALIGN_OFFSET(bounds.height);
-        } break;
-        case GUI_TEXT_ALIGN_RIGHT:
-        {
-            position.x = bounds.x + bounds.width - textWidth;
-            position.y = bounds.y + bounds.height/2 - textHeight/2;// + VALIGN_OFFSET(bounds.height);
-        } break;
-        default: break;
-    }
-
-    return position;
-}
-
 // Get text icon if provided and move text cursor
 static const char *GetTextIcon(const char *text, int *iconId)
 {
@@ -623,30 +578,68 @@ static const char *GetTextIcon(const char *text, int *iconId)
 }
 
 // Gui draw text using default font
-static void GuiDrawText(const char *text, Rectangle bounds, Color tint)
+static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
     if (guiFont.texture.id == 0) guiFont = GetFontDefault();
     
     if ((text != NULL) && (text[0] != '\0'))
     {
         int iconId = 0;
-        text = GetTextIcon(text, &iconId);                  // Check text for icon
-        Vector2 position = GetTextPosition(bounds, text, (iconId > 0));   // Check text position
+        text = GetTextIcon(text, &iconId);  // Check text for icon and move cursor
+        
+        // Get text position depending on alignment and iconId
+        //---------------------------------------------------------------------------------
+        #define ICON_TEXT_PADDING   4
+    
+        Vector2 position = { bounds.x, bounds.y };
 
+        int textWidth = GetTextWidth(text);
+        int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        
+        if (iconId > 0) 
+        {
+            textWidth += RICONS_SIZE;
+            
+            // WARNING: If only icon provided, text could be pointing to eof character!
+            if ((text != NULL) && (text[0] != '\0')) textWidth += ICON_TEXT_PADDING;
+        }
+
+        // Check guiTextAlign global variables
+        switch (alignment)
+        {
+            case GUI_TEXT_ALIGN_LEFT:
+            {
+                position.x = bounds.x;
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+            } break;
+            case GUI_TEXT_ALIGN_CENTER:
+            {
+                position.x = bounds.x + bounds.width/2 - textWidth/2;
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+            } break;
+            case GUI_TEXT_ALIGN_RIGHT:
+            {
+                position.x = bounds.x + bounds.width - textWidth;
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+            } break;
+            default: break;
+        }
+        //---------------------------------------------------------------------------------
+
+        // Draw text (with icon if available)
+        //---------------------------------------------------------------------------------
 #if defined(RAYGUI_RICONS_SUPPORT)
         #define ICON_TEXT_PADDING   4
         
         if (iconId > 0) 
         {
-            // NOTE: Icon position is original text position,
-            // text is moved after the icon and icon padding
-            
             // NOTE: We consider icon height, probably different than text size
             DrawIcon(iconId, (Vector2){ position.x, position.y + (GuiGetStyle(DEFAULT, TEXT_SIZE) - RICONS_SIZE)/2 }, 1, tint);
             position.x += (RICONS_SIZE + ICON_TEXT_PADDING);
         }
 #endif
         DrawTextEx(guiFont, text, position, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
+        //---------------------------------------------------------------------------------
     }
 }
 
@@ -672,9 +665,6 @@ RAYGUIDEF void GuiUnlock(void) { guiLocked = false; }
 
 // Set gui state (global state)
 RAYGUIDEF void GuiState(int state) { guiState = (GuiControlState)state; }
-
-// Set gui text alignment (global state)
-RAYGUIDEF void GuiTextAlign(int align) { guiTextAlign = (GuiTextAlignment)align; }
 
 // Define custom gui font
 RAYGUIDEF void GuiFont(Font font)
@@ -917,7 +907,7 @@ RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawText(text, GetTextBounds(LABEL, bounds), Fade(GetColor(GuiGetStyle(LABEL, (state == GUI_STATE_DISABLED) ? TEXT_COLOR_DISABLED : TEXT_COLOR_NORMAL)), guiAlpha));
+    GuiDrawText(text, GetTextBounds(LABEL, bounds), GuiGetStyle(LABEL, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LABEL, (state == GUI_STATE_DISABLED) ? TEXT_COLOR_DISABLED : TEXT_COLOR_NORMAL)), guiAlpha));
     //--------------------------------------------------------------------
 }
 
@@ -949,7 +939,7 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
     DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER + (state*3))), guiAlpha));
     DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BASE + (state*3))), guiAlpha));
     
-    GuiDrawText(text, GetTextBounds(BUTTON, bounds), Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
     //------------------------------------------------------------------
 
     return pressed;
@@ -980,7 +970,7 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawText(text, GetTextBounds(LABEL, bounds), Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(LABEL, bounds), GuiGetStyle(LABEL, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -1019,7 +1009,7 @@ RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, Texture2D texture, Rectangle t
     DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha));
     DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
     
-    GuiDrawText(text, GetTextBounds(BUTTON, bounds), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     if (texture.id > 0) DrawTextureRec(texture, texSource, (Vector2){ bounds.x + bounds.width/2 - (texSource.width + GuiGetStyle(BUTTON, INNER_PADDING)/2)/2, bounds.y + bounds.height/2 - texSource.height/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     //------------------------------------------------------------------
 
@@ -1058,14 +1048,14 @@ RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active)
         DrawRectangleLinesEx(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, (active ? BORDER_COLOR_PRESSED : (BORDER + state*3)))), guiAlpha));
         DrawRectangle(bounds.x + GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.y + GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, (active ? BASE_COLOR_PRESSED : (BASE + state*3)))), guiAlpha));
         
-        GuiDrawText(text, GetTextBounds(TOGGLE, bounds), Fade(GetColor(GuiGetStyle(TOGGLE, (active ? TEXT_COLOR_PRESSED : (TEXT + state*3)))), guiAlpha));
+        GuiDrawText(text, GetTextBounds(TOGGLE, bounds), GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TOGGLE, (active ? TEXT_COLOR_PRESSED : (TEXT + state*3)))), guiAlpha));
     }
     else
     {
         DrawRectangleLinesEx(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, BORDER + state*3)), guiAlpha));
         DrawRectangle(bounds.x + GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.y + GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TOGGLE, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, BASE + state*3)), guiAlpha));
         
-        GuiDrawText(text, GetTextBounds(TOGGLE, bounds), Fade(GetColor(GuiGetStyle(TOGGLE, TEXT + state*3)), guiAlpha));
+        GuiDrawText(text, GetTextBounds(TOGGLE, bounds), GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TOGGLE, TEXT + state*3)), guiAlpha));
     }
     //--------------------------------------------------------------------
 
@@ -1138,10 +1128,8 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                bounds.width - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)),
                                bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)), Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + (state == GUI_STATE_NORMAL) ? (GUI_STATE_PRESSED*3) : (state*3))), guiAlpha));
 
-    int tempTextAlign = guiTextAlign;
-    guiTextAlign = GUI_TEXT_ALIGN_LEFT;   // Force left alignment
-    GuiDrawText(text, textBounds, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
-    guiTextAlign = tempTextAlign;
+    // NOTE: Forced left text alignment
+    GuiDrawText(text, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return checked;
@@ -1191,14 +1179,17 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active)
     DrawRectangleLinesEx(bounds, GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BORDER + (state*3))), guiAlpha));
     DrawRectangle(bounds.x + GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BASE + (state*3))), guiAlpha));
 
-    GuiDrawText(elementsPtrs[active], GetTextBounds(CHECKBOX, bounds), Fade(GetColor(GuiGetStyle(COMBOBOX, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(elementsPtrs[active], GetTextBounds(COMBOBOX, bounds), GuiGetStyle(COMBOBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(COMBOBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw selector using a custom button
+    // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
-    int tempTextAlign = guiTextAlign;
-    guiTextAlign = GUI_TEXT_ALIGN_CENTER;
+    int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+
     GuiButton(selector, TextFormat("%i/%i", active + 1, elementsCount));
-    guiTextAlign = tempTextAlign;
+    
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
     //--------------------------------------------------------------------
 
@@ -1322,7 +1313,6 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 {
     bool pressed = false;
     int tempValue = *value;
-    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
 
     Rectangle spinner = { bounds.x + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING), bounds.y, 
                           bounds.width - 2*(GuiGetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH) + GuiGetStyle(TEXTBOX, SPINNER_BUTTON_PADDING)), bounds.height };
@@ -1343,9 +1333,13 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     pressed = GuiValueBox(spinner, &tempValue, minValue, maxValue, editMode);
 
     // Draw value selector custom buttons
+    // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
+    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH));
-    int tempTextAlign = guiTextAlign;
-    guiTextAlign = GUI_TEXT_ALIGN_CENTER;   // Force center alignment
+    
+    int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+
 #if defined(RAYGUI_RICONS_SUPPORT)
     if (GuiButton(leftButtonBound, "#118#")) tempValue--;
     if (GuiButton(rightButtonBound, "#119#")) tempValue++;
@@ -1353,7 +1347,8 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
 #endif
-    guiTextAlign = tempTextAlign;
+
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     //--------------------------------------------------------------------
 
@@ -1466,7 +1461,7 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
     
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -1563,7 +1558,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
 
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -1766,7 +1761,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
     
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -1837,7 +1832,7 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     DrawRectangle(bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, (state != GUI_STATE_DISABLED) ?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
     DrawRectangleRec(slider, Fade(GetColor(GuiGetStyle(SLIDER, (state == GUI_STATE_NORMAL) ? BASE_COLOR_PRESSED : (BASE + (state*3)))), guiAlpha));
     
-    GuiDrawText(text, GetTextBounds(SLIDER, bounds), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(SLIDER, bounds), GuiGetStyle(SLIDER, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     
     // TODO: Review showValue parameter, really ugly...
     //if (showValue) GuiDrawText(TextFormat("%.02f", value), (Vector2){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING), bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING) }, Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
@@ -1896,7 +1891,7 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text)
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED) ? BORDER_COLOR_NORMAL : BORDER_COLOR_DISABLED)), guiAlpha));
     DrawRectangleRec((Rectangle){ bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2, bounds.height - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2 }, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED) ? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
     
-    GuiDrawText(text, bounds, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED) ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
+    GuiDrawText(text, bounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED) ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
     //--------------------------------------------------------------------
 }
 
@@ -1924,7 +1919,7 @@ RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     DrawRectangleRec(bounds, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED) ? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
     
-    GuiDrawText(text, GetTextBounds(DEFAULT, bounds), Fade(GetColor(GuiGetStyle(BUTTON, (state != GUI_STATE_DISABLED) ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
+    GuiDrawText(text, GetTextBounds(DEFAULT, bounds), GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(BUTTON, (state != GUI_STATE_DISABLED) ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
     //------------------------------------------------------------------
 }
 
@@ -2138,9 +2133,9 @@ static bool GuiListElement(Rectangle bounds, const char *text, bool active, bool
     }
     
     // Draw text depending on state
-    if (state == GUI_STATE_NORMAL) GuiDrawText(text, GetTextBounds(DEFAULT, bounds), Fade(GetColor(GuiGetStyle(LISTVIEW, active ? TEXT_COLOR_PRESSED : TEXT_COLOR_NORMAL)), guiAlpha));
-    else if (state == GUI_STATE_DISABLED) GuiDrawText(text, GetTextBounds(DEFAULT, bounds), Fade(GetColor(GuiGetStyle(LISTVIEW, active ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
-    else GuiDrawText(text, GetTextBounds(DEFAULT, bounds), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + state*3)), guiAlpha));
+    if (state == GUI_STATE_NORMAL) GuiDrawText(text, GetTextBounds(DEFAULT, bounds), GuiGetStyle(DEFAULT, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, active ? TEXT_COLOR_PRESSED : TEXT_COLOR_NORMAL)), guiAlpha));
+    else if (state == GUI_STATE_DISABLED) GuiDrawText(text, GetTextBounds(DEFAULT, bounds), GuiGetStyle(DEFAULT, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, active ? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
+    else GuiDrawText(text, GetTextBounds(DEFAULT, bounds), GuiGetStyle(DEFAULT, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + state*3)), guiAlpha));
     //--------------------------------------------------------------------
 
     return active;
@@ -2868,6 +2863,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(DEFAULT, INNER_PADDING, 2);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
     // Populate all controls with default style
     for (int i = 1; i < NUM_CONTROLS; i++)
@@ -2891,6 +2887,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COMBOBOX, SELECTOR_PADDING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING, 16);
     GuiSetStyle(TEXTBOX, INNER_PADDING, 4);
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(TEXTBOX, MULTILINE_PADDING, 5);
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH, 20);         // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property

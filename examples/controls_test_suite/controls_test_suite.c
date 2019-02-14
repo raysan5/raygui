@@ -28,7 +28,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "../../src/raygui.h"
 
-
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -37,7 +36,7 @@ int main()
     // Initialization
     //---------------------------------------------------------------------------------------
     int screenWidth = 690;
-    int screenHeight = 540;
+    int screenHeight = 560;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
 
@@ -118,31 +117,30 @@ int main()
             if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
-            GuiTextAlign(GUI_TEXT_ALIGN_LEFT);
-            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#001#SAMPLE TEXT")) { };
-            GuiTextAlign(GUI_TEXT_ALIGN_CENTER);
+            GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#04#SAMPLE TEXT")) { };
             
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "CONTROL STATES");
             GuiLock();
             GuiState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320, 115, 30 }, "NORMAL")) { }
             GuiState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355, 115, 30 }, "FOCUSED")) { }
-            GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "PRESSED")) { }
+            GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "#15#PRESSED")) { }
             GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
-            GuiState(GUI_STATE_NORMAL);            
+            GuiState(GUI_STATE_NORMAL);
             GuiUnlock();
             
             comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
-            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "ONE;TWO;THREE;FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
-            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;Squirtel;Pikachu;Eevee;Pidgey", &listViewActive, &listViewScrollIndex, listViewEditMode)) listViewEditMode = !listViewEditMode;
+            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewActive, &listViewScrollIndex, listViewEditMode)) listViewEditMode = !listViewEditMode;
             if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, listViewExElementsEnable, &listViewExActive, &listViewExFocus, &listViewExScrollIndex, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
-            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 390, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
+            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 385, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
             
-            toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "ONE\nTWO\nTHREE\nFOUR", toggleGroupActive);
+            toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
             
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
@@ -151,9 +149,11 @@ int main()
             sliderValue = GuiSlider((Rectangle){ 320, 400, 200, 20 }, NULL, sliderValue, -50, 100, true);
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
-            
+
             Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, &viewScroll);
             
+            GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar.");
+
             //GuiEnable();
             GuiUnlock();
             //----------------------------------------------------------------------------------
