@@ -593,6 +593,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
     
         Vector2 position = { bounds.x, bounds.y };
 
+        // NOTE: We get text size after icon been processed
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
         
@@ -769,16 +770,29 @@ RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text)
 // Line control
 RAYGUIDEF void GuiLine(Rectangle bounds, const char *text)
 {
-    #define LINE_THICK      1
+    #define LINE_THICK          1
+    #define LINE_TEXT_PADDING  10
+    #define LINE_TEXT_SPACING   2
     
     GuiControlState state = guiState;
+    
+    Color color = Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED) ? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha);
 
     // Draw control
     //--------------------------------------------------------------------
-    if (text == NULL) DrawRectangle(bounds.x, bounds.y, bounds.width, 1, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED) ? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
+    if (text == NULL) DrawRectangle(bounds.x, bounds.y, bounds.width, 1, color);
     else
     {
-        // TODO: Draw line with embedded text: "--- text --------------"
+        Rectangle textBounds = { 0 };
+        textBounds.width = GetTextWidth(text) + 2*LINE_TEXT_SPACING;      // TODO: Consider text icon
+        textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = bounds.x + LINE_TEXT_PADDING + LINE_TEXT_SPACING;
+        textBounds.y = bounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+    
+        // Draw line with embedded text label: "--- text --------------"
+        DrawRectangle(bounds.x, bounds.y, LINE_TEXT_PADDING, 1, color);
+        GuiLabel(textBounds, text);
+        DrawRectangle(bounds.x + textBounds.width + LINE_TEXT_PADDING + 2*LINE_TEXT_SPACING, bounds.y, bounds.width - (textBounds.width + LINE_TEXT_PADDING + 2*LINE_TEXT_SPACING), 1, color);
     }
     //--------------------------------------------------------------------
 }
@@ -1249,6 +1263,11 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
     // Draw control
     //--------------------------------------------------------------------
+    
+    // TODO: Review this ugly hack... DROPDOWNBOX depends on GiListElement() that uses DEFAULT_TEXT_ALIGNMENT
+    int tempTextAlign = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT));
+    
     switch (state)
     {
         case GUI_STATE_NORMAL:
@@ -1297,6 +1316,8 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
         } break;
         default: break;
     }
+    
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, tempTextAlign);
     
     DrawTriangle((Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING), bounds.y + bounds.height/2 - 2 },
              (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
@@ -1788,6 +1809,12 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
         slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
         slider.width = sliderValue;
     }
+    
+    Rectangle textBounds = { 0 };
+    textBounds.width = GetTextWidth(text);  // TODO: Consider text icon
+    textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
+    textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
     // Update control
     //--------------------------------------------------------------------
@@ -1832,7 +1859,7 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     DrawRectangle(bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, (state != GUI_STATE_DISABLED) ?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
     DrawRectangleRec(slider, Fade(GetColor(GuiGetStyle(SLIDER, (state == GUI_STATE_NORMAL) ? BASE_COLOR_PRESSED : (BASE + (state*3)))), guiAlpha));
     
-    GuiDrawText(text, GetTextBounds(SLIDER, bounds), GuiGetStyle(SLIDER, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, textBounds, GuiGetStyle(SLIDER, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     
     // TODO: Review showValue parameter, really ugly...
     //if (showValue) GuiDrawText(TextFormat("%.02f", value), (Vector2){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING), bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING) }, Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));

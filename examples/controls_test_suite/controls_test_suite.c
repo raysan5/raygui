@@ -120,7 +120,7 @@ int main()
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
             if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#04#SAMPLE TEXT")) { };
             
-            GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "CONTROL STATES");
+            GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "STATES");
             GuiLock();
             GuiState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320, 115, 30 }, "NORMAL")) { }
             GuiState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355, 115, 30 }, "FOCUSED")) { }
@@ -132,7 +132,9 @@ int main()
             comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
             
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
+            GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
             
             // Second GUI column      
@@ -146,7 +148,7 @@ int main()
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 141, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
             
-            sliderValue = GuiSlider((Rectangle){ 320, 400, 200, 20 }, NULL, sliderValue, -50, 100, true);
+            sliderValue = GuiSlider((Rectangle){ 370, 400, 200, 20 }, "#49#TEST", sliderValue, -50, 100, true);
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
 
