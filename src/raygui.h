@@ -2185,7 +2185,6 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 
     float barHeight = bounds.height;
     float minBarHeight = 10;
-    float barPosY = 0;
 
     // Update control
     //--------------------------------------------------------------------
@@ -2198,14 +2197,22 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
     }
 
     // Calculate position X and width to draw each element.
-    int posX = bounds.x + GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
-    int elementWidth = bounds.width - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) - 2*GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
-
-    if (!useScrollBar)
+    int posX = bounds.x + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
+    int elementWidth = bounds.width - 2*GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    
+    if (useScrollBar)
     {
-        posX = bounds.x + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
-        elementWidth = bounds.width - 2*GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
+        posX = GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE ? posX + GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) : posX;
+        elementWidth = bounds.width - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) - 2*GuiGetStyle(LISTVIEW, ELEMENTS_PADDING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
     }
+    
+    Rectangle scrollBarRect = { bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) };
+    
+    if(GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_RIGHT_SIDE)
+        scrollBarRect.x = posX + elementWidth + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
+        
+    // Area without the scrollbar
+    Rectangle viewArea = { posX, bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), elementWidth, bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) };
 
     if ((state != GUI_STATE_DISABLED) && !guiLocked) // && !guiLocked
     {
@@ -2237,14 +2244,17 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
                 pressedKey = true;
             }
 
-            if (useScrollBar && CheckCollisionPointRec(mousePoint, bounds))
+            if (useScrollBar)
             {
                 endIndex = startIndex + visibleElements;
-                int wheel = GetMouseWheelMove();
+                if(CheckCollisionPointRec(mousePoint, viewArea))
+                {
+                    int wheel = GetMouseWheelMove();
 
-                if (wheel < 0 && endIndex < count) startIndex -= wheel;
-                else if (wheel > 0 && startIndex > 0)  startIndex -= wheel;
-
+                    if (wheel < 0 && endIndex < count) startIndex -= wheel;
+                    else if (wheel > 0 && startIndex > 0)  startIndex -= wheel;
+                }
+                
                 if (pressedKey)
                 {
                     pressedKey = false;
@@ -2265,7 +2275,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 
         if (!editMode)
         {
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckCollisionPointRec(mousePoint, viewArea))
             {
                 state = GUI_STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
@@ -2283,7 +2293,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
         }
         else
         {
-            if (!CheckCollisionPointRec(mousePoint, bounds))
+            if (!CheckCollisionPointRec(mousePoint, viewArea))
             {
                 if (IsMouseButtonPressed(0) || (GetMouseWheelMove() != 0)) pressed = true;
             }
@@ -2299,6 +2309,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
         }
     }
 
+    const int slider = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE); // Save default slider size
     // Calculate percentage of visible elements and apply same percentage to scrollbar
     if (useScrollBar)
     {
@@ -2307,8 +2318,8 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 
         if (barHeight < minBarHeight) barHeight = minBarHeight;
         else if (barHeight > bounds.height) barHeight = bounds.height;
-
-        barPosY = bounds.y + startIndex*((bounds.height - barHeight)/(count - (endIndex - startIndex)));
+        
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, barHeight); // Change slider size
     }
     //--------------------------------------------------------------------
 
@@ -2319,8 +2330,29 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
     // Draw scrollBar
     if (useScrollBar) 
     {
-        DrawRectangle(bounds.x, bounds.y, GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), bounds.height, Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));
-        if (state != GUI_STATE_DISABLED) DrawRectangle(bounds.x, barPosY, GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), barHeight, Fade(GetColor(GuiGetStyle(SLIDER, BORDER_COLOR_NORMAL)), guiAlpha));
+        const int scrollSpeed = GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED); // Save default scroll speed
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, count - visibleElements); // Hack to make the spinner buttons work
+        
+        int index = scrollIndex != NULL ? *scrollIndex : startIndex;
+        index = GuiScrollBar(scrollBarRect, index, 0, count - visibleElements);
+        
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, scrollSpeed); // Reset scroll speed to default
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, slider); // Reset slider size to default
+        
+        // FIXME: Quick hack to make this thing work, think of a better way
+        if (scrollIndex != NULL && CheckCollisionPointRec(GetMousePosition(), scrollBarRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON)) 
+        {
+            startIndex = index;
+            if (startIndex < 0) startIndex = 0;
+            if (startIndex > (count - (endIndex - startIndex)))
+            {
+                startIndex = count - (endIndex - startIndex);
+            }
+
+            endIndex = startIndex + visibleElements;
+                
+            if (endIndex > count) endIndex = count;
+        }
     }
 
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha));
