@@ -107,8 +107,8 @@ typedef enum {
     RICON_TARGET_MOVE_FILL,
     RICON_CURSOR_MOVE_FILL,
     RICON_CURSOR_SCALE_FILL,
-    RICON_CURSOR_SCALE_RIGHT,
-    RICON_CURSOR_SCALE_LEFT,
+    RICON_CURSOR_SCALE_RIGHT_FILL,
+    RICON_CURSOR_SCALE_LEFT_FILL,
     RICON_UNDO_FILL,
     RICON_REDO_FILL,
     RICON_REREDO_FILL,
@@ -248,7 +248,7 @@ void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
 
 #include "raylib.h"         // Required for: Icons drawing function: DrawRectangle()
 
-static unsigned int RICONS[1536] = {
+static const unsigned int RICONS[1536] = {
     0x40008000, 0x10002000, 0x04000800, 0x01000200, 0x00400080, 0x00100020, 0x00040008, 0x00010002,     // RICON_NONE
     0x3ff80000, 0x2f082008, 0x2042207e, 0x40027fc2, 0x40024002, 0x40024002, 0x40024002, 0x00007ffe,     // RICON_FOLDER_FILE_OPEN
     0x3ffe0000, 0x44226422, 0x400247e2, 0x5ffa4002, 0x57ea500a, 0x500a500a, 0x40025ffa, 0x00007ffe,     // RICON_FILE_SAVE_CLASSIC
