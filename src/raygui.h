@@ -635,7 +635,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId > 0) 
         {
             // NOTE: We consider icon height, probably different than text size
-            DrawIcon(iconId, (Vector2){ position.x, position.y + (GuiGetStyle(DEFAULT, TEXT_SIZE) - RICONS_SIZE)/2 }, 1, tint);
+            DrawIcon(iconId, (Vector2){ position.x, bounds.y + bounds.height/2 - RICONS_SIZE/2 + VALIGN_OFFSET(bounds.height) }, 1, tint);
             position.x += (RICONS_SIZE + ICON_TEXT_PADDING);
         }
 #endif
@@ -816,6 +816,9 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
 {    
     GuiControlState state = guiState;
     
+    Vector2 scrollPos = { 0.0f, 0.0f };
+    if (scroll != NULL) scrollPos = *scroll;
+    
 	bool hasHorizontalScrollBar = (content.width > bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
 	bool hasVerticalScrollBar = (content.height > bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
     
@@ -857,23 +860,23 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
             
             if (hasHorizontalScrollBar)
             {
-				if (IsKeyDown(KEY_RIGHT)) scroll->x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_LEFT)) scroll->x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
             
             if (hasVerticalScrollBar)
             {
-                if (IsKeyDown(KEY_DOWN)) scroll->y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_UP)) scroll->y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+				if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
         }
     }
     
     // Normalize scroll values
-    if (scroll->x > -horizontalMin) scroll->x = -horizontalMin;
-    if (scroll->x < -horizontalMax) scroll->x = -horizontalMax;
-    if (scroll->y > -verticalMin) scroll->y = -verticalMin;
-    if (scroll->y < -verticalMax) scroll->y = -verticalMax;
+    if (scrollPos.x > -horizontalMin) scrollPos.x = -horizontalMin;
+    if (scrollPos.x < -horizontalMax) scrollPos.x = -horizontalMax;
+    if (scrollPos.y > -verticalMin) scrollPos.y = -verticalMin;
+    if (scrollPos.y < -verticalMax) scrollPos.y = -verticalMax;
     //--------------------------------------------------------------------
     
     // Draw control
@@ -888,7 +891,7 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     {
         // Change scrollbar slider size to show the diff in size between the content width and the widget width
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
-        scroll->x = -GuiScrollBar(horizontalScrollBar, -scroll->x, horizontalMin, horizontalMax);
+        scrollPos.x = -GuiScrollBar(horizontalScrollBar, -scrollPos.x, horizontalMin, horizontalMax);
     }
 	
     // Draw vertical scrollbar if visible
@@ -896,7 +899,7 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     {
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
-        scroll->y = -GuiScrollBar(verticalScrollBar, -scroll->y, verticalMin, verticalMax);
+        scrollPos.y = -GuiScrollBar(verticalScrollBar, -scrollPos.y, verticalMin, verticalMax);
     }
     
     // Set scrollbar slider size back to the way it was before
@@ -906,6 +909,8 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
+    if (scroll != NULL) *scroll = scrollPos;
+    
     return view;
 }
 
@@ -1862,7 +1867,9 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     GuiDrawText(text, textBounds, GuiGetStyle(SLIDER, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     
     // TODO: Review showValue parameter, really ugly...
-    //if (showValue) GuiDrawText(TextFormat("%.02f", value), (Vector2){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING), bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING) }, Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
+    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING), 
+                                         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING), 
+                                         GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SIZE) }, TextFormat("%.02f", value));
     //--------------------------------------------------------------------
 
     return value;
