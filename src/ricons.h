@@ -446,7 +446,7 @@ static const unsigned int RICONS[1536] = {
 void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
-    
+
     for (int i = 0, y = 0; i < RICONS_SIZE*RICONS_SIZE/32; i++)
     {
         for (int k = 0; k < 32; k++)
