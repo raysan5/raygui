@@ -717,32 +717,38 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, WINDOW_STATUSBAR_HEIGHT };
     if (bounds.height < WINDOW_STATUSBAR_HEIGHT*2) bounds.height = WINDOW_STATUSBAR_HEIGHT*2;
-
+    
+    Rectangle buttonRec = { statusBar.x + statusBar.width - GuiGetStyle(DEFAULT, BORDER_WIDTH) - WINDOW_CLOSE_BUTTON_PADDING - 20, 
+                            statusBar.y + GuiGetStyle(DEFAULT, BORDER_WIDTH) + WINDOW_CLOSE_BUTTON_PADDING, 18, 18 };
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        // Check button state
-        if (CheckCollisionPointRec(mousePoint, (Rectangle){ statusBar.x + statusBar.width - WINDOW_STATUSBAR_HEIGHT, statusBar.y, 20, statusBar.height }))
-        {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
-            else state = GUI_STATE_FOCUSED;
-        }
-    }
+    // NOTE: Logic is directly managed by button
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER + (state*3))), guiAlpha));
-    DrawRectangleRec((Rectangle){ bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.width - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2, bounds.height - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2 }, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
-    GuiStatusBar(statusBar, text);
-    DrawRectangleRec((Rectangle){ statusBar.x + statusBar.width - 27 + WINDOW_CLOSE_BUTTON_PADDING*2, statusBar.y + 1 + WINDOW_CLOSE_BUTTON_PADDING, 25 - WINDOW_CLOSE_BUTTON_PADDING*3, statusBar.height - 2 - WINDOW_CLOSE_BUTTON_PADDING*2}, Fade(GetColor(GuiGetStyle(DEFAULT, BASE + (state*3))), guiAlpha));
     
-    // TODO:
-    //GuiDrawText("x", (Vector2){ statusBar.x + statusBar.width - 16, statusBar.y + statusBar.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 }, Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
+    // Draw window base
+    DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER + (state*3))), guiAlpha));
+    DrawRectangleRec((Rectangle){ bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), 
+                                  bounds.width - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2, bounds.height - GuiGetStyle(DEFAULT, BORDER_WIDTH)*2 }, 
+                                  Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
+    
+    // Draw window header as status bar
+    GuiStatusBar(statusBar, text);
+    
+    // Draw window close button
+    int buttonBorder = GuiGetStyle(BUTTON, BORDER_WIDTH);
+    int buttonTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+#if defined(RAYGUI_RICONS_SUPPORT)
+    clicked = GuiButton(buttonRec, "#128#");
+#else
+    clicked = GuiButton(buttonRec, "x");
+#endif
+    GuiSetStyle(BUTTON, BORDER_WIDTH, buttonBorder);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, buttonTextAlignment);
     //--------------------------------------------------------------------
     
     return clicked;
@@ -1146,7 +1152,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                bounds.y + GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING),
                                bounds.width - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)),
                                bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)), 
-                               Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3))), guiAlpha));
+                               Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3)), guiAlpha));
 
     // NOTE: Forced left text alignment
     GuiDrawText(text, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
