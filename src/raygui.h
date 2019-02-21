@@ -1145,7 +1145,8 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
     if (checked) DrawRectangle(bounds.x + GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING),
                                bounds.y + GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING),
                                bounds.width - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)),
-                               bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)), Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + (state == GUI_STATE_NORMAL) ? (GUI_STATE_PRESSED*3) : (state*3))), guiAlpha));
+                               bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)), 
+                               Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3))), guiAlpha));
 
     // NOTE: Forced left text alignment
     GuiDrawText(text, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
