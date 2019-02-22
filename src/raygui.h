@@ -379,10 +379,10 @@ RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                 
 RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
 
 // Advance controls set
-RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);   // List View control, returns selected list element index
+RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);       // List View control, returns selected list element index
 RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int *enabled, int *active, int *focus, int *scrollIndex, bool editMode); // List View with extended parameters
+RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons);   // Message Box control, displays a message
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
-RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message);           // Message Box control, displays a message
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
 
 // Styles loading functions
@@ -2693,30 +2693,36 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 }
 
 // Message Box control
-RAYGUIDEF bool GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message)
+RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons)
 {
-    #define MESSAGEBOX_BUTTON_HEIGHT            26
+    #define MESSAGEBOX_BUTTON_HEIGHT            24
     #define MESSAGEBOX_BUTTON_PADDING           10
-    #define MESSAGEBOX_STATUSBAR_BUTTON_SIZE    16
-    #define MESSAGEBOX_STATUSBAR_HEIGHT         24
 
-    bool clicked = false;
+    int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
+    
+    int buttonsCount = 0;
+    const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
 
     Vector2 textSize = MeasureTextEx(GetFontDefault(), message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
+    Rectangle textBounds = { bounds.x + bounds.width/2 - textSize.x/2, bounds.y + bounds.height/2 - textSize.y/2 + 12, textSize.x, textSize.y };
 
-    if (bounds.height < (MESSAGEBOX_BUTTON_HEIGHT + MESSAGEBOX_BUTTON_PADDING*2 + MESSAGEBOX_STATUSBAR_HEIGHT + MESSAGEBOX_STATUSBAR_BUTTON_SIZE + textSize.y))
-    {
-        bounds.height = (MESSAGEBOX_BUTTON_HEIGHT + MESSAGEBOX_BUTTON_PADDING*2 + MESSAGEBOX_STATUSBAR_HEIGHT + MESSAGEBOX_STATUSBAR_BUTTON_SIZE + textSize.y);
-    }
-
-    Rectangle buttonBounds = { bounds.x + MESSAGEBOX_BUTTON_PADDING, bounds.y + bounds.height - MESSAGEBOX_BUTTON_PADDING - MESSAGEBOX_BUTTON_HEIGHT, bounds.width - MESSAGEBOX_BUTTON_PADDING*2, MESSAGEBOX_BUTTON_HEIGHT };
+    Rectangle buttonBounds = { bounds.x + MESSAGEBOX_BUTTON_PADDING, bounds.y + bounds.height/2 - MESSAGEBOX_BUTTON_PADDING - MESSAGEBOX_BUTTON_HEIGHT, bounds.width - MESSAGEBOX_BUTTON_PADDING*2, MESSAGEBOX_BUTTON_HEIGHT };
 
     // Draw control
     //--------------------------------------------------------------------
-    clicked = GuiWindowBox(bounds, windowTitle);
-    GuiLabel((Rectangle){ bounds.x + bounds.width/2 - textSize.x/2, bounds.y + (MESSAGEBOX_STATUSBAR_HEIGHT - MESSAGEBOX_BUTTON_HEIGHT - MESSAGEBOX_BUTTON_PADDING)/2 + bounds.height/2 - textSize.y/2, 0, 0 }, message);
+    if (GuiWindowBox(bounds, windowTitle)) clicked = 0;
+    
+    int prevTextAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
+    GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    GuiLabel(textBounds, message);
+    GuiSetStyle(LABEL, TEXT_ALIGNMENT, prevTextAlignment);
 
-    clicked = GuiButton(buttonBounds, "OK");
+    for (int i = 0; i < buttonsCount; i++)
+    {
+        //buttonBounds.x = 
+        
+        if (GuiButton(buttonBounds, buttonsText[i]) clicked = i + 1;
+    }
     //--------------------------------------------------------------------
 
     return clicked;
