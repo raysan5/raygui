@@ -735,7 +735,10 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
                                   Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
 
     // Draw window header as status bar
+    int defaultPadding = GuiGetStyle(DEFAULT, GROUP_PADDING);
+    GuiSetStyle(DEFAULT, INNER_PADDING, 8);
     GuiStatusBar(statusBar, text);
+    GuiSetStyle(DEFAULT, INNER_PADDING, defaultPadding);
 
     // Draw window close button
     int buttonBorder = GuiGetStyle(BUTTON, BORDER_WIDTH);
@@ -825,8 +828,8 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     Vector2 scrollPos = { 0.0f, 0.0f };
     if (scroll != NULL) scrollPos = *scroll;
 
-	bool hasHorizontalScrollBar = (content.width > bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
-	bool hasVerticalScrollBar = (content.height > bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
+    bool hasHorizontalScrollBar = (content.width > bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
+    bool hasVerticalScrollBar = (content.height > bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)) ? true : false;
 
     // Recheck to account for the other scrollbar being visible
     if (!hasHorizontalScrollBar) hasHorizontalScrollBar = (hasVerticalScrollBar && (content.width > (bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH)))) ? true : false;
@@ -866,14 +869,14 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
 
             if (hasHorizontalScrollBar)
             {
-				if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
 
             if (hasVerticalScrollBar)
             {
                 if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-				if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
         }
     }
@@ -899,9 +902,9 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
         scrollPos.x = -GuiScrollBar(horizontalScrollBar, -scrollPos.x, horizontalMin, horizontalMax);
     }
-	
+    
     // Draw vertical scrollbar if visible
-	if (hasVerticalScrollBar)
+    if (hasVerticalScrollBar)
     {
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
@@ -1607,7 +1610,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
 
     bool textHasChange = false;
     int currentLine = 0;
-    const char *numChars = "";
+    //const char *numChars = NULL;
 
     // Security check because font is used directly in this control
     if (guiFont.texture.id == 0) guiFont = GetFontDefault();
@@ -1628,7 +1631,7 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
             int maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, INNER_PADDING)*2));
             int maxHeight = (bounds.height - (GuiGetStyle(TEXTBOX, INNER_PADDING)*2));
 
-            numChars = TextFormat("%i/%i", keyCount, textSize - 1);
+            //numChars = TextFormat("%i/%i", keyCount, textSize - 1);
 
             // Only allow keys in range [32..125]
             if (keyCount < (textSize - 1))
