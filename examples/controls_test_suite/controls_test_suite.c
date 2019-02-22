@@ -103,7 +103,7 @@ int main()
         //----------------------------------------------------------------------------------
         exitWindow = WindowShouldClose();
         
-        if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = true;
+        if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = !showMessageBox;
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -169,7 +169,7 @@ int main()
             
             if (showMessageBox)
             {
-                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.7f));
+                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
                 int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "Closing rTexPacker", "Do you really want to exit?", "Yes;No"); 
             
                 if ((message == 0) || (message == 2)) showMessageBox = false;
