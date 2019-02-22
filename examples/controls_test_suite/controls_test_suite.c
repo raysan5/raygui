@@ -39,6 +39,7 @@ int main()
     int screenHeight = 560;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
+    SetExitKey(0);
 
     // GUI controls initialization
     //----------------------------------------------------------------------------------
@@ -88,16 +89,21 @@ int main()
     // Custom GUI font loading
     //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
     //GuiFont(font);
+    
+    bool exitWindow = false;
+    bool showMessageBox = false;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!exitWindow)    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
-        // TODO: Implement required update logic
+        exitWindow = WindowShouldClose();
+        
+        if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = true;
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -160,6 +166,15 @@ int main()
             GuiSetStyle(DEFAULT, INNER_PADDING, 10);
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar");
             GuiSetStyle(DEFAULT, INNER_PADDING, 2);
+            
+            if (showMessageBox)
+            {
+                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.7f));
+                int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, "Closing rTexPacker", "Do you really want to exit?", "Yes;No"); 
+            
+                if ((message == 0) || (message == 2)) showMessageBox = false;
+                else if (message == 1) exitWindow = true;
+            }
 
             //GuiEnable();
             GuiUnlock();

@@ -2704,9 +2704,18 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
 
     Vector2 textSize = MeasureTextEx(GetFontDefault(), message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
-    Rectangle textBounds = { bounds.x + bounds.width/2 - textSize.x/2, bounds.y + bounds.height/2 - textSize.y/2 + 12, textSize.x, textSize.y };
+    
+    Rectangle textBounds = { 0 };
+    textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
+    textBounds.y = bounds.y + WINDOW_STATUSBAR_HEIGHT + (bounds.height - WINDOW_STATUSBAR_HEIGHT)/4 - textSize.y/2;
+    textBounds.width = textSize.x;
+    textBounds.height = textSize.y;
 
-    Rectangle buttonBounds = { bounds.x + MESSAGEBOX_BUTTON_PADDING, bounds.y + bounds.height/2 - MESSAGEBOX_BUTTON_PADDING - MESSAGEBOX_BUTTON_HEIGHT, bounds.width - MESSAGEBOX_BUTTON_PADDING*2, MESSAGEBOX_BUTTON_HEIGHT };
+    Rectangle buttonBounds = { 0 };
+    buttonBounds.x = bounds.x + MESSAGEBOX_BUTTON_PADDING;
+    buttonBounds.y = bounds.y + bounds.height/2 + bounds.height/4 - MESSAGEBOX_BUTTON_HEIGHT/2;
+    buttonBounds.width = (bounds.width - MESSAGEBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
+    buttonBounds.height = MESSAGEBOX_BUTTON_HEIGHT;
 
     // Draw control
     //--------------------------------------------------------------------
@@ -2717,12 +2726,16 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     GuiLabel(textBounds, message);
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, prevTextAlignment);
 
+    prevTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    
     for (int i = 0; i < buttonsCount; i++)
     {
-        //buttonBounds.x = 
-        
-        if (GuiButton(buttonBounds, buttonsText[i]) clicked = i + 1;
+        if (GuiButton(buttonBounds, buttonsText[i])) clicked = i + 1;
+        buttonBounds.x += (buttonBounds.width + MESSAGEBOX_BUTTON_PADDING);
     }
+    
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, prevTextAlignment);
     //--------------------------------------------------------------------
 
     return clicked;
