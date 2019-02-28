@@ -1907,9 +1907,10 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     GuiDrawText(text, textBounds, GuiGetStyle(SLIDER, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
 
     // TODO: Review showValue parameter, really ugly...
-    if (showValue) GuiLabel((Rectangle){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING),
-                                         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING),
-                                         GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SIZE) }, TextFormat("%.02f", value));
+    if (showValue) GuiDrawText(TextFormat("%.02f", value), (Rectangle){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING),
+                               bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING),
+                               GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SIZE) }, GUI_TEXT_ALIGN_LEFT, 
+                               Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return value;
@@ -2271,8 +2272,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 
     Rectangle scrollBarRect = { bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH), bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) };
 
-    if(GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_RIGHT_SIDE)
-        scrollBarRect.x = posX + elementWidth + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
+    if (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_RIGHT_SIDE) scrollBarRect.x = posX + elementWidth + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING);
 
     // Area without the scrollbar
     Rectangle viewArea = { posX, bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), elementWidth, bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) };
@@ -2310,7 +2310,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
             if (useScrollBar)
             {
                 endIndex = startIndex + visibleElements;
-                if(CheckCollisionPointRec(mousePoint, viewArea))
+                if (CheckCollisionPointRec(mousePoint, viewArea))
                 {
                     int wheel = GetMouseWheelMove();
 
@@ -2373,6 +2373,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
     }
 
     const int slider = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE); // Save default slider size
+    
     // Calculate percentage of visible elements and apply same percentage to scrollbar
     if (useScrollBar)
     {
@@ -2388,13 +2389,13 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleRec(bounds, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
+    DrawRectangleRec(bounds, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));     // Draw background
 
     // Draw scrollBar
     if (useScrollBar)
     {
-        const int scrollSpeed = GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED); // Save default scroll speed
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, count - visibleElements); // Hack to make the spinner buttons work
+        const int scrollSpeed = GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);     // Save default scroll speed
+        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, count - visibleElements);    // Hack to make the spinner buttons work
 
         int index = scrollIndex != NULL? *scrollIndex : startIndex;
         index = GuiScrollBar(scrollBarRect, index, 0, count - visibleElements);
