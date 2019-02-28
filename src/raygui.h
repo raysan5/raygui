@@ -183,6 +183,12 @@
         int width;
         int height;
     } Rectangle;
+    
+    // Texture2D type
+    typedef struct Texture2D { } Texture2D;
+    
+    // Font type
+    typedef struct Font { } Font;
 #endif
 
 // Gui global state enum
@@ -409,6 +415,10 @@ RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #if defined(RAYGUI_RICONS_SUPPORT)
+    #if defined(RAYGUI_STANDALONE)
+        #define RICONS_STANDALONE
+    #endif
+    
     #define RICONS_IMPLEMENTATION
     #include "ricons.h"     // Required for: raygui icons
 #endif
@@ -449,6 +459,9 @@ static bool guiStyleLoaded = false;
 
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
+//
+// NOTE: raygui depend on some raylib input and drawing functions
+// To use raygui as standalone library, below functions must be defined by the user
 //----------------------------------------------------------------------------------
 #if defined(RAYGUI_STANDALONE)
 
@@ -457,6 +470,7 @@ static bool guiStyleLoaded = false;
 #define KEY_DOWN            264
 #define KEY_UP              265
 #define KEY_BACKSPACE       259
+#define KEY_ENTER           257
 #define MOUSE_LEFT_BUTTON     0
 
 #ifdef __cplusplus
@@ -468,39 +482,55 @@ static bool guiStyleLoaded = false;
 #define WHITE      CLITERAL{ 255, 255, 255, 255 }   // White
 #define BLACK      CLITERAL{ 0, 0, 0, 255 }         // Black
 #define RAYWHITE   CLITERAL{ 245, 245, 245, 255 }   // My own White (raylib logo)
+#define GRAY       CLITERAL{ 130, 130, 130, 255 }   // Gray -- GuiColorBarAlpha()
 
-// This functions are directly implemented in raygui
+// raylib functions are already implemented in raygui
+//-------------------------------------------------------------------------------
 static Color GetColor(int hexValue);                // Returns a Color struct from hexadecimal value
 static int ColorToInt(Color color);                 // Returns hexadecimal value for a Color
 static Color Fade(Color color, float alpha);        // Color fade-in or fade-out, alpha goes from 0.0f to 1.0f
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if point is inside rectangle
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
+//-------------------------------------------------------------------------------
 
-// raygui depend on some raylib input and drawing functions
-// NOTE: To use raygui as standalone library, below functions must be defined by the user
-
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) { }    // Measure string size for Font
-static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint) { 0 } // Draw text using font and additional parameters
-
-static void DrawRectangle(int x, int y, int width, int height, Color color) { /* TODO */ }
-static void DrawRectangleRec(Rectangle rec, Color color) { DrawRectangle(rec.x, rec.y, rec.width, rec.height, color); }
-
-// Input related functions
+// Input required functions
+//-------------------------------------------------------------------------------
 static Vector2 GetMousePosition(void) { return (Vector2){ 0, 0 }; }
+static int GetMouseWheelMove(void) { return 0; }
 static bool IsMouseButtonDown(int button);
+static bool IsMouseButtonPressed(int button);
 static bool IsMouseButtonReleased(int button);
 
 static int GetKeyPressed(void);                     // -- GuiTextBox()
 static bool IsKeyPressed(int key);                  // -- GuiTextBox()
 static bool IsKeyDown(int key);                     // -- GuiTextBox()
+//-------------------------------------------------------------------------------
 
-// Control specific functions
-static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }            // -- GuiColorPicker()
-static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2); // -- GuiColorPicker()
-static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2); // -- GuiColorPicker()
-static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);        // -- GuiColorPicker()
+// Drawing required functions
+//-------------------------------------------------------------------------------
+static void DrawRectangle(int x, int y, int width, int height, Color color) { /* TODO */ }
+static void DrawRectangleRec(Rectangle rec, Color color) { DrawRectangle(rec.x, rec.y, rec.width, rec.height, color); }
 
-static void DrawTextureRec(Texture2D texture, int posX, int posY, Color tint);  // -- GuiImageButtonEx()
+static void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color) { /* TODO */ }
+
+static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }             // -- GuiColorPicker()
+static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // -- GuiColorPicker()
+static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);  // -- GuiColorPicker()
+static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);         // -- GuiColorPicker()
+
+static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color) { /* TODO */ }                    // -- GuiDropdownBox()
+static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color) { /* TODO */ }           // -- GuiScrollBar()
+
+static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 position, Color tint) { }        // -- GuiImageButtonEx()
+//-------------------------------------------------------------------------------
+
+// Text required functions
+//-------------------------------------------------------------------------------
+static Font GetFontDefault(void);   // --  GetTextWidth()
+
+static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) { return (Vector2){ 0.0f }; }  // Measure text size depending on font
+static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint) {  }   // Draw text using font and additional parameters
+//-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
 
@@ -566,7 +596,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
         }
 
         iconValue[3] = '\0';
-        *iconId = TextToInteger(iconValue);    // Custom implementation, returns -1 in case conversion fails!
+        *iconId = atoi(iconValue);
 
         // Move text pointer after icon
         // WARNING: If only icon provided, it could point to EOL character!
@@ -2703,7 +2733,7 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     int buttonsCount = 0;
     const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
 
-    Vector2 textSize = MeasureTextEx(GetFontDefault(), message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
+    Vector2 textSize = MeasureTextEx(guiFont, message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
     
     Rectangle textBounds = { 0 };
     textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
@@ -2828,6 +2858,10 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 }
             }
 
+            // Font loading is highly dependant on raylib API to load font data and image
+            // TODO: Find some mechanism to support it in standalone mode
+            
+#if !defined(RAYGUI_STANDALONE)
             // Load custom font if available
             int fontDataSize = 0;
             fwrite(&fontDataSize, 1, sizeof(int), rgsFile);
@@ -2879,9 +2913,9 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 // NOTE: This way, all gui can be draw using a single draw call
                 if ((whiteRec.width != 0) && (whiteRec.height != 0)) SetShapesTexture(font.texture, whiteRec);
             }
+#endif
         }
-        else TraceLog(LOG_WARNING, "[raygui] Invalid style properties file");
-
+        
         fclose(rgsFile);
     }
 }

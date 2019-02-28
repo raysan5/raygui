@@ -2,6 +2,16 @@
 *
 *   rIcons - Icons pack intended for tools development with raygui
 *
+*   CONFIGURATION:
+*
+*   #define RICONS_IMPLEMENTATION
+*       Generates the implementation of the library into the included file.
+*       If not defined, the library is in header only mode and can be included in other headers
+*       or source files without problems. But only ONE file should hold the implementation.
+*
+*   #define RICONS_STANDALONE
+*       Avoid raylib.h header inclusion in this file. Icon drawing function must be provided by
+*       the user (check library implementation for further details).
 *
 *   LICENSE: zlib/libpng
 *
@@ -246,7 +256,9 @@ void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
 
 #if defined(RICONS_IMPLEMENTATION)
 
-#include "raylib.h"         // Required for: Icons drawing function: DrawRectangle()
+#if !defined(RICONS_STANDALONE)
+    #include "raylib.h"         // Required for: Icons drawing function: DrawRectangle()
+#endif
 
 static const unsigned int RICONS[1536] = {
     0x40008000, 0x10002000, 0x04000800, 0x01000200, 0x00400080, 0x00100020, 0x00040008, 0x00010002,     // RICON_NONE
@@ -451,7 +463,13 @@ void DrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(RICONS[8*iconId + i], k)) DrawRectangle(position.x + (k%RICONS_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
+            if (BIT_CHECK(RICONS[8*iconId + i], k)) 
+            {
+            #if !defined(RICONS_STANDALONE)
+                DrawRectangle(position.x + (k%RICONS_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
+            #endif
+            }
+            
             if ((k == 15) || (k == 31)) y++;
         }
     }
