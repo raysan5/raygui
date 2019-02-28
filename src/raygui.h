@@ -497,13 +497,13 @@ static const char *TextFormat(const char *text, ...);               // Formattin
 //-------------------------------------------------------------------------------
 static Vector2 GetMousePosition(void) { return (Vector2){ 0, 0 }; }
 static int GetMouseWheelMove(void) { return 0; }
-static bool IsMouseButtonDown(int button);
-static bool IsMouseButtonPressed(int button);
-static bool IsMouseButtonReleased(int button);
+static bool IsMouseButtonDown(int button) { return false; }
+static bool IsMouseButtonPressed(int button) { return false; }
+static bool IsMouseButtonReleased(int button) { return false; }
 
-static int GetKeyPressed(void);                     // -- GuiTextBox()
-static bool IsKeyPressed(int key);                  // -- GuiTextBox()
-static bool IsKeyDown(int key);                     // -- GuiTextBox()
+static bool IsKeyDown(int key) { return false; }
+static bool IsKeyPressed(int key) { return false; }
+static int GetKeyPressed(void) { return 0; }                     // -- GuiTextBox()
 //-------------------------------------------------------------------------------
 
 // Drawing required functions
