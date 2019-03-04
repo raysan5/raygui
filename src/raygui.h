@@ -766,9 +766,12 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 
     // Draw window header as status bar
     int defaultPadding = GuiGetStyle(DEFAULT, GROUP_PADDING);
+    int defaultTextAlign = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT);
     GuiSetStyle(DEFAULT, INNER_PADDING, 8);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiStatusBar(statusBar, text);
     GuiSetStyle(DEFAULT, INNER_PADDING, defaultPadding);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, defaultTextAlign);
 
     // Draw window close button
     int buttonBorder = GuiGetStyle(BUTTON, BORDER_WIDTH);
@@ -908,6 +911,8 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
                 if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
                 if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
             }
+            
+            scrollPos.y += GetMouseWheelMove()*20;
         }
     }
 
