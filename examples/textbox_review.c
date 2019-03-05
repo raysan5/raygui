@@ -237,13 +237,13 @@ void DrawGui()
 int main(int argc, char **argv)
 {
     InitWindow(screenWidth, screenHeight, "raygui textbox test");
-	SetTargetFPS(60);
-	GuiLoadStyleDefault();
+    SetTargetFPS(60);
+    GuiLoadStyleDefault();
     
     // Generate a checked pattern used by the color buttons
-	Image timg = GenImageChecked(26,26,5,5,RAYWHITE,DARKGRAY);
-	pattern = LoadTextureFromImage(timg);
-	UnloadImage(timg);
+    Image timg = GenImageChecked(26,26,5,5,RAYWHITE,DARKGRAY);
+    pattern = LoadTextureFromImage(timg);
+    UnloadImage(timg);
     
     // Set initial style
     fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
@@ -254,18 +254,18 @@ int main(int argc, char **argv)
     BG = GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG));
     clr = &BG;
     
-	while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-		BeginDrawing();
+	BeginDrawing();
 		
-		ClearBackground(RAYWHITE);
-		DrawGui();
+	ClearBackground(RAYWHITE);
+	DrawGui();
 		
-		EndDrawing();
-	}
+	EndDrawing();
+    }
 
-	CloseWindow();
-	return 0;
+    CloseWindow();
+    return 0;
 }
 
 // Draw a color button, if clicked return true.
