@@ -280,7 +280,9 @@ typedef enum {
     MULTILINE_PADDING = 16,
     SPINNER_BUTTON_WIDTH,
     SPINNER_BUTTON_PADDING,
-    SPINNER_BUTTON_BORDER_WIDTH
+    SPINNER_BUTTON_BORDER_WIDTH,
+    COLOR_SELECTED_FG,
+    COLOR_SELECTED_BG
 } GuiTextBoxProperty;
 
 // CheckBox
@@ -373,9 +375,9 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active);   
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
-RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int *cursor, int *selection, int *textStart, bool editMode);     // Spinner control, returns selected value
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, int *cursor, int *selection, int *textStart, bool editMode);    // Value Box control, updates input text with numbers
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, int *cursor, int *selection, int *textStart, bool editMode);  // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);       // Slider control, returns selected value
 RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *text, float value, float minValue, float maxValue, bool showValue);    // Slider Bar control, returns selected value
@@ -390,6 +392,12 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons);   // Message Box control, displays a message
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
+
+// Helper functions for textbox, spinner and valuebox
+RAYGUIDEF void GuiTextBoxCopy(char *text, int *cursor, int *selection); // Same as pressing `CTRL` + `C` in a textbox
+RAYGUIDEF void GuiTextBoxSelectAll(char *text, int *cursor, int *selection);    // Same as pressing `CTRL` + `A` in a textbox
+RAYGUIDEF void GuiTextBoxCut(char *text, int *cursor, int *selection, int *textStart);  // Same as pressing `CTRL` + `X` in a textbox
+RAYGUIDEF void GuiTextBoxPaste(char *text, int *cursor, int *selection, int *textStart, int textSize);    // Same as pressing `CTRL` + `V` in a textbox
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
@@ -1380,7 +1388,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
 // Spinner control, returns selected value
 // NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, int *cursor, int *selection, int *textStart, bool editMode)
 {
     bool pressed = false;
     int tempValue = *value;
@@ -1401,7 +1409,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 
     // Draw control
     //--------------------------------------------------------------------
-    pressed = GuiValueBox(spinner, &tempValue, minValue, maxValue, editMode);
+    pressed = GuiValueBox(spinner, &tempValue, minValue, maxValue, cursor, selection, textStart, editMode);
 
     // Draw value selector custom buttons
     // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
@@ -1412,11 +1420,11 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
 #if defined(RAYGUI_RICONS_SUPPORT)
-    if (GuiButton(leftButtonBound, "#118#")) tempValue--;
-    if (GuiButton(rightButtonBound, "#119#")) tempValue++;
+    if (GuiButton(leftButtonBound, "#118#") && editMode && tempValue > minValue) tempValue--;
+    if (GuiButton(rightButtonBound, "#119#") && editMode && tempValue < maxValue) tempValue++;
 #else
-    if (GuiButton(leftButtonBound, "<")) tempValue--;
-    if (GuiButton(rightButtonBound, ">")) tempValue++;
+    if (GuiButton(leftButtonBound, "<") && editMode && tempValue > minValue) tempValue--;
+    if (GuiButton(rightButtonBound, ">") && editMode && tempValue < maxValue) tempValue++;
 #endif
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
@@ -1428,210 +1436,785 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 }
 
 // Value Box control, updates input text with numbers
-// NOTE: Requires static variables: framesCounter
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, int *cursor, int *selection, int *textStart, bool editMode)
 {
     #define VALUEBOX_MAX_CHARS          32
-
-    static int framesCounter = 0;           // Required for blinking cursor
-
-    GuiControlState state = guiState;
-    bool pressed = false;
-
+    
     char text[VALUEBOX_MAX_CHARS + 1] = "\0";
     sprintf(text, "%i", *value);
 
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        bool valueHasChanged = false;
-
-        if (editMode)
-        {
-            state = GUI_STATE_PRESSED;
-
-            framesCounter++;
-
-            int keyCount = strlen(text);
-
-            // Only allow keys in range [48..57]
-            if (keyCount < VALUEBOX_MAX_CHARS)
-            {
-                int maxWidth = (bounds.width - (GuiGetStyle(DEFAULT, INNER_PADDING)*2));
-                if (GetTextWidth(text) < maxWidth)
-                {
-                    int key = GetKeyPressed();
-                    if ((key >= 48) && (key <= 57))
-                    {
-                        text[keyCount] = (char)key;
-                        keyCount++;
-                        valueHasChanged = true;
-                    }
-                }
-            }
-
-            // Delete text
-            if (keyCount > 0)
-            {
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    keyCount--;
-                    text[keyCount] = '\0';
-                    framesCounter = 0;
-                    if (keyCount < 0) keyCount = 0;
-                    valueHasChanged = true;
-                }
-                else if (IsKeyDown(KEY_BACKSPACE))
-                {
-                    if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                    text[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
-                    valueHasChanged = true;
-                }
-            }
-
-            if (valueHasChanged) *value = atoi(text);
-        }
-        else
-        {
-            if (*value > maxValue) *value = maxValue;
-            else if (*value < minValue) *value = minValue;
-        }
-
-        if (!editMode)
-        {
-            if (CheckCollisionPointRec(mousePoint, bounds))
-            {
-                state = GUI_STATE_FOCUSED;
-                if (IsMouseButtonPressed(0)) pressed = true;
-            }
-        }
-        else
-        {
-            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
-        }
-
-        if (pressed) framesCounter = 0;
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
-
-    if (state == GUI_STATE_PRESSED)
-    {
-        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
-        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 2, bounds.y + GuiGetStyle(TEXTBOX, INNER_PADDING), 1, bounds.height - GuiGetStyle(TEXTBOX, INNER_PADDING)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_FOCUSED)), guiAlpha));
-    }
-    else if (state == GUI_STATE_DISABLED)
-    {
-        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
-    }
-
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-    //--------------------------------------------------------------------
+    bool pressed = GuiTextBox(bounds, text, VALUEBOX_MAX_CHARS, cursor, selection, textStart, editMode);
+    *value = atoi(text);
+    
+    if (*value > maxValue) *value = maxValue;
+    else if (*value < minValue) *value = minValue;
 
     return pressed;
 }
 
+// FIXME: Ideally this should have full UTF8 support
+static int GuiTextCodepoint(const char* text, int length, int* cpSize) 
+{
+    int c = (unsigned char)(text[0]);
+    *cpSize = 1;
+    if ((unsigned char)text[0] == 0xc2) // UTF-8 encoding identification HACK!
+    {
+        // Support UTF-8 encoded values from [0xc2 0x80] -> [0xc2 0xbf](¿)
+        c = (unsigned char)text[1];
+        *cpSize = 2;
+    }
+    else if ((unsigned char)text[0] == 0xc3)    // UTF-8 encoding identification HACK!
+    {
+        // Support UTF-8 encoded values from [0xc3 0x80](À) -> [0xc3 0xbf](ÿ)
+        c = (unsigned char)text[1];
+        c = c + 64;
+        *cpSize = 2;
+    }
+    return c;
+}
+
+// Required by GuiTextBox()
+// Highly synchronized with calculations in DrawTextRecEx()
+static Vector2 GuiMeasureTextRec(const char *text, int length, Rectangle rec, bool wordWrap, int *pos, int mode)
+{
+    // Font properties for the GUI
+    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
+    const Font font = guiFont;
+    const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
+    const float spacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
+    
+    int textOffsetX = 0;        // Offset between characters
+    int textOffsetY = 0;        // Required for line break!
+    float scaleFactor = 0.0f;
+
+    int letter = 0;   // Current character
+    int index = 0;    // Index position in sprite font
+
+    scaleFactor = fontSize/font.baseSize;
+
+    enum { MEASURE_STATE = 0, CHECK_COLLISION_STATE = 1 };
+    int state = wordWrap ? MEASURE_STATE : CHECK_COLLISION_STATE;
+    int startLine = -1, endLine = -1;
+    
+    const int NL = 0xA, SPACE = 0x20, TAB = 0x9;
+    
+    for (int i = 0; i < length; i++)
+    {
+        int glyphWidth = 0;
+        letter = (unsigned char)(text[i]);
+        
+        int cpSize = 1;
+        if (letter != NL)
+        {
+            letter = GuiTextCodepoint(&text[i], length - i, &cpSize);
+            index = GetGlyphIndex(font, letter);
+            i += cpSize - 1;
+
+            glyphWidth = (font.chars[index].advanceX == 0)? 
+                            (int)(font.chars[index].rec.width*scaleFactor + spacing):
+                            (int)(font.chars[index].advanceX*scaleFactor + spacing);
+        }
+        
+        if (state == MEASURE_STATE) 
+        {
+			if((letter == SPACE) || (letter == TAB) || (letter == NL)) endLine = i;
+			
+			if(textOffsetX + glyphWidth + 1 >= rec.width) 
+            {
+				endLine = (endLine < 1) ? i : endLine;
+				if(i == endLine) endLine -= cpSize;
+				if(startLine + cpSize == endLine ) endLine = cpSize - 1;
+                state = !state;
+			} 
+            else if(i + 1 == length) 
+            {
+				endLine = i;
+				state = !state;
+			} 
+            else if(letter == NL) 
+            {
+                state = !state;
+			}
+			
+			if(state == CHECK_COLLISION_STATE) 
+            {
+				textOffsetX = 0;
+				i=startLine;
+				glyphWidth = 0;
+			}
+
+        } 
+        else 
+        {
+            if (letter == NL)
+            {
+				if(!wordWrap)
+                {
+                    if(mode < 3)
+                    {
+                        // Single line only...Return the cursor coordinates and index now!
+                        *pos = i;
+                        return (Vector2){rec.x + textOffsetX - 1, rec.y + textOffsetY};
+                    }
+                    else
+                    {
+                        textOffsetY += (int)((font.baseSize + font.baseSize/2)*scaleFactor);
+                        textOffsetX = 0;
+                    }
+				}
+			} 
+			else 
+			{
+				if(!wordWrap && textOffsetX + glyphWidth + 1 >= rec.width)
+                {
+                    if(mode < 3)
+                    {
+                        // Single line only...Return the cursor coordinates and index now!
+                        *pos = i;
+                        Vector2 res = {rec.x + textOffsetX - 1, rec.y + textOffsetY};
+                        if(mode == 1) res.x += glyphWidth + 1;
+                        return res;
+                    }
+                    else
+                    {
+                        textOffsetY += (int)((font.baseSize + font.baseSize/2)*scaleFactor);
+                        textOffsetX = 0;
+                    }
+				}
+				
+				if ((textOffsetY + (int)(font.baseSize*scaleFactor)) > rec.height) 
+                {
+                    *pos = i;
+                    return (Vector2){rec.x + textOffsetX - 1, rec.y + textOffsetY};
+                }
+				
+                if(mode == 0)
+                {
+                    // Check if the mouse pointer is inside the glyph rect and return the glyph position and cursor coordinates
+                    Rectangle grec = {rec.x + textOffsetX - 1, rec.y + textOffsetY, glyphWidth, (font.baseSize + font.baseSize/2)*scaleFactor - 1};
+                    if(CheckCollisionPointRec(GetMousePosition(), grec))
+                    {
+                        *pos = i;
+                        return (Vector2){rec.x + textOffsetX - 1, rec.y + textOffsetY};
+                    }
+                }
+                else if (mode == 1 || mode == 2)
+                {
+                    // Stop once we reach the glyph position we want and return the text size(mode 1) or caret coordinates(mode 2)
+                    Vector2 res = {rec.x + textOffsetX - 1, rec.y + textOffsetY}; 
+                    if(*pos == i) 
+                    {
+                        if(mode == 1) res.x += glyphWidth + 1;
+                        return res;
+                    }
+                }
+            }
+            
+			if (wordWrap && i >= endLine) 
+			{
+				textOffsetY += (int)((font.baseSize + font.baseSize/2)*scaleFactor);
+				textOffsetX = 0;
+				startLine = endLine;
+				endLine = -1;
+				glyphWidth = 0;
+				state = !state;
+			}
+        }
+        
+        textOffsetX += glyphWidth;
+    }
+    
+    *pos = length;
+	return (Vector2){rec.x + textOffsetX, rec.y + textOffsetY};
+}
+
+
+// Calculate cursor coordinates based on the cursor position in text. If text cannot fit `rec` `pos` will be set to the last visible char in `rec`.
+static inline Vector2 GuiTextBoxGetCursor(const char *text, int length, Rectangle rec, bool wordWrap, int *pos)
+{
+    const int mode = 2;
+    return GuiMeasureTextRec(text, length, rec, wordWrap, pos, mode);
+}
+
+// Measure text until `pos` and returns the result.
+static inline Vector2 GuiTextBoxMeasureText(const char *text, int length, Rectangle rec, bool wordWrap, int pos)
+{
+    const int mode = 1;
+    return GuiMeasureTextRec(text, length, rec, wordWrap, &pos, mode);
+}
+
+// Calculate cursor position inside text based on the mouse coordinates and returns cursor coordinates.
+static inline Vector2 GuiTextBoxCursorFromMouse(const char *text, int length, Rectangle rec, bool wordWrap, int *pos) 
+{
+    const int mode = 0;
+    return GuiMeasureTextRec(text, length, rec, wordWrap, pos, mode);
+}
+
+// Same as pressing `CTRL` + `C` in a textbox
+RAYGUIDEF void GuiTextBoxCopy(char *text, int *cursor, int *selection)
+{
+    if(*selection != 0)
+    {
+        const int len = *selection < 0 ? -*selection : *selection;
+        const int start = *selection < 0 ? *cursor + *selection : *cursor;
+        const char* clipText = TextSubtext(text, start, len);
+        SetClipboardText(clipText);
+    }
+}
+
+// Same as pressing `CTRL` + `A` in a textbox
+RAYGUIDEF void GuiTextBoxSelectAll(char *text, int *cursor, int *selection)
+{
+    *cursor = 0;
+    *selection = strlen(text);
+}
+
+// Same as pressing `CTRL` + `X` in a textbox
+RAYGUIDEF void GuiTextBoxCut(char *text, int *cursor, int *selection, int *textStart)
+{
+    // Cut selected text and paste to clipboard
+    
+    // First copy selection to clipboard
+    const int len = *selection < 0 ? -*selection : *selection;
+    const int start = *selection < 0 ? *cursor + *selection : *cursor;
+    const char* clipText = TextSubtext(text, start, len);
+    SetClipboardText(clipText);
+    
+    // Then remove it from textbox
+    int length = strlen(text);
+    const int sz = length - (start + len);
+    if(sz > 0) memmove(&text[start], &text[start + len], sz);
+    if(*selection > 0) 
+    {
+        *textStart -= len;
+        *cursor = start;
+    }
+    else 
+    {
+        *cursor += *selection; 
+    }
+    if(*textStart > *cursor) *textStart = *cursor;
+    *textStart = *textStart < 0 ? 0 : *textStart;
+    *selection = 0;
+    length -= len;
+    text[length] = '\0';
+}
+
+// Same as pressing `CTRL` + `V` in a textbox
+RAYGUIDEF void GuiTextBoxPaste(char *text, int *cursor, int *selection, int *textStart, int textSize)
+{
+    // Paste text from clipboard
+    // FIXME: code works but cursor jumps all over the place after pasting
+    const char* clipText = GetClipboardText();
+    if(clipText != NULL)
+    {
+        int clipLen = strlen(clipText);
+        const int len = *selection < 0 ? -*selection : *selection;
+        const int start = *selection < 0 ? *cursor + *selection : *cursor;
+        int length = strlen(text);
+        if(*selection != 0)
+        {
+            // Replace selection with text from clipboard
+            
+            // First remove selected text from textbox
+            const int sz = length - (start + len);
+            if(sz > 0) memmove(&text[start], &text[start + len], sz);
+            length -= len;
+            text[length] = '\0';
+            
+            if(length + clipLen > textSize) clipLen = textSize - length; // Make sure we are within limits
+            length += clipLen;
+            text[length] = '\0';
+            
+            *cursor = start + clipLen;
+            *textStart += clipLen;  
+            
+            // Make room by shifting text to right
+            if(*cursor < length) memmove(&text[start + clipLen], &text[start], length - clipLen - start);
+            
+            // Now copy text from clipboard
+            memcpy(&text[start], clipText, clipLen);
+            *selection = 0;
+        }
+        else
+        {
+            // Insert text from clipboard
+            if(length + clipLen > textSize) clipLen = textSize - length; // Make sure we are within limits
+            length += clipLen;
+            text[length] = '\0';
+            
+            *cursor += clipLen;
+            *textStart += clipLen;
+            // Make room by shifting text to right
+            if(*cursor < length) memmove(&text[start + clipLen], &text[start], length - clipLen - start);
+            
+            // Now copy text from clipboard
+            memcpy(&text[start], clipText, clipLen);
+            
+        }
+    }
+}
+
 // Text Box control, updates input text
-// NOTE 1: Requires static variables: framesCounter
-// NOTE 2: Returns if KEY_ENTER pressed (useful for data validation)
-RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
+// NOTE: Returns if KEY_ENTER pressed (useful for data validation)
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, int *cursor, int *selection, int *textStart, bool editMode)
 {
     static int framesCounter = 0;           // Required for blinking cursor
-
+    
     GuiControlState state = guiState;
     bool pressed = false;
-
+    
+    // Make sure length doesn't exceed `textSize`. `textSize` is actually the max amount of characters the textbox can handle.
+    int length = strlen(text);
+    if(*textStart < 0) *textStart = 0;
+    if(length > textSize) 
+    {
+        text[textSize] = '\0';
+        length = textSize;
+    }
+    
+    // Make sure we have enough room to draw at least 1 letter
+    if(bounds.width - 2*GuiGetStyle(TEXTBOX, INNER_PADDING) < GuiGetStyle(DEFAULT, TEXT_SIZE))
+        bounds.width = GuiGetStyle(DEFAULT, TEXT_SIZE) + 2*GuiGetStyle(TEXTBOX, INNER_PADDING);
+    
+    // Center the text vertically
+    int verticalPadding = (bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH) - GuiGetStyle(DEFAULT, TEXT_SIZE))/2;
+    if(verticalPadding < 0) 
+    {
+        // Make sure the height is sufficient
+        bounds.height = 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(DEFAULT, TEXT_SIZE);
+        verticalPadding = 0;
+    }
+    
+    // Calculate the drawing area for the text inside the control `bounds`
+    Rectangle textRec = {bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, INNER_PADDING), bounds.y + verticalPadding+GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*(GuiGetStyle(TEXTBOX, INNER_PADDING) + GuiGetStyle(TEXTBOX, BORDER_WIDTH)), GuiGetStyle(DEFAULT, TEXT_SIZE)};
+    Vector2 cursorPos = {textRec.x, textRec.y};     // This holds the coordinates for the cursor at current position (will be recalculated later)
+    
+    // Keep cursor and selection within limits
+    if(*cursor < 0) 
+    {
+        // Set cursor at the end of visible text
+        cursorPos = GuiTextBoxGetCursor(text, length, textRec, false, cursor);
+        *selection = 0;
+        *textStart = 0;
+    }
+    if(*cursor + *selection > length) *selection = length - *cursor;
+    else if(*cursor + *selection < 0) *selection = 0;
+    
+    
+    
     // Update control
     //--------------------------------------------------------------------
     if ((state != GUI_STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
-
         if (editMode)
         {
             state = GUI_STATE_PRESSED;
-
             framesCounter++;
-
-            int key = GetKeyPressed();
-            int keyCount = strlen(text);
-
-            // Only allow keys in range [32..125]
-            if (keyCount < (textSize - 1))
+            
+            // Handle keyboard events
+            // NOTE: this is going to get messy with all the if/else but i can't use a switch :(
+            /* NOTE: a list of keyboard shortcuts being handled (holding down the key also works)
+             * -> | LSHIFT + -> move cursor to the right | increase selection by one
+             * <- | LSHIFT + <- move cursor to the left | decrease selection by one
+             * HOME | LSHIFT + HOME moves cursor to start of text | selects text from cursor to start of text
+             * END | LSHIFT + END move cursor to end of text | selects text from cursor until end of text
+             * CTRL + A select all characters in text
+             * CTRL + C copy selected text
+             * CTRL + X cut selected text
+             * CTRL + V remove selected text, if any, then paste clipboard data
+             * DEL delete character or selection after cursor
+             * BACKSPACE delete character or selection before cursor
+            */
+            
+            if(IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (framesCounter%4) == 0))
             {
-                int maxWidth = (bounds.width - (GuiGetStyle(DEFAULT, INNER_PADDING)*2));
-
-                if (GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                if(IsKeyDown(KEY_LEFT_SHIFT))
                 {
-                    if (((key >= 32) && (key <= 125)) ||
-                        ((key >= 128) && (key < 255)))
+                    // Increase selection by one
+                    if( *cursor + *selection < length && text[*cursor + *selection] != '\n')
                     {
-                        text[keyCount] = (char)key;
-                        keyCount++;
+                        // Can we display the next character in selection or do we need to make room for it by shifting the text to the left
+                        *selection += 1;
+                        int ofi = *cursor + *selection - *textStart;
+                        // Detect index where the text overflows and store it in `ofi`
+                        GuiTextBoxGetCursor(&text[*textStart], length - *textStart, textRec, false, &ofi);
+                        ofi = *cursor + *selection - *textStart - ofi; // Calculate how many letters to shift
+                        // NOTE: more letters than expected could show up, don't know how to fix this since text is drawn from left to right
+                        // the diff in width for letters that were shifted and the letter that needs to be visible could be just right for an
+                        // additional letter to show
+                        if(ofi > 0) *textStart += (ofi == 1) ? 2 : ofi;
+                    }
+                }
+                else
+                {
+                    // Move cursor to the right
+                    if(*selection != 0) 
+                    {
+                        // Deselect text and move cursor to correct position
+                        if(*selection == length) 
+                        {
+                            // CTRL + A was pressed before, maybe!
+                            // Move text view to the end
+                            int i=length-1;
+                            for(int width = 0, k=0; i >= 0; --i, ++k)
+                            {
+                                width += GuiTextBoxMeasureText(&text[i],1,(Rectangle){0,0,textRec.width, textRec.height}, false, 0).x;
+                                if(width >= textRec.width)
+                                {
+                                    *textStart = length - k + 1;
+                                    break;
+                                }
+                            }
+                            *cursor = length;
+                        }
+                        else 
+                        {
+                            *cursor = *cursor + *selection;
+                            *cursor = *cursor > 0 ? *cursor : 0;
+                            if(*cursor < *textStart) *cursor = *textStart;
+                        }
+                        *selection = 0;
+                    }
+                    else if(*cursor < length && text[*cursor + 1] != '\n')
+                    {
+                        // Can we display the next character or do we need to make room for it by shifting the text to the left
+                        *cursor += 1;
+                        int ofi = *cursor - *textStart;
+                        // Detect index where the text overflows and store it in `ofi`
+                        GuiTextBoxGetCursor(&text[*textStart], length - *textStart, textRec, false, &ofi);
+                        ofi = *cursor - *textStart - ofi; // Calculate how many letters to shift
+                        // NOTE: more letters than expected could show up, don't know how to fix this since text is drawn from left to right
+                        // the diff in width for letters that were shifted and the letter that needs to be visible could be just right for an 
+                        // additional letter to show
+                        if(ofi > 0) *textStart += (ofi == 1) ? 2 : ofi;
+                    }
+                    framesCounter = 0;
+                }
+            }
+            else if(IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (framesCounter%4) == 0) )
+            {
+                if(IsKeyDown(KEY_LEFT_SHIFT))
+                {
+                    // Decrease selection by one
+                    if(*cursor + *selection > 0)
+                    {
+                        *selection -= 1;
+                        if( *textStart > 0  &&  (*textStart >= *cursor + *selection || *textStart > *cursor)) 
+                            *textStart -= 1; // Make sure we can see at least the last character in selection
+                    }
+                }
+                else
+                {
+                    // Move cursor to left
+                    if(*selection != 0)
+                    {
+                        // Deselect text and move cursor to correct position
+                        if(*selection == length) 
+                        {
+                            // `CTRL` + `A` was pressed before...maybe !!
+                            *cursor = 0;
+                            *textStart = 0;
+                        }
+                        else
+                        {
+                            *cursor = *cursor + *selection;
+                            *cursor = *cursor > 0 ? *cursor : 0;
+                            if(*cursor < *textStart) *textStart = *cursor;
+                        }
+                        *selection = 0;
+                    }
+                    else if(*cursor > 0)
+                    {
+                        *cursor -= 1;
+                        if(*textStart >= *cursor && *textStart != 0) *textStart = *cursor;
+                    }
+                    framesCounter = 0;
+                }
+            }
+            else if(IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES && (framesCounter%4) == 0))
+            {
+                 // Delete char at cursor
+                if(*selection == 0)
+                {
+                    if(*cursor > 0 && *cursor <= textSize )
+                    {
+                        const int len = length - *cursor;
+                        if(len > 0) memmove(&text[*cursor - 1], &text[*cursor], len);
+                        *cursor -= 1;
+                        length -= 1;
+                        text[length] = '\0';
+                        if(*textStart != 0 && *cursor <= *textStart) *textStart = *cursor;
+                    }
+                }
+                else
+                {
+                    // Delete selected text
+                    if(*cursor >= 0 && *cursor + *selection <= textSize )
+                    {
+                        const int len = *selection < 0 ? -*selection : *selection;
+                        const int start = *selection < 0 ? *cursor + *selection : *cursor;
+                        const int sz = length - (start + len);
+                        if(sz > 0) memmove(&text[start], &text[start + len], sz);
+                        if(*selection > 0) 
+                        {
+                            *textStart -= len;
+                            *cursor = start;
+                        }
+                        else 
+                        {
+                            *cursor += *selection; 
+                        }
+                        if(*textStart > *cursor) *textStart = *cursor;
+                        *textStart = *textStart < 0 ? 0 : *textStart;
+                        *selection = 0;
+                        length -= len;
+                        text[length] = '\0';
                     }
                 }
             }
-
-            // Delete text
-            if (keyCount > 0)
+            else if(IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES && (framesCounter%4) == 0))
             {
-                if (IsKeyPressed(KEY_BACKSPACE))
+                // Delete char after cursor
+                if(*selection == 0)
                 {
-                    keyCount--;
-                    text[keyCount] = '\0';
-                    framesCounter = 0;
-                    if (keyCount < 0) keyCount = 0;
+                    if(*cursor < length)
+                    {
+                        const int len = length - *cursor;
+                        if(len > 0) memmove(&text[*cursor], &text[*cursor + 1], len);
+                        length -= 1;
+                        text[length] = '\0';
+                    }
                 }
-                else if (IsKeyDown(KEY_BACKSPACE))
+                else
                 {
-                    if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                    text[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
+                    // Delete selected text
+                    if(*cursor >= 0 && *cursor + *selection <= textSize )
+                    {
+                        const int len = *selection < 0 ? -*selection : *selection;
+                        const int start = *selection < 0 ? *cursor + *selection : *cursor;
+                        const int sz = length - (start + len);
+                        if(sz > 0) memmove(&text[start], &text[start + len], sz);
+                        if(*selection > 0) 
+                        {
+                            *textStart -= len;
+                            *cursor = start;
+                        }
+                        else 
+                        {
+                            *cursor += *selection; 
+                        }
+                        if(*textStart > *cursor) *textStart = *cursor;
+                        *textStart = *textStart < 0 ? 0 : *textStart;
+                        *selection = 0;
+                        length -= len;
+                        text[length] = '\0';
+                    }
                 }
             }
+            else if(IsKeyPressed(KEY_HOME))
+            {
+                // Select from start of text to cursor position
+                if(IsKeyDown(KEY_LEFT_SHIFT)) 
+                {
+                    *selection = -*cursor;
+                }
+                else 
+                {
+                    // Move cursor to start of text
+                    *cursor = 0;
+                    *selection = 0;
+                    framesCounter = 0;
+                }
+                *textStart = 0;
+            }
+            else if(IsKeyPressed(KEY_END))
+            {
+                *selection = 0;
+                
+                if(IsKeyDown(KEY_LEFT_SHIFT))
+                {
+                    // Select from cursor position to end of text
+                    *selection = length - *cursor;
+                }
+                else 
+                {
+                    // Move cursor to end of text
+                    *cursor = length;
+                    *selection = 0;
+                    framesCounter = 0;
+                }
+                
+                // Move text view to the end
+                int i=length-1;
+                for(int width = 0, k=0; i >= 0; --i, ++k)
+                {
+                    width += GuiTextBoxMeasureText(&text[i],1,(Rectangle){0,0,textRec.width, textRec.height}, false, 0).x;
+                    if(width >= textRec.width)
+                    {
+                        *textStart = length - k + 1;
+                        break;
+                    }
+                }
+            }
+            else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A))
+            {
+                // `CTRL + A` Select all
+                GuiTextBoxSelectAll(text, cursor, selection);
+            }
+            else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C) && *selection != 0)
+            {
+                // `CTRL + C` Copy selected text to clipboard
+                GuiTextBoxCopy(text, cursor, selection);
+            }
+            else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X) && *selection != 0)
+            {
+                // `CTRL + X` Cut selected text and paste to clipboard
+                GuiTextBoxCut(text, cursor, selection, textStart);
+                length = strlen(text);
+            }
+            else if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
+            {
+                // `CTRL + V` Paste text from clipboard
+                GuiTextBoxPaste(text, cursor, selection, textStart, textSize);
+                length = strlen(text);
+            }
+            else
+            {
+                int key = GetKeyPressed();
+                // Only allow keys in range [32..125] and [128..254]
+                if (((key >= 32) && (key <= 125)) || ((key >= 128) && (key < 255)))
+                {
+                    if(*selection == 0)
+                    {
+                        // Insert char at cursor position
+                        if(*cursor < textSize && textSize - length > 0) 
+                        {
+                            // Do we need to move characters after the cursor to the right
+                            const int len = length - *cursor;
+                            if(len > 0) 
+                                memmove(&text[*cursor + 1], &text[*cursor], length - *cursor);
+                            
+                            text[*cursor] = (char)key;
+                            length += 1;
+                            text[length] = '\0';
+                            *cursor += 1;
+                            // Can we display the next character or do we need to make room for it by shifting the text to the left
+                            int ofi = *cursor - *textStart;
+                            // Detect index where the text overflows and store it in `ofi`
+                            GuiTextBoxGetCursor(&text[*textStart], length - *textStart, textRec, false, &ofi);
+                            ofi = *cursor - *textStart - ofi; // Calculate how many letters to shift
+                            // NOTE: more letters than expected could show up, don't know how to fix this since text is drawn from left to right
+                            // the diff in width for letters that were shifted and the letter that needs to be visible could be just right for an 
+                            // additional letter to show
+                            if(ofi > 0) *textStart += (ofi == 1) ? 2 : ofi;
+                        }
+                    }
+                    else
+                    {
+                        // Replace selected text with char from pressed key
+                        const int len = *selection < 0 ? -*selection : *selection;
+                        const int start = *selection < 0 ? *cursor + *selection : *cursor;
+                        const int sz = length - (start + len) + 1;
+                        if(sz > 0)
+                        {
+                            memmove(&text[start + 1], &text[start + len], sz);
+                            text[start] = (char)key;
+                            *cursor = start;
+                            if(*textStart > *cursor) *textStart = *cursor;
+                            *cursor += 1;
+                            length -= len;
+                            *selection = 0;
+                        }
+                    }
+                }
+            }
+            
+            
+            // Handle mouse events
+            Vector2 mousePoint = GetMousePosition();
+            if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePoint, textRec))
+            {
+                int cur = *cursor;
+                GuiTextBoxCursorFromMouse(&text[*textStart], length - *textStart, textRec, false, &cur);
+                *cursor = cur + *textStart;
+                *selection = 0;
+            }
+            else if(IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mousePoint, textRec))
+            {
+                int cur = 0;
+                GuiTextBoxCursorFromMouse(&text[*textStart], length - *textStart, textRec, false, &cur);
+                if((framesCounter%4) == 0)
+                {
+                    int max = length - *textStart;
+                    GuiTextBoxGetCursor(&text[*textStart], length - *textStart, textRec, false, &max);
+                    if (cur == 0 && *textStart > 0)
+                    {
+                        *textStart -= 1;
+                    }
+                    else if(cur >= max && *textStart + max < length)
+                    {
+                        *textStart += 1;
+                    }
+                }
+                cur += *textStart;
+                *selection = cur - *cursor;
+            }
+            
+            
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
+            
+            // Calculate the final cursor position
+            int cur = *cursor - *textStart;
+            cursorPos = GuiTextBoxGetCursor(&text[*textStart], length - *textStart, textRec, false, &cur);
         }
-
-        if (!editMode)
+        else // !editMode
         {
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckCollisionPointRec(GetMousePosition(), bounds))
             {
                 state = GUI_STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
-            }
+            } 
         }
-        else
-        {
-            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
-        }
-
+        
         if (pressed) framesCounter = 0;
     }
-    //--------------------------------------------------------------------
-
+    
+    
     // Draw control
     //--------------------------------------------------------------------
     DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
-
+    
     if (state == GUI_STATE_PRESSED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
-        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, INNER_PADDING) + GetTextWidth(text) + 2, bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE), 1, GuiGetStyle(DEFAULT, TEXT_SIZE)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        if (editMode && ((framesCounter/TEXTEDIT_CURSOR_BLINK_FRAMES)%2 == 0) && *selection == 0) 
+        {
+            // Draw the blinking cursor
+            DrawRectangle(cursorPos.x, cursorPos.y, 1, GuiGetStyle(DEFAULT, TEXT_SIZE), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        }
     }
     else if (state == GUI_STATE_DISABLED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
-
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-    //--------------------------------------------------------------------
-
+    
+    // Convert selection start and length for use with DrawTextRecEx()
+    int len = *selection < 0 ? -*selection : *selection;
+    int start = *selection < 0 ? *cursor + *selection : *cursor;
+    if(*textStart > 0)
+    {
+        start -= *textStart;
+        if(start < 0) 
+        {
+            len += start;
+            start = 0;
+        }
+    }
+    
+    // Finally draw the text and selection
+    DrawTextRecEx(guiFont, &text[*textStart], textRec, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), false, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha), start, len, GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)), GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG)));
+    // DrawText(TextFormat("*textStart:[%i] cursorX:[%.0f] rec:[%.0f]", *textStart, cursorPos.x, textRec.x+textRec.width), 280, 4, 20, RED);
     return pressed;
 }
 
@@ -2995,6 +3578,8 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH, 20);         // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH, 1);   // SPINNER specific property
+    GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, 0xf0fffeff);
+    GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, 0x839affe0);
     GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
     GuiSetStyle(COLORPICKER, BAR_WIDTH, 0x14);
     GuiSetStyle(COLORPICKER, BAR_PADDING, 0xa);
