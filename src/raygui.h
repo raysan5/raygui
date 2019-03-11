@@ -403,6 +403,8 @@ RAYGUIDEF GuiStyle LoadGuiStyle(const char *fileName);          // Load style fr
 RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 */
 
+RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended
+
 #endif // RAYGUI_H
 
 
@@ -779,7 +781,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 #if defined(RAYGUI_RICONS_SUPPORT)
-    clicked = GuiButton(buttonRec, "#128#");
+    clicked = GuiButton(buttonRec, GuiIconText(RICON_CROSS_SMALL, NULL));
 #else
     clicked = GuiButton(buttonRec, "x");
 #endif
@@ -944,6 +946,16 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
         scrollPos.y = -GuiScrollBar(verticalScrollBar, -scrollPos.y, verticalMin, verticalMax);
+    }
+    
+    // Draw detail corner rectangle if both scroll bars are visible
+    if (hasHorizontalScrollBar && hasVerticalScrollBar) 
+    {
+        // TODO: Consider scroll bars side
+        DrawRectangle(horizontalScrollBar.x + horizontalScrollBar.width + 2, 
+                      verticalScrollBar.y + verticalScrollBar.height + 2, 
+                      horizontalScrollBarWidth - 4, verticalScrollBarWidth - 4, 
+                      Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + (state*3))), guiAlpha));
     }
 
     // Set scrollbar slider size back to the way it was before
@@ -1412,8 +1424,8 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
 #if defined(RAYGUI_RICONS_SUPPORT)
-    if (GuiButton(leftButtonBound, "#118#")) tempValue--;
-    if (GuiButton(rightButtonBound, "#119#")) tempValue++;
+    if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
+    if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #else
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
@@ -2025,6 +2037,7 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 
     const int range = maxValue - minValue;
     int sliderSize = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE);
+    
     // Calculate rectangles for all of the components
     spinnerUpLeft = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize };
 
@@ -2032,14 +2045,14 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
     {
         spinnerDownRight = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
         scrollbar = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), spinnerUpLeft.y + spinnerUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING)), bounds.height - spinnerUpLeft.height - spinnerDownRight.height - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) };
-        sliderSize = sliderSize >= scrollbar.height? scrollbar.height - 2 : sliderSize; // Make sure the slider won't get outside of the scrollbar
+        sliderSize = (sliderSize >= scrollbar.height)? (scrollbar.height - 2) : sliderSize;     // Make sure the slider won't get outside of the scrollbar
         slider = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING),scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)),bounds.width - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)), sliderSize };
     }
     else
     {
         spinnerDownRight = (Rectangle){ bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
         scrollbar = (Rectangle){ spinnerUpLeft.x + spinnerUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), bounds.width - spinnerUpLeft.width - spinnerDownRight.width - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.height - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING))};
-        sliderSize = sliderSize >= scrollbar.width? scrollbar.width - 2 : sliderSize; // Make sure the slider won't get outside of the scrollbar
+        sliderSize = (sliderSize >= scrollbar.width)? (scrollbar.width - 2) : sliderSize;       // Make sure the slider won't get outside of the scrollbar
         slider = (Rectangle){ scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING), sliderSize, bounds.height - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)) };
     }
 
@@ -3022,6 +3035,28 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     {
         for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
+}
+
+// Get text with icon id prepended
+// NOTE: Useful to add icons by name id (enum) instead of 
+// a number that can change between ricon versions
+RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
+{
+    static char buffer[1024] = { 0 };
+    memset(buffer, 0, 1024);
+    
+    sprintf(buffer, "#%03i#", iconId);
+    
+    if (text != NULL)
+    {
+        for (int i = 5; i < 1024; i++)
+        {
+            buffer[i] = text[i - 5];
+            if (text[i - 5] == '\0') break;
+        }
+    }
+    
+    return buffer;
 }
 
 //----------------------------------------------------------------------------------
