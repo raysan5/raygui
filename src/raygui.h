@@ -2842,6 +2842,10 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
     return currentCell;
 }
 
+//----------------------------------------------------------------------------------
+// Styles loading functions
+//----------------------------------------------------------------------------------
+
 // Load raygui style file (.rgs)
 RAYGUIDEF void GuiLoadStyle(const char *fileName)
 {
