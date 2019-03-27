@@ -1011,10 +1011,10 @@ RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER + (state*3))), guiAlpha));
-    DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DEFAULT, BASE + (state*3))), guiAlpha));
+    DrawRectangleLinesEx(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha));
+    DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
 
-    GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     //------------------------------------------------------------------
 
     return pressed;
@@ -1334,8 +1334,8 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
     {
         case GUI_STATE_NORMAL:
         {
-            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_NORMAL)), guiAlpha));
-            DrawRectangleLinesEx(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_NORMAL)), guiAlpha));
+            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_NORMAL)), guiAlpha));
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_NORMAL)), guiAlpha));
 
             GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, elementsPtrs[auxActive], false, false);
         } break;
@@ -1356,11 +1356,15 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
                 {
                     if (i == auxActive && editMode)
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, elementsPtrs[i], true, true) == false) pressed = true; //auxActive = i;
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i + 1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), 
+                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, 
+                                                        elementsPtrs[i], true, true) == false) pressed = true;
                     }
                     else
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, elementsPtrs[i], false, true))
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), 
+                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, 
+                                                        elementsPtrs[i], false, true))
                         {
                             auxActive = i;
                             pressed = true;
@@ -1371,8 +1375,8 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
         } break;
         case GUI_STATE_DISABLED:
         {
-            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_DISABLED)), guiAlpha));
-            DrawRectangleLinesEx(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), guiAlpha));
+            DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_DISABLED)), guiAlpha));
+            DrawRectangleLinesEx(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_DISABLED)), guiAlpha));
 
             GuiListElement((Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height }, elementsPtrs[auxActive], false, false);
         } break;
@@ -1382,8 +1386,9 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, tempTextAlign);
 
     DrawTriangle((Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING), bounds.y + bounds.height/2 - 2 },
-             (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
-             (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 10, bounds.y + bounds.height/2 - 2 }, Fade(GetColor(GuiGetStyle(DEFAULT, TEXT + (state*3))), guiAlpha));
+                 (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
+                 (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 10, bounds.y + bounds.height/2 - 2 }, 
+                 Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     *active = auxActive;
