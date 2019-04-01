@@ -767,7 +767,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
                                   Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
 
     // Draw window header as status bar
-    int defaultPadding = GuiGetStyle(DEFAULT, GROUP_PADDING);
+    int defaultPadding = GuiGetStyle(DEFAULT, INNER_PADDING);
     int defaultTextAlign = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT);
     GuiSetStyle(DEFAULT, INNER_PADDING, 8);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
@@ -1906,17 +1906,17 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
 
         if (value > maxValue) value = maxValue;
         else if (value < minValue) value = minValue;
-
-        // Bar limits check
-        if (sliderWidth > 0)        // Slider
-        {
-            if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
-            else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
-        }
-        else if (sliderWidth == 0)  // SliderBar
-        {
-            if (slider.width > bounds.width) slider.width = bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-        }
+    }
+    
+    // Bar limits check
+    if (sliderWidth > 0)        // Slider
+    {
+        if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
+        else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
+    }
+    else if (sliderWidth == 0)  // SliderBar
+    {
+        if (slider.width > bounds.width) slider.width = bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
     }
     //--------------------------------------------------------------------
 
