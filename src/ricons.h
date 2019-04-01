@@ -40,7 +40,7 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define RICONS_COUNT    197      // Number of icons included
+#define RICONS_COUNT    199      // Number of icons included
 #define RICONS_SIZE      16      // Size of icons (squared)
 
 //----------------------------------------------------------------------------------
@@ -136,13 +136,13 @@ typedef enum {
     RICON_BOX_BOTTOM_LEFT,
     RICON_BOX_LEFT,
     RICON_BOX_TOP_LEFT,
+    RICON_BOX_CENTER,
     RICON_BOX_CIRCLE_MASK,
     RICON_POT,
     RICON_ALPHA_MULTIPLY,
     RICON_ALPHA_CLEAR,
     RICON_DITHERING,
     RICON_MIPMAPS,
-    RICON_LAYERS,
     RICON_BOX_GRID,
     RICON_GRID,
     RICON_BOX_CORNERS_SMALL,
@@ -244,6 +244,8 @@ typedef enum {
     RICON_FILETYPE_ALPHA,
     RICON_FILETYPE_HOME,
     RICON_LAYERS_VISIBLE,
+    RICON_LAYERS,
+    RICON_WINDOW
 } rIconDescription;
 
 //----------------------------------------------------------------------------------
@@ -355,13 +357,13 @@ static const unsigned int RICONS[RICONS_COUNT*8] = {
     0x00000000, 0x20043ffc, 0x20042004, 0x20042004, 0x207c2004, 0x207c207c, 0x3ffc207c, 0x00000000,     // RICON_BOX_BOTTOM_LEFT
     0x00000000, 0x20043ffc, 0x20042004, 0x207c207c, 0x207c207c, 0x20042004, 0x3ffc2004, 0x00000000,     // RICON_BOX_LEFT
     0x00000000, 0x207c3ffc, 0x207c207c, 0x2004207c, 0x20042004, 0x20042004, 0x3ffc2004, 0x00000000,     // RICON_BOX_TOP_LEFT
-    0x7ffe0000, 0x40024002, 0x47e24182, 0x4ff247e2, 0x47e24ff2, 0x418247e2, 0x40024002, 0x00007ffe,     // RICON_BOX_CIRCLE_MASK
+    0x00000000, 0x20043ffc, 0x20042004, 0x23c423c4, 0x23c423c4, 0x20042004, 0x3ffc2004, 0x00000000,     // RICON_BOX_CIRCLE_MASK
+    0x7ffe0000, 0x40024002, 0x47e24182, 0x4ff247e2, 0x47e24ff2, 0x418247e2, 0x40024002, 0x00007ffe,     // RICON_BOX_CENTER
     0x7fff0000, 0x40014001, 0x40014001, 0x49555ddd, 0x4945495d, 0x400149c5, 0x40014001, 0x00007fff,     // RICON_POT
     0x7ffe0000, 0x53327332, 0x44ce4cce, 0x41324332, 0x404e40ce, 0x48125432, 0x4006540e, 0x00007ffe,     // RICON_ALPHA_MULTIPLY
     0x7ffe0000, 0x53327332, 0x44ce4cce, 0x41324332, 0x5c4e40ce, 0x44124432, 0x40065c0e, 0x00007ffe,     // RICON_ALPHA_CLEAR
     0x7ffe0000, 0x42fe417e, 0x42fe417e, 0x42fe417e, 0x42fe417e, 0x42fe417e, 0x42fe417e, 0x00007ffe,     // RICON_DITHERING
     0x07fe0000, 0x1ffa0002, 0x7fea000a, 0x402a402a, 0x5b2a512a, 0x5128552a, 0x40205128, 0x00007fe0,     // RICON_MIPMAPS
-    0x07fe0000, 0x04020402, 0x7c020402, 0x44024402, 0x44024402, 0x402047fe, 0x40204020, 0x00007fe0,     // RICON_LAYERS
     0x00000000, 0x1ff80000, 0x12481248, 0x12481ff8, 0x1ff81248, 0x12481248, 0x00001ff8, 0x00000000,     // RICON_BOX_GRID
     0x12480000, 0x7ffe1248, 0x12481248, 0x12487ffe, 0x7ffe1248, 0x12481248, 0x12487ffe, 0x00001248,     // RICON_GRID
     0x00000000, 0x1c380000, 0x1c3817e8, 0x08100810, 0x08100810, 0x17e81c38, 0x00001c38, 0x00000000,     // RICON_BOX_CORNERS_SMALL
@@ -463,6 +465,8 @@ static const unsigned int RICONS[RICONS_COUNT*8] = {
     0x3ff00000, 0x2abc3550, 0x2aac3554, 0x2aac3554, 0x2aac3554, 0x2aac3554, 0x2aac3554, 0x00003ffc,     // RICON_FILETYPE_ALPHA
     0x3ff00000, 0x201c2010, 0x22442184, 0x28142424, 0x29942814, 0x2ff42994, 0x20042004, 0x00003ffc,     // RICON_FILETYPE_HOME
     0x07fe0000, 0x04020402, 0x7fe20402, 0x44224422, 0x44224422, 0x402047fe, 0x40204020, 0x00007fe0,     // RICON_LAYERS_VISIBLE
+    0x07fe0000, 0x04020402, 0x7c020402, 0x44024402, 0x44024402, 0x402047fe, 0x40204020, 0x00007fe0,     // RICON_LAYERS
+    0x00000000, 0x40027ffe, 0x7ffe4002, 0x40024002, 0x40024002, 0x40024002, 0x7ffe4002, 0x00000000,     // RICON_WINDOW
 };
 
 // Draw selected icon using rectangles pixel-by-pixel
