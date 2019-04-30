@@ -217,7 +217,7 @@ typedef enum {
     CHECKBOX,
     COMBOBOX,
     DROPDOWNBOX,
-    TEXTBOX,        // VALUEBOX, SPINNER
+    TEXTBOX,        // VALUEBOX, SPINNER, TEXTBOXMULTI -> TODO: Probably they should not be dependant on TEXTBOX style!
     LISTVIEW,
     COLORPICKER,
     SCROLLBAR
@@ -275,7 +275,7 @@ typedef enum {
 // ProgressBar
 //typedef enum { } GuiProgressBarProperty;
 
-// TextBox / ValueBox / Spinner
+// TextBox / TextBoxMulti / ValueBox / Spinner
 typedef enum {
     MULTILINE_PADDING = 16,
     SPINNER_BUTTON_WIDTH,
@@ -318,13 +318,11 @@ typedef enum {
 
 // ScrollBar
 typedef enum {
-    SCROLLBAR_BORDER = 16,
-    SCROLLBAR_SHOW_SPINNER_BUTTONS,
-    SCROLLBAR_ARROWS_SIZE,
-    SCROLLBAR_PADDING,
-    SCROLLBAR_SLIDER_PADDING,
-    SCROLLBAR_SLIDER_SIZE,
-    SCROLLBAR_SCROLL_SPEED,
+    ARROWS_SIZE = 16,
+    SLIDER_PADDING,
+    SLIDER_SIZE,
+    SCROLL_SPEED,
+    SHOW_SPINNER_BUTTONS
 } GuiScrollBarProperty;
 
 // ScrollBar side
@@ -904,14 +902,14 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
 
             if (hasHorizontalScrollBar)
             {
-                if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-                if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
 
             if (hasVerticalScrollBar)
             {
-                if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-                if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
             
             scrollPos.y += GetMouseWheelMove()*20;
@@ -930,13 +928,13 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     DrawRectangleRec(bounds, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
 
     // Save size of the scrollbar slider
-    const int slider = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE);
+    const int slider = GuiGetStyle(SCROLLBAR, SLIDER_SIZE);
 
     // Draw horizontal scrollbar if visible
     if (hasHorizontalScrollBar)
     {
         // Change scrollbar slider size to show the diff in size between the content width and the widget width
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
+        GuiSetStyle(SCROLLBAR, SLIDER_SIZE, ((bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
         scrollPos.x = -GuiScrollBar(horizontalScrollBar, -scrollPos.x, horizontalMin, horizontalMax);
     }
 
@@ -944,7 +942,7 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     if (hasVerticalScrollBar)
     {
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
+        GuiSetStyle(SCROLLBAR, SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
         scrollPos.y = -GuiScrollBar(verticalScrollBar, -scrollPos.y, verticalMin, verticalMax);
     }
     
@@ -959,7 +957,7 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
     }
 
     // Set scrollbar slider size back to the way it was before
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, slider);
+    GuiSetStyle(SCROLLBAR, SLIDER_SIZE, slider);
 
     // Draw scrollbar lines depending on current state
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + (state*3))), guiAlpha));
@@ -2029,7 +2027,7 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
     bool isVertical = (bounds.width > bounds.height)? false : true;
 
     // The size (width or height depending on scrollbar type) of the spinner buttons
-    const int spinnerSize = GuiGetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS)? (isVertical? bounds.width - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) : bounds.height - 2 * GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER)) : 0;
+    const int spinnerSize = GuiGetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS)? (isVertical? bounds.width - 2 * GuiGetStyle(SCROLLBAR, BORDER_WIDTH) : bounds.height - 2 * GuiGetStyle(SCROLLBAR, BORDER_WIDTH)) : 0;
 
     // Spinner buttons [<] [>] [∧] [∨]
     Rectangle spinnerUpLeft, spinnerDownRight;
@@ -2043,24 +2041,24 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
     if (value < minValue) value = minValue;
 
     const int range = maxValue - minValue;
-    int sliderSize = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE);
+    int sliderSize = GuiGetStyle(SCROLLBAR, SLIDER_SIZE);
     
     // Calculate rectangles for all of the components
-    spinnerUpLeft = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize };
+    spinnerUpLeft = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), spinnerSize, spinnerSize };
 
     if (isVertical)
     {
-        spinnerDownRight = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
-        scrollbar = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), spinnerUpLeft.y + spinnerUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING)), bounds.height - spinnerUpLeft.height - spinnerDownRight.height - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) };
+        spinnerDownRight = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), spinnerSize, spinnerSize};
+        scrollbar = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, INNER_PADDING), spinnerUpLeft.y + spinnerUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, INNER_PADDING)), bounds.height - spinnerUpLeft.height - spinnerDownRight.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
         sliderSize = (sliderSize >= scrollbar.height)? (scrollbar.height - 2) : sliderSize;     // Make sure the slider won't get outside of the scrollbar
-        slider = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING),scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)),bounds.width - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)), sliderSize };
+        slider = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SLIDER_PADDING),scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)),bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SLIDER_PADDING)), sliderSize };
     }
     else
     {
-        spinnerDownRight = (Rectangle){ bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), spinnerSize, spinnerSize};
-        scrollbar = (Rectangle){ spinnerUpLeft.x + spinnerUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING), bounds.width - spinnerUpLeft.width - spinnerDownRight.width - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), bounds.height - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_PADDING))};
+        spinnerDownRight = (Rectangle){ bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), spinnerSize, spinnerSize};
+        scrollbar = (Rectangle){ spinnerUpLeft.x + spinnerUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, INNER_PADDING), bounds.width - spinnerUpLeft.width - spinnerDownRight.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, INNER_PADDING))};
         sliderSize = (sliderSize >= scrollbar.width)? (scrollbar.width - 2) : sliderSize;       // Make sure the slider won't get outside of the scrollbar
-        slider = (Rectangle){ scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), bounds.y + GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING), sliderSize, bounds.height - 2*(GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER) + GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING)) };
+        slider = (Rectangle){ scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SLIDER_PADDING), sliderSize, bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SLIDER_PADDING)) };
     }
 
     // Update control
@@ -2079,8 +2077,8 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                if (CheckCollisionPointRec(mousePoint, spinnerUpLeft)) value -= range/GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
-                else if (CheckCollisionPointRec(mousePoint, spinnerDownRight)) value += range/GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);
+                if (CheckCollisionPointRec(mousePoint, spinnerUpLeft)) value -= range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (CheckCollisionPointRec(mousePoint, spinnerDownRight)) value += range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
 
                 state = GUI_STATE_PRESSED;
             }
@@ -2088,12 +2086,12 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
             {
                 if (!isVertical)
                 {
-                    Rectangle scrollArea = { spinnerUpLeft.x + spinnerUpLeft.width, spinnerUpLeft.y, scrollbar.width, bounds.height - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER)};
+                    Rectangle scrollArea = { spinnerUpLeft.x + spinnerUpLeft.width, spinnerUpLeft.y, scrollbar.width, bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH)};
                     if (CheckCollisionPointRec(mousePoint, scrollArea)) value = ((float)(mousePoint.x - scrollArea.x - slider.width/2)*range)/(scrollArea.width - slider.width) + minValue;
                 }
                 else
                 {
-                    Rectangle scrollArea = { spinnerUpLeft.x, spinnerUpLeft.y+spinnerUpLeft.height, bounds.width - 2*GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER),  scrollbar.height};
+                    Rectangle scrollArea = { spinnerUpLeft.x, spinnerUpLeft.y+spinnerUpLeft.height, bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH),  scrollbar.height};
                     if (CheckCollisionPointRec(mousePoint, scrollArea)) value = ((float)(mousePoint.y - scrollArea.y - slider.height/2)*range)/(scrollArea.height - slider.height) + minValue;
                 }
             }
@@ -2111,12 +2109,12 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
     DrawRectangleRec(bounds, Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   // Draw the background
     DrawRectangleRec(scrollbar, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
 
-    DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, SCROLLBAR_BORDER), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha));
+    DrawRectangleLinesEx(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha));
 
     DrawRectangleRec(slider, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
 
     // Draw arrows using lines
-    const int padding = (spinnerSize - GuiGetStyle(SCROLLBAR, SCROLLBAR_ARROWS_SIZE))/2;
+    const int padding = (spinnerSize - GuiGetStyle(SCROLLBAR, ARROWS_SIZE))/2;
     const Vector2 lineCoords[] =
     {
         //coordinates for <     0,1,2
@@ -2142,7 +2140,7 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 
     Color lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT + state*3)), guiAlpha);
 
-    if (GuiGetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS))
+    if (GuiGetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS))
     {
         if (isVertical)
         {
@@ -2397,7 +2395,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
         }
     }
 
-    const int slider = GuiGetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE); // Save default slider size
+    const int slider = GuiGetStyle(SCROLLBAR, SLIDER_SIZE); // Save default slider size
     
     // Calculate percentage of visible elements and apply same percentage to scrollbar
     if (useScrollBar)
@@ -2408,7 +2406,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
         if (barHeight < minBarHeight) barHeight = minBarHeight;
         else if (barHeight > bounds.height) barHeight = bounds.height;
 
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, barHeight); // Change slider size
+        GuiSetStyle(SCROLLBAR, SLIDER_SIZE, barHeight); // Change slider size
     }
     //--------------------------------------------------------------------
 
@@ -2419,14 +2417,14 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
     // Draw scrollBar
     if (useScrollBar)
     {
-        const int scrollSpeed = GuiGetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED);     // Save default scroll speed
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, count - visibleElements);    // Hack to make the spinner buttons work
+        const int scrollSpeed = GuiGetStyle(SCROLLBAR, SCROLL_SPEED);     // Save default scroll speed
+        GuiSetStyle(SCROLLBAR, SCROLL_SPEED, count - visibleElements);    // Hack to make the spinner buttons work
 
         int index = scrollIndex != NULL? *scrollIndex : startIndex;
         index = GuiScrollBar(scrollBarRect, index, 0, count - visibleElements);
 
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, scrollSpeed); // Reset scroll speed to default
-        GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, slider); // Reset slider size to default
+        GuiSetStyle(SCROLLBAR, SCROLL_SPEED, scrollSpeed); // Reset scroll speed to default
+        GuiSetStyle(SCROLLBAR, SLIDER_SIZE, slider); // Reset slider size to default
 
         // FIXME: Quick hack to make this thing work, think of a better way
         if (scrollIndex != NULL && CheckCollisionPointRec(GetMousePosition(), scrollBarRect) && IsMouseButtonDown(MOUSE_LEFT_BUTTON))
@@ -3019,6 +3017,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_WIDTH, 20);         // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_PADDING, 2);        // SPINNER specific property
     GuiSetStyle(TEXTBOX, SPINNER_BUTTON_BORDER_WIDTH, 1);   // SPINNER specific property
+    //GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);     // TODO.
     GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
     GuiSetStyle(COLORPICKER, BAR_WIDTH, 0x14);
     GuiSetStyle(COLORPICKER, BAR_PADDING, 0xa);
@@ -3028,13 +3027,13 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
     GuiSetStyle(LISTVIEW, SCROLLBAR_SIDE, SCROLLBAR_RIGHT_SIDE);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_BORDER, 0);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_SHOW_SPINNER_BUTTONS, 0);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_ARROWS_SIZE, 6);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_PADDING, 0);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_PADDING, 0);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_SLIDER_SIZE, 16);
-    GuiSetStyle(SCROLLBAR, SCROLLBAR_SCROLL_SPEED, 10);
+    GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
+    GuiSetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS, 0);
+    GuiSetStyle(SCROLLBAR, ARROWS_SIZE, 6);
+    GuiSetStyle(SCROLLBAR, INNER_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, SLIDER_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, SLIDER_SIZE, 16);
+    GuiSetStyle(SCROLLBAR, SCROLL_SPEED, 10);
 }
 
 // Updates controls style with default values
