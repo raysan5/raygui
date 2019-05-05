@@ -774,8 +774,8 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, defaultTextAlign);
 
     // Draw window close button
-    int buttonBorder = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    int buttonTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
+    int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 #if defined(RAYGUI_RICONS_SUPPORT)
@@ -783,8 +783,8 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
 #else
     clicked = GuiButton(buttonRec, "x");
 #endif
-    GuiSetStyle(BUTTON, BORDER_WIDTH, buttonBorder);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, buttonTextAlignment);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
     //--------------------------------------------------------------------
 
     return clicked;
@@ -1257,14 +1257,15 @@ RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active)
 
     // Draw selector using a custom button
     // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
-    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
     GuiButton(selector, TextFormat("%i/%i", active + 1, elementsCount));
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     //--------------------------------------------------------------------
 
     return active;
