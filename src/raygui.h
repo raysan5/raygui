@@ -626,7 +626,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // NOTE: We get text size after icon been processed
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-
+        
+#if defined(RAYGUI_RICONS_SUPPORT)
         if (iconId > 0)
         {
             textWidth += RICONS_SIZE;
@@ -634,7 +635,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             // WARNING: If only icon provided, text could be pointing to eof character!
             if ((text != NULL) && (text[0] != '\0')) textWidth += ICON_TEXT_PADDING;
         }
-
+#endif
         // Check guiTextAlign global variables
         switch (alignment)
         {
