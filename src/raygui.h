@@ -281,9 +281,6 @@ typedef enum {
 // TextBox / TextBoxMulti / ValueBox / Spinner
 typedef enum {
     MULTILINE_PADDING = 16,
-    //SPINNER_BUTTON_WIDTH,
-    //SPINNER_BUTTON_PADDING,
-    //SPINNER_BUTTON_BORDER_WIDTH
 } GuiTextBoxProperty;
 
 typedef enum {
