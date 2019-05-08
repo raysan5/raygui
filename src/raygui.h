@@ -183,10 +183,10 @@
         int width;
         int height;
     } Rectangle;
-    
+
     // Texture2D type
     typedef struct Texture2D { } Texture2D;
-    
+
     // Font type
     typedef struct Font { } Font;
 #endif
@@ -427,7 +427,7 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text wit
     #if defined(RAYGUI_STANDALONE)
         #define RICONS_STANDALONE
     #endif
-    
+
     #define RICONS_IMPLEMENTATION
     #include "ricons.h"     // Required for: raygui icons
 #endif
@@ -583,7 +583,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case CHECKBOX: bounds.x += (bounds.width + GuiGetStyle(control, CHECK_TEXT_PADDING)); break;
         default: break;
     }
-    
+
     // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, SPINNER, LISTVIEW (scrollbar?)
     // More special cases (label side): CHECKBOX, SLIDER
 
@@ -636,7 +636,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // NOTE: We get text size after icon been processed
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-        
+
 #if defined(RAYGUI_RICONS_SUPPORT)
         if (iconId > 0)
         {
@@ -922,7 +922,7 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
                 if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
                 if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
-            
+
             scrollPos.y += GetMouseWheelMove()*20;
         }
     }
@@ -956,14 +956,14 @@ RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 
         GuiSetStyle(SCROLLBAR, SLIDER_SIZE, ((bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2 * GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
         scrollPos.y = -GuiScrollBar(verticalScrollBar, -scrollPos.y, verticalMin, verticalMax);
     }
-    
+
     // Draw detail corner rectangle if both scroll bars are visible
-    if (hasHorizontalScrollBar && hasVerticalScrollBar) 
+    if (hasHorizontalScrollBar && hasVerticalScrollBar)
     {
         // TODO: Consider scroll bars side
-        DrawRectangle(horizontalScrollBar.x + horizontalScrollBar.width + 2, 
-                      verticalScrollBar.y + verticalScrollBar.height + 2, 
-                      horizontalScrollBarWidth - 4, verticalScrollBarWidth - 4, 
+        DrawRectangle(horizontalScrollBar.x + horizontalScrollBar.width + 2,
+                      verticalScrollBar.y + verticalScrollBar.height + 2,
+                      horizontalScrollBarWidth - 4, verticalScrollBarWidth - 4,
                       Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + (state*3))), guiAlpha));
     }
 
@@ -1366,14 +1366,14 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
                 {
                     if (i == auxActive && editMode)
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i + 1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), 
-                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, 
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i + 1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING),
+                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) },
                                                         elementsPtrs[i], true, true) == false) pressed = true;
                     }
                     else
                     {
-                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING), 
-                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) }, 
+                        if (GuiListElement((Rectangle){ bounds.x, bounds.y + bounds.height*(i+1) + GuiGetStyle(DROPDOWNBOX, INNER_PADDING),
+                                                        bounds.width, bounds.height - GuiGetStyle(DROPDOWNBOX, INNER_PADDING) },
                                                         elementsPtrs[i], false, true))
                         {
                             auxActive = i;
@@ -1397,7 +1397,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
     DrawTriangle((Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING), bounds.y + bounds.height/2 - 2 },
                  (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
-                 (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 10, bounds.y + bounds.height/2 - 2 }, 
+                 (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 10, bounds.y + bounds.height/2 - 2 },
                  Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
@@ -1649,7 +1649,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     if (state == GUI_STATE_PRESSED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
-        
+
         // Draw blinking cursor
         if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, INNER_PADDING) + GetTextWidth(text) + 2 + bounds.width/2*GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE), 1, GuiGetStyle(DEFAULT, TEXT_SIZE)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
@@ -1919,7 +1919,7 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
         if (value > maxValue) value = maxValue;
         else if (value < minValue) value = minValue;
     }
-    
+
     // Bar limits check
     if (sliderWidth > 0)        // Slider
     {
@@ -1943,7 +1943,7 @@ RAYGUIDEF float GuiSliderPro(Rectangle bounds, const char *text, float value, fl
     // TODO: Review showValue parameter, really ugly...
     if (showValue) GuiDrawText(TextFormat("%.02f", value), (Rectangle){ bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING),
                                bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(SLIDER, INNER_PADDING),
-                               GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SIZE) }, GUI_TEXT_ALIGN_LEFT, 
+                               GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SIZE) }, GUI_TEXT_ALIGN_LEFT,
                                Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
@@ -2054,7 +2054,7 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 
     const int range = maxValue - minValue;
     int sliderSize = GuiGetStyle(SCROLLBAR, SLIDER_SIZE);
-    
+
     // Calculate rectangles for all of the components
     spinnerUpLeft = (Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), spinnerSize, spinnerSize };
 
@@ -2408,7 +2408,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
     }
 
     const int slider = GuiGetStyle(SCROLLBAR, SLIDER_SIZE); // Save default slider size
-    
+
     // Calculate percentage of visible elements and apply same percentage to scrollbar
     if (useScrollBar)
     {
@@ -2765,12 +2765,12 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     #define MESSAGEBOX_BUTTON_PADDING           10
 
     int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
-    
+
     int buttonsCount = 0;
     const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
 
     Vector2 textSize = MeasureTextEx(guiFont, message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
-    
+
     Rectangle textBounds = { 0 };
     textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
     textBounds.y = bounds.y + WINDOW_STATUSBAR_HEIGHT + (bounds.height - WINDOW_STATUSBAR_HEIGHT)/4 - textSize.y/2;
@@ -2786,7 +2786,7 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     // Draw control
     //--------------------------------------------------------------------
     if (GuiWindowBox(bounds, windowTitle)) clicked = 0;
-    
+
     int prevTextAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     GuiLabel(textBounds, message);
@@ -2794,13 +2794,13 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
 
     prevTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-    
+
     for (int i = 0; i < buttonsCount; i++)
     {
         if (GuiButton(buttonBounds, buttonsText[i])) clicked = i + 1;
         buttonBounds.x += (buttonBounds.width + MESSAGEBOX_BUTTON_PADDING);
     }
-    
+
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, prevTextAlignment);
     //--------------------------------------------------------------------
 
@@ -2900,7 +2900,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
             // Font loading is highly dependant on raylib API to load font data and image
             // TODO: Find some mechanism to support it in standalone mode
-            
+
 #if !defined(RAYGUI_STANDALONE)
             // Load custom font if available
             int fontDataSize = 0;
@@ -2955,7 +2955,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
             }
 #endif
         }
-        
+
         fclose(rgsFile);
     }
 }
@@ -3060,15 +3060,15 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
 }
 
 // Get text with icon id prepended
-// NOTE: Useful to add icons by name id (enum) instead of 
+// NOTE: Useful to add icons by name id (enum) instead of
 // a number that can change between ricon versions
 RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
 {
     static char buffer[1024] = { 0 };
     memset(buffer, 0, 1024);
-    
+
     sprintf(buffer, "#%03i#", iconId);
-    
+
     if (text != NULL)
     {
         for (int i = 5; i < 1024; i++)
@@ -3077,7 +3077,7 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
             if (text[i - 5] == '\0') break;
         }
     }
-    
+
     return buffer;
 }
 
