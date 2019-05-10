@@ -1476,14 +1476,15 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 }
 
 // Spinner control, returns selected value
-// NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
+// NOTE: Requires static variables: timer, valueSpeed - ERROR!
 RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
 {
-    #define GUI_SPINNER_HOLD_SPEED 9
-    static int framesCounter = 0;
+    #define GUI_SPINNER_HOLD_SPEED 0.2f // min 200ms delay
+    static float timer = 0.0f;
     
-    bool pressed = false;
+    bool pressed = false, active = GuiTextBoxIsActive(bounds);
     int tempValue = *value;
+    const float time = GetTime(); // Get current time
 
     Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SELECT_BUTTON_PADDING), bounds.y,
                           bounds.width - 2*(GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SELECT_BUTTON_PADDING)), bounds.height };
@@ -1498,10 +1499,20 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     
     if(editMode) 
     {
-        if(!GuiTextBoxIsActive(bounds) && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && CheckCollisionPointRec(mouse, bounds))
-            GuiTextBoxSetActive(bounds); // When mouse is pressed or held over the buttons make this becomes the active textbox
-        framesCounter++;
+        if(!active)
+        {
+            // This becomes the active textbox when mouse is pressed or held inside bounds
+            if((IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && CheckCollisionPointRec(mouse, bounds))
+            {
+                GuiTextBoxSetActive(bounds);
+                active = true;
+            }
+        }
     }
+    
+    // Reset timer when one of the buttons is clicked (without this, holding the button down will not behave correctly)
+    if((CheckCollisionPointRec(mouse, leftButtonBound) || CheckCollisionPointRec(mouse, rightButtonBound)) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) )
+        timer = time;
     //--------------------------------------------------------------------
 
     // Draw control
@@ -1517,13 +1528,13 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-
+    
     char* icon = "<";
 #if defined(RAYGUI_RICONS_SUPPORT)
     icon = (char*)GuiIconText(RICON_ARROW_LEFT_FILL, NULL);
 #endif
     if (GuiButton(leftButtonBound, icon) || // NOTE: also decrease value when the button is held down
-    (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, leftButtonBound) && framesCounter % GUI_SPINNER_HOLD_SPEED == 0) ) 
+    (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, leftButtonBound) && time - timer > GUI_SPINNER_HOLD_SPEED) ) 
         tempValue--;
 
     icon = ">";
@@ -1531,7 +1542,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     icon = (char*)GuiIconText(RICON_ARROW_RIGHT_FILL, NULL);
 #endif    
     if (GuiButton(rightButtonBound, icon) || // NOTE: also increase value when the button is held down
-    (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, rightButtonBound) && framesCounter % GUI_SPINNER_HOLD_SPEED == 0) ) 
+    (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && CheckCollisionPointRec(mouse, rightButtonBound) && time - timer > GUI_SPINNER_HOLD_SPEED) ) 
          tempValue++;
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
@@ -1540,6 +1551,10 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     
     if (tempValue < minValue) tempValue = minValue;
     if (tempValue > maxValue) tempValue = maxValue;
+    
+    // Reset timer
+    if(active && (time - timer > GUI_SPINNER_HOLD_SPEED || timer == 0.0f || timer > time)) 
+        timer = time;
     
     *value = tempValue;
     return pressed;
