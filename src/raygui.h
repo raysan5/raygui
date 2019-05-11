@@ -2041,6 +2041,12 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     GuiTextBoxSetActive(bounds);
                 }
             }
+            else if(!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+            {
+                // When active and the right mouse is clicked outside the textbox we should deactivate it
+                GuiTextBoxSetActive((Rectangle){0,0,-1,-1}); // Set a dummy rect as the active textbox bounds
+                active = false;
+            }
             
             if(active)
             {
