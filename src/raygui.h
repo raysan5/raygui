@@ -4068,7 +4068,8 @@ RAYGUIDEF void GuiLoadStyleProps(const int *props, int count)
     // Load style palette values from array (complete property sets)
     for (int i = 0; i < completeSets; i++)
     {
-        for (int j = 0; j < (NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED); i++) GuiSetStyle(i, j, props[i]);
+        // TODO: This code needs review
+        for (int j = 0; j < (NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED); j++) GuiSetStyle(i, j, props[i]);
     }
 
     // Load style palette values from array (uncomplete property set)
