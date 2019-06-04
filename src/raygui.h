@@ -2334,7 +2334,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                             int startIdx = GuiTextBoxGetByteIndex(text, 0, 0, guiTextBoxState.cursor);
                             int endIdx = startIdx + sz;
                             
-                            if (endIdx <= textSize)
+                            if (endIdx <= textSize && length < textSize - 1)
                             {
                                 guiTextBoxState.cursor++;
                                 guiTextBoxState.select = -1;
