@@ -1,18 +1,21 @@
 /*******************************************************************************************
 *
-*   raygui v2.0-dev - A simple and easy-to-use immedite-mode-gui library
+*   raygui v2.5 - A simple and easy-to-use immedite-mode-gui library
 *
 *   DESCRIPTION:
 *
 *   raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also possible
 *   to be used as a standalone library, as long as input and drawing functions are provided.
 *
-*   Basic controls provided:
+*   Controls provided:
 *
+*   # Container/separators Controls
 *       - WindowBox
 *       - GroupBox
 *       - Line
 *       - Panel
+*
+*   # Basic Controls
 *       - Label
 *       - Button
 *       - LabelButton   --> Label
@@ -31,12 +34,14 @@
 *       - SliderBar     --> Slider
 *       - ProgressBar
 *       - StatusBar
+*       - ScrollBar
 *       - ScrollPanel
+*       - DummyRec
+*
+*   # Advance Controls
 *       - ListView      --> ListElement
 *       - ColorPicker   --> ColorPanel, ColorBarHue
 *       - MessageBox
-*       - DummyRec
-*       - ScrollBar
 *       - Grid
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
@@ -66,8 +71,15 @@
 *       text selection support and text copy/cut/paste support
 *
 *   VERSIONS HISTORY:
-*       2.0 (xx-Dec-2018) Complete review of new controls, redesigned style system
-*       1.9 (01-May-2018) Lot of rework and redesign! Lots of new controls!
+*       2.5 (28-May-2019) Implemented extended GuiTextBox(), GuiValueBox(), GuiSpinner()
+*       2.3 (29-Apr-2019) Added rIcons auxiliar library and support for it, multiple controls reviewed
+*                         Refactor all controls drawing mechanism to use control state
+*       2.2 (05-Feb-2019) Added GuiScrollBar(), GuiScrollPanel(), reviewed GuiListView(), removed Gui*Ex() controls
+*       2.1 (26-Dec-2018) Redesign of GuiCheckBox(), GuiComboBox(), GuiDropdownBox(), GuiToggleGroup() > Use combined text string
+*                         Complete redesign of style system (breaking change)
+*       2.0 (08-Nov-2018) Support controls guiLock and custom fonts, reviewed GuiComboBox(), GuiListView()...
+*       1.9 (09-Oct-2018) Controls review: GuiGrid(), GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()...
+*       1.8 (01-May-2018) Lot of rework and redesign to align with rGuiStyler and rGuiLayout
 *       1.5 (21-Jun-2017) Working in an improved styles system
 *       1.4 (15-Jun-2017) Rewritten all GUI functions (removed useless ones)
 *       1.3 (12-Jun-2017) Redesigned styles system
