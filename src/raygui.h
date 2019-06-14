@@ -37,12 +37,13 @@
 *       - ScrollBar
 *       - ScrollPanel
 *       - DummyRec
+*       - Grid
 *
 *   # Advance Controls
 *       - ListView      --> ListElement
 *       - ColorPicker   --> ColorPanel, ColorBarHue
-*       - MessageBox
-*       - Grid
+*       - MessageBox    --> Label, Button
+*       - TextInputBox  --> Label, TextBox, Button
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
 *
@@ -435,13 +436,14 @@ RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *text, float value, 
 RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
+RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
 
 // Advance controls set
 RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);       // List View control, returns selected list element index
 RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int *enabled, int *active, int *focus, int *scrollIndex, bool editMode); // List View with extended parameters
 RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons);   // Message Box control, displays a message
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons); // Text Input Box control, ask for text
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
-RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
@@ -3916,6 +3918,12 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
     //--------------------------------------------------------------------
 
     return clicked;
+}
+
+// Text Input Box control, ask for text
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons)
+{
+    // TODO.
 }
 
 // Grid control
