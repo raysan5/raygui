@@ -3985,10 +3985,49 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 // Load raygui style file (.rgs)
 RAYGUIDEF void GuiLoadStyle(const char *fileName)
 {
-    FILE *rgsFile = fopen(fileName, "rb");
+    bool tryBinary = false;
+    
+    // Try reading the files as text file first
+    FILE *rgsFile = fopen(fileName, "rt");
 
     if (rgsFile != NULL)
     {
+        char buffer[256];
+        fgets(buffer, 256, rglFile);
+        
+        if (buffer[0] == '#')
+        {
+            int controlId = 0;
+            int propertyId = 0;
+            int propertyValue = 0;
+
+            while (!feof(rglFile))
+            {
+                switch (buffer[0])
+                {
+                    case 'p':
+                    {
+                        sscanf(buffer, "p %d %d %d", controlId, propertyId, propertyValue);
+                        
+                        GuiSetStyle(controlId, propertyId, propertyValue);
+                        
+                    } break;
+                    default: break;
+                }
+
+                fgets(buffer, 256, rglFile);
+            }
+        }
+        else tryBinary = true;
+        
+        fclose(rgsFile);
+    }
+    else return;
+    
+    if (tryBinary)
+    {
+        rgsFile = fopen(fileName, "rb");
+        
         unsigned int value = 0;
 
         char signature[5] = "";
