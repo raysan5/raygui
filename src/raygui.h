@@ -1693,7 +1693,7 @@ static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *p
     
     *pos = k;
     
-	return (rec.x + textOffsetX - 1);
+    return (rec.x + textOffsetX - 1);
 }
 
 static int GetPrevCodepoint(const char *text, const char *start, int *prev) 
@@ -1759,7 +1759,7 @@ static int GuiMeasureTextBoxRev(const char *text, int length, Rectangle rec, int
     
     *pos = k;
     
-	return (i + prev);
+    return (i + prev);
 }
 
 
