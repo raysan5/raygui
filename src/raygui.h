@@ -3993,7 +3993,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     if (rgsFile != NULL)
     {
         char buffer[256];
-        fgets(buffer, 256, rglFile);
+        fgets(buffer, 256, rgsFile);
         
         if (buffer[0] == '#')
         {
@@ -4001,13 +4001,13 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
             int propertyId = 0;
             int propertyValue = 0;
 
-            while (!feof(rglFile))
+            while (!feof(rgsFile))
             {
                 switch (buffer[0])
                 {
                     case 'p':
                     {
-                        sscanf(buffer, "p %d %d %d", controlId, propertyId, propertyValue);
+                        sscanf(buffer, "p %d %d %d", &controlId, &propertyId, &propertyValue);
                         
                         GuiSetStyle(controlId, propertyId, propertyValue);
                         
@@ -4015,7 +4015,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     default: break;
                 }
 
-                fgets(buffer, 256, rglFile);
+                fgets(buffer, 256, rgsFile);
             }
         }
         else tryBinary = true;
