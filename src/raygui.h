@@ -4011,7 +4011,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 {
                     case 'p':
                     {
-                        sscanf(buffer, "p %d %d %d", &controlId, &propertyId, &propertyValue);
+                        sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
                         
                         if (controlId == 0) // DEFAULT control
                         {
