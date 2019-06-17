@@ -3923,7 +3923,11 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
 // Text Input Box control, ask for text
 RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons)
 {
+    int btnIndex = -1;
+    
     // TODO.
+    
+    return btnIndex;
 }
 
 // Grid control
@@ -4009,7 +4013,14 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     {
                         sscanf(buffer, "p %d %d %d", &controlId, &propertyId, &propertyValue);
                         
-                        GuiSetStyle(controlId, propertyId, propertyValue);
+                        if (controlId == 0) // DEFAULT control
+                        {
+                            // If a DEFAULT property is loaded, it is propagated to all controls,
+                            // all DEFAULT properties should be defined first in the file
+                            GuiSetStyle(0, propertyId, propertyValue);
+                            for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
+                        }
+                        else GuiSetStyle(controlId, propertyId, propertyValue);
                         
                     } break;
                     default: break;
