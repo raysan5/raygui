@@ -306,19 +306,6 @@ typedef enum {
 // ProgressBar
 //typedef enum { } GuiProgressBarProperty;
 
-// TextBox / TextBoxMulti / ValueBox / Spinner
-typedef enum {
-    MULTILINE_PADDING = 16,
-    COLOR_SELECTED_FG,
-    COLOR_SELECTED_BG
-} GuiTextBoxProperty;
-
-typedef enum {
-    SELECT_BUTTON_WIDTH = 16,
-    SELECT_BUTTON_PADDING,
-    SELECT_BUTTON_BORDER_WIDTH
-} GuiSpinnerProperty;
-
 // CheckBox
 typedef enum {
     CHECK_TEXT_PADDING = 16
@@ -335,22 +322,18 @@ typedef enum {
     ARROW_RIGHT_PADDING = 16,
 } GuiDropdownBoxProperty;
 
-// ColorPicker
+// TextBox / TextBoxMulti / ValueBox / Spinner
 typedef enum {
-    COLOR_SELECTOR_SIZE = 16,
-    BAR_WIDTH,                  // Lateral bar width
-    BAR_PADDING,                // Lateral bar separation from panel
-    BAR_SELECTOR_HEIGHT,        // Lateral bar selector height
-    BAR_SELECTOR_PADDING        // Lateral bar selector outer padding
-} GuiColorPickerProperty;
+    MULTILINE_PADDING = 16,
+    COLOR_SELECTED_FG,
+    COLOR_SELECTED_BG
+} GuiTextBoxProperty;
 
-// ListView
 typedef enum {
-    ELEMENTS_HEIGHT = 16,
-    ELEMENTS_PADDING,
-    SCROLLBAR_WIDTH,
-    SCROLLBAR_SIDE,             // This property defines vertical scrollbar side (SCROLLBAR_LEFT_SIDE or SCROLLBAR_RIGHT_SIDE)
-} GuiListViewProperty;
+    SELECT_BUTTON_WIDTH = 16,
+    SELECT_BUTTON_PADDING,
+    SELECT_BUTTON_BORDER_WIDTH
+} GuiSpinnerProperty;
 
 // ScrollBar
 typedef enum {
@@ -366,6 +349,23 @@ typedef enum {
     SCROLLBAR_LEFT_SIDE = 0,
     SCROLLBAR_RIGHT_SIDE
 } GuiScrollBarSide;
+
+// ListView
+typedef enum {
+    ELEMENTS_HEIGHT = 16,
+    ELEMENTS_PADDING,
+    SCROLLBAR_WIDTH,
+    SCROLLBAR_SIDE,             // This property defines vertical scrollbar side (SCROLLBAR_LEFT_SIDE or SCROLLBAR_RIGHT_SIDE)
+} GuiListViewProperty;
+
+// ColorPicker
+typedef enum {
+    COLOR_SELECTOR_SIZE = 16,
+    BAR_WIDTH,                  // Lateral bar width
+    BAR_PADDING,                // Lateral bar separation from panel
+    BAR_SELECTOR_HEIGHT,        // Lateral bar selector height
+    BAR_SELECTOR_PADDING        // Lateral bar selector outer padding
+} GuiColorPickerProperty;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -4018,7 +4018,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                             // If a DEFAULT property is loaded, it is propagated to all controls,
                             // all DEFAULT properties should be defined first in the file
                             GuiSetStyle(0, propertyId, propertyValue);
-                            for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
+                            
+                            if (propertyId < NUM_PROPS_DEFAULT) for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
                         }
                         else GuiSetStyle(controlId, propertyId, propertyValue);
                         
@@ -4202,22 +4203,22 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(SPINNER, SELECT_BUTTON_WIDTH, 20);
     GuiSetStyle(SPINNER, SELECT_BUTTON_PADDING, 2);
     GuiSetStyle(SPINNER, SELECT_BUTTON_BORDER_WIDTH, 1);
+    GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
+    GuiSetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS, 0);
+    GuiSetStyle(SCROLLBAR, INNER_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, ARROWS_SIZE, 6);
+    GuiSetStyle(SCROLLBAR, SLIDER_PADDING, 0);
+    GuiSetStyle(SCROLLBAR, SLIDER_SIZE, 16);
+    GuiSetStyle(SCROLLBAR, SCROLL_SPEED, 10);
+    GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
+    GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
+    GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
+    GuiSetStyle(LISTVIEW, SCROLLBAR_SIDE, SCROLLBAR_RIGHT_SIDE);
     GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 6);
     GuiSetStyle(COLORPICKER, BAR_WIDTH, 0x14);
     GuiSetStyle(COLORPICKER, BAR_PADDING, 0xa);
     GuiSetStyle(COLORPICKER, BAR_SELECTOR_HEIGHT, 6);
     GuiSetStyle(COLORPICKER, BAR_SELECTOR_PADDING, 2);
-    GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 0x1e);
-    GuiSetStyle(LISTVIEW, ELEMENTS_PADDING, 2);
-    GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 10);
-    GuiSetStyle(LISTVIEW, SCROLLBAR_SIDE, SCROLLBAR_RIGHT_SIDE);
-    GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
-    GuiSetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS, 0);
-    GuiSetStyle(SCROLLBAR, ARROWS_SIZE, 6);
-    GuiSetStyle(SCROLLBAR, INNER_PADDING, 0);
-    GuiSetStyle(SCROLLBAR, SLIDER_PADDING, 0);
-    GuiSetStyle(SCROLLBAR, SLIDER_SIZE, 16);
-    GuiSetStyle(SCROLLBAR, SCROLL_SPEED, 10);
 }
 
 // Updates controls style with default values
