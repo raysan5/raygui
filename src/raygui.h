@@ -4002,7 +4002,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
     if (rgsFile != NULL)
     {
-        char buffer[256];
+        char buffer[256] = { 0 };
         fgets(buffer, 256, rgsFile);
         
         if (buffer[0] == '#')
@@ -4022,7 +4022,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         if (controlId == 0) // DEFAULT control
                         {
                             // If a DEFAULT property is loaded, it is propagated to all controls,
-                            // all DEFAULT properties should be defined first in the file
+                            // NOTE: All DEFAULT properties should be defined first in the file
                             GuiSetStyle(0, propertyId, propertyValue);
                             
                             if (propertyId < NUM_PROPS_DEFAULT) for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
@@ -4037,7 +4037,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
             }
         }
         else tryBinary = true;
-        
+
         fclose(rgsFile);
     }
     else return;
@@ -4046,41 +4046,52 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     {
         rgsFile = fopen(fileName, "rb");
         
+        if (rgsFile == NULL) return;
+        
         unsigned int value = 0;
 
         char signature[5] = "";
         short version = 0;
-        short numControls = 0;
-        short numPropsDefault = 0;
-        short numPropsExtended = 0;
+        short reserved = 0;
+        int propertiesCount = 0;
 
         fread(signature, 1, 4, rgsFile);
         fread(&version, 1, sizeof(short), rgsFile);
-        fread(&numControls, 1, sizeof(short), rgsFile);
-        fread(&numPropsDefault, 1, sizeof(short), rgsFile);
-        fread(&numPropsExtended, 1, sizeof(short), rgsFile);
+        fread(&reserved, 1, sizeof(short), rgsFile);
+        fread(&propertiesCount, 1, sizeof(int), rgsFile);
 
         if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
             (signature[2] == 'S') &&
             (signature[3] == ' '))
         {
-            for (int i = 0; i < NUM_CONTROLS; i++)
+            short controlId = 0;
+            short propertyId = 0;
+            int propertyValue = 0;
+            
+            for (int i = 0; i < propertiesCount; i++)
             {
-                for (int j = 0; j < NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED; j++)
+                fread(&controlId, 1, sizeof(short), rgsFile);
+                fread(&propertyId, 1, sizeof(short), rgsFile);
+                fread(&propertyValue, 1, sizeof(int), rgsFile);
+
+                if (controlId == 0) // DEFAULT control
                 {
-                    fread(&value, 1, sizeof(unsigned int), rgsFile);
-                    GuiSetStyle(i, j, value);
+                    // If a DEFAULT property is loaded, it is propagated to all controls
+                    // NOTE: All DEFAULT properties should be defined first in the file
+                    GuiSetStyle(0, (int)propertyId, propertyValue);
+                    
+                    if (propertyId < NUM_PROPS_DEFAULT) for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, (int)propertyId, propertyValue);
                 }
+                else GuiSetStyle((int)controlId, (int)propertyId, propertyValue);
             }
 
             // Font loading is highly dependant on raylib API to load font data and image
             // TODO: Find some mechanism to support it in standalone mode
-
 #if !defined(RAYGUI_STANDALONE)
             // Load custom font if available
             int fontDataSize = 0;
-            fwrite(&fontDataSize, 1, sizeof(int), rgsFile);
+            fread(&fontDataSize, 1, sizeof(int), rgsFile);
 
             if (fontDataSize > 0)
             {
@@ -4106,9 +4117,12 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     fread(&imFont.width, 1, sizeof(int), rgsFile);
                     fread(&imFont.height, 1, sizeof(int), rgsFile);
                     fread(&imFont.format, 1, sizeof(int), rgsFile);
-                    fread(&imFont.data, 1, fontImageSize, rgsFile);
+                    
+                    imFont.data = (unsigned char *)malloc(fontImageSize);
+                    fread(imFont.data, 1, fontImageSize, rgsFile);
 
                     font.texture = LoadTextureFromImage(imFont);
+                    
                     UnloadImage(imFont);
                 }
 
