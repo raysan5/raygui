@@ -610,8 +610,6 @@ static int GetTextWidth(const char *text)       // TODO: GetTextSize()
 {
     Vector2 size = { 0 };
 
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
-
     if ((text != NULL) && (text[0] != '\0')) size = MeasureTextEx(guiFont, text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
 
     // TODO: Consider text icon width here???
@@ -672,8 +670,6 @@ static const char *GetTextIcon(const char *text, int *iconId)
 // Gui draw text using default font
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
-
     if ((text != NULL) && (text[0] != '\0'))
     {
         int iconId = 0;
@@ -1633,8 +1629,6 @@ enum {
 static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *pos, int mode)
 {
     // Get gui font properties
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
-    
     const Font font = guiFont;
     const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
     const float spacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
@@ -1719,8 +1713,6 @@ static int GetPrevCodepoint(const char *text, const char *start, int *prev)
 static int GuiMeasureTextBoxRev(const char *text, int length, Rectangle rec, int *pos)
 {
     // Get gui font properties
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
-    
     const Font font = guiFont;
     const float fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
     const float spacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
@@ -2510,7 +2502,6 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     }
     
     // Finally draw the text and selection
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
     DrawTextRecEx(guiFont, &text[textStartIndex], textRec, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), false, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha), selStart, selLength, GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)), GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG)));
     
     return pressed;
@@ -2789,9 +2780,6 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
     bool textHasChange = false;
     int currentLine = 0;
     //const char *numChars = NULL;
-
-    // Security check because font is used directly in this control
-    if (guiFont.texture.id == 0) guiFont = GetFontDefault();
 
     // Update control
     //--------------------------------------------------------------------
@@ -4196,6 +4184,8 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     {
         for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
+    
+    guiFont = GetFontDefault();     // Initialize default font
 
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
