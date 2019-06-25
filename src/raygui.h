@@ -539,8 +539,8 @@ static GuiTextBoxState guiTextBoxState = { .cursor = -1, .start = 0, .index = 0,
     #define CLITERAL    (Color)
 #endif
 
-#define WHITE      CLITERAL{ 255, 255, 255, 255 }   // White
-#define BLACK      CLITERAL{ 0, 0, 0, 255 }         // Black
+#define WHITE      CLITERAL{ 255, 255, 255, 255 }   // White -- GuiColorBarAlpha()
+#define BLACK      CLITERAL{ 0, 0, 0, 255 }         // Black -- GuiColorBarAlpha()
 #define RAYWHITE   CLITERAL{ 245, 245, 245, 255 }   // My own White (raylib logo)
 #define GRAY       CLITERAL{ 130, 130, 130, 255 }   // Gray -- GuiColorBarAlpha()
 
@@ -4021,6 +4021,22 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         else GuiSetStyle(controlId, propertyId, propertyValue);
                         
                     } break;
+                    case 'f':
+                    {
+                        int fontSize = 0;
+                        int fontSpacing = 0;
+                        char fontFileName[256] = { 0 };
+                        sscanf(buffer, "f %d %d %[^\n]s", &fontSize, &fontSpacing, fontFileName);
+
+                        Font font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                        
+                        if ((font.texture.id > 0) && (font.charsCount > 0))
+                        {
+                            GuiFont(font);
+                            GuiSetStyle(DEFAULT, TEXT_SIZE, fontSize);
+                            GuiSetStyle(DEFAULT, TEXT_SPACING, fontSpacing);
+                        }
+                    } break;
                     default: break;
                 }
 
@@ -4038,8 +4054,6 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
         rgsFile = fopen(fileName, "rb");
         
         if (rgsFile == NULL) return;
-        
-        unsigned int value = 0;
 
         char signature[5] = "";
         short version = 0;
