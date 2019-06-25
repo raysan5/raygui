@@ -104,6 +104,16 @@ int main()
         exitWindow = WindowShouldClose();
         
         if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = !showMessageBox;
+        
+        if (IsFileDropped())
+        {
+            int dropsCount = 0;
+            char **droppedFiles = GetDroppedFiles(&dropsCount);
+            
+            if ((dropsCount > 0) && IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
+            
+            ClearDroppedFiles();    // Clear internal buffers
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -126,8 +136,11 @@ int main()
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
             if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
             
-            GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#04#SAMPLE TEXT")) { };
+            GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+            
+            //if (GuiButton((Rectangle){ 25, 255, 125, 30 }, "#05#Open File")) { };
+
+            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, GuiIconText(RICON_FILE_OPEN, "Open File"))) { };
             
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "STATES");
             GuiLock();
@@ -149,7 +162,7 @@ int main()
             // Second GUI column      
             if (GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewActive, &listViewScrollIndex, listViewEditMode)) listViewEditMode = !listViewEditMode;
             if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, listViewExElementsEnable, &listViewExActive, &listViewExFocus, &listViewExScrollIndex, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
-            if (listViewExFocus >= 0 && listViewExFocus < 8) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 385, 10, listViewExElementsEnable[listViewExFocus] ? LIME : MAROON);
+            //if ((listViewExFocus >= 0) && (listViewExFocus < 8)) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 385, 10, (listViewExElementsEnable[listViewExFocus] > 0)? LIME : MAROON);
             
             toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
             
