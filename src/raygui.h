@@ -103,7 +103,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2018 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2019 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -125,7 +125,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "2.0-dev"
+#define RAYGUI_VERSION  "2.5-dev"
 #define RAYGUI_RICONS_SUPPORT
 
 #if !defined(RAYGUI_STANDALONE)
@@ -219,7 +219,7 @@ typedef struct {
 } GuiTextBoxState;
 #endif
 
-// Gui global state enum
+// Gui control state
 typedef enum {
     GUI_STATE_NORMAL = 0,
     GUI_STATE_FOCUSED,
@@ -227,14 +227,14 @@ typedef enum {
     GUI_STATE_DISABLED,
 } GuiControlState;
 
-// Gui global text alignment
+// Gui control text alignment
 typedef enum {
     GUI_TEXT_ALIGN_LEFT = 0,
     GUI_TEXT_ALIGN_CENTER,
     GUI_TEXT_ALIGN_RIGHT,
 } GuiTextAlignment;
 
-// Gui standard controls
+// Gui controls
 typedef enum {
     DEFAULT = 0,
     LABEL,          // LABELBUTTON
@@ -252,9 +252,9 @@ typedef enum {
     COLORPICKER,
     SCROLLBAR,
     RESERVED
-} GuiControlStandard;
+} GuiControl;
 
-// Gui default properties for every control
+// Gui base properties for every control
 typedef enum {
     BORDER_COLOR_NORMAL = 0,
     BASE_COLOR_NORMAL,
@@ -274,15 +274,14 @@ typedef enum {
     RESERVED02
 } GuiControlProperty;
 
-// Gui extended properties depending on control type
-// NOTE: We reserve a fixed size of additional properties per control (8)
+// Gui extended properties depend on control
+// NOTE: We reserve a fixed size of additional properties per control
 
-// Default properties
+// DEFAULT properties
 typedef enum {
     TEXT_SIZE = 16,
     TEXT_SPACING,
     LINE_COLOR,
-    //LINE_THICK,
     BACKGROUND_COLOR,
 } GuiDefaultProperty;
 
@@ -390,7 +389,7 @@ RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set o
 RAYGUIDEF int GuiGetStyle(int control, int property);                   // Get one style property
 
 #if defined(RAYGUI_TEXTBOX_EXTENDED)
-// Global functions for interacting with the active textbox control
+// GuiTextBox() extended functions
 RAYGUIDEF void GuiTextBoxSetActive(Rectangle bounds);                   // Sets the active textbox
 RAYGUIDEF Rectangle GuiTextBoxGetActive(void);                          // Get bounds of active textbox
 RAYGUIDEF void GuiTextBoxSetCursor(int cursor);                         // Set cursor position of active textbox
@@ -398,8 +397,8 @@ RAYGUIDEF int GuiTextBoxGetCursor(void);                                // Get c
 RAYGUIDEF void GuiTextBoxSetSelection(int start, int length);           // Set selection of active textbox
 RAYGUIDEF Vector2 GuiTextBoxGetSelection(void);                         // Get selection of active textbox (x - selection start  y - selection length)
 RAYGUIDEF bool GuiTextBoxIsActive(Rectangle bounds);                    // Returns true if a textbox control with specified `bounds` is the active textbox
-RAYGUIDEF GuiTextBoxState GuiTextBoxGetState();                         // Get state for the active textbox
-RAYGUIDEF void GuiTextBoxSetState(GuiTextBoxState state);               // Set state for the active textbox (state must be valid else things will break)
+RAYGUIDEF int GuiTextBoxGetState(void);                                 // Get state for the active textbox
+RAYGUIDEF void GuiTextBoxSetState(int state);                           // Set state for the active textbox (state must be valid else things will break)
 RAYGUIDEF void GuiTextBoxSelectAll(const char *text);                   // Select all characters in the active textbox (same as pressing `CTRL` + `A`)
 RAYGUIDEF void GuiTextBoxCopy(const char *text);                        // Copy selected text to clipboard from the active textbox (same as pressing `CTRL` + `C`)
 RAYGUIDEF void GuiTextBoxPaste(char *text, int textSize);               // Paste text from clipboard into the textbox (same as pressing `CTRL` + `V`)
@@ -545,7 +544,7 @@ static GuiTextBoxState guiTextBoxState = { .cursor = -1, .start = 0, .index = 0,
 #define RAYWHITE   CLITERAL{ 245, 245, 245, 255 }   // My own White (raylib logo)
 #define GRAY       CLITERAL{ 130, 130, 130, 255 }   // Gray -- GuiColorBarAlpha()
 
-// raylib functions are already implemented in raygui
+// raylib functions already implemented in raygui
 //-------------------------------------------------------------------------------
 static Color GetColor(int hexValue);                // Returns a Color struct from hexadecimal value
 static int ColorToInt(Color color);                 // Returns hexadecimal value for a Color
@@ -564,7 +563,7 @@ static bool IsMouseButtonReleased(int button) { return false; }
 
 static bool IsKeyDown(int key) { return false; }
 static bool IsKeyPressed(int key) { return false; }
-static int GetKeyPressed(void) { return 0; }                     // -- GuiTextBox()
+static int GetKeyPressed(void) { return 0; }                        // -- GuiTextBox()
 //-------------------------------------------------------------------------------
 
 // Drawing required functions
@@ -589,8 +588,8 @@ static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 posit
 //-------------------------------------------------------------------------------
 static Font GetFontDefault(void);   // --  GetTextWidth()
 
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) { return (Vector2){ 0.0f }; }  // Measure text size depending on font
-static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint) {  }   // Draw text using font and additional parameters
+static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) { return (Vector2){ 0.0f }; }  // -- GetTextWidth(), GuiTextBoxMulti()
+static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint) {  }   // -- GuiDrawText()
 //-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
@@ -836,8 +835,8 @@ RAYGUIDEF bool GuiTextBoxIsActive(Rectangle bounds)
     return (bounds.x == guiTextBoxActive.x && bounds.y == guiTextBoxActive.y && 
             bounds.width == guiTextBoxActive.width && bounds.height == guiTextBoxActive.height);
 }
-RAYGUIDEF GuiTextBoxState GuiTextBoxGetState(void) { return guiTextBoxState; }
-RAYGUIDEF void GuiTextBoxSetState(GuiTextBoxState state) 
+RAYGUIDEF int GuiTextBoxGetState(void) { return guiTextBoxState; }
+RAYGUIDEF void GuiTextBoxSetState(int state) 
 { 
     // NOTE: should we check if state values are valid ?!?
     guiTextBoxState = state;
@@ -1492,10 +1491,14 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, tempTextAlign);
 
+    // TODO: Avoid this function, use icon instead or 'v'
     DrawTriangle((Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING), bounds.y + bounds.height/2 - 2 },
                  (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
                  (Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING) + 10, bounds.y + bounds.height/2 - 2 },
                  Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+    
+    //GuiDrawText("v", (Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_RIGHT_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
+    //            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));  
     //--------------------------------------------------------------------
 
     *active = auxActive;
