@@ -203,10 +203,10 @@
     } Rectangle;
 
     // Texture2D type
-    typedef struct Texture2D { } Texture2D;
+    typedef struct Texture2D Texture2D;
 
     // Font type
-    typedef struct Font { } Font;
+    typedef struct Font Font;
 #endif
 
 #if defined(RAYGUI_TEXTBOX_EXTENDED)
@@ -555,41 +555,41 @@ static const char *TextFormat(const char *text, ...);               // Formattin
 
 // Input required functions
 //-------------------------------------------------------------------------------
-static Vector2 GetMousePosition(void) { return (Vector2){ 0, 0 }; }
-static int GetMouseWheelMove(void) { return 0; }
-static bool IsMouseButtonDown(int button) { return false; }
-static bool IsMouseButtonPressed(int button) { return false; }
-static bool IsMouseButtonReleased(int button) { return false; }
+static Vector2 GetMousePosition(void);
+static int GetMouseWheelMove(void);
+static bool IsMouseButtonDown(int button);
+static bool IsMouseButtonPressed(int button);
+static bool IsMouseButtonReleased(int button);
 
-static bool IsKeyDown(int key) { return false; }
-static bool IsKeyPressed(int key) { return false; }
-static int GetKeyPressed(void) { return 0; }                        // -- GuiTextBox()
+static bool IsKeyDown(int key);
+static bool IsKeyPressed(int key);
+static int GetKeyPressed(void);                        // -- GuiTextBox()
 //-------------------------------------------------------------------------------
 
 // Drawing required functions
 //-------------------------------------------------------------------------------
-static void DrawRectangle(int x, int y, int width, int height, Color color) { /* TODO */ }
+static void DrawRectangle(int x, int y, int width, int height, Color color);
 static void DrawRectangleRec(Rectangle rec, Color color) { DrawRectangle(rec.x, rec.y, rec.width, rec.height, color); }
 
-static void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color) { /* TODO */ }
+static void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color);
 
-static void DrawRectangleLines(int x, int y, int width, int height, Color color) { /* TODO */ }             // -- GuiColorPicker()
+static void DrawRectangleLines(int x, int y, int width, int height, Color color);                           // -- GuiColorPicker()
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // -- GuiColorPicker()
 static void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2);  // -- GuiColorPicker()
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);         // -- GuiColorPicker()
 
-static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color) { /* TODO */ }                    // -- GuiDropdownBox()
-static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color) { /* TODO */ }           // -- GuiScrollBar()
+static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color);                                  // -- GuiDropdownBox()
+static void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color);                         // -- GuiScrollBar()
 
-static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 position, Color tint) { }        // -- GuiImageButtonEx()
+static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 position, Color tint);           // -- GuiImageButtonEx()
 //-------------------------------------------------------------------------------
 
 // Text required functions
 //-------------------------------------------------------------------------------
 static Font GetFontDefault(void);   // --  GetTextWidth()
 
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) { return (Vector2){ 0.0f }; }  // -- GetTextWidth(), GuiTextBoxMulti()
-static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint) {  }   // -- GuiDrawText()
+static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);                          // -- GetTextWidth(), GuiTextBoxMulti()
+static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 //-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
