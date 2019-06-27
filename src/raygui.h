@@ -2709,6 +2709,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     {
                         text[keyCount] = (char)key;
                         keyCount++;
+                        text[keyCount] = '\0';
                     }
                 }
             }
