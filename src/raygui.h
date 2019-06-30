@@ -3643,7 +3643,7 @@ RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int
 }
 
 // Color Panel control
-RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
+RAYGUIDEF Color GuiColorPanelEx(Rectangle bounds, Color color, float hue)
 {
     GuiControlState state = guiState;
     Vector2 pickerSelector = { 0 };
@@ -3654,7 +3654,7 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
     pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
 
-    Vector3 maxHue = { hsv.x, 1.0f, 1.0f };
+    Vector3 maxHue = { hue >= 0.0f ? hue : hsv.x, 1.0f, 1.0f };
     Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
     Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
                       (unsigned char)(255.0f*rgbHue.y),
@@ -3715,6 +3715,10 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
     //--------------------------------------------------------------------
 
     return color;
+}
+
+RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color) {
+    return GuiColorPanelEx(bounds, color, -1.0f);
 }
 
 // Color Bar Alpha control
