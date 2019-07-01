@@ -397,8 +397,8 @@ RAYGUIDEF int GuiTextBoxGetCursor(void);                                // Get c
 RAYGUIDEF void GuiTextBoxSetSelection(int start, int length);           // Set selection of active textbox
 RAYGUIDEF Vector2 GuiTextBoxGetSelection(void);                         // Get selection of active textbox (x - selection start  y - selection length)
 RAYGUIDEF bool GuiTextBoxIsActive(Rectangle bounds);                    // Returns true if a textbox control with specified `bounds` is the active textbox
-RAYGUIDEF int GuiTextBoxGetState(void);                                 // Get state for the active textbox
-RAYGUIDEF void GuiTextBoxSetState(int state);                           // Set state for the active textbox (state must be valid else things will break)
+RAYGUIDEF GuiTextBoxState GuiTextBoxGetState(void);                     // Get state for the active textbox
+RAYGUIDEF void GuiTextBoxSetState(GuiTextBoxState state);               // Set state for the active textbox (state must be valid else things will break)
 RAYGUIDEF void GuiTextBoxSelectAll(const char *text);                   // Select all characters in the active textbox (same as pressing `CTRL` + `A`)
 RAYGUIDEF void GuiTextBoxCopy(const char *text);                        // Copy selected text to clipboard from the active textbox (same as pressing `CTRL` + `C`)
 RAYGUIDEF void GuiTextBoxPaste(char *text, int textSize);               // Paste text from clipboard into the textbox (same as pressing `CTRL` + `V`)
@@ -835,8 +835,8 @@ RAYGUIDEF bool GuiTextBoxIsActive(Rectangle bounds)
     return (bounds.x == guiTextBoxActive.x && bounds.y == guiTextBoxActive.y && 
             bounds.width == guiTextBoxActive.width && bounds.height == guiTextBoxActive.height);
 }
-RAYGUIDEF int GuiTextBoxGetState(void) { return guiTextBoxState; }
-RAYGUIDEF void GuiTextBoxSetState(int state) 
+RAYGUIDEF GuiTextBoxState GuiTextBoxGetState(void) { return guiTextBoxState; }
+RAYGUIDEF void GuiTextBoxSetState(GuiTextBoxState state) 
 { 
     // NOTE: should we check if state values are valid ?!?
     guiTextBoxState = state;
