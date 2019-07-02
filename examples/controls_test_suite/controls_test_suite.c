@@ -79,6 +79,8 @@ int main()
     
     bool forceSquaredChecked = false;
     
+    float alphaValue = 0.5f;
+    
     int comboBoxActive = 1;
     
     int toggleGroupActive = 0;
@@ -174,11 +176,13 @@ int main()
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
 
-            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 100, 400 }, &viewScroll);
+            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
             
             GuiSetStyle(DEFAULT, INNER_PADDING, 10);
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar");
             GuiSetStyle(DEFAULT, INNER_PADDING, 2);
+            
+            alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, alphaValue);
             
             if (showMessageBox)
             {
