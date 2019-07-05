@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui - standalone window
+*   raygui - portable window
 *
 *   DEPENDENCIES:
 *       raylib 2.1  - Windowing/input management and drawing.
@@ -20,7 +20,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 
-
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -32,20 +31,18 @@ int main()
     int screenHeight = 600;
     
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
-    InitWindow(screenWidth, screenHeight, "raygui - standalone window");
+    InitWindow(screenWidth, screenHeight, "raygui - portable window");
 
-    // GUI controls initialization
-    //----------------------------------------------------------------------------------
-    bool exitWindow = false;
-    //----------------------------------------------------------------------------------
-    
     // General variables
-    Vector2 mousePos = { 0 };
-    Vector2 windowPos = { 500, 200 };
-    Vector2 panOffset = mousePos;
+    Vector2 mousePosition = { 0 };
+    Vector2 windowPosition = { 500, 200 };
+    Vector2 panOffset = mousePosition;
     bool dragWindow = false;
     
-    SetWindowPosition(windowPos.x, windowPos.y);
+    SetWindowPosition(windowPosition.x, windowPosition.y);
+    
+    bool exitWindow = false;
+    
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -54,25 +51,25 @@ int main()
     {
         // Update
         //----------------------------------------------------------------------------------
-        mousePos = GetMousePosition();
+        mousePosition = GetMousePosition();
         
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
-            if (CheckCollisionPointRec(mousePos, (Rectangle){ 0, 0, screenWidth, 20 }))
+            if (CheckCollisionPointRec(mousePosition, (Rectangle){ 0, 0, screenWidth, 20 }))
             {
                 dragWindow = true;
-                panOffset = mousePos;
+                panOffset = mousePosition;
             }
         }
 
         if (dragWindow)
         {            
-            windowPos.x += (mousePos.x - panOffset.x);
-            windowPos.y += (mousePos.y - panOffset.y);
+            windowPosition.x += (mousePosition.x - panOffset.x);
+            windowPosition.y += (mousePosition.y - panOffset.y);
             
             if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) dragWindow = false;
 
-            SetWindowPosition(windowPos.x, windowPos.y);
+            SetWindowPosition(windowPosition.x, windowPosition.y);
         }
         //----------------------------------------------------------------------------------
 
@@ -82,11 +79,9 @@ int main()
 
             ClearBackground(RAYWHITE);
 
-            // raygui: controls drawing
-            //----------------------------------------------------------------------------------
-            exitWindow = GuiWindowBox((Rectangle){ 0, 0, screenWidth, screenHeight }, "STANDALONE WINDOW");
-            DrawText(FormatText("Mouse Position: [ %.0f, %.0f ]", mousePos.x, mousePos.y), 10, 40, 10, DARKGRAY);
-            //----------------------------------------------------------------------------------
+            exitWindow = GuiWindowBox((Rectangle){ 0, 0, screenWidth, screenHeight }, "PORTABLE WINDOW");
+            
+            DrawText(FormatText("Mouse Position: [ %.0f, %.0f ]", mousePosition.x, mousePosition.y), 10, 40, 10, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------

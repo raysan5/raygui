@@ -16,7 +16,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../../src/raygui.h"
 
 
 //------------------------------------------------------------------------------------
@@ -143,7 +143,7 @@ int main(int argc, char *argv[0])
                 DrawTextureEx(texture, (Vector2){ screenWidth/2 - (float)texture.width*imageScale/2, screenHeight/2 - (float)texture.height*imageScale/2 }, 0.0f, imageScale, WHITE);
                 
                 DrawRectangleLinesEx(imageRec, 1, CheckCollisionPointRec(GetMousePosition(), imageRec) ? RED : DARKGRAY); 
-                DrawText(FormatText("SCALE: %.2f%%", imageScale*100.0f), 20, screenHeight - 40, 20, GetColor(style[DEFAULT_LINES_COLOR]));
+                DrawText(FormatText("SCALE: %.2f%%", imageScale*100.0f), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
             }
             else
             {
@@ -158,13 +158,13 @@ int main(int argc, char *argv[0])
             //-----------------------------------------------------------------------------
             if (windowBoxActive)
             {
-                DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(style[DEFAULT_BACKGROUND_COLOR]), 0.7f));
+                DrawRectangle(0, 0, screenWidth, screenHeight, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.7f));
                 windowBoxActive = !GuiWindowBox((Rectangle){ windowBoxRec.x, windowBoxRec.y, 220, 190 }, "Image Export Options");
             
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 35, 60, 25 }, "File format:");
-                fileFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 },  fileFormatTextList, 3, fileFormatActive); 
+                fileFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 }, TextJoin(fileFormatTextList, 3, ";"), fileFormatActive); 
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 70, 63, 25 }, "Pixel format:");
-                pixelFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 70, 130, 25 },  pixelFormatTextList, 7, pixelFormatActive); 
+                pixelFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 70, 130, 25 }, TextJoin(pixelFormatTextList, 7, ";"), pixelFormatActive); 
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 105, 50, 25 }, "File name:");
                 GuiTextBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 105, 130, 25 }, fileName, 64, true);
                 

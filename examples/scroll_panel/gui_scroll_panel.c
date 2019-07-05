@@ -115,8 +115,8 @@ static void DrawStyleEditControls(void)
     GuiSpinner((Rectangle){ 670, 240, 90, 20 }, &style, 0, 14, false);
     GuiSetStyle(SCROLLBAR, INNER_PADDING, style);
     
-    style = GuiCheckBox((Rectangle){ 565, 280, 20, 20 }, "SHOW_SPINNER_BUTTONS", GuiGetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS));
-    GuiSetStyle(SCROLLBAR, SHOW_SPINNER_BUTTONS, style);
+    style = GuiCheckBox((Rectangle){ 565, 280, 20, 20 }, "ARROWS_VISIBLE", GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE));
+    GuiSetStyle(SCROLLBAR, ARROWS_VISIBLE, style);
     
     style = GuiGetStyle(SCROLLBAR, SLIDER_PADDING);
     GuiLabel((Rectangle){ 555, 325, 110, 10 }, "SLIDER_PADDING");
