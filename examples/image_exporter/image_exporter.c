@@ -9,7 +9,9 @@
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
-*   Copyright (c) 2018 raylib technologies (@raylibtech)
+*   LICENSE: zlib/libpng
+*
+*   Copyright (c) 2019 raylib technologies (@raylibtech)
 *
 ********************************************************************************************/
 
