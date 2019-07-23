@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.5 - A simple and easy-to-use immedite-mode-gui library
+*   raygui v2.5 - A simple and easy-to-use immediate-mode-gui library
 *
 *   DESCRIPTION:
 *
