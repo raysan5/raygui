@@ -26,6 +26,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
+#define RAYGUI_RICONS_SUPPORT
 #include "../../src/raygui.h"
 
 //------------------------------------------------------------------------------------
