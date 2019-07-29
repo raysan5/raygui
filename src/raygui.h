@@ -63,7 +63,7 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
-*   #define RAYGUI_RICONS_SUPPORT
+*   #define RAYGUI_SUPPORT_RICONS
 *       Includes ricons.h header defining a set of 128 icons (binary format) to be used on
 *       multiple controls and following raygui styles
 *
@@ -468,7 +468,7 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text wit
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     #if defined(RAYGUI_STANDALONE)
         #define RICONS_STANDALONE
     #endif
@@ -631,7 +631,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 // Get text icon if provided and move text cursor
 static const char *GetTextIcon(const char *text, int *iconId)
 {
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     if (text[0] == '#')     // Maybe we have an icon!
     {
         char iconValue[4] = { 0 };
@@ -675,7 +675,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
         if (iconId > 0)
         {
             textWidth += RICONS_SIZE;
@@ -708,7 +708,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Draw text (with icon if available)
         //---------------------------------------------------------------------------------
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
         #define ICON_TEXT_PADDING   4
 
         if (iconId > 0)
@@ -876,7 +876,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *text)
     int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     clicked = GuiButton(buttonRec, GuiIconText(RICON_CROSS_SMALL, NULL));
 #else
     clicked = GuiButton(buttonRec, "x");
@@ -1557,7 +1557,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     
     char *icon = "<";
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     icon = (char *)GuiIconText(RICON_ARROW_LEFT_FILL, NULL);
 #endif
     if (GuiButton(leftButtonBound, icon) || // NOTE: also decrease value when the button is held down
@@ -1569,7 +1569,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     }
 
     icon = ">";
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     icon = (char *)GuiIconText(RICON_ARROW_RIGHT_FILL, NULL);
 #endif    
     if (GuiButton(rightButtonBound, icon) || // NOTE: also increase value when the button is held down
@@ -2538,7 +2538,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_RICONS_SUPPORT)
+#if defined(RAYGUI_SUPPORT_RICONS)
     if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
     if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #else
@@ -4263,6 +4263,7 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
 // a number that can change between ricon versions
 RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
 {
+#if defined(RAYGUI_SUPPORT_RICONS)
     static char buffer[1024] = { 0 };
     memset(buffer, 0, 1024);
 
@@ -4278,6 +4279,9 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
     }
 
     return buffer;
+#else
+    return NULL;
+#endif
 }
 
 //----------------------------------------------------------------------------------
