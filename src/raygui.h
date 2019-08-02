@@ -440,7 +440,7 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);        
 RAYGUIDEF bool GuiListView(Rectangle bounds, const char *text, int *active, int *scrollIndex, bool editMode);       // List View control, returns selected list element index
 RAYGUIDEF bool GuiListViewEx(Rectangle bounds, const char **text, int count, int *enabled, int *active, int *focus, int *scrollIndex, bool editMode); // List View with extended parameters
 RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons);   // Message Box control, displays a message
-RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons); // Text Input Box control, ask for text
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *text, const char *buttons);          // Text Input Box control, ask for text
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 
 // Styles loading functions
@@ -3878,20 +3878,19 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
 
     int buttonsCount = 0;
     const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
+    Rectangle buttonBounds = { 0 };
+    buttonBounds.x = bounds.x + MESSAGEBOX_BUTTON_PADDING;
+    buttonBounds.y = bounds.y + bounds.height - MESSAGEBOX_BUTTON_HEIGHT - MESSAGEBOX_BUTTON_PADDING;
+    buttonBounds.width = (bounds.width - MESSAGEBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
+    buttonBounds.height = MESSAGEBOX_BUTTON_HEIGHT;
 
     Vector2 textSize = MeasureTextEx(guiFont, message, GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
 
     Rectangle textBounds = { 0 };
     textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
-    textBounds.y = bounds.y + WINDOW_STATUSBAR_HEIGHT + (bounds.height - WINDOW_STATUSBAR_HEIGHT)/4 - textSize.y/2;
+    textBounds.y = bounds.y + WINDOW_STATUSBAR_HEIGHT + (bounds.height - WINDOW_STATUSBAR_HEIGHT - MESSAGEBOX_BUTTON_HEIGHT - MESSAGEBOX_BUTTON_PADDING)/2 - textSize.y/2;
     textBounds.width = textSize.x;
     textBounds.height = textSize.y;
-
-    Rectangle buttonBounds = { 0 };
-    buttonBounds.x = bounds.x + MESSAGEBOX_BUTTON_PADDING;
-    buttonBounds.y = bounds.y + bounds.height/2 + bounds.height/4 - MESSAGEBOX_BUTTON_HEIGHT/2;
-    buttonBounds.width = (bounds.width - MESSAGEBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
-    buttonBounds.height = MESSAGEBOX_BUTTON_HEIGHT;
 
     // Draw control
     //--------------------------------------------------------------------
@@ -3918,11 +3917,45 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
 }
 
 // Text Input Box control, ask for text
-RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons)
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *text, const char *buttons)
 {
-    int btnIndex = -1;
+    #define TEXTINPUTBOX_BUTTON_HEIGHT      24
+    #define TEXTINPUTBOX_BUTTON_PADDING     10
+    #define TEXTINPUTBOX_HEIGHT             30
     
-    // TODO: GuiTextInputBox()
+    int btnIndex = -1;
+
+    int buttonsCount = 0;
+    const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
+    Rectangle buttonBounds = { 0 };
+    buttonBounds.x = bounds.x + TEXTINPUTBOX_BUTTON_PADDING;
+    buttonBounds.y = bounds.y + bounds.height - TEXTINPUTBOX_BUTTON_HEIGHT - TEXTINPUTBOX_BUTTON_PADDING;
+    buttonBounds.width = (bounds.width - TEXTINPUTBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
+    buttonBounds.height = TEXTINPUTBOX_BUTTON_HEIGHT;
+
+    Rectangle textBoxBounds = { 0 };
+    textBoxBounds.x = bounds.x + TEXTINPUTBOX_BUTTON_PADDING;
+    textBoxBounds.y = bounds.y + WINDOW_STATUSBAR_HEIGHT + (bounds.height - WINDOW_STATUSBAR_HEIGHT - TEXTINPUTBOX_BUTTON_HEIGHT - TEXTINPUTBOX_BUTTON_PADDING)/2 - TEXTINPUTBOX_HEIGHT/2;
+    textBoxBounds.width = bounds.width - TEXTINPUTBOX_BUTTON_PADDING*2;
+    textBoxBounds.height = TEXTINPUTBOX_HEIGHT;
+    
+    // Draw control
+    //--------------------------------------------------------------------
+    if (GuiWindowBox(bounds, windowTitle)) btnIndex = 0;
+
+    GuiTextBox(textBoxBounds, text, 256, true);
+
+    int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    
+    for (int i = 0; i < buttonsCount; i++)
+    {
+        if (GuiButton(buttonBounds, buttonsText[i])) btnIndex = i + 1;
+        buttonBounds.x += (buttonBounds.width + MESSAGEBOX_BUTTON_PADDING);
+    }
+
+    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, prevBtnTextAlignment);
+    //--------------------------------------------------------------------
     
     return btnIndex;
 }

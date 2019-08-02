@@ -95,6 +95,9 @@ int main()
     
     bool exitWindow = false;
     bool showMessageBox = false;
+    
+    char textInput[256] = { 0 };
+    bool showTextInputBox = false;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -107,6 +110,8 @@ int main()
         exitWindow = WindowShouldClose();
         
         if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = !showMessageBox;
+        
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showTextInputBox = true;
         
         if (IsFileDropped())
         {
@@ -188,10 +193,20 @@ int main()
             if (showMessageBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int message = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(RICON_EXIT, "Closing rTexPacker"), "Do you really want to exit?", "Yes;No"); 
+                int result = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(RICON_EXIT, "Closing rTexPacker"), "Do you really want to exit?", "Yes;No"); 
             
-                if ((message == 0) || (message == 2)) showMessageBox = false;
-                else if (message == 1) exitWindow = true;
+                if ((result == 0) || (result == 2)) showMessageBox = false;
+                else if (result == 1) exitWindow = true;
+            }
+            
+            if (showTextInputBox)
+            {
+                char textInputTemp[256] = { 0 };
+                DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
+                int result = GuiTextInputBox((Rectangle){ GetScreenWidth()/2 - 120, GetScreenHeight()/2 - 60, 240, 120 }, GuiIconText(RICON_FILE_SAVE, "Save file as..."), textInputTemp, "Ok;Cancel");
+                
+                if ((result == 0) || (result == 2)) showTextInputBox = false;
+                else if (result == 1) strcpy(textInput, textInputTemp);
             }
 
             //GuiEnable();
