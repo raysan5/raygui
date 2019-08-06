@@ -38,7 +38,7 @@ int main()
     //---------------------------------------------------------------------------------------
     int screenWidth = 690;
     int screenHeight = 560;
-
+    
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
     SetExitKey(0);
 
@@ -61,14 +61,12 @@ int main()
     
     int listViewScrollIndex = 0;
     int listViewActive = -1;
-    bool listViewEditMode = false;
-    
+
     int listViewExScrollIndex = 0;
-    int listViewExActive = -1;
+    int listViewExActive = 2;
     int listViewExFocus = -1;
     const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
-    int listViewExElementsEnable[8] = {1, 0, 1, 1, 0, 0, 1};
-    bool listViewExEditMode = false;
+    int listViewExElementsEnable[8] = { 1, 0, 1, 1, 0, 0, 1 };
     
     char multiTextBoxText[141] = "Multi text box";    
     bool multiTextBoxEditMode = false;
@@ -164,14 +162,14 @@ int main()
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
-            
-            // Second GUI column      
-            if (GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewActive, &listViewScrollIndex, listViewEditMode)) listViewEditMode = !listViewEditMode;
-            if (GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, listViewExElementsEnable, &listViewExActive, &listViewExFocus, &listViewExScrollIndex, listViewExEditMode)) listViewExEditMode = !listViewExEditMode;
-            //if ((listViewExFocus >= 0) && (listViewExFocus < 8)) DrawText(FormatText("FOCUS: %s", listViewExList[listViewExFocus]), 165, 385, 10, (listViewExElementsEnable[listViewExFocus] > 0)? LIME : MAROON);
-            
+
+            // Second GUI column
+            listViewActive = GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, listViewActive);
+            listViewExActive = GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, &listViewExFocus, &listViewExScrollIndex, listViewExActive);
+
             toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
             
             // Third GUI column
@@ -189,7 +187,7 @@ int main()
             GuiSetStyle(DEFAULT, INNER_PADDING, 2);
             
             alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, alphaValue);
-            
+
             if (showMessageBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
@@ -208,8 +206,7 @@ int main()
                 if ((result == 0) || (result == 2)) showTextInputBox = false;
                 else if (result == 1) strcpy(textInput, textInputTemp);
             }
-
-            //GuiEnable();
+            
             GuiUnlock();
             //----------------------------------------------------------------------------------
 
