@@ -29,6 +29,11 @@
 #define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
+#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+
+#define GUI_FILE_DIALOG_IMPLEMENTATION
+#include "gui_file_dialog.h"
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -87,6 +92,8 @@ int main()
     Vector2 viewScroll = { 0, 0 };
     //----------------------------------------------------------------------------------
     
+    GuiFileDialogState fileDialogState = InitGuiFileDialog();
+
     // Custom GUI font loading
     //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
     //GuiFont(font);
@@ -111,6 +118,8 @@ int main()
         
         if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showTextInputBox = true;
         
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O)) fileDialogState.fileDialogActive = !fileDialogState.fileDialogActive;
+        
         if (IsFileDropped())
         {
             int dropsCount = 0;
@@ -119,6 +128,11 @@ int main()
             if ((dropsCount > 0) && IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
             
             ClearDroppedFiles();    // Clear internal buffers
+        }
+        
+        if (fileDialogState.SelectFilePressed)
+        {
+            // TODO: Load/Save (state.dirPathText/state.fileNameText);
         }
         //----------------------------------------------------------------------------------
 
@@ -130,7 +144,7 @@ int main()
  
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            if (dropDown000EditMode || dropDown001EditMode) GuiLock();
+            if (dropDown000EditMode || dropDown001EditMode || fileDialogState.fileDialogActive) GuiLock();
             //GuiDisable();
             
             // First GUI column
@@ -155,7 +169,7 @@ int main()
             GuiState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "#15#PRESSED")) { }
             GuiState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
             GuiState(GUI_STATE_NORMAL);
-            GuiUnlock();
+            if (!fileDialogState.fileDialogActive) GuiUnlock();
             
             comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
             
@@ -208,6 +222,12 @@ int main()
             }
             
             GuiUnlock();
+            
+            // GUI: About Window
+            //--------------------------------------------------------------------------------
+            GuiFileDialog(&fileDialogState);
+            //--------------------------------------------------------------------------------
+
             //----------------------------------------------------------------------------------
 
         EndDrawing();
