@@ -115,7 +115,7 @@ typedef struct FileInfo {
 static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt);
 
 // List View control for files info with extended parameters
-static int GuiListViewFiles(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active)
+static int GuiListViewFiles(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);
 //static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int active)
 
 //----------------------------------------------------------------------------------

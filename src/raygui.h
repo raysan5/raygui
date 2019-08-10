@@ -3714,6 +3714,12 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *t
     #define TEXTINPUTBOX_BUTTON_PADDING     10
     #define TEXTINPUTBOX_HEIGHT             30
     
+    #define MAX_FILENAME_LENGTH            256
+    
+    // Used to enable text edit mode
+    // WARNING: No more than one GuiTextInputBox() should be open at the same time
+    static textEditMode = false;
+    
     int btnIndex = -1;
 
     int buttonsCount = 0;
@@ -3734,7 +3740,7 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *t
     //--------------------------------------------------------------------
     if (GuiWindowBox(bounds, windowTitle)) btnIndex = 0;
 
-    GuiTextBox(textBoxBounds, text, 256, true);
+    if (GuiTextBox(textBoxBounds, text, MAX_FILENAME_LENGTH, textEditMode)) textEditMode = !textEditMode;
 
     int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);

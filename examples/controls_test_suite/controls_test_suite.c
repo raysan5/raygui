@@ -103,6 +103,8 @@ int main()
     
     char textInput[256] = { 0 };
     bool showTextInputBox = false;
+    
+    char textInputFileName[256] = { 0 };
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -213,12 +215,21 @@ int main()
             
             if (showTextInputBox)
             {
-                char textInputTemp[256] = { 0 };
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiTextInputBox((Rectangle){ GetScreenWidth()/2 - 120, GetScreenHeight()/2 - 60, 240, 120 }, GuiIconText(RICON_FILE_SAVE, "Save file as..."), textInputTemp, "Ok;Cancel");
+                int result = GuiTextInputBox((Rectangle){ GetScreenWidth()/2 - 120, GetScreenHeight()/2 - 60, 240, 120 }, GuiIconText(RICON_FILE_SAVE, "Save file as..."), textInput, "Ok;Cancel");
                 
-                if ((result == 0) || (result == 2)) showTextInputBox = false;
-                else if (result == 1) strcpy(textInput, textInputTemp);
+                if (result == 1)
+                {
+                    // TODO: Validate textInput value and save
+                    
+                    strcpy(textInputFileName, textInput);
+                }
+                
+                if ((result == 0) || (result == 1) || (result == 2)) 
+                {
+                    showTextInputBox = false;
+                    strcpy(textInput, "\0");
+                }
             }
             
             GuiUnlock();
