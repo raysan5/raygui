@@ -3295,6 +3295,8 @@ RAYGUIDEF int GuiListViewEx(Rectangle bounds, const char **text, int count, int 
     
     // Get items on the list
     int visibleItems = bounds.height/(GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT) + GuiGetStyle(LISTVIEW, ELEMENTS_PADDING));
+    if (visibleItems > count) visibleItems = count;
+    
     int startIndex = (scrollIndex == NULL)? 0 : *scrollIndex;
     if ((startIndex < 0) || (startIndex > (count - visibleItems))) startIndex = 0;
     int endIndex = startIndex + visibleItems;
@@ -3718,7 +3720,7 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *t
     
     // Used to enable text edit mode
     // WARNING: No more than one GuiTextInputBox() should be open at the same time
-    static textEditMode = false;
+    static bool textEditMode = false;
     
     int btnIndex = -1;
 
