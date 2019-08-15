@@ -9,6 +9,13 @@
 *       INIT: GuiFileDialogState state = InitGuiFileDialog();
 *       DRAW: GuiFileDialog(&state);
 *
+*   NOTE: This module depends on some raylib file system functions:
+*       - GetDirectoryFiles()
+*       - ClearDirectoryFiles()
+*       - GetWorkingDirectory()
+*       - DirectoryExists()
+*       - FileExists()
+*
 *   LICENSE: Propietary License
 *
 *   Copyright (c) 2019 raylib technologies (@raylibtech). All Rights Reserved.
@@ -101,6 +108,8 @@ void GuiFileDialog(GuiFileDialogState *state);
 
 #include "raygui.h"
 
+#include <string.h>     // Required for: strcpy()
+
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
@@ -186,7 +195,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         //------------------------------------------------------------------------------------
         if (dirFilesIcon == NULL)
         {
-            dirFilesIcon = (char **)malloc(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
+            dirFilesIcon = (char **)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
             for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)calloc(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
         }
     
@@ -201,9 +210,9 @@ void GuiFileDialog(GuiFileDialogState *state)
             // Move dir path one level up
             strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
             
-            // Free previous dirFiles (reloaded by ReadDirectoryFiles())
-            for (int i = 0; i < state->dirFilesCount; i++) free(state->dirFiles[i]);
-            free(state->dirFiles);
+            // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
+            for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
+            RL_FREE(state->dirFiles);
             
             // Read files in the new path
             state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
@@ -220,9 +229,9 @@ void GuiFileDialog(GuiFileDialogState *state)
                 // Verify if a valid path has been introduced
                 if (DirectoryExists(state->dirPathText))
                 {
-                    // Free previous dirFiles (reloaded by ReadDirectoryFiles())
-                    for (int i = 0; i < state->dirFilesCount; i++) free(state->dirFiles[i]);
-                    free(state->dirFiles);
+                    // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
+                    for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
+                    RL_FREE(state->dirFiles);
                     
                     // Read files in new path
                     state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
@@ -257,9 +266,9 @@ void GuiFileDialog(GuiFileDialogState *state)
                 
                 strcpy(state->dirPathTextCopy, state->dirPathText);
                 
-                // Free previous dirFiles (reloaded by ReadDirectoryFiles())
-                for (int i = 0; i < state->dirFilesCount; i++) free(state->dirFiles[i]);
-                free(state->dirFiles);
+                // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
+                for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
+                RL_FREE(state->dirFiles);
                 
                 // Read files in new path
                 state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
@@ -312,15 +321,15 @@ void GuiFileDialog(GuiFileDialogState *state)
         // File dialog has been closed!
         if (!state->fileDialogActive)
         {
-            // Free dirFiles memory
+            // RL_FREE dirFiles memory
             for (int i = 0; i < state->dirFilesCount; i++) 
             {
-                free(state->dirFiles[i]);
-                free(dirFilesIcon[i]);
+                RL_FREE(state->dirFiles[i]);
+                RL_FREE(dirFilesIcon[i]);
             }
             
-            free(state->dirFiles);
-            free(dirFilesIcon);
+            RL_FREE(state->dirFiles);
+            RL_FREE(dirFilesIcon);
             
             dirFilesIcon = NULL;
             state->dirFiles = NULL;
@@ -332,8 +341,8 @@ void GuiFileDialog(GuiFileDialogState *state)
 static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
 {
     int validFilesCount = 0;
-    char **validFiles = (char **)malloc(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
-    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)malloc(MAX_DIR_PATH_LENGTH);    // Max file name length
+    char **validFiles = (char **)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_MALLOC(MAX_DIR_PATH_LENGTH);    // Max file name length
     
     int filterExtCount = 0;
     const char **extensions = GuiTextSplit(filterExt, &filterExtCount, NULL);
