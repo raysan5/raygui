@@ -68,8 +68,7 @@ int main()
     int listViewExActive = 2;
     int listViewExFocus = -1;
     const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
-    int listViewExElementsEnable[8] = { 1, 0, 1, 1, 0, 0, 1 };
-    
+
     char multiTextBoxText[141] = "Multi text box";    
     bool multiTextBoxEditMode = false;
     Color colorPickerValue = RED;
@@ -182,6 +181,7 @@ int main()
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, sliderBarValue, 0, 100, true);
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, progressValue, 0, 1, true);
 
+            // NOTE: View rectangle could be used to perform some scissor test
             Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
             
             GuiSetStyle(DEFAULT, INNER_PADDING, 10);

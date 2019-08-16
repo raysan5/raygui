@@ -188,15 +188,17 @@ void DrawGUI()
     if (showMenu)
     {
         GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 24); // make items look a little bigger
-        const char* menuItems[] = { "#17# Cut", "#16# Copy", "#18# Paste", "#101# SelectAll" };
+        const char *menuItems[] = { "#17# Cut", "#16# Copy", "#18# Paste", "#101# SelectAll" };
         int enabledItems[] = { textboxActive < 2 ? 1 : 0, textboxActive < 2 ? 1 : 0, GetClipboardText() != NULL, 1 };
-        int active=-1, focus=0, scroll=0;
+        int active = -1, focus = 0, scroll = 0;
+        
         GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Fixes visual glitch with other alignments
         active = GuiListViewEx(menuRect, menuItems, SIZEOF(menuItems), &focus, &scroll, active);
+        
         if (active != -1)
         {
             showMenu = false;
-            char* text = (textboxActive == 1) ? text1 : text0;
+            char *text = (textboxActive == 1) ? text1 : text0;
             switch(active)
             {
                 case 0: GuiTextBoxCut(text); break;
