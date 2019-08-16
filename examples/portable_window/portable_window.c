@@ -18,7 +18,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../../src/raygui.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point

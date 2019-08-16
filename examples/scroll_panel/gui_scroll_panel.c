@@ -24,7 +24,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "../src/raygui.h"
+#include "../../src/raygui.h"
 
 
 static void DrawStyleEditControls(void);  // Draw and process scroll bar style edition controls

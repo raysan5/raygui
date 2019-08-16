@@ -40,7 +40,6 @@ typedef struct {
     
     bool fileDialogActive;
     
-    bool dirBackPressed;
     bool dirPathEditMode;
     char dirPathText[256];
     
@@ -106,7 +105,7 @@ void GuiFileDialog(GuiFileDialogState *state);
 ************************************************************************************/
 #if defined(GUI_FILE_DIALOG_IMPLEMENTATION)
 
-#include "raygui.h"
+#include "../../src/raygui.h"
 
 #include <string.h>     // Required for: strcpy()
 
@@ -157,7 +156,6 @@ GuiFileDialogState InitGuiFileDialog(void)
     state.position = (Vector2){ GetScreenWidth()/2 - 480/2, GetScreenHeight()/2 - 305/2 };
     
     state.fileDialogActive = false;
-    state.dirBackPressed = false;
     state.dirPathEditMode = false;
     
     state.filesListActive = -1;
@@ -303,7 +301,10 @@ void GuiFileDialog(GuiFileDialogState *state)
                         }
                     }
                 }
-                else strcpy(state->fileNameText, state->fileNameTextCopy);
+                else 
+                {
+                    strcpy(state->fileNameText, state->fileNameTextCopy);
+                }
             }
             
             state->fileNameEditMode = !state->fileNameEditMode;

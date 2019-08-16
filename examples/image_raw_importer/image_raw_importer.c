@@ -18,7 +18,8 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#define RAYGUI_SUPPORT_RICONS
+#include "../../src/raygui.h"
 
 #include <string.h>             // Required for: strcpy()
 #include <stdlib.h>             // Required for: atoi()

@@ -24,9 +24,9 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_RICONS_SUPPORT
+#define RAYGUI_SUPPORT_RICONS
 #define RAYGUI_TEXTBOX_EXTENDED
-#include "../src/raygui.h"
+#include "../../src/raygui.h"
 
 #include <stdio.h>
 #include <limits.h>
@@ -57,7 +57,6 @@ struct {
     { .bounds = (Rectangle){680,60,100,25}, .maxWidth = 100 }
 };
 
-
 int fontSize = 10, fontSpacing = 1, padding = 0, border = 0;
 Font font = {0};
 Color colorBG = {0}, colorFG = {0}, *colorSelected = NULL;
@@ -65,8 +64,6 @@ Color colorBG = {0}, colorFG = {0}, *colorSelected = NULL;
 bool showMenu = false;
 Rectangle menuRect = {0};
 Texture2D pattern = {0};
-
-
 
 // -----------------
 // FUNCTIONS
@@ -94,9 +91,9 @@ bool ColorButton(Rectangle bounds, Color color)
 void UpdateGUI()
 {
     // Check all of the 4 textboxes to get the active textbox
-    for(int i=0; i<SIZEOF(textbox); ++i)
+    for (int i = 0; i < SIZEOF(textbox); i++)
     {
-        if(GuiTextBoxIsActive(textbox[i].bounds))
+        if (GuiTextBoxIsActive(textbox[i].bounds))
         {
             textboxActive = i;
             break;
@@ -105,33 +102,39 @@ void UpdateGUI()
     
     // Show/Hide the textbox menu
     Vector2 mouse = GetMousePosition();
-    if(textboxActive < 2 && !showMenu && CheckCollisionPointRec(mouse, textbox[textboxActive].bounds) && IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) 
+    if ((textboxActive < 2) && !showMenu && CheckCollisionPointRec(mouse, textbox[textboxActive].bounds) && IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) 
     {
         showMenu = true;
         menuRect = (Rectangle){mouse.x, mouse.y, 80, 110};
     }
-    // code for hiding the menu
-    if(showMenu && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !CheckCollisionPointRec(mouse, menuRect)) showMenu = false;
     
-    // HANDLE DROPPED FONT FILES, IF ANY
-    if(IsFileDropped()) 
+    // Menu hidding logic
+    if (showMenu && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !CheckCollisionPointRec(mouse, menuRect)) showMenu = false;
+    
+    // Fonts drag & drop logic
+    if (IsFileDropped()) 
     {
         int count = 0;
-        char** files = GetDroppedFiles(&count);
-        if(IsFileExtension(files[0], ".ttf") || IsFileExtension(files[0], ".fnt"))
+        char **files = GetDroppedFiles(&count);
+        
+        if (IsFileExtension(files[0], ".ttf") || 
+            IsFileExtension(files[0], ".otf") || 
+            IsFileExtension(files[0], ".fnt"))
         {
             Font fnt = LoadFont(files[0]);
-            if(fnt.texture.id != 0)
+            
+            if (fnt.texture.id != 0)
             {
                 // Font was loaded, only change font on success
                 GuiFont(fnt);
                 fontSize = fnt.baseSize;
 
                 // Remove old font
-                if(font.texture.id != 0) UnloadFont(font);
+                if (font.texture.id != 0) UnloadFont(font);
                 font = fnt;
             }
         }
+        
         ClearDroppedFiles();
     }
 }
@@ -141,7 +144,7 @@ void DrawGUI()
 {
     // DRAW TEXTBOXES TO TEST
     // Set custom style for textboxes
-    if(font.texture.id != 0) GuiFont(font); // Use our custom font if valid
+    if (font.texture.id != 0) GuiFont(font); // Use our custom font if valid
     GuiSetStyle(DEFAULT, TEXT_SIZE, fontSize);
     GuiSetStyle(DEFAULT, TEXT_SPACING, fontSpacing);
     GuiSetStyle(TEXTBOX, INNER_PADDING, padding);
@@ -165,13 +168,13 @@ void DrawGUI()
     char hex[(((textboxActive == 1) ? SIZEOF(text1) : SIZEOF(text0)) +1)*3 + 1];
     char* text = (textboxActive == 1) ? text1 : text0;
     int maxSize = (textboxActive == 1) ? SIZEOF(text1) : SIZEOF(text0);
-    for(int i=0, j=0; i < maxSize; ++i, j+=3) 
+    for (int i=0, j=0; i < maxSize; ++i, j+=3) 
     {
-        sprintf(&hex[j], "%02hhX ", (char)text[i]);
+        sprintf(&hex[j], "%02Xh ", (char)text[i]);
     }
     
     int startIdx = 0, endIdx = 0;
-    if(textboxActive < 2)
+    if (textboxActive < 2)
     {
         Vector2 sel = GuiTextBoxGetSelection();
         startIdx = GuiTextBoxGetByteIndex(text, 0, 0, sel.x);
@@ -182,15 +185,15 @@ void DrawGUI()
     
     // DISPLAY A MENU ON RIGHT CLICKING A TEXTBOX
      // draw the menu and handle clicked item
-    if(showMenu)
+    if (showMenu)
     {
         GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 24); // make items look a little bigger
         const char* menuItems[] = { "#17# Cut", "#16# Copy", "#18# Paste", "#101# SelectAll" };
         int enabledItems[] = { textboxActive < 2 ? 1 : 0, textboxActive < 2 ? 1 : 0, GetClipboardText() != NULL, 1 };
         int active=-1, focus=0, scroll=0;
         GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Fixes visual glitch with other alignments
-        GuiListViewEx(menuRect, menuItems, SIZEOF(menuItems), enabledItems, &active, &focus, &scroll, true);
-        if(active != -1)
+        active = GuiListViewEx(menuRect, menuItems, SIZEOF(menuItems), &focus, &scroll, active);
+        if (active != -1)
         {
             showMenu = false;
             char* text = (textboxActive == 1) ? text1 : text0;
@@ -226,20 +229,20 @@ void DrawGUI()
     int width = textbox[textboxActive].bounds.width, height = textbox[textboxActive].bounds.height;
     GuiGroupBox((Rectangle){430,320,175,100}, GuiIconText(RICON_CURSOR_SCALE, "SCALE"));
     GuiLabel((Rectangle){435,340,55,20}, "Width");
-    if(GuiSpinner((Rectangle){495,340,100,20}, &width, 30, textbox[textboxActive].maxWidth, true)) changed = true;
+    if (GuiSpinner((Rectangle){495,340,100,20}, &width, 30, textbox[textboxActive].maxWidth, true)) changed = true;
     GuiLabel((Rectangle){435,380,55,20}, "Height");
-    if(GuiSpinner((Rectangle){495,380,100,20}, &height, 12, TEXTBOX_MAX_HEIGHT, true)) changed = true;
+    if (GuiSpinner((Rectangle){495,380,100,20}, &height, 12, TEXTBOX_MAX_HEIGHT, true)) changed = true;
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     GuiLabel((Rectangle){30,290,740,10}, GuiIconText(RICON_TEXT_T, " DRAG A FONT FILE (*.TTF, *.FNT) ANYWHERE TO CHANGE THE DEFAULT FONT!"));
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     textbox[textboxActive].bounds.y = 85 - height;
     textbox[textboxActive].bounds.height = height;
     textbox[textboxActive].bounds.width = width;
-    if(changed) GuiTextBoxSetActive(textbox[textboxActive].bounds);
+    if (changed) GuiTextBoxSetActive(textbox[textboxActive].bounds);
     
     // UI for selecting the selected text background and foreground color
-    if(ColorButton((Rectangle){625,320,30,30}, colorFG)) colorSelected = &colorFG;
-    if(ColorButton((Rectangle){625,389,30,30}, colorBG)) colorSelected = &colorBG;
+    if (ColorButton((Rectangle){625,320,30,30}, colorFG)) colorSelected = &colorFG;
+    if (ColorButton((Rectangle){625,389,30,30}, colorBG)) colorSelected = &colorBG;
     *colorSelected = GuiColorPicker((Rectangle){660,320,90,85}, *colorSelected);
     float alpha = colorSelected->a;
     GuiSetStyle(SLIDER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Slider for the selected color alpha value
@@ -265,7 +268,7 @@ int main(int argc, char **argv)
     
     // Load initial style
 	GuiLoadStyleDefault();
-    //font = LoadFont("/home/adrian/Descărcări/raylib/examples/text/resources/notoCJK.fnt");
+    //font = LoadFont("resources/notoCJK.fnt");
     //GuiFont(font);
     
     fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
