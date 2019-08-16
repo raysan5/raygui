@@ -137,7 +137,8 @@ int main()
             //GuiDisable();
             
             // First GUI column
-            forceSquaredChecked = GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "Force Square", forceSquaredChecked);
+            //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+            forceSquaredChecked = GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "FORCE CHECK!", forceSquaredChecked);
             
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
             if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, &spinner001Value, 0, 100, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;

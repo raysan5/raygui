@@ -1264,21 +1264,33 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
 {
     GuiControlState state = guiState;
-
+    
     Rectangle textBounds = { 0 };
-    textBounds.x = bounds.x + bounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
-    textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-    textBounds.width = GetTextWidth(text);      // TODO: Consider text icon
-    textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+
+    if (text != NULL)
+    {
+        textBounds.width = GetTextWidth(text);
+        textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = bounds.x + bounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;    
+        if (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_LEFT) textBounds.x = bounds.x - textBounds.width - GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+    }
 
     // Update control
     //--------------------------------------------------------------------
     if ((state != GUI_STATE_DISABLED) && !guiLocked)
     {
         Vector2 mousePoint = GetMousePosition();
+        
+        Rectangle totalBounds = {
+            (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_LEFT)? textBounds.x : bounds.x,
+            bounds.y,
+            bounds.width + textBounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING),
+            bounds.height,
+        };
 
         // Check checkbox state
-        if (CheckCollisionPointRec(mousePoint, RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, bounds.width + textBounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING), bounds.height }))
+        if (CheckCollisionPointRec(mousePoint, totalBounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
             else state = GUI_STATE_FOCUSED;
@@ -1297,8 +1309,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)),
                                Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3)), guiAlpha));
 
-    // NOTE: Forced left text alignment
-    GuiDrawText(text, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
+    if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(DEFAULT, TEXT_SIZE) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return checked;
@@ -4091,6 +4102,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
     GuiSetStyle(SLIDER, TEXT_PADDING, 5);
+    GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_RIGHT);
     GuiSetStyle(CHECKBOX, CHECK_TEXT_PADDING, 5);
     GuiSetStyle(COMBOBOX, SELECTOR_WIDTH, 30);
     GuiSetStyle(COMBOBOX, SELECTOR_PADDING, 2);
