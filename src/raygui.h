@@ -72,6 +72,7 @@
 *       text selection support and text copy/cut/paste support
 *
 *   VERSIONS HISTORY:
+*       2.6 (16-Aug-2019) Redesigned GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar()
 *       2.5 (28-May-2019) Implemented extended GuiTextBox(), GuiValueBox(), GuiSpinner()
 *       2.3 (29-Apr-2019) Added rIcons auxiliar library and support for it, multiple controls reviewed
 *                         Refactor all controls drawing mechanism to use control state
@@ -125,7 +126,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "2.5-dev"
+#define RAYGUI_VERSION  "2.6-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -138,16 +139,14 @@
         #define RAYGUIDEF __declspec(dllimport)         // We are using raygui as a Win32 shared library (.dll)
     #else
         #ifdef __cplusplus
-            #define RAYGUIDEF extern "C"    // Functions visible from other files (no name mangling of functions in C++)
+            #define RAYGUIDEF extern "C"        // Functions visible from other files (no name mangling of functions in C++)
         #else
-            #define RAYGUIDEF extern        // Functions visible from other files
+            #define RAYGUIDEF extern            // Functions visible from other files
         #endif
     #endif
 #elif defined(RAYGUI_STATIC)
-    #define RAYGUIDEF static                // Functions just visible to module including this file
+    #define RAYGUIDEF static                    // Functions just visible to module including this file
 #endif
-
-#include <stdlib.h>                         // Required for: atoi()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -328,6 +327,7 @@ typedef enum {
     COLOR_SELECTED_BG
 } GuiTextBoxProperty;
 
+// Spinner
 typedef enum {
     SELECT_BUTTON_WIDTH = 16,
     SELECT_BUTTON_PADDING,
@@ -425,8 +425,8 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active);   
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 RAYGUIDEF float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
@@ -475,14 +475,15 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text wit
     #endif
 
     #define RICONS_IMPLEMENTATION
-    #include "ricons.h"     // Required for: raygui icons
+    #include "ricons.h"         // Required for: raygui icons
 #endif
 
-#include <stdio.h>          // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
-#include <string.h>         // Required for: strlen() on GuiTextBox()
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
+#include <string.h>             // Required for: strlen() on GuiTextBox()
+#include <stdlib.h>             // Required for: atoi()
 
 #if defined(RAYGUI_STANDALONE)
-    #include <stdarg.h>     // Required for: va_list, va_start(), vfprintf(), va_end()
+    #include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
 #endif
 
 #ifdef __cplusplus
@@ -1309,7 +1310,7 @@ RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                                bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, INNER_PADDING)),
                                Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3)), guiAlpha));
 
-    if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(DEFAULT, TEXT_SIZE) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
+    if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return checked;
@@ -2505,9 +2506,10 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
 #else        // !RAYGUI_TEXTBOX_EXTENDED
 
 // Spinner control, returns selected value
-// NOTE: Requires static variables: framesCounter, valueSpeed - ERROR!
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
+RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
+    GuiControlState state = guiState;
+
     bool pressed = false;
     int tempValue = *value;
 
@@ -2516,8 +2518,30 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     Rectangle leftButtonBound = { (float)bounds.x, (float)bounds.y, (float)GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), (float)bounds.height };
     Rectangle rightButtonBound = { (float)bounds.x + bounds.width - GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), (float)bounds.y, (float)GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), (float)bounds.height };
 
+    Rectangle textBounds = { 0 };
+    if (text != NULL)
+    {
+        textBounds.width = GetTextWidth(text);
+        textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = bounds.x + bounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;    
+        if (GuiGetStyle(SPINNER, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_LEFT) textBounds.x = bounds.x - textBounds.width - GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+    }
+
     // Update control
     //--------------------------------------------------------------------
+    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check spinner state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
+            else state = GUI_STATE_FOCUSED;
+        }
+    }
+
     if (!editMode)
     {
         if (tempValue < minValue) tempValue = minValue;
@@ -2528,7 +2552,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
     // Draw control
     //--------------------------------------------------------------------
     // TODO: Set Spinner properties for ValueBox
-    pressed = GuiValueBox(spinner, &tempValue, minValue, maxValue, editMode);
+    pressed = GuiValueBox(spinner, NULL, &tempValue, minValue, maxValue, editMode);
 
     // Draw value selector custom buttons
     // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
@@ -2548,6 +2572,9 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+    
+    // Draw text label if provided
+    if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(SPINNER, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     *value = tempValue;
@@ -2556,7 +2583,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxVal
 
 // Value Box control, updates input text with numbers
 // NOTE: Requires static variables: framesCounter
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
+RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
     #define VALUEBOX_MAX_CHARS          32
 
@@ -2565,8 +2592,18 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
     GuiControlState state = guiState;
     bool pressed = false;
 
-    char text[VALUEBOX_MAX_CHARS + 1] = "\0";
-    sprintf(text, "%i", *value);
+    char textValue[VALUEBOX_MAX_CHARS + 1] = "\0";
+    sprintf(textValue, "%i", *value);
+    
+    Rectangle textBounds = { 0 };
+    if (text != NULL)
+    {
+        textBounds.width = GetTextWidth(text);
+        textBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = bounds.x + bounds.width + GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;    
+        if (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_LEFT) textBounds.x = bounds.x - textBounds.width - GuiGetStyle(CHECKBOX, CHECK_TEXT_PADDING);
+    }
 
     // Update control
     //--------------------------------------------------------------------
@@ -2582,18 +2619,18 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
 
             framesCounter++;
 
-            int keyCount = strlen(text);
+            int keyCount = strlen(textValue);
 
             // Only allow keys in range [48..57]
             if (keyCount < VALUEBOX_MAX_CHARS)
             {
                 int maxWidth = (bounds.width - (GuiGetStyle(VALUEBOX, INNER_PADDING)*2));
-                if (GetTextWidth(text) < maxWidth)
+                if (GetTextWidth(textValue) < maxWidth)
                 {
                     int key = GetKeyPressed();
                     if ((key >= 48) && (key <= 57))
                     {
-                        text[keyCount] = (char)key;
+                        textValue[keyCount] = (char)key;
                         keyCount++;
                         valueHasChanged = true;
                     }
@@ -2606,7 +2643,7 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
                 if (IsKeyPressed(KEY_BACKSPACE))
                 {
                     keyCount--;
-                    text[keyCount] = '\0';
+                    textValue[keyCount] = '\0';
                     framesCounter = 0;
                     if (keyCount < 0) keyCount = 0;
                     valueHasChanged = true;
@@ -2614,31 +2651,26 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
                 else if (IsKeyDown(KEY_BACKSPACE))
                 {
                     if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                    text[keyCount] = '\0';
+                    textValue[keyCount] = '\0';
                     if (keyCount < 0) keyCount = 0;
                     valueHasChanged = true;
                 }
             }
 
-            if (valueHasChanged) *value = atoi(text);
+            if (valueHasChanged) *value = atoi(textValue);
+            
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
         else
         {
             if (*value > maxValue) *value = maxValue;
             else if (*value < minValue) *value = minValue;
-        }
-
-        if (!editMode)
-        {
+            
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
                 state = GUI_STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
             }
-        }
-        else
-        {
-            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
 
         if (pressed) framesCounter = 0;
@@ -2653,14 +2685,19 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxVa
     {
         DrawRectangle(bounds.x + GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_PRESSED)), guiAlpha));
         
-        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 2, bounds.y + GuiGetStyle(VALUEBOX, INNER_PADDING), 1, bounds.height - GuiGetStyle(VALUEBOX, INNER_PADDING)*2, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        // Draw blinking cursor
+        // NOTE: ValueBox internal text is always centered
+        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangle(bounds.x + GetTextWidth(textValue)/2 + bounds.width/2 + 2, bounds.y + GuiGetStyle(VALUEBOX, INNER_PADDING), 1, bounds.height - GuiGetStyle(VALUEBOX, INNER_PADDING)*2, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
     else if (state == GUI_STATE_DISABLED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
 
-    GuiDrawText(text, GetTextBounds(VALUEBOX, bounds), GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(VALUEBOX, TEXT + (state*3))), guiAlpha));
+    GuiDrawText(textValue, GetTextBounds(VALUEBOX, bounds), GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(VALUEBOX, TEXT + (state*3))), guiAlpha));
+    
+    // Draw text label if provided
+    if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -4114,8 +4151,9 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, 0xf0fffeff);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, 0x839affe0);
     GuiSetStyle(VALUEBOX, INNER_PADDING, 2);
-    GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, INNER_PADDING, 2);
+    GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, SELECT_BUTTON_WIDTH, 20);
     GuiSetStyle(SPINNER, SELECT_BUTTON_PADDING, 2);
     GuiSetStyle(SPINNER, SELECT_BUTTON_BORDER_WIDTH, 1);
