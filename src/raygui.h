@@ -441,7 +441,7 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);        
 RAYGUIDEF int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list element index
 RAYGUIDEF int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);  // List View with extended parameters
 RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const char *message, const char *buttons);       // Message Box control, displays a message
-RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *text, const char *buttons);              // Text Input Box control, ask for text
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons);     // Text Input Box control, ask for text
 RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control
 
 // Styles loading functions
@@ -2557,9 +2557,8 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int mi
     // Draw value selector custom buttons
     // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
     int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
-
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+    GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
 #if defined(RAYGUI_SUPPORT_RICONS)
@@ -3801,7 +3800,7 @@ RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *windowTitle, const cha
 }
 
 // Text Input Box control, ask for text
-RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, char *text, const char *buttons)
+RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *windowTitle, const char *message, char *text, const char *buttons)
 {
     #define TEXTINPUTBOX_BUTTON_HEIGHT      24
     #define TEXTINPUTBOX_BUTTON_PADDING     10
