@@ -3952,12 +3952,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
                         Font font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
                         
-                        if ((font.texture.id > 0) && (font.charsCount > 0))
-                        {
-                            GuiFont(font);
-                            GuiSetStyle(DEFAULT, TEXT_SIZE, fontSize);
-                            GuiSetStyle(DEFAULT, TEXT_SPACING, fontSpacing);
-                        }
+                        if ((font.texture.id > 0) && (font.charsCount > 0)) GuiFont(font);
+
                     } break;
                     default: break;
                 }
