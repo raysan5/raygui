@@ -3930,6 +3930,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 {
                     case 'p':
                     {
+                        // Style property: p <control_id> <property_id> <property_value> <property_name>
+                        
                         sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
                         
                         if (controlId == 0) // DEFAULT control
@@ -3945,12 +3947,33 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     } break;
                     case 'f':
                     {
+                        // Style font: f <gen_font_size> <charmap_file> <font_file>
+                        
                         int fontSize = 0;
-                        int fontSpacing = 0;
+                        char charmapFileName[256] = { 0 };
                         char fontFileName[256] = { 0 };
-                        sscanf(buffer, "f %d %d %[^\n]s", &fontSize, &fontSpacing, fontFileName);
-
-                        Font font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                        sscanf(buffer, "f %d %s %[^\n]s", &fontSize, charmapFileName, fontFileName);
+                        
+                        Font font = { 0 };
+                        if (charmapFileName[0] != 0)
+                        {
+                            // Load characters from charmap file, 
+                            // expected '\n' separated list of integer values
+                            char *charValues = LoadText(charmapFileName);
+                            if (charValues != NULL)
+                            {
+                                int charsCount = 0;
+                                const char **chars = TextSplit(charValues, '\n', &charsCount);   // WARNING: TextSplit only supports 64 strings!
+                                
+                                int *values = (int *)malloc(charsCount*sizeof(int));
+                                for (int i = 0; i < charsCount; i++) values[i] = atoi(chars[i]);
+                                
+                                font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
+                                
+                                free(values);
+                            }
+                        }
+                        else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
                         
                         if ((font.texture.id > 0) && (font.charsCount > 0)) GuiFont(font);
 
