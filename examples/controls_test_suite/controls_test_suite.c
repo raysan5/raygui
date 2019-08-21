@@ -195,7 +195,7 @@ int main()
             if (showMessageBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(RICON_EXIT, "Closing rTexPacker"), "Do you really want to exit?", "Yes;No"); 
+                int result = GuiMessageBox((Rectangle){ GetScreenWidth()/2 - 125, GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(RICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No"); 
             
                 if ((result == 0) || (result == 2)) showMessageBox = false;
                 else if (result == 1) exitWindow = true;
