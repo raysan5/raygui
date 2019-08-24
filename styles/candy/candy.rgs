@@ -1,22 +1,24 @@
 #
-# rgs style text file (v3.0) - raygui style file generated using rGuiStyler
+# rgs style text file (v3.1) - raygui style file generated using rGuiStyler
 #
-# Info:  p <controlId> <propertyId> <propertyValue>  // Property description
+# Style properties:
+#   f <gen_font_size> <charmap_file> <font_file>
+#   p <control_id> <property_id> <property_value> <property_name>
 #
-# STYLE: candy
-#
-f 12 1 fonts/PixAntiqua.ttf
-p 00 00 0xe58b68ff    // DEFAULT_BORDER_COLOR_NORMAL
-p 00 01 0xfeda96ff    // DEFAULT_BASE_COLOR_NORMAL
-p 00 02 0xe59b5fff    // DEFAULT_TEXT_COLOR_NORMAL
-p 00 03 0xee813fff    // DEFAULT_BORDER_COLOR_FOCUSED
-p 00 04 0xfcd85bff    // DEFAULT_BASE_COLOR_FOCUSED
-p 00 05 0xf49641ff    // DEFAULT_TEXT_COLOR_FOCUSED
-p 00 06 0xb34848ff    // DEFAULT_BORDER_COLOR_PRESSED
-p 00 07 0xeb7272ff    // DEFAULT_BASE_COLOR_PRESSED
-p 00 08 0xbd4a4aff    // DEFAULT_TEXT_COLOR_PRESSED
-p 00 09 0x94795dff    // DEFAULT_BORDER_COLOR_DISABLED
-p 00 10 0xc2a37aff    // DEFAULT_BASE_COLOR_DISABLED
-p 00 11 0x9c8369ff    // DEFAULT_TEXT_COLOR_DISABLED
-p 00 18 0xd77575ff    // DEFAULT_LINE_COLOR
-p 00 19 0xfff5e1ff    // DEFAULT_BACKGROUND_COLOR
+f 15 0 v5easter.ttf
+p 00 00 0xe58b68ff    DEFAULT_BORDER_COLOR_NORMAL
+p 00 01 0xfeda96ff    DEFAULT_BASE_COLOR_NORMAL
+p 00 02 0xe59b5fff    DEFAULT_TEXT_COLOR_NORMAL
+p 00 03 0xee813fff    DEFAULT_BORDER_COLOR_FOCUSED
+p 00 04 0xfcd85bff    DEFAULT_BASE_COLOR_FOCUSED
+p 00 05 0xf49641ff    DEFAULT_TEXT_COLOR_FOCUSED
+p 00 06 0xb34848ff    DEFAULT_BORDER_COLOR_PRESSED
+p 00 07 0xeb7272ff    DEFAULT_BASE_COLOR_PRESSED
+p 00 08 0xbd4a4aff    DEFAULT_TEXT_COLOR_PRESSED
+p 00 09 0x94795dff    DEFAULT_BORDER_COLOR_DISABLED
+p 00 10 0xc2a37aff    DEFAULT_BASE_COLOR_DISABLED
+p 00 11 0x9c8369ff    DEFAULT_TEXT_COLOR_DISABLED
+p 00 16 0x0000000f    TEXT_SIZE
+p 00 17 0x00000001    TEXT_SPACING
+p 00 18 0xd77575ff    DEFAULT_LINE_COLOR
+p 00 19 0xfff5e1ff    DEFAULT_BACKGROUND_COLOR
