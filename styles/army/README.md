@@ -1,10 +1,10 @@
-About style: army
--------------------
+style: army
+------------
 A dark green and browns style
 
 ![army style table](style_table.png)
 
-About font
+about font
 -----------
 "Pixel Intv" font by [Pixel Sagas](http://www.pixelsagas.com) (Neale and Shayna Davidson).
 
