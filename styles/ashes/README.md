@@ -2,7 +2,7 @@ About style: ashes
 -------------------
 A gray light style, remember to ashes.
 
-![style_table.png]
+![ashes style table](style_table.png)
 
 About font
 -----------
