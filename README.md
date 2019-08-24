@@ -12,15 +12,15 @@ raygui is intended for **tools development**; it has already been used to develo
 
 ## raygui styles
 
-raygui comes with a predefined LIGHT style but additional custom styles can be created using [rGuiStyler](https://raylibtech.itch.io/rguistyler) and loaded at runtime using `GuiLoadStyle()` function.
+raygui comes with a [default](styles/default) style automatically loaded at runtime:
 
-![raygui light design](styles_design/raygui_style_table_light_REV10.png)
+![raygui default style](styles/default/style_table.png)
 
-![raygui dark design](styles_design/raygui_style_table_dark_REV9.png)
+Some additional styles are also provided for convenience, just check [styles directory](styles).
 
-![raygui candy design](styles_design/raygui_style_table_candy_REV1.png)
+Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
 
-![raygui cherry design](styles_design/raygui_style_table_cherry_REV1.png)
+Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple and easy-to-use.
 
 ## raygui history
 
@@ -36,10 +36,12 @@ On July 2018, I started working full time on raygui and its tools, improving the
 
 On March 2019, the first set of new raygui tools was published: [rFXGen 2.0](https://raylibtech.itch.io/rfxgen), [rTexViewer 1.0](https://raylibtech.itch.io/rtexviewer) and [rIconPacker 1.0](https://raylibtech.itch.io/riconpacker).
 
-From March 2019 to June 2019 raygui development decelerated, Sergio left the project and effords were focused on raylib 2.5, during this time one big external contributor, [Vlad Adrian](https://github.com/Demizdor) completely redesigned `GuiTextBox()` and related controls and version was bumped to **raygui 2.5**.
+From March 2019 to June 2019 raygui development decelerated, Sergio left the project and efforts were focused on raylib 2.5, during this time one external contributor, [Vlad Adrian](https://github.com/Demizdor), completely redesigned `GuiTextBox()` and related controls and version was bumped to raygui 2.5.
+
+During summer 2019 lots of raygui functions were reviewed, breaking compatibility to any previous version and pointing to a **raygui 2.6** update.
 
 
-## raygui 2.5 provided controls
+## raygui 2.6 provided controls
 
 #### Container/separator controls, useful for controls organization
 
@@ -74,16 +76,15 @@ From March 2019 to June 2019 raygui development decelerated, Sergio left the pro
  - ScrollBar
  - ScrollPanel
  - DummyRec
+ - Grid
 
 #### Advance controls
  - ListView
  - ColorPicker
  - MessageBox
- - Grid
+ - TextInputBox
 
-## Acknowledgements
-The following people has invested their time and effort into raygui project. Big thanks to them!
+license
+-------
 
- - [Sergio Martinez](https://github.com/anidealgift) for improving raygui and working on original [rGuiStyler](https://github.com/raysan5/rguistyler) tool and [rGuiLayout](https://raylibtech.itch.io/rguilayout) version 2.0.
- - [Adria Arranz](https://github.com/Adri102) and [Jordi Jorba](https://github.com/KoroBli) for improving raygui, adding new controls and working hard on [rGuiStyler](https://github.com/raysan5/rguistyler) and [rGuiLayout](https://github.com/raysan5/rguilayout) tools redesign and rewrite.
- - Daniel Nicolas and [Kevin Gato](https://github.com/Gatonevermind) for working on initial development.
+raygui is licensed under an unmodified zlib/libpng license, which is an OSI-certified, BSD-like license that allows static linking with closed source software. Check [LICENSE](LICENSE.md) for further details.
