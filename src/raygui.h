@@ -3972,9 +3972,10 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         char charmapFileName[256] = { 0 };
                         char fontFileName[256] = { 0 };
                         sscanf(buffer, "f %d %s %[^\n]s", &fontSize, charmapFileName, fontFileName);
-                        
+
                         Font font = { 0 };
-                        if (charmapFileName[0] != 0)
+                        
+                        if (charmapFileName[0] != '0')
                         {
                             // Load characters from charmap file, 
                             // expected '\n' separated list of integer values
@@ -3993,7 +3994,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                             }
                         }
                         else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
-                        
+
                         if ((font.texture.id > 0) && (font.charsCount > 0)) GuiFont(font);
 
                     } break;
