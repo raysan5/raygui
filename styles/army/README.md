@@ -1,6 +1,6 @@
 style: jungle
 --------------
-Sunset in the jungle, trees do not let to see the last rays of sun on the horizon, small creek in the path, mug on the shoes, a touch of danger and a feel of adventure, get into your jeep and drive this style.  
+Sunset in the jungle, trees do not let to see the last rays of sun on the horizon, small creek in the path, mug on the shoes, a touch of danger and the adventure feeling, get into your jeep and drive with this style.  
 
 ![jungle style table](style_table.png)
 
