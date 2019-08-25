@@ -383,8 +383,10 @@ RAYGUIDEF void GuiDisable(void);                                        // Disab
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
 RAYGUIDEF void GuiState(int state);                                     // Set gui state (global state)
-RAYGUIDEF void GuiFont(Font font);                                      // Set gui custom font (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
+
+RAYGUIDEF void GuiSetFont(Font font);                                   // Set gui custom font (global state)
+RAYGUIDEF Font GuiGetFont(void);                                        // Get gui custom font (global state)
 
 // Style set/get functions
 RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set one style property
@@ -746,8 +748,17 @@ RAYGUIDEF void GuiUnlock(void) { guiLocked = false; }
 // Set gui state (global state)
 RAYGUIDEF void GuiState(int state) { guiState = (GuiControlState)state; }
 
-// Define custom gui font
-RAYGUIDEF void GuiFont(Font font)
+// Set gui controls alpha global state
+RAYGUIDEF void GuiFade(float alpha)
+{
+    if (alpha < 0.0f) alpha = 0.0f;
+    else if (alpha > 1.0f) alpha = 1.0f;
+
+    guiAlpha = alpha;
+}
+
+// Set custom gui font
+RAYGUIDEF void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
     {
@@ -756,13 +767,10 @@ RAYGUIDEF void GuiFont(Font font)
     }
 }
 
-// Set gui controls alpha global state
-RAYGUIDEF void GuiFade(float alpha)
+// Get custom gui font
+RAYGUIDEF Font GuiGetFont(void)
 {
-    if (alpha < 0.0f) alpha = 0.0f;
-    else if (alpha > 1.0f) alpha = 1.0f;
-
-    guiAlpha = alpha;
+    return guiFont;
 }
 
 // Set control style property value
@@ -3998,7 +4006,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         }
                         else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
 
-                        if ((font.texture.id > 0) && (font.charsCount > 0)) GuiFont(font);
+                        if ((font.texture.id > 0) && (font.charsCount > 0)) GuiSetFont(font);
 
                     } break;
                     default: break;
@@ -4106,7 +4114,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     fread(&font.chars[i].advanceX, 1, sizeof(int), rgsFile);
                 }
 
-                GuiFont(font);
+                GuiSetFont(font);
 
                 // Set font texture source rectangle to be used as white texture to draw shapes
                 // NOTE: This way, all gui can be draw using a single draw call

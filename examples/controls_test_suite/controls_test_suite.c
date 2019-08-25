@@ -90,7 +90,7 @@ int main()
 
     // Custom GUI font loading
     //Font font = LoadFontEx("fonts/rainyhearts16.ttf", 12, 0, 0);
-    //GuiFont(font);
+    //GuiSetFont(font);
     
     bool exitWindow = false;
     bool showMessageBox = false;
