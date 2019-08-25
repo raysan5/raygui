@@ -11,6 +11,6 @@ screenshot
 
 about font
 -----------
-"Pixel Intv" font by [Pixel Sagas](http://www.pixelsagas.com) (Neale and Shayna Davidson).
+"Homespun BRK" font by AEnigma (Brian Kent).
 
-100% free font, downloaded from dafont.com: [pixel-intv](https://www.dafont.com/pixel-intv.font)
+100% free font, downloaded from dafont.com: [homespun-brk](https://www.dafont.com/homespun-brk.font)

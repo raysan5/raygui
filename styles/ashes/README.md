@@ -1,6 +1,6 @@
 style: ashes
 -------------
-Fire left long ago, what once was life now is ashes, just as slight reminiscense covers the ground, a gray sequence of tones that reminds to a distant past.
+What once was life now is ashes, just as slight reminiscense covers the ground, a gray sequence of tones that reminds to a distant past.
 
 ![ashes style table](style_table.png)
 
