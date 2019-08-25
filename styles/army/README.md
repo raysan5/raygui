@@ -1,13 +1,13 @@
-style: army
-------------
-A dark green and browns style
+style: jungle
+--------------
+Sunset in the jungle, trees do not let to see the last rays of sun on the horizon, small creek in the path, mug on the shoes, a touch of danger and a feel of adventure, get into your jeep and drive this style.  
 
-![army style table](style_table.png)
+![jungle style table](style_table.png)
 
 screenshot
 -----------
 
-![army style](screenshot.png)
+![jungle style screen](screenshot.png)
 
 about font
 -----------
