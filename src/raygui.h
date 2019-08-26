@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.6-dev - A simple and easy-to-use immediate-mode-gui library
+*   raygui v2.6-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -68,8 +68,7 @@
 *       multiple controls and following raygui styles
 *
 *   #define RAYGUI_TEXTBOX_EXTENDED
-*       Enables the advance GuiTextBox()/GuiValueBox()/GuiSpinner() implementation with
-*       text selection support and text copy/cut/paste support
+*       Enables advance GuiTextBox()implementation with text selection and copy/cut/paste support
 *
 *   VERSIONS HISTORY:
 *       2.6 (25-Aug-2019) Redesigned GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar(), GuiMessageBox(), GuiTextInputBox()
@@ -1505,128 +1504,12 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 }
 
 #if defined(RAYGUI_TEXTBOX_EXTENDED)
-// Spinner control, returns selected value
-// NOTE: Requires static variables: timer, valueSpeed - ERROR!
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
-{
-    #define GUI_SPINNER_HOLD_SPEED 0.2f     // Min 200ms delay
-    
-    static float timer = 0.0f;
-    
-    int tempValue = *value;
-    const float time = GetTime();           // Get current time
-    bool pressed = false, active = GuiTextBoxIsActive(bounds);
-
-    Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SELECT_BUTTON_PADDING), bounds.y,
-                          bounds.width - 2*(GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SELECT_BUTTON_PADDING)), bounds.height };
-    Rectangle leftButtonBound = { bounds.x, bounds.y, GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), bounds.height };
-    Rectangle rightButtonBound = { bounds.x + bounds.width - GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), bounds.y, GuiGetStyle(SPINNER, SELECT_BUTTON_WIDTH), bounds.height };
-
-    // Update control
-    //--------------------------------------------------------------------
-    Vector2 mouse = GetMousePosition();
-    if (tempValue < minValue) tempValue = minValue;
-    if (tempValue > maxValue) tempValue = maxValue;
-    
-    if (editMode) 
-    {
-        if (!active)
-        {
-            // This becomes the active textbox when mouse is pressed or held inside bounds
-            if ((IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_LEFT_BUTTON)) && 
-                CheckCollisionPointRec(mouse, bounds))
-            {
-                GuiTextBoxSetActive(bounds);
-                active = true;
-            }
-        }
-    }
-    
-    // Reset timer when one of the buttons is clicked (without this, holding the button down will not behave correctly)
-    if ((CheckCollisionPointRec(mouse, leftButtonBound) || CheckCollisionPointRec(mouse, rightButtonBound)) && 
-        IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
-        timer = time;
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    if (GuiTextBoxIsActive(bounds)) guiTextBoxActive = spinner;  // Set our spinner as the active textbox
-    pressed = GuiValueBox(spinner, &tempValue, minValue, maxValue, editMode);
-    if (GuiTextBoxIsActive(spinner)) guiTextBoxActive = bounds;  // Revert change
-
-    // Draw value selector custom buttons
-    // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
-    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
-
-    int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-    
-    char *icon = "<";
-#if defined(RAYGUI_SUPPORT_RICONS)
-    icon = (char *)GuiIconText(RICON_ARROW_LEFT_FILL, NULL);
-#endif
-    if (GuiButton(leftButtonBound, icon) || // NOTE: also decrease value when the button is held down
-        (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && 
-         CheckCollisionPointRec(mouse, leftButtonBound) && 
-         (time - timer) > GUI_SPINNER_HOLD_SPEED))
-    {
-        tempValue--;
-    }
-
-    icon = ">";
-#if defined(RAYGUI_SUPPORT_RICONS)
-    icon = (char *)GuiIconText(RICON_ARROW_RIGHT_FILL, NULL);
-#endif    
-    if (GuiButton(rightButtonBound, icon) || // NOTE: also increase value when the button is held down
-        (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && 
-         CheckCollisionPointRec(mouse, rightButtonBound) && 
-         (time - timer) > GUI_SPINNER_HOLD_SPEED))
-    {
-         tempValue++;
-    }
-
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-    //--------------------------------------------------------------------
-    
-    if (tempValue < minValue) tempValue = minValue;
-    if (tempValue > maxValue) tempValue = maxValue;
-    
-    // Reset timer
-    if (active && (((time - timer) > GUI_SPINNER_HOLD_SPEED) || (timer == 0.0f) || (timer > time))) timer = time;
-    
-    *value = tempValue;
-
-    return pressed;
-}
-
-// Value Box control, updates input text with numbers
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, int *value, int minValue, int maxValue, bool editMode)
-{
-    #define VALUEBOX_MAX_CHARS   32
-
-    char text[VALUEBOX_MAX_CHARS + 1] = { 0 };
-    sprintf(text, "%i", *value);
-    
-    bool pressed = GuiTextBox(bounds, text, VALUEBOX_MAX_CHARS, editMode);
-    *value = atoi(text);
-    
-    if (*value > maxValue) *value = maxValue;
-    else if (*value < minValue) *value = minValue;
-    
-    return pressed;
-}
-
 enum {
     GUI_MEASURE_MODE_CURSOR_END = 0xA,
     GUI_MEASURE_MODE_CURSOR_POS,
     GUI_MEASURE_MODE_CURSOR_COORDS,
 };
 
-// Required by GuiTextBox()
 // Highly synchronized with calculations in DrawTextRecEx()
 static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *pos, int mode)
 {
@@ -2113,7 +1996,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     //--------------------------------------------------------------------
     if ((state != GUI_STATE_DISABLED) && !guiLocked)
     {
-        const Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GetMousePosition();
         
         if (editMode)
         {
@@ -2121,8 +2004,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             // A textbox becomes active when the user clicks it :)
             if (!active)
             {
-                if (CheckCollisionPointRec(mousePoint, bounds) && 
-                    (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))) 
+                if (CheckCollisionPointRec(mousePoint, bounds) && (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))) 
                 {
                     // Hurray!!! we just became the active textbox
                     active = true;
@@ -2132,7 +2014,8 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
             else if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
             {
                 // When active and the right mouse is clicked outside the textbox we should deactivate it
-                GuiTextBoxSetActive(RAYGUI_CLITERAL(Rectangle){0,0,-1,-1}); // Set a dummy rect as the active textbox bounds
+                // NOTE: We set a dummy rect as the active textbox bounds
+                GuiTextBoxSetActive(RAYGUI_CLITERAL(Rectangle){ 0, 0, -1, -1 });
                 active = false;
             }
             
@@ -2189,8 +2072,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                 // * DEL delete character or selection after cursor
                 // * BACKSPACE delete character or selection before cursor
                 // TODO: Add more shortcuts (insert mode, select word, moveto/select prev/next word ...)
-                if (IsKeyPressed(KEY_RIGHT) || 
-                    (IsKeyDown(KEY_RIGHT) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER == 0)))
+                if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER == 0)))
                 {
                     if (IsKeyDown(KEY_LEFT_SHIFT))
                     {
@@ -2270,8 +2152,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     if (IsKeyDown(KEY_LEFT_SHIFT)) 
                     {
                         // Select from start of text to cursor
-                        if ((guiTextBoxState.select > guiTextBoxState.cursor) || 
-                            ((guiTextBoxState.select == -1) && (guiTextBoxState.cursor != 0)))
+                        if ((guiTextBoxState.select > guiTextBoxState.cursor) || ((guiTextBoxState.select == -1) && (guiTextBoxState.cursor != 0)))
                         {
                             guiTextBoxState.select = guiTextBoxState.cursor;
                         }
@@ -2301,30 +2182,11 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     guiTextBoxState.index = GuiMeasureTextBoxRev(text, len, textRec, &pos);
                     guiTextBoxState.start = guiTextBoxState.cursor - pos + 1;
                 }
-                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A))
-                {
-                    // `CTRL + A` Select all
-                    GuiTextBoxSelectAll(text);
-                }
-                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C))
-                {
-                    // `CTRL + C` Copy selected text to clipboard
-                    GuiTextBoxCopy(text);
-                }
-                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X))
-                {
-                    // `CTRL + X` Cut selected text
-                    GuiTextBoxCut(text);
-                }
-                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V))
-                {
-                    // `CTRL + V` Paste clipboard text
-                    GuiTextBoxPaste(text, textSize);
-                }
-                else if (IsKeyPressed(KEY_ENTER))
-                {
-                    pressed = true;
-                }
+                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) GuiTextBoxSelectAll(text); // CTRL + A > Select all
+                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_C)) GuiTextBoxCopy(text);      // CTRL + C > Copy selected text to clipboard
+                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_X)) GuiTextBoxCut(text);       // CTRL + X > Cut selected text
+                else if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_V)) GuiTextBoxPaste(text, textSize); // CTRL + V > Paste clipboard text
+                else if (IsKeyPressed(KEY_ENTER)) pressed = true;
                 else
                 {
                     int key = GetKeyPressed();
@@ -2472,7 +2334,8 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                 int select = guiTextBoxState.select;
                 int cursor = guiTextBoxState.cursor;
                 int start = guiTextBoxState.start;
-                if (guiTextBoxState.select == -1 || guiTextBoxState.select == guiTextBoxState.cursor)
+                
+                if ((guiTextBoxState.select == -1) || (guiTextBoxState.select == guiTextBoxState.cursor))
                 {
                     // If no selection then mark all text to be copied to clipboard
                     GuiTextBoxSelectAll(text);
@@ -2495,10 +2358,11 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     if (state == GUI_STATE_PRESSED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
+        
+        // Draw blinking cursor
         if (editMode && active && ((framesCounter/TEXTEDIT_CURSOR_BLINK_FRAMES)%2 == 0) && selLength == 0) 
         {
-            // Draw the blinking cursor
-            DrawRectangle(cursorPos.x, cursorPos.y, 1, GuiGetStyle(DEFAULT, TEXT_SIZE), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+            DrawRectangle(cursorPos.x, cursorPos.y, 1, GuiGetStyle(DEFAULT, TEXT_SIZE)*2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
         }
     }
     else if (state == GUI_STATE_DISABLED)
