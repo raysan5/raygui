@@ -757,6 +757,7 @@ RAYGUIDEF void GuiFade(float alpha)
 }
 
 // Set custom gui font
+// NOTE: Font loading/unloading is external to raygui
 RAYGUIDEF void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
