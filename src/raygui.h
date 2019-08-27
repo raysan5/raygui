@@ -811,8 +811,8 @@ RAYGUIDEF int GuiTextBoxGetCursor(void) { return guiTextBoxState.cursor; }
 // Set selection of active textbox
 RAYGUIDEF void GuiTextBoxSetSelection(int start, int length) 
 {
-    if(start < 0) start = 0;
-    if(length < 0) length = 0;
+    if (start < 0) start = 0;
+    if (length < 0) length = 0;
     GuiTextBoxSetCursor(start + length);
     guiTextBoxState.select = start;
 }
@@ -820,10 +820,8 @@ RAYGUIDEF void GuiTextBoxSetSelection(int start, int length)
 // Get selection of active textbox
 RAYGUIDEF Vector2 GuiTextBoxGetSelection(void)
 {
-    if(guiTextBoxState.select == -1 || guiTextBoxState.select == guiTextBoxState.cursor) 
-        return RAYGUI_CLITERAL(Vector2){ 0 };
-    else if(guiTextBoxState.cursor > guiTextBoxState.select) 
-        return RAYGUI_CLITERAL(Vector2){ guiTextBoxState.select, guiTextBoxState.cursor - guiTextBoxState.select };
+    if (guiTextBoxState.select == -1 || guiTextBoxState.select == guiTextBoxState.cursor) return RAYGUI_CLITERAL(Vector2){ 0 };
+    else if (guiTextBoxState.cursor > guiTextBoxState.select) return RAYGUI_CLITERAL(Vector2){ guiTextBoxState.select, guiTextBoxState.cursor - guiTextBoxState.select };
     
     return RAYGUI_CLITERAL(Vector2){ guiTextBoxState.cursor, guiTextBoxState.select - guiTextBoxState.cursor };
 }
