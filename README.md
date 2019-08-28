@@ -14,21 +14,18 @@ raygui is intended for **tools development**; it has already been used to develo
 
 #### Container/separator controls
 ```
-WindowBox   | GroupBox    | Line        | Panel
+WindowBox   |  GroupBox    |  Line        |  Panel
 ```
 #### Basic controls
 ```
-Label       | Button      | LabelButton | ImageButton  | Toggle     | ToggleGroup | CheckBox
-ComboBox    | DropdownBox | TextBox     | TextBoxMulti | ValueBox   | Spinner     | Slider   
-SliderBar   | ProgressBar | StatusBar   | ScrollBar    |ScrollPanel | DummyRec    | Grid
+Label       |  Button      |  LabelButton |  ImageButton  |  Toggle      |  ToggleGroup |  CheckBox
+ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner     |  Slider   
+SliderBar   |  ProgressBar |  StatusBar   |  ScrollBar    |  ScrollPanel |  DummyRec    |  Grid
 ```
 #### Advance controls
 ```
-ListView    | ColorPicker | MessageBox  | TextInputBox
+ListView    |  ColorPicker |  MessageBox  |  TextInputBox
 ```
-![rGuiStyler v3.1](images/rguistyler_v300.png)
-
-*rGuiStyler v3.1 - raygui styles editor, useful to create custom styles*
 
 ## raygui styles
 
@@ -43,6 +40,10 @@ Some additional styles are also provided for convenience, just check [styles dir
 Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
 
 Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple and easy-to-use.
+
+![rGuiStyler v3.1](images/rguistyler_v300.png)
+
+*rGuiStyler v3.1 - raygui styles editor, useful to create custom styles*
  
 ## raygui icons: ricons
 
