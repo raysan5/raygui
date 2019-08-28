@@ -10,25 +10,9 @@ raygui is intended for **tools development**; it has already been used to develo
 
 <br>
 
-## raygui styles
-
-raygui comes with a [default](styles/default) style automatically loaded at runtime:
-
-![raygui default style](styles/default/style_table.png)
-
-Some additional styles are also provided for convenience, just check [styles directory](styles) for details:
-
-![raygui additional styles](images/raygui_style_table_multi.png)
-
-Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
-
-Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple and easy-to-use.
-
-## raygui 2.6 provided controls
+## raygui provided controls
 
 #### Container/separator controls, useful for controls organization
-
-<img align="right" src="images/raygui_messagebox.png">
 
  - WindowBox
  - GroupBox
@@ -37,7 +21,7 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 #### Basic controls
 
-<img align="right" src="images/rguistyler_v210_light_shot01.png">
+<img align="right" src="images/raygui_controls_panel.png">
 
  - Label
  - Button
@@ -66,6 +50,40 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
  - ColorPicker
  - MessageBox
  - TextInputBox
+ 
+## raygui styles
+
+raygui comes with a [default](styles/default) style automatically loaded at runtime:
+
+![raygui default style](styles/default/style_table.png)
+
+Some additional styles are also provided for convenience, just check [styles directory](styles) for details:
+
+![raygui additional styles](images/raygui_style_table_multi.png)
+
+Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
+
+Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple and easy-to-use.
+ 
+## raygui icons: ricons
+
+`raygui` includes a separate module with a set of custom handcrafter icons, ready to be used and integrated in a easy way with `raygui`. This module is called `ricons.h` and can be automatically included just defining `RAYGUI_SUPPORT_RICONS` before including `raygui`. 
+
+<img align="right" src="images/raygui_ricons.png">
+
+```c
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_RICONS
+#include "raygui.h"
+```
+To use any of those icons in your gui, just preprend *iconId* to any text written within `raygui` controls:
+```c
+if (GuiButton(rec, "#05#Open Image") { /* ACTION */ }
+```
+or use the provided `GuiIconText()` function to prepend it automatically, using a clearer identifier.
+```c
+if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
+```
 
 license
 -------
