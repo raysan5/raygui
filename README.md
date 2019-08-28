@@ -12,7 +12,9 @@ raygui is intended for **tools development**; it has already been used to develo
 
 ## raygui provided controls
 
-#### Container/separator controls, useful for controls organization
+#### Container/separator controls
+
+<img align="right" src="images/raygui_controls_panel.png">
 
  - WindowBox
  - GroupBox
@@ -20,8 +22,6 @@ raygui is intended for **tools development**; it has already been used to develo
  - Panel
 
 #### Basic controls
-
-<img align="right" src="images/raygui_controls_panel.png">
 
  - Label
  - Button
