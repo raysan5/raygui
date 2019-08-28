@@ -16,7 +16,9 @@ raygui comes with a [default](styles/default) style automatically loaded at runt
 
 ![raygui default style](styles/default/style_table.png)
 
-Some additional styles are also provided for convenience, just check [styles directory](styles).
+Some additional styles are also provided for convenience, just check [styles directory](styles) for details:
+
+![raygui additional styles](images/raygui_style_table_multi.png)
 
 Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
 
