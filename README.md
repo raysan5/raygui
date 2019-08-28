@@ -14,12 +14,12 @@ raygui is intended for **tools development**; it has already been used to develo
 
 #### Container/separator controls
 
-<img align="right" src="images/raygui_controls_panel.png">
-
  - WindowBox
  - GroupBox
  - Line
  - Panel
+ 
+<img align="right" src="images/rguistyler_v300.png">
 
 #### Basic controls
 
