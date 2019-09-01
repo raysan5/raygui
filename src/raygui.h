@@ -614,17 +614,18 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 {
     Rectangle textBounds = bounds;
 
-    // TODO: Consider TEXT_PADDING properly -> combines with TEXT_ALIGNMENT
-
     textBounds.x = bounds.x + GuiGetStyle(control, BORDER_WIDTH);
     textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH);
     textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH);
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH);
+    
+    // Consider TEXT_PADDING properly, depends on TEXT_ALIGNMENT
+    if (GuiGetStyle(control, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
+    else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
 
     switch (control)
     {
         case COMBOBOX: bounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_PADDING)); break;
-        case CHECKBOX: bounds.x += (bounds.width + GuiGetStyle(control, TEXT_PADDING)); break;
         default: break;
     }
 
@@ -710,6 +711,11 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             } break;
             default: break;
         }
+        
+        // NOTE: Make sure we get pixel-perfect coordinates,
+        // In case of decimals we got weird text positioning
+        position.x = (float)((int)position.x);
+        position.y = (float)((int)position.y);
         //---------------------------------------------------------------------------------
 
         // Draw text (with icon if available)
