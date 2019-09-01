@@ -186,9 +186,7 @@ int main()
             // NOTE: View rectangle could be used to perform some scissor test
             Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
             
-            GuiSetStyle(DEFAULT, INNER_PADDING, 10);
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar");
-            GuiSetStyle(DEFAULT, INNER_PADDING, 2);
             
             alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, alphaValue);
 
