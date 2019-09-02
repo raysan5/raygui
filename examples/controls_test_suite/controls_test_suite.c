@@ -4,15 +4,26 @@
 *
 *   TEST CONTROLS:
 *       - GuiDropdownBox()
-*       - GuiValueBox()
+*       - GuiCheckBox()
 *       - GuiSpinner()
+*       - GuiValueBox()
 *       - GuiTextBox()
-*       - GuiTextBoxMulti()
+*       - GuiButton()
+*       - GuiComboBox()
 *       - GuiListView()
+*       - GuiToggleGroup()
+*       - GuiTextBoxMulti()
+*       - GuiColorPicker()
+*       - GuiSlider()
+*       - GuiSliderBar()
+*       - GuiProgressBar()
+*       - GuiColorBarAlpha()
+*       - GuiScrollPanel()
+*
 *
 *   DEPENDENCIES:
-*       raylib 2.1  - Windowing/input management and drawing.
-*       raygui 2.0  - Immediate-mode GUI controls.
+*       raylib 2.6-dev  - Windowing/input management and drawing.
+*       raygui 2.6-dev  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99

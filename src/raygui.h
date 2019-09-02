@@ -619,18 +619,20 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH);
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH);
     
-    // Consider TEXT_PADDING properly, depends on TEXT_ALIGNMENT
-    if (GuiGetStyle(control, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
-    else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
-
+    // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
     switch (control)
     {
         case COMBOBOX: bounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_PADDING)); break;
-        default: break;
+        case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
+        default: 
+        {
+            if (GuiGetStyle(control, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
+            else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
+        } break;
     }
 
-    // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, SPINNER, LISTVIEW (scrollbar?)
-    // More special cases (label side): CHECKBOX, SLIDER
+    // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
+    // More special cases (label side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
 
     return textBounds;
 }
@@ -1411,8 +1413,6 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
 
     // Update control
     //--------------------------------------------------------------------
-    if (guiLocked && editMode) editMode = false;
-
     if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemsCount > 1))
     {
         Vector2 mousePoint = GetMousePosition();
@@ -1427,6 +1427,9 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
             }
             
+            // Check if already selected item has been pressed again
+            if (CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+            
             // Check focused and selected item
             for (int i = 0; i < itemsCount; i++)
             {
@@ -1436,7 +1439,7 @@ RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, b
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
                     itemFocused = i;
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) 
+                    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) 
                     {
                         itemSelected = i;
                         pressed = true;     // Item selected, change to editMode = false
@@ -2590,7 +2593,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
     bool pressed = false;
     
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + GetTextWidth(text) + 2, 
+        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2, 
         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
         1,
         GuiGetStyle(DEFAULT, TEXT_SIZE)*2
@@ -3971,12 +3974,15 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                     
                     UnloadImage(imFont);
                 }
-
-                // Load font chars data
+                
+                // Load font recs data
+                font.recs = (Rectangle *)calloc(font.charsCount, sizeof(Rectangle));
+                for (int i = 0; i < font.charsCount; i++) fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
+                
+                // Load font chars info data
                 font.chars = (CharInfo *)calloc(font.charsCount, sizeof(CharInfo));
                 for (int i = 0; i < font.charsCount; i++)
                 {
-                    fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
                     fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
                     fread(&font.chars[i].offsetX, 1, sizeof(int), rgsFile);
                     fread(&font.chars[i].offsetY, 1, sizeof(int), rgsFile);
@@ -4033,7 +4039,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
-    GuiSetStyle(DEFAULT, TEXT_PADDING, 1);
+    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
     // Populate all controls with default style
@@ -4065,14 +4071,15 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_PADDING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
     GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_PADDING, 4);
+    GuiSetStyle(TEXTBOX, TEXT_PADDING, 5);
     GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(TEXTBOX, TEXT_LINES_PADDING, 5);
+    GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 4);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, 0xf0fffeff);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, 0x839affe0);
-    GuiSetStyle(VALUEBOX, TEXT_PADDING, 5);
+    GuiSetStyle(VALUEBOX, TEXT_PADDING, 4);
     GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-    GuiSetStyle(SPINNER, TEXT_PADDING, 5);
+    GuiSetStyle(SPINNER, TEXT_PADDING, 4);
     GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 20);
     GuiSetStyle(SPINNER, SPIN_BUTTON_PADDING, 2);
