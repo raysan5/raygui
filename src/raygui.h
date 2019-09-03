@@ -384,8 +384,10 @@ RAYGUIDEF void GuiEnable(void);                                         // Enabl
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
-RAYGUIDEF void GuiState(int state);                                     // Set gui state (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
+
+RAYGUIDEF void GuiSetState(int state);                                  // Set gui state (global state)
+RAYGUIDEF int GuiGetState(void);                                        // Get gui state (global state)
 
 RAYGUIDEF void GuiSetFont(Font font);                                   // Set gui custom font (global state)
 RAYGUIDEF Font GuiGetFont(void);                                        // Get gui custom font (global state)
@@ -755,9 +757,6 @@ RAYGUIDEF void GuiLock(void) { guiLocked = true; }
 // Unlock gui global state
 RAYGUIDEF void GuiUnlock(void) { guiLocked = false; }
 
-// Set gui state (global state)
-RAYGUIDEF void GuiState(int state) { guiState = (GuiControlState)state; }
-
 // Set gui controls alpha global state
 RAYGUIDEF void GuiFade(float alpha)
 {
@@ -766,6 +765,12 @@ RAYGUIDEF void GuiFade(float alpha)
 
     guiAlpha = alpha;
 }
+
+// Set gui state (global state)
+RAYGUIDEF void GuiSetState(int state) { guiState = (GuiControlState)state; }
+
+// Get gui state (global state)
+RAYGUIDEF int GuiGetState(void) { return guiState; }
 
 // Set custom gui font
 // NOTE: Font loading/unloading is external to raygui
@@ -4038,9 +4043,9 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
-    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
-    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);          // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);          // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);    // WARNING: Some controls use other values
 
     // Populate all controls with default style
     for (int i = 1; i < NUM_CONTROLS; i++)
@@ -4049,38 +4054,43 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     }
     
     guiFont = GetFontDefault();     // Initialize default font
-
-    // Initialize extended property values
-    // NOTE: By default, extended property values are initialized to 0
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);
-    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
-    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);           // DEFAULT specific property
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
-
+    
+    // Initialize default control-specific properties: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
+    // NOTE: Those properties are in default list but require specific values by control type
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
+    GuiSetStyle(SLIDER, TEXT_PADDING, 5);
+    GuiSetStyle(CHECKBOX, TEXT_PADDING, 5);
+    GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_RIGHT);
+    GuiSetStyle(TEXTBOX, TEXT_PADDING, 5);
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+    GuiSetStyle(VALUEBOX, TEXT_PADDING, 4);
+    GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+    GuiSetStyle(SPINNER, TEXT_PADDING, 4);
+    GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+    GuiSetStyle(STATUSBAR, TEXT_PADDING, 10);
+    GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+    
+    
+    // Initialize extended property values
+    // NOTE: By default, extended property values are initialized to 0
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);            // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);          // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);           // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
-    GuiSetStyle(SLIDER, TEXT_PADDING, 5);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
     GuiSetStyle(PROGRESSBAR, PROGRESS_PADDING, 1);
-    GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_RIGHT);
-    GuiSetStyle(CHECKBOX, TEXT_PADDING, 5);
     GuiSetStyle(CHECKBOX, CHECK_PADDING, 1);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 30);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_PADDING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
     GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_PADDING, 5);
-    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(TEXTBOX, TEXT_LINES_PADDING, 5);
     GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 4);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, 0xf0fffeff);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, 0x839affe0);
-    GuiSetStyle(VALUEBOX, TEXT_PADDING, 4);
-    GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-    GuiSetStyle(SPINNER, TEXT_PADDING, 4);
-    GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 20);
     GuiSetStyle(SPINNER, SPIN_BUTTON_PADDING, 2);
     GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
@@ -4099,8 +4109,6 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_PADDING, 0xa);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT, 6);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
-    GuiSetStyle(STATUSBAR, TEXT_PADDING, 10);
-    GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
 }
 
 // Updates controls style with default values
@@ -4112,6 +4120,9 @@ RAYGUIDEF void GuiUpdateStyleComplete(void)
     {
         for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
     }
+    
+    // NOTE: Some default properties depend on control type: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
+    // TODO: Maybe those properties shouldn't be populated?
 }
 
 // Get text with icon id prepended
