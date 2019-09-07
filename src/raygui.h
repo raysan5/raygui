@@ -3896,8 +3896,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
         fclose(rgsFile);
     }
-    else return;
-    
+
     if (tryBinary)
     {
         rgsFile = fopen(fileName, "rb");
