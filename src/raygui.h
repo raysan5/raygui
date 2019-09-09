@@ -1,11 +1,11 @@
 /*******************************************************************************************
 *
-*   raygui v2.6-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v2.6 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
-*   raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also possible
-*   to be used as a standalone library, as long as input and drawing functions are provided.
+*   raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
+*   available as a standalone library, as long as input and drawing functions are provided.
 *
 *   Controls provided:
 *
@@ -71,9 +71,12 @@
 *       Enables advance GuiTextBox()implementation with text selection and copy/cut/paste support
 *
 *   VERSIONS HISTORY:
-*       2.6 (25-Aug-2019) Redesigned GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar(), GuiMessageBox(), GuiTextInputBox()
-*                         Reviewed GuiTextBox*(), GuiSpinner(), GuiValueBox(), GuiLoadStyle()
+*       2.6 (09-Sep-2019) ADDED: GuiTextInputBox()
+*                         REDESIGNED: GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar(), GuiMessageBox()
+*                         REVIEWED: GuiTextBox(), GuiSpinner(), GuiValueBox(), GuiLoadStyle()
+*                         Replaced property INNER_PADDING by TEXT_PADDING, renamed some properties
 *                         Added 8 new custom styles ready to use
+*                         Multiple minor tweaks and bugs corrected
 *       2.5 (28-May-2019) Implemented extended GuiTextBox(), GuiValueBox(), GuiSpinner()
 *       2.3 (29-Apr-2019) Added rIcons auxiliar library and support for it, multiple controls reviewed
 *                         Refactor all controls drawing mechanism to use control state
@@ -1138,6 +1141,10 @@ RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text)
 {
     GuiControlState state = guiState;
     bool pressed = false;
+    
+    // NOTE: We force bounds.width to be all text
+    int textWidth = MeasureTextEx(guiFont, text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING)).x;
+    if (bounds.width < textWidth) bounds.width = textWidth;
 
     // Update control
     //--------------------------------------------------------------------
