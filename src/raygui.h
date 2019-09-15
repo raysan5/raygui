@@ -3256,7 +3256,9 @@ RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxVal
 RAYGUIDEF int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active)
 {
     int itemsCount = 0;
-    const char **items = GuiTextSplit(text, &itemsCount, NULL);
+    const char **items = NULL;
+    
+    if (text != NULL) items = GuiTextSplit(text, &itemsCount, NULL);
 
     return GuiListViewEx(bounds, items, itemsCount, NULL, scrollIndex, active);
 }
@@ -3342,7 +3344,7 @@ RAYGUIDEF int GuiListViewEx(Rectangle bounds, const char **text, int count, int 
     DrawRectangleLinesEx(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha));
 
     // Draw visible items
-    for (int i = 0; i < visibleItems; i++)
+    for (int i = 0; ((i < visibleItems) && (text != NULL)); i++)
     {
         if (state == GUI_STATE_DISABLED)
         {
