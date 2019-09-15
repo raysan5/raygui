@@ -225,7 +225,7 @@ typedef struct GuiTextBoxState {
 typedef struct GuiStyleProp {
     unsigned short controlId;
     unsigned short propertyId;
-    unsigned int propertyValue;
+    int propertyValue;
 } GuiStyleProp;
 
 // Gui control state
@@ -3860,16 +3860,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                         // Style property: p <control_id> <property_id> <property_value> <property_name>
                         
                         sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
-                        
-                        if (controlId == 0) // DEFAULT control
-                        {
-                            // If a DEFAULT property is loaded, it is propagated to all controls,
-                            // NOTE: All DEFAULT properties should be defined first in the file
-                            GuiSetStyle(0, propertyId, propertyValue);
-                            
-                            if (propertyId < NUM_PROPS_DEFAULT) for (int i = 1; i < NUM_CONTROLS; i++) GuiSetStyle(i, propertyId, propertyValue);
-                        }
-                        else GuiSetStyle(controlId, propertyId, propertyValue);
+                
+                        GuiSetStyle(controlId, propertyId, propertyValue);
                         
                     } break;
                     case 'f':
@@ -4046,19 +4038,11 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
-    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);          // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);          // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);    // WARNING: Some controls use other values
-
-    // Populate all controls with default style
-    for (int i = 1; i < NUM_CONTROLS; i++)
-    {
-        for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
-    }
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);                       // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);                       // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER); // WARNING: Some controls use other values
     
-    guiFont = GetFontDefault();     // Initialize default font
-    
-    // Initialize default control-specific properties: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
+    // Initialize control-specific property values
     // NOTE: Those properties are in default list but require specific values by control type
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
@@ -4074,13 +4058,12 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(STATUSBAR, TEXT_PADDING, 10);
     GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     
-    
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);            // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);          // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);           // DEFAULT specific property
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff);     // DEFAULT specific property
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
@@ -4112,6 +4095,8 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_PADDING, 0xa);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT, 6);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
+    
+    guiFont = GetFontDefault();     // Initialize default font
 }
 
 // Get text with icon id prepended
