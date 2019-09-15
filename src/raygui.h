@@ -221,6 +221,13 @@ typedef struct GuiTextBoxState {
 } GuiTextBoxState;
 #endif
 
+// Style property
+typedef struct GuiStyleProp {
+    unsigned short controlId;
+    unsigned short propertyId;
+    unsigned int propertyValue;
+} GuiStyleProp;
+
 // Gui control state
 typedef enum {
     GUI_STATE_NORMAL = 0,
@@ -457,9 +464,7 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                  
 
 // Styles loading functions
 RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file (.rgs)
-RAYGUIDEF void GuiLoadStyleProps(const int *props, int count);  // Load style properties from array
 RAYGUIDEF void GuiLoadStyleDefault(void);                       // Load style default over global style
-RAYGUIDEF void GuiUpdateStyleComplete(void);                    // Updates full style properties set with default values
 
 /*
 typedef GuiStyle (unsigned int *)
@@ -797,6 +802,12 @@ RAYGUIDEF void GuiSetStyle(int control, int property, int value)
 {
     if (!guiStyleLoaded) GuiLoadStyleDefault();
     guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value;
+    
+    // Default properties are propagated to all controls
+    if ((control == 0) && (property < NUM_PROPS_DEFAULT))
+    {
+        for (int i = 1; i < NUM_CONTROLS; i++) guiStyle[i*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property] = value;
+    }
 }
 
 // Get control style property value
@@ -4013,22 +4024,6 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     }
 }
 
-// Load style from a palette values array
-RAYGUIDEF void GuiLoadStyleProps(const int *props, int count)
-{
-    int completeSets = count/(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED);
-    int uncompleteSetProps = count%(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED);
-
-    // Load style palette values from array (complete property sets)
-    for (int i = 0; i < completeSets; i++)
-    {
-        for (int j = 0; j < (NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED); j++) GuiSetStyle(i, j, props[i]);
-    }
-
-    // Load style palette values from array (uncomplete property set)
-    for (int k = 0; k < uncompleteSetProps; k++) GuiSetStyle(completeSets, k, props[completeSets*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + k]);
-}
-
 // Load style default over global style
 RAYGUIDEF void GuiLoadStyleDefault(void)
 {
@@ -4115,20 +4110,6 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_PADDING, 0xa);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT, 6);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
-}
-
-// Updates controls style with default values
-RAYGUIDEF void GuiUpdateStyleComplete(void)
-{
-    // Populate all controls with default style
-    // NOTE: Extended style properties are ignored
-    for (int i = 1; i < NUM_CONTROLS; i++)
-    {
-        for (int j = 0; j < NUM_PROPS_DEFAULT; j++) GuiSetStyle(i, j, GuiGetStyle(DEFAULT, j));
-    }
-    
-    // NOTE: Some default properties depend on control type: BORDER_WIDTH, TEXT_PADDING, TEXT_ALIGNMENT
-    // TODO: Maybe those properties shouldn't be populated?
 }
 
 // Get text with icon id prepended
