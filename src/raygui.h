@@ -4055,7 +4055,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
     GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     GuiSetStyle(SPINNER, TEXT_PADDING, 4);
     GuiSetStyle(SPINNER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-    GuiSetStyle(STATUSBAR, TEXT_PADDING, 10);
+    GuiSetStyle(STATUSBAR, TEXT_PADDING, 6);
     GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
     
     // Initialize extended property values
