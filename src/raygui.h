@@ -155,11 +155,11 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
-
 #define NUM_CONTROLS                    16      // Number of standard controls
 #define NUM_PROPS_DEFAULT               16      // Number of standard properties
 #define NUM_PROPS_EXTENDED               8      // Number of extended properties
+
+#define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -651,6 +651,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if defined(RAYGUI_SUPPORT_RICONS)
+    *iconId = -1;
     if (text[0] == '#')     // Maybe we have an icon!
     {
         char iconValue[4] = { 0 };
@@ -667,7 +668,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 
         // Move text pointer after icon
         // WARNING: If only icon provided, it could point to EOL character!
-        if (*iconId > 0) text += (i + 1);
+        if (*iconId >= 0) text += (i + 1);
     }
 #endif
 
@@ -677,7 +678,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 // Gui draw text using default font
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
-    #define VALIGN_OFFSET(h)         ((int)h%2)     // Vertical alignment for pixel perfect
+    #define TEXT_VALIGN_PIXEL_OFFSET(h)  ((int)h%2)     // Vertical alignment for pixel perfect
 
     if ((text != NULL) && (text[0] != '\0'))
     {
@@ -695,9 +696,9 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
 #if defined(RAYGUI_SUPPORT_RICONS)
-        if (iconId > 0)
+        if (iconId >= 0)
         {
-            textWidth += RICONS_SIZE;
+            textWidth += RICON_SIZE;
 
             // WARNING: If only icon provided, text could be pointing to eof character!
             if ((text != NULL) && (text[0] != '\0')) textWidth += ICON_TEXT_PADDING;
@@ -709,17 +710,17 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             case GUI_TEXT_ALIGN_LEFT:
             {
                 position.x = bounds.x;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             case GUI_TEXT_ALIGN_CENTER:
             {
                 position.x = bounds.x + bounds.width/2 - textWidth/2;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             case GUI_TEXT_ALIGN_RIGHT:
             {
                 position.x = bounds.x + bounds.width - textWidth;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + VALIGN_OFFSET(bounds.height);
+                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             default: break;
         }
@@ -733,11 +734,11 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // Draw text (with icon if available)
         //---------------------------------------------------------------------------------
 #if defined(RAYGUI_SUPPORT_RICONS)
-        if (iconId > 0)
+        if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            DrawIcon(iconId, RAYGUI_CLITERAL(Vector2){ position.x, bounds.y + bounds.height/2 - RICONS_SIZE/2 + VALIGN_OFFSET(bounds.height) }, 1, tint);
-            position.x += (RICONS_SIZE + ICON_TEXT_PADDING);
+            GuiDrawIcon(iconId, RAYGUI_CLITERAL(Vector2){ position.x, bounds.y + bounds.height/2 - RICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height) }, 1, tint);
+            position.x += (RICON_SIZE + ICON_TEXT_PADDING);
         }
 #endif
         DrawTextEx(guiFont, text, position, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
@@ -1271,10 +1272,14 @@ RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active)
 // Toggle Group control, returns toggled button index
 RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 {
+    #if !defined(TOGGLEGROUP_MAX_ELEMENTS)
+        #define TOGGLEGROUP_MAX_ELEMENTS    32
+    #endif
+    
     float initBoundsX = bounds.x;
 
     // Get substrings items from text (items pointers)
-    int rows[64] = { 0 };
+    int rows[TOGGLEGROUP_MAX_ELEMENTS] = { 0 };
     int itemsCount = 0;
     const char **items = GuiTextSplit(text, &itemsCount, rows);
 
@@ -1852,7 +1857,7 @@ RAYGUIDEF void GuiTextBoxCopy(const char *text)
         start = GuiTextBoxGetByteIndex(text, 0, 0, start);
         end = GuiTextBoxGetByteIndex(text, 0, 0, end);
         
-        // FIXME: `TextSubtext()` only lets use copy MAX_TEXT_BUFFER_LENGTH (1024) bytes
+        // FIXME: `TextSubtext()` only lets use copy TEXTSPLIT_MAX_TEXT_LENGTH (1024) bytes
         // maybe modify `SetClipboardText()` so we can use it only on part of a string
         const char *clipText = TextSubtext(text, start, end - start);
         
@@ -1924,7 +1929,7 @@ RAYGUIDEF void GuiTextBoxCut(char* text)
         int startIdx = GuiTextBoxGetByteIndex(text, 0, 0, start);
         int endIdx = GuiTextBoxGetByteIndex(text, 0, 0, end);
         
-        // FIXME: `TextSubtext()` only lets use copy MAX_TEXT_BUFFER_LENGTH (1024) bytes
+        // FIXME: `TextSubtext()` only lets use copy TEXTSPLIT_MAX_TEXT_LENGTH (1024) bytes
         // maybe modify `SetClipboardText()` so we can use it only on parts of a string
         const char *clipText = TextSubtext(text, startIdx, endIdx - startIdx);
         SetClipboardText(clipText);
@@ -1981,7 +1986,7 @@ static int EncodeCodepoint(unsigned int c, char out[5])
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     // Define the cursor movement/selection speed when movement keys are held/pressed
-    #define GUI_TEXTBOX_CURSOR_SPEED_MODIFIER   5
+    #define TEXTBOX_CURSOR_COOLDOWN   5
     
     static int framesCounter = 0;           // Required for blinking cursor
     
@@ -2103,7 +2108,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                 // * DEL delete character or selection after cursor
                 // * BACKSPACE delete character or selection before cursor
                 // TODO: Add more shortcuts (insert mode, select word, moveto/select prev/next word ...)
-                if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER == 0)))
+                if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (framesCounter%TEXTBOX_CURSOR_COOLDOWN == 0)))
                 {
                     if (IsKeyDown(KEY_LEFT_SHIFT))
                     {
@@ -2134,7 +2139,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     
                     framesCounter = 0;
                 }
-                else if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER == 0)))
+                else if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (framesCounter%TEXTBOX_CURSOR_COOLDOWN == 0)))
                 {
                     if (IsKeyDown(KEY_LEFT_SHIFT))
                     {
@@ -2170,11 +2175,11 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                     
                     framesCounter = 0;
                 }
-                else if (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER) == 0))
+                else if (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (framesCounter%TEXTBOX_CURSOR_COOLDOWN) == 0))
                 {
                     GuiTextBoxDelete(text, length, true);
                 }
-                else if (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER) == 0))
+                else if (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (framesCounter%TEXTBOX_CURSOR_COOLDOWN) == 0))
                 {
                     GuiTextBoxDelete(text, length, false);
                 }
@@ -2306,7 +2311,7 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
                         }
                         
                         // Move the text when cursor is positioned before or after the text
-                        if ((framesCounter%GUI_TEXTBOX_CURSOR_SPEED_MODIFIER) == 0 && move)
+                        if ((framesCounter%TEXTBOX_CURSOR_COOLDOWN) == 0 && move)
                         {
                             if (cursor == 0) MoveTextBoxCursorLeft(text);
                             else if (cursor == GuiTextBoxMaxCharacters(&text[guiTextBoxState.index], length - guiTextBoxState.index, textRec))
@@ -2487,7 +2492,9 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int mi
 // NOTE: Requires static variables: framesCounter
 RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
-    #define VALUEBOX_MAX_CHARS          32
+    #if !defined(VALUEBOX_MAX_CHARS)
+        #define VALUEBOX_MAX_CHARS  32
+    #endif
 
     static int framesCounter = 0;           // Required for blinking cursor
 
@@ -3500,7 +3507,7 @@ RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color)
 // NOTE: Returns alpha value normalized [0..1]
 RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha)
 {
-    #define COLORBARALPHA_CHECKED_SIZE          10
+    #define COLORBARALPHA_CHECKED_SIZE   10
 
     GuiControlState state = guiState;
     Rectangle selector = { (float)bounds.x + alpha*bounds.width - GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW), (float)bounds.y - GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW), (float)GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT), (float)bounds.height + GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW)*2 };
@@ -3657,8 +3664,8 @@ RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color)
 // Message Box control
 RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons)
 {
-    #define MESSAGEBOX_BUTTON_HEIGHT            24
-    #define MESSAGEBOX_BUTTON_PADDING           10
+    #define MESSAGEBOX_BUTTON_HEIGHT    24
+    #define MESSAGEBOX_BUTTON_PADDING   10
 
     int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
 
@@ -3709,7 +3716,7 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *title, const char *m
     #define TEXTINPUTBOX_BUTTON_PADDING     10
     #define TEXTINPUTBOX_HEIGHT             30
     
-    #define MAX_FILENAME_LENGTH            256
+    #define TEXTINPUTBOX_MAX_TEXT_LENGTH   256
     
     // Used to enable text edit mode
     // WARNING: No more than one GuiTextInputBox() should be open at the same time
@@ -3759,7 +3766,7 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *title, const char *m
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, prevTextAlignment);
     }
 
-    if (GuiTextBox(textBoxBounds, text, MAX_FILENAME_LENGTH, textEditMode)) textEditMode = !textEditMode;
+    if (GuiTextBox(textBoxBounds, text, TEXTINPUTBOX_MAX_TEXT_LENGTH, textEditMode)) textEditMode = !textEditMode;
 
     int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
@@ -3782,7 +3789,9 @@ RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *title, const char *m
 // https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 {
-    #define GRID_COLOR_ALPHA    0.15f           // Grid lines alpha amount
+    #if !defined(GRID_COLOR_ALPHA)
+        #define GRID_COLOR_ALPHA    0.15f           // Grid lines alpha amount
+    #endif
 
     GuiControlState state = guiState;
     Vector2 mousePoint = GetMousePosition();
@@ -4136,15 +4145,21 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
     // all used memory is static... it has some limitations:
-    //      1. Maximum number of possible split strings is set by MAX_SUBSTRINGS_COUNT
-    //      2. Maximum size of text to split is MAX_TEXT_BUFFER_LENGTH
+    //      1. Maximum number of possible split strings is set by TEXTSPLIT_MAX_TEXT_ELEMENTS
+    //      2. Maximum size of text to split is TEXTSPLIT_MAX_TEXT_LENGTH
+    // NOTE: Those definitions could be externally provided if required
 
-    #define MAX_TEXT_BUFFER_LENGTH   1024
-    #define MAX_SUBSTRINGS_COUNT       64
+    #if !defined(TEXTSPLIT_MAX_TEXT_LENGTH)
+        #define TEXTSPLIT_MAX_TEXT_LENGTH      1024
+    #endif
+    
+    #if !defined(TEXTSPLIT_MAX_TEXT_ELEMENTS)
+        #define TEXTSPLIT_MAX_TEXT_ELEMENTS     128
+    #endif
 
-    static const char *result[MAX_SUBSTRINGS_COUNT] = { NULL };
-    static char buffer[MAX_TEXT_BUFFER_LENGTH] = { 0 };
-    memset(buffer, 0, MAX_TEXT_BUFFER_LENGTH);
+    static const char *result[TEXTSPLIT_MAX_TEXT_ELEMENTS] = { NULL };
+    static char buffer[TEXTSPLIT_MAX_TEXT_LENGTH] = { 0 };
+    memset(buffer, 0, TEXTSPLIT_MAX_TEXT_LENGTH);
 
     result[0] = buffer;
     int counter = 1;
@@ -4152,7 +4167,7 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     if (textRow != NULL) textRow[0] = 0;
 
     // Count how many substrings we have on text and point to every one
-    for (int i = 0; i < MAX_TEXT_BUFFER_LENGTH; i++)
+    for (int i = 0; i < TEXTSPLIT_MAX_TEXT_LENGTH; i++)
     {
         buffer[i] = text[i];
         if (buffer[i] == '\0') break;
@@ -4169,7 +4184,7 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
             buffer[i] = '\0';   // Set an end of string at this point
 
             counter++;
-            if (counter == MAX_SUBSTRINGS_COUNT) break;
+            if (counter == TEXTSPLIT_MAX_TEXT_ELEMENTS) break;
         }
     }
 
