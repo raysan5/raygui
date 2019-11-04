@@ -2417,6 +2417,117 @@ RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editM
 }
 #else        // !RAYGUI_TEXTBOX_EXTENDED
 
+
+// Text Box control, updates input text
+// NOTE 1: Requires static variables: framesCounter
+// NOTE 2: Returns if KEY_ENTER pressed (useful for data validation)
+RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
+{
+    static int framesCounter = 0;           // Required for blinking cursor
+
+    GuiControlState state = guiState;
+    bool pressed = false;
+
+    Rectangle cursor = {
+        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
+        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
+        1,
+        GuiGetStyle(DEFAULT, TEXT_SIZE)*2
+    };
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (editMode)
+        {
+            state = GUI_STATE_PRESSED;
+            framesCounter++;
+
+            int key = GetKeyPressed();
+            int keyCount = strlen(text);
+
+            // Only allow keys in range [32..125]
+            if (keyCount < (textSize - 1))
+            {
+                int maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
+
+                if (GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                {
+                    if (((key >= 32) && (key <= 125)) ||
+                        ((key >= 128) && (key < 255)))
+                    {
+                        text[keyCount] = (char)key;
+                        keyCount++;
+                        text[keyCount] = '\0';
+                    }
+                }
+            }
+
+            // Delete text
+            if (keyCount > 0)
+            {
+                if (IsKeyPressed(KEY_BACKSPACE))
+                {
+                    keyCount--;
+                    text[keyCount] = '\0';
+                    framesCounter = 0;
+                    if (keyCount < 0) keyCount = 0;
+                }
+                else if (IsKeyDown(KEY_BACKSPACE))
+                {
+                    if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
+                    text[keyCount] = '\0';
+                    if (keyCount < 0) keyCount = 0;
+                }
+            }
+
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
+
+            // Check text alignment to position cursor properly
+            int textAlignment = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
+            if (textAlignment == GUI_TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
+            else if (textAlignment == GUI_TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
+        }
+        else
+        {
+            if (CheckCollisionPointRec(mousePoint, bounds))
+            {
+                state = GUI_STATE_FOCUSED;
+                if (IsMouseButtonPressed(0)) pressed = true;
+            }
+        }
+
+        if (pressed) framesCounter = 0;
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
+
+    if (state == GUI_STATE_PRESSED)
+    {
+        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
+
+        // Draw blinking cursor
+        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangleRec(cursor, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+    }
+    else if (state == GUI_STATE_DISABLED)
+    {
+        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
+    }
+
+    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    //--------------------------------------------------------------------
+
+    return pressed;
+}
+#endif
+
+
 // Spinner control, returns selected value
 RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
@@ -2615,115 +2726,6 @@ RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int m
 
     return pressed;
 }
-
-// Text Box control, updates input text
-// NOTE 1: Requires static variables: framesCounter
-// NOTE 2: Returns if KEY_ENTER pressed (useful for data validation)
-RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
-{
-    static int framesCounter = 0;           // Required for blinking cursor
-
-    GuiControlState state = guiState;
-    bool pressed = false;
-
-    Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
-        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
-        1,
-        GuiGetStyle(DEFAULT, TEXT_SIZE)*2
-    };
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (editMode)
-        {
-            state = GUI_STATE_PRESSED;
-            framesCounter++;
-
-            int key = GetKeyPressed();
-            int keyCount = strlen(text);
-
-            // Only allow keys in range [32..125]
-            if (keyCount < (textSize - 1))
-            {
-                int maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
-
-                if (GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
-                {
-                    if (((key >= 32) && (key <= 125)) ||
-                        ((key >= 128) && (key < 255)))
-                    {
-                        text[keyCount] = (char)key;
-                        keyCount++;
-                        text[keyCount] = '\0';
-                    }
-                }
-            }
-
-            // Delete text
-            if (keyCount > 0)
-            {
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    keyCount--;
-                    text[keyCount] = '\0';
-                    framesCounter = 0;
-                    if (keyCount < 0) keyCount = 0;
-                }
-                else if (IsKeyDown(KEY_BACKSPACE))
-                {
-                    if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
-                    text[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
-                }
-            }
-
-            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
-
-            // Check text alignment to position cursor properly
-            int textAlignment = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
-            if (textAlignment == GUI_TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
-            else if (textAlignment == GUI_TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
-        }
-        else
-        {
-            if (CheckCollisionPointRec(mousePoint, bounds))
-            {
-                state = GUI_STATE_FOCUSED;
-                if (IsMouseButtonPressed(0)) pressed = true;
-            }
-        }
-
-        if (pressed) framesCounter = 0;
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
-
-    if (state == GUI_STATE_PRESSED)
-    {
-        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
-
-        // Draw blinking cursor
-        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangleRec(cursor, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
-    }
-    else if (state == GUI_STATE_DISABLED)
-    {
-        DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
-    }
-
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-    //--------------------------------------------------------------------
-
-    return pressed;
-}
-#endif
 
 // Text Box control with multiple lines
 RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
