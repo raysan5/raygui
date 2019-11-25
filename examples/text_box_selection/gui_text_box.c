@@ -25,27 +25,30 @@
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_RICONS
-#define RAYGUI_TEXTBOX_EXTENDED
 #include "../../src/raygui.h"
 
-#include <stdio.h>
+#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
+
+#define GUI_TEXTBOX_EXTENDED_IMPLEMENTATION
+#include "../../src/gui_textbox_extended.h"
+
 #include <limits.h>
 
-// -----------------
-// DEFINES
-// -----------------
+//----------------------------------------------------------------------------------
+// Defines and Macros
+//----------------------------------------------------------------------------------
 #define SIZEOF(A) (sizeof(A)/sizeof(A[0]))  // Get number of elements in array `A`. Total size of `A` should be known at compile time.
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 450
 #define TEXTBOX_MAX_HEIGHT 55
 
-// -----------------
-// GLOBAL VARIABLES
-// -----------------
-char text0[92] = "Lorem ipsum dolor sit amet, \xE7\x8C\xBF\xE3\x82\x82\xE6\x9C\xA8\xE3\x81\x8B\xE3\x82\x89\xE8\x90\xBD\xE3\x81\xA1\xE3\x82\x8B consectetur adipiscing elit"; // including some hiragana/kanji
-char text1[128] = "Here's another, much bigger textbox." "\xf4\xa1\xa1\xff" " TIP: try COPY/PASTE ;)"; // including some invalid UTF8 
-int spinnerValue = 0, boxValue = 0;
-int textboxActive = 0; // Keeps traks of the active textbox
+//----------------------------------------------------------------------------------
+// Global Variables Definition
+//----------------------------------------------------------------------------------
+static char text0[92] = "Lorem ipsum dolor sit amet, \xE7\x8C\xBF\xE3\x82\x82\xE6\x9C\xA8\xE3\x81\x8B\xE3\x82\x89\xE8\x90\xBD\xE3\x81\xA1\xE3\x82\x8B consectetur adipiscing elit"; // including some hiragana/kanji
+static char text1[128] = "Here's another, much bigger textbox." "\xf4\xa1\xa1\xff" " TIP: try COPY/PASTE ;)"; // including some invalid UTF8 
+static int spinnerValue = 0, boxValue = 0;
+static int textboxActive = 0; // Keeps traks of the active textbox
 
 struct {
     Rectangle bounds;
@@ -58,12 +61,12 @@ struct {
 };
 
 int fontSize = 10, fontSpacing = 1, padding = 0, border = 0;
-Font font = {0};
-Color colorBG = {0}, colorFG = {0}, *colorSelected = NULL;
+Font font = { 0 };
+Color colorBG = { 0 }, colorFG = {0}, *colorSelected = NULL;
 
 bool showMenu = false;
-Rectangle menuRect = {0};
-Texture2D pattern = {0};
+Rectangle menuRect = { 0 };
+Texture2D pattern = { 0 };
 
 // -----------------
 // FUNCTIONS
@@ -126,7 +129,7 @@ void UpdateGUI()
             if (fnt.texture.id != 0)
             {
                 // Font was loaded, only change font on success
-                GuiFont(fnt);
+                GuiSetFont(fnt);
                 fontSize = fnt.baseSize;
 
                 // Remove old font
@@ -142,25 +145,29 @@ void UpdateGUI()
 // Handles GUI drawing
 void DrawGUI()
 {
+    static bool textBox01EditMode = false;
+    static bool textBox02EditMode = false;
+    
     // DRAW TEXTBOXES TO TEST
     // Set custom style for textboxes
-    if (font.texture.id != 0) GuiFont(font); // Use our custom font if valid
+    if (font.texture.id != 0) GuiSetFont(font); // Use our custom font if valid
     GuiSetStyle(DEFAULT, TEXT_SIZE, fontSize);
     GuiSetStyle(DEFAULT, TEXT_SPACING, fontSpacing);
-    GuiSetStyle(TEXTBOX, INNER_PADDING, padding);
+    GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, padding);
     GuiSetStyle(TEXTBOX, BORDER_WIDTH, border);
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, ColorToInt(colorBG));
     GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, ColorToInt(colorFG));
 
     // Draw textboxes
-    GuiTextBox(textbox[0].bounds, text0, SIZEOF(text0) - 1, true);
-    GuiTextBox(textbox[1].bounds, text1, SIZEOF(text1) - 1, true);
-    GuiSpinner(textbox[2].bounds, &spinnerValue, INT_MIN, INT_MAX, true);
-    GuiValueBox(textbox[3].bounds, &boxValue, INT_MIN, INT_MAX, true);
+    if (GuiTextBoxEx(textbox[0].bounds, text0, SIZEOF(text0) - 1, textBox01EditMode)) textBox01EditMode = !textBox01EditMode;
+    if (GuiTextBoxEx(textbox[1].bounds, text1, SIZEOF(text1) - 1, textBox02EditMode)) textBox02EditMode = !textBox02EditMode;
+    
+    GuiSpinner(textbox[2].bounds, NULL, &spinnerValue, INT_MIN, INT_MAX, true);
+    GuiValueBox(textbox[3].bounds, NULL, &boxValue, INT_MIN, INT_MAX, true);
     
     // RESET STYLE TO DEFAULT
     GuiLoadStyleDefault();
-    GuiFont(GetFontDefault());
+    GuiSetFont(GetFontDefault());
     GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     
     // DRAW HEX VIEW
@@ -187,9 +194,9 @@ void DrawGUI()
      // draw the menu and handle clicked item
     if (showMenu)
     {
-        GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 24); // make items look a little bigger
+        GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24); // make items look a little bigger
         const char *menuItems[] = { "#17# Cut", "#16# Copy", "#18# Paste", "#101# SelectAll" };
-        int enabledItems[] = { textboxActive < 2 ? 1 : 0, textboxActive < 2 ? 1 : 0, GetClipboardText() != NULL, 1 };
+        //int enabledItems[] = { textboxActive < 2 ? 1 : 0, textboxActive < 2 ? 1 : 0, GetClipboardText() != NULL, 1 };
         int active = -1, focus = 0, scroll = 0;
         
         GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Fixes visual glitch with other alignments
@@ -215,25 +222,25 @@ void DrawGUI()
     GuiLine((Rectangle){25,280,750,10}, NULL);
     GuiGroupBox((Rectangle){20,320,190,100},  GuiIconText(RICON_GEAR, "FONT"));
     GuiLabel((Rectangle){30,340,60,20}, "Size");
-    GuiSpinner((Rectangle){95,340,100,20},&fontSize, 10, 40, true);
+    GuiSpinner((Rectangle){95,340,100,20}, NULL, &fontSize, 10, 40, true);
     GuiLabel((Rectangle){30,380,60,20}, "Spacing");
-    GuiSpinner((Rectangle){95,380,100,20},&fontSpacing, 1, 10, true);
+    GuiSpinner((Rectangle){95,380,100,20}, NULL, &fontSpacing, 1, 10, true);
     
     // UI for changing the style of all textboxes
     GuiGroupBox((Rectangle){225,320,190,100}, GuiIconText(RICON_COLOR_BUCKET, "STYLE"));
     GuiLabel((Rectangle){240,340,60,20}, "Padding");
-    GuiSpinner((Rectangle){305,340,100,20},&padding, 2, 30, true);
+    GuiSpinner((Rectangle){305,340,100,20}, NULL, &padding, 2, 30, true);
     GuiLabel((Rectangle){240,380,60,20}, "Border");
-    GuiSpinner((Rectangle){305,380,100,20},&border, 0, 8, true);
+    GuiSpinner((Rectangle){305,380,100,20}, NULL, &border, 0, 8, true);
 
     // UI for changing the width/height of the active textbox
     bool changed = false;
     int width = textbox[textboxActive].bounds.width, height = textbox[textboxActive].bounds.height;
     GuiGroupBox((Rectangle){430,320,175,100}, GuiIconText(RICON_CURSOR_SCALE, "SCALE"));
     GuiLabel((Rectangle){435,340,55,20}, "Width");
-    if (GuiSpinner((Rectangle){495,340,100,20}, &width, 30, textbox[textboxActive].maxWidth, true)) changed = true;
+    if (GuiSpinner((Rectangle){495,340,100,20}, NULL, &width, 30, textbox[textboxActive].maxWidth, true)) changed = true;
     GuiLabel((Rectangle){435,380,55,20}, "Height");
-    if (GuiSpinner((Rectangle){495,380,100,20}, &height, 12, TEXTBOX_MAX_HEIGHT, true)) changed = true;
+    if (GuiSpinner((Rectangle){495,380,100,20}, NULL, &height, 12, TEXTBOX_MAX_HEIGHT, true)) changed = true;
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     GuiLabel((Rectangle){30,290,740,10}, GuiIconText(RICON_TEXT_T, " DRAG A FONT FILE (*.TTF, *.FNT) ANYWHERE TO CHANGE THE DEFAULT FONT!"));
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
@@ -246,9 +253,10 @@ void DrawGUI()
     if (ColorButton((Rectangle){625,320,30,30}, colorFG)) colorSelected = &colorFG;
     if (ColorButton((Rectangle){625,389,30,30}, colorBG)) colorSelected = &colorBG;
     *colorSelected = GuiColorPicker((Rectangle){660,320,90,85}, *colorSelected);
+    
     float alpha = colorSelected->a;
     GuiSetStyle(SLIDER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Slider for the selected color alpha value
-    colorSelected->a = GuiSlider((Rectangle){664,420,100,20}, GuiIconText(RICON_CROP_ALPHA, "Alpha"), alpha, 0.f, 255.f, true);
+    colorSelected->a = GuiSlider((Rectangle){664,420,100,20}, GuiIconText(RICON_CROP_ALPHA, "Alpha"), NULL, alpha, 0.0f, 255.0f);
 }
 
 //------------------------------------------------------------------------------------
@@ -261,21 +269,21 @@ int main(int argc, char **argv)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "raygui - GuiTextBoxEx()");
+    InitWindow(screenWidth, screenHeight, "raygui - gui textbox extended demo");
 
     // Generate a checked pattern used by the color buttons
-	Image timg = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
-	pattern = LoadTextureFromImage(timg);
-	UnloadImage(timg);
+	Image img = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
+	pattern = LoadTextureFromImage(img);
+	UnloadImage(img);
     
     // Load initial style
-	GuiLoadStyleDefault();
+	//GuiLoadStyleDefault();
     //font = LoadFont("resources/notoCJK.fnt");
-    //GuiFont(font);
+    //GuiSetFont(font);
     
     fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
     fontSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
-    padding = GuiGetStyle(TEXTBOX, INNER_PADDING);
+    padding = GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
     border = GuiGetStyle(TEXTBOX, BORDER_WIDTH);
     colorFG = GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)); 
     colorBG = GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG));
@@ -289,7 +297,7 @@ int main(int argc, char **argv)
     {
         // Update
         //----------------------------------------------------------------------------------
-        // TODO: Implement required update logic
+        UpdateGUI();
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -298,7 +306,6 @@ int main(int argc, char **argv)
 		
             ClearBackground(RAYWHITE);
             
-            UpdateGUI();
             DrawGUI();
 		
 		EndDrawing();
