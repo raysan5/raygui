@@ -63,8 +63,8 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
-*   #define RAYGUI_SUPPORT_RICONS
-*       Includes ricons.h header defining a set of 128 icons (binary format) to be used on
+*   #define RAYGUI_SUPPORT_ICONS
+*       Includes riconsdata.h header defining a set of 128 icons (binary format) to be used on
 *       multiple controls and following raygui styles
 *
 *
@@ -441,14 +441,13 @@ RAYGUIDEF GuiStyle LoadGuiStyle(const char *fileName);          // Load style fr
 RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 */
 
-RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended
+RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
 // Gui icons functionality
 RAYGUIDEF void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
 
 RAYGUIDEF unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
-
 RAYGUIDEF unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
 RAYGUIDEF void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit data
 
@@ -468,13 +467,8 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
-#if defined(RAYGUI_SUPPORT_RICONS)
-    #if defined(RAYGUI_STANDALONE)
-        #define RICONS_STANDALONE
-    #endif
-
-    #define RICONS_IMPLEMENTATION
-    #include "ricons.h"         // Required for: raygui icons
+#if defined(RAYGUI_SUPPORT_ICONS)
+    #include "riconsdata.h"     // Required for: raygui icons data
 #endif
 
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
@@ -628,7 +622,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 // Get text icon if provided and move text cursor
 static const char *GetTextIcon(const char *text, int *iconId)
 {
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
     *iconId = -1;
     if (text[0] == '#')     // Maybe we have an icon!
     {
@@ -673,7 +667,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
         if (iconId >= 0)
         {
             textWidth += RICON_SIZE;
@@ -711,7 +705,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Draw text (with icon if available)
         //---------------------------------------------------------------------------------
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
@@ -836,7 +830,7 @@ RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *title)
     int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
     clicked = GuiButton(closeButtonRec, GuiIconText(RICON_CROSS_SMALL, NULL));
 #else
     clicked = GuiButton(closeButtonRec, "x");
@@ -1628,7 +1622,7 @@ RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int mi
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
     if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
     if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #else
@@ -3163,7 +3157,7 @@ RAYGUIDEF void GuiLoadStyleDefault(void)
 // a number that can change between ricon versions
 RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
 {
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
     static char buffer[1024] = { 0 };
     memset(buffer, 0, 1024);
 
@@ -3184,7 +3178,7 @@ RAYGUIDEF const char *GuiIconText(int iconId, const char *text)
 #endif
 }
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_SUPPORT_ICONS)
 
 // Get full icons data pointer
 RAYGUIDEF unsigned int *GuiGetIcons(void) { return guiIcons; }
@@ -3273,7 +3267,7 @@ RAYGUIDEF void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color co
         {
             if (BIT_CHECK(guiIcons[iconId*RICON_DATA_ELEMENTS + i], k))
             {
-            #if !defined(RICONS_STANDALONE)
+            #if !defined(RAYGUI_STANDALONE)
                 DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
             #endif
             }
@@ -3329,7 +3323,7 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y)
 
     return (BIT_CHECK(guiIcons[iconId*8 + y/2], x + (y%2*16)));
 }
-#endif      // RAYGUI_SUPPORT_RICONS
+#endif      // RAYGUI_SUPPORT_ICONS
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
