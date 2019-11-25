@@ -1,36 +1,10 @@
 /**********************************************************************************************
 *
-*   rIcons - Icons pack intended for tools development with raygui
-*
-*   CONFIGURATION:
-*
-*   #define RICONS_IMPLEMENTATION
-*       Generates the implementation of the library into the included file.
-*       If not defined, the library is in header only mode and can be included in other headers
-*       or source files without problems. But only ONE file should hold the implementation.
-*
-*   #define RICONS_STANDALONE
-*       Avoid raylib.h header inclusion in this file. Icon drawing function must be provided by
-*       the user (check library implementation for further details).
+*   rIconsData - Icons data pack intended for tools development with raygui
 *
 *   LICENSE: zlib/libpng
 *
 *   Copyright (c) 2019 Ramon Santamaria (@raysan5)
-*
-*   This software is provided "as-is", without any express or implied warranty. In no event
-*   will the authors be held liable for any damages arising from the use of this software.
-*
-*   Permission is granted to anyone to use this software for any purpose, including commercial
-*   applications, and to alter it and redistribute it freely, subject to the following restrictions:
-*
-*     1. The origin of this software must not be misrepresented; you must not claim that you
-*     wrote the original software. If you use this software in a product, an acknowledgment
-*     in the product documentation would be appreciated but is not required.
-*
-*     2. Altered source versions must be plainly marked as such, and must not be misrepresented
-*     as being the original software.
-*
-*     3. This notice may not be removed or altered from any source distribution.
 *
 **********************************************************************************************/
 
@@ -50,11 +24,6 @@
 // element defines 32 pixels (bits) of information
 // Number of elemens depend on RICON_SIZE (by default 16x16 pixels) 
 #define RICON_DATA_ELEMENTS   (RICON_SIZE*RICON_SIZE/32)
-
-//----------------------------------------------------------------------------------
-// Types and Structures Definition
-//----------------------------------------------------------------------------------
-// ...
 
 //----------------------------------------------------------------------------------
 // Icons enumeration
@@ -318,22 +287,11 @@ typedef enum {
     RICON_255                      = 255,
 } guiIconName;
 
-#endif // RICONS_H
-
-/***********************************************************************************
-*
-*   RICONS IMPLEMENTATION
-*
-************************************************************************************/
-
-#if defined(RICONS_IMPLEMENTATION)
-
 //----------------------------------------------------------------------------------
-// Global Variables Definition
-//----------------------------------------------------------------------------------
-// Gui icons array (allocated on heap by default)
+// Icons data (allocated on heap by default)
 // NOTE: A new icon set could be loaded over this array using GuiLoadIcons(),
 // just note that loaded icons set must be same RICON_SIZE
+//----------------------------------------------------------------------------------
 static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_NONE
     0x3ff80000, 0x2f082008, 0x2042207e, 0x40027fc2, 0x40024002, 0x40024002, 0x40024002, 0x00007ffe,     // RICON_FOLDER_FILE_OPEN
@@ -593,4 +551,4 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_255
 };
 
-#endif      // RICONS_IMPLEMENTATION
+#endif  // RICONS_H
