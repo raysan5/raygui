@@ -2896,68 +2896,72 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
     if (rgsFile != NULL)
     {
         char buffer[256] = { 0 };
-        fgets(buffer, 256, rgsFile);
-
-        if (buffer[0] == '#')
+        if ( fgets(buffer, 256, rgsFile) != NULL )
         {
-            int controlId = 0;
-            int propertyId = 0;
-            int propertyValue = 0;
-
-            while (!feof(rgsFile))
+            if (buffer[0] == '#')
             {
-                switch (buffer[0])
+                int controlId = 0;
+                int propertyId = 0;
+                int propertyValue = 0;
+
+                while (!feof(rgsFile))
                 {
-                    case 'p':
+                    switch (buffer[0])
                     {
-                        // Style property: p <control_id> <property_id> <property_value> <property_name>
-
-                        sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
-
-                        GuiSetStyle(controlId, propertyId, propertyValue);
-
-                    } break;
-                    case 'f':
-                    {
-                        // Style font: f <gen_font_size> <charmap_file> <font_file>
-
-                        int fontSize = 0;
-                        char charmapFileName[256] = { 0 };
-                        char fontFileName[256] = { 0 };
-                        sscanf(buffer, "f %d %s %[^\n]s", &fontSize, charmapFileName, fontFileName);
-
-                        Font font = { 0 };
-
-                        if (charmapFileName[0] != '0')
+                        case 'p':
                         {
-                            // Load characters from charmap file,
-                            // expected '\n' separated list of integer values
-                            char *charValues = LoadText(charmapFileName);
-                            if (charValues != NULL)
+                            // Style property: p <control_id> <property_id> <property_value> <property_name>
+
+                            sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
+
+                            GuiSetStyle(controlId, propertyId, propertyValue);
+
+                        } break;
+                        case 'f':
+                        {
+                            // Style font: f <gen_font_size> <charmap_file> <font_file>
+
+                            int fontSize = 0;
+                            char charmapFileName[256] = { 0 };
+                            char fontFileName[256] = { 0 };
+                            sscanf(buffer, "f %d %s %[^\n]s", &fontSize, charmapFileName, fontFileName);
+
+                            Font font = { 0 };
+
+                            if (charmapFileName[0] != '0')
                             {
-                                int charsCount = 0;
-                                const char **chars = TextSplit(charValues, '\n', &charsCount);   // WARNING: TextSplit only supports 64 strings!
+                                // Load characters from charmap file,
+                                // expected '\n' separated list of integer values
+                                char *charValues = LoadText(charmapFileName);
+                                if (charValues != NULL)
+                                {
+                                    int charsCount = 0;
+                                    const char **chars = TextSplit(charValues, '\n', &charsCount);   // WARNING: TextSplit only supports 64 strings!
 
-                                int *values = (int *)malloc(charsCount*sizeof(int));
-                                for (int i = 0; i < charsCount; i++) values[i] = atoi(chars[i]);
+                                    int *values = (int *)malloc(charsCount*sizeof(int));
+                                    for (int i = 0; i < charsCount; i++) values[i] = atoi(chars[i]);
 
-                                font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
+                                    font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
 
-                                free(values);
+                                    free(values);
+                                }
                             }
-                        }
-                        else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                            else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
 
-                        if ((font.texture.id > 0) && (font.charsCount > 0)) GuiSetFont(font);
+                            if ((font.texture.id > 0) && (font.charsCount > 0)) GuiSetFont(font);
 
-                    } break;
-                    default: break;
+                        } break;
+                        default: break;
+                    }
+
+                    if ( fgets(buffer, 256, rgsFile) == NULL )
+                    {
+                        // error
+                    }
                 }
-
-                fgets(buffer, 256, rgsFile);
             }
+            else tryBinary = true;
         }
-        else tryBinary = true;
 
         fclose(rgsFile);
     }
@@ -2973,10 +2977,15 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
         short reserved = 0;
         int propertiesCount = 0;
 
-        fread(signature, 1, 4, rgsFile);
-        fread(&version, 1, sizeof(short), rgsFile);
-        fread(&reserved, 1, sizeof(short), rgsFile);
-        fread(&propertiesCount, 1, sizeof(int), rgsFile);
+        int rc = 0;
+        rc = fread(signature, 1, 4, rgsFile);
+        if ( rc != 4 ) goto close;
+        rc = fread(&version, 1, sizeof(short), rgsFile);
+        if ( rc != sizeof(short) ) goto close;
+        rc = fread(&reserved, 1, sizeof(short), rgsFile);
+        if ( rc != sizeof(short) ) goto close;
+        rc = fread(&propertiesCount, 1, sizeof(int), rgsFile);
+        if ( rc != sizeof(int) ) goto close;
 
         if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
@@ -2989,9 +2998,12 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
             for (int i = 0; i < propertiesCount; i++)
             {
-                fread(&controlId, 1, sizeof(short), rgsFile);
-                fread(&propertyId, 1, sizeof(short), rgsFile);
-                fread(&propertyValue, 1, sizeof(int), rgsFile);
+                rc = fread(&controlId, 1, sizeof(short), rgsFile);
+                if ( rc != sizeof(short) ) goto close;
+                rc = fread(&propertyId, 1, sizeof(short), rgsFile);
+                if ( rc != sizeof(short) ) goto close;
+                rc = fread(&propertyValue, 1, sizeof(int), rgsFile);
+                if ( rc != sizeof(int) ) goto close;
 
                 if (controlId == 0) // DEFAULT control
                 {
@@ -3009,7 +3021,8 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 #if !defined(RAYGUI_STANDALONE)
             // Load custom font if available
             int fontDataSize = 0;
-            fread(&fontDataSize, 1, sizeof(int), rgsFile);
+            rc = fread(&fontDataSize, 1, sizeof(int), rgsFile);
+            if ( rc != sizeof(int) ) goto close;
 
             if (fontDataSize > 0)
             {
@@ -3017,27 +3030,36 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
                 int fontType = 0;   // 0-Normal, 1-SDF
                 Rectangle whiteRec = { 0 };
 
-                fread(&font.baseSize, 1, sizeof(int), rgsFile);
-                fread(&font.charsCount, 1, sizeof(int), rgsFile);
-                fread(&fontType, 1, sizeof(int), rgsFile);
+                rc = fread(&font.baseSize, 1, sizeof(int), rgsFile);
+                if ( rc != sizeof(int) ) goto close;
+                rc = fread(&font.charsCount, 1, sizeof(int), rgsFile);
+                if ( rc != sizeof(int) ) goto close;
+                rc = fread(&fontType, 1, sizeof(int), rgsFile);
+                if ( rc != sizeof(int) ) goto close;
 
                 // Load font white rectangle
-                fread(&whiteRec, 1, sizeof(Rectangle), rgsFile);
+                rc = fread(&whiteRec, 1, sizeof(Rectangle), rgsFile);
+                if ( rc != sizeof(Rectangle) ) goto close;
 
                 // Load font image parameters
                 int fontImageSize = 0;
-                fread(&fontImageSize, 1, sizeof(int), rgsFile);
+                rc = fread(&fontImageSize, 1, sizeof(int), rgsFile);
+                if ( rc != sizeof(int) ) goto close;
 
                 if (fontImageSize > 0)
                 {
                     Image imFont = { 0 };
                     imFont.mipmaps = 1;
-                    fread(&imFont.width, 1, sizeof(int), rgsFile);
-                    fread(&imFont.height, 1, sizeof(int), rgsFile);
-                    fread(&imFont.format, 1, sizeof(int), rgsFile);
+                    rc = fread(&imFont.width, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
+                    rc = fread(&imFont.height, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
+                    rc = fread(&imFont.format, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
 
                     imFont.data = (unsigned char *)malloc(fontImageSize);
-                    fread(imFont.data, 1, fontImageSize, rgsFile);
+                    rc = fread(imFont.data, 1, fontImageSize, rgsFile);
+                    if ( rc != fontImageSize ) goto close;
 
                     font.texture = LoadTextureFromImage(imFont);
 
@@ -3046,16 +3068,24 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 
                 // Load font recs data
                 font.recs = (Rectangle *)calloc(font.charsCount, sizeof(Rectangle));
-                for (int i = 0; i < font.charsCount; i++) fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
+                for (int i = 0; i < font.charsCount; i++)
+                {
+                    rc = fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
+                    if ( rc != sizeof(Rectangle) ) goto close;
+                }
 
                 // Load font chars info data
                 font.chars = (CharInfo *)calloc(font.charsCount, sizeof(CharInfo));
                 for (int i = 0; i < font.charsCount; i++)
                 {
-                    fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].offsetX, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].offsetY, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].advanceX, 1, sizeof(int), rgsFile);
+                    rc = fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
+                    rc = fread(&font.chars[i].offsetX, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
+                    rc = fread(&font.chars[i].offsetY, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
+                    rc = fread(&font.chars[i].advanceX, 1, sizeof(int), rgsFile);
+                    if ( rc != sizeof(int) ) goto close;
                 }
 
                 GuiSetFont(font);
@@ -3067,6 +3097,7 @@ RAYGUIDEF void GuiLoadStyle(const char *fileName)
 #endif
         }
 
+close:
         fclose(rgsFile);
     }
 }
