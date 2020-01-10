@@ -1883,7 +1883,9 @@ RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool 
                 }
                 else
                 {
-                    if (GetTextWidth(text) > maxWidth)
+                    lastLine = text;
+
+		    if (GetTextWidth(text) > maxWidth)
                     {
                         char *lastSpace = strrchr(text, 32);
 
@@ -2841,8 +2843,8 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
     Vector2 mousePoint = GetMousePosition();
     Vector2 currentCell = { -1, -1 };
 
-    int linesV = ((int)(bounds.width/spacing) + 1)*subdivs;
-    int linesH = ((int)(bounds.height/spacing) + 1)*subdivs;
+    int linesV = ((int)(bounds.width/spacing))*subdivs + 1;
+    int linesH = ((int)(bounds.height/spacing))*subdivs + 1;
 
     // Update control
     //--------------------------------------------------------------------
@@ -2865,13 +2867,13 @@ RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
             // Draw vertical grid lines
             for (int i = 0; i < linesV; i++)
             {
-                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x + spacing*i, bounds.y, 1, bounds.height }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
             }
 
             // Draw horizontal grid lines
             for (int i = 0; i < linesH; i++)
             {
-                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + spacing*i, bounds.width, 1 }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
             }
 
         } break;

@@ -47,13 +47,13 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
  
 ## raygui icons: ricons
 
-`raygui` includes a separate module with a set of custom handcrafter icons, ready to be used and integrated in a easy way with `raygui`. This module is called `ricons.h` and can be automatically included just defining `RAYGUI_SUPPORT_RICONS` before including `raygui`. 
+`raygui` includes a separate module with a set of custom handcrafter icons, ready to be used and integrated in a easy way with `raygui`. This module is called `ricons.h` and can be automatically included just defining `RAYGUI_SUPPORT_ICONS` before including `raygui`. 
 
 <img align="right" src="images/raygui_ricons.png">
 
 ```c
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
+#define RAYGUI_SUPPORT_ICONS
 #include "raygui.h"
 ```
 To use any of those icons in your gui, just preprend *iconId* to any text written within `raygui` controls:
