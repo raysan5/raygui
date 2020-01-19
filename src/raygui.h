@@ -156,6 +156,17 @@
     #endif
 #endif
 
+// Allow custom memory allocators
+#ifndef RAYGUI_MALLOC
+    #define RAYGUI_MALLOC(sz)       malloc(sz)
+#endif
+#ifndef RAYGUI_CALLOC
+    #define RAYGUI_CALLOC(n,sz)     calloc(n,sz)
+#endif
+#ifndef RAYGUI_FREE
+    #define RAYGUI_FREE(p)          free(p)
+#endif
+
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
