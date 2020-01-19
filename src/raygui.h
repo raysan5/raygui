@@ -518,7 +518,7 @@ typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
 //----------------------------------------------------------------------------------
 static GuiControlState guiState = GUI_STATE_NORMAL;
 
-static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
+static Font guiFont = { 0, 0, { 0, 0, 0, 0, 0 }, NULL, NULL };            // NOTE: Highly coupled to raylib
 static bool guiLocked = false;
 static float guiAlpha = 1.0f;
 
