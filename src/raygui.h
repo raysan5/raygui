@@ -216,14 +216,29 @@
         int width;
         int height;
     } Rectangle;
+    
+    // TODO: Texture2D type is very coupled to raylib, mostly required by GuiImageButton()
+    // It should be redesigned to be provided by user
+    typedef struct Texture2D {
+        unsigned int id;        // OpenGL texture id
+        int width;              // Texture base width
+        int height;             // Texture base height
+        int mipmaps;            // Mipmap levels, 1 by default
+        int format;             // Data format (PixelFormat type)
+    } Texture2D;
 
-    // Texture2D type
-    // NOTE: It should be provided by user
-    typedef struct Texture2D Texture2D;
+    // Font character info
+    typedef struct CharInfo CharInfo;
 
-    // Font type
-    // NOTE: It should be provided by user
-    typedef struct Font Font;
+    // TODO: Font type is very coupled to raylib, mostly required by GuiLoadStyle()
+    // It should be redesigned to be provided by user
+    typedef struct Font {
+        int baseSize;           // Base size (default chars height)
+        int charsCount;         // Number of characters
+        Texture2D texture;      // Characters texture atlas
+        Rectangle *recs;        // Characters rectangles in texture
+        CharInfo *chars;        // Characters info data
+    } Font;
 #endif
 
 // Style property
@@ -564,6 +579,8 @@ static void DrawRectangle(int x, int y, int width, int height, Color color);
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);     // -- GuiColorPicker()
 static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color);                              // -- GuiDropdownBox(), GuiScrollBar()
 static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 position, Color tint);       // -- GuiImageButtonEx()
+
+static void DrawTextRec(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint); // -- GuiTextBoxMulti()
 //-------------------------------------------------------------------------------
 
 // Text required functions
@@ -573,6 +590,8 @@ static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float 
 static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 
 static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount);  // -- GuiLoadStyle()
+static char *LoadText(const char *fileName); // -- GuiLoadStyle()
+static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
 //-------------------------------------------------------------------------------
 
 // raylib functions already implemented in raygui
@@ -582,6 +601,7 @@ static int ColorToInt(Color color);                 // Returns hexadecimal value
 static Color Fade(Color color, float alpha);        // Color fade-in or fade-out, alpha goes from 0.0f to 1.0f
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if point is inside rectangle
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
+static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 
 static void DrawRectangleRec(Rectangle rec, Color color);   // Draw rectangle filled with color
 static void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color);    // Draw rectangle outlines
@@ -637,6 +657,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 }
 
 // Get text icon if provided and move text cursor
+// NOTE: We support up to 999 values for iconId
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if defined(RAYGUI_SUPPORT_ICONS)
@@ -2953,17 +2974,17 @@ void GuiLoadStyle(const char *fileName)
                             if (charValues != NULL)
                             {
                                 int charsCount = 0;
-                                const char **chars = TextSplit(charValues, '\n', &charsCount);   // WARNING: TextSplit only supports 64 strings!
+                                const char **chars = TextSplit(charValues, '\n', &charsCount);
 
                                 int *values = (int *)malloc(charsCount*sizeof(int));
                                 for (int i = 0; i < charsCount; i++) values[i] = atoi(chars[i]);
 
-                                font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
+                                font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
 
                                 free(values);
                             }
                         }
-                        else font = LoadFontEx(FormatText("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                        else font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
 
                         if ((font.texture.id > 0) && (font.charsCount > 0)) GuiSetFont(font);
 
@@ -3405,7 +3426,7 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
 // NOTE: Color data should be passed normalized
 static Vector3 ConvertRGBtoHSV(Vector3 rgb)
 {
-    Vector3 hsv = { 0.0f };
+    Vector3 hsv = { 0 };
     float min = 0.0f;
     float max = 0.0f;
     float delta = 0.0f;
@@ -3458,7 +3479,7 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb)
 // NOTE: Color data should be passed normalized
 static Vector3 ConvertHSVtoRGB(Vector3 hsv)
 {
-    Vector3 rgb = { 0.0f };
+    Vector3 rgb = { 0 };
     float hh = 0.0f, p = 0.0f, q = 0.0f, t = 0.0f, ff = 0.0f;
     long i = 0;
 
@@ -3603,6 +3624,49 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
     DrawRectangleGradientEx(bounds, color1, color2, color2, color1);
 }
 
+#define TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH    1024        // Size of static buffer: TextSplit()
+#define TEXTSPLIT_MAX_SUBSTRINGS_COUNT       128        // Size of static pointers array: TextSplit()
+
+
+// Split string into multiple strings
+const char **TextSplit(const char *text, char delimiter, int *count)
+{
+    // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
+    // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
+    // all used memory is static... it has some limitations:
+    //      1. Maximum number of possible split strings is set by TEXTSPLIT_MAX_SUBSTRINGS_COUNT
+    //      2. Maximum size of text to split is TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH
+
+    static const char *result[TEXTSPLIT_MAX_SUBSTRINGS_COUNT] = { NULL };
+    static char buffer[TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH] = { 0 };
+    memset(buffer, 0, TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH);
+
+    result[0] = buffer;
+    int counter = 0;
+
+    if (text != NULL)
+    {
+        counter = 1;
+
+        // Count how many substrings we have on text and point to every one
+        for (int i = 0; i < TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH; i++)
+        {
+            buffer[i] = text[i];
+            if (buffer[i] == '\0') break;
+            else if (buffer[i] == delimiter)
+            {
+                buffer[i] = '\0';   // Set an end of string at this point
+                result[counter] = buffer + i + 1;
+                counter++;
+
+                if (counter == TEXTSPLIT_MAX_SUBSTRINGS_COUNT) break;
+            }
+        }
+    }
+
+    *count = counter;
+    return result;
+}
 #endif      // RAYGUI_STANDALONE
 
 #endif      // RAYGUI_IMPLEMENTATION
