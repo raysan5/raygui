@@ -505,7 +505,10 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
 #include <string.h>             // Required for: strlen() on GuiTextBox()
-#include <stdlib.h>             // Required for: atoi()
+
+#if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_CALLOC) && !defined(RAYGUI_FREE)
+    #include <stdlib.h>         // Required for: malloc(), calloc(), free()
+#endif
 
 #if defined(RAYGUI_STANDALONE)
     #include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
@@ -602,6 +605,7 @@ static Color Fade(Color color, float alpha);        // Color fade-in or fade-out
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if point is inside rectangle
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
+static int TextToInteger(const char *text);         // Get integer value from text
 
 static void DrawRectangleRec(Rectangle rec, Color color);   // Draw rectangle filled with color
 static void DrawRectangleLinesEx(Rectangle rec, int lineThick, Color color);    // Draw rectangle outlines
@@ -674,7 +678,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
         }
 
         iconValue[3] = '\0';
-        *iconId = atoi(iconValue);
+        *iconId = TextToInteger(iconValue);
 
         // Move text pointer after icon
         // WARNING: If only icon provided, it could point to EOL character!
@@ -1757,7 +1761,7 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
                 }
             }
 
-            if (valueHasChanged) *value = atoi(textValue);
+            if (valueHasChanged) *value = TextToInteger(textValue);
 
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
@@ -2977,7 +2981,7 @@ void GuiLoadStyle(const char *fileName)
                                 const char **chars = TextSplit(charValues, '\n', &charsCount);
 
                                 int *values = (int *)malloc(charsCount*sizeof(int));
-                                for (int i = 0; i < charsCount; i++) values[i] = atoi(chars[i]);
+                                for (int i = 0; i < charsCount; i++) values[i] = TextToInteger(chars[i]);
 
                                 font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
 
@@ -3666,6 +3670,24 @@ const char **TextSplit(const char *text, char delimiter, int *count)
 
     *count = counter;
     return result;
+}
+
+// Get integer value from text
+// NOTE: This function replaces atoi() [stdlib.h]
+static int TextToInteger(const char *text)
+{
+    int value = 0;
+    int sign = 1;
+
+    if ((text[0] == '+') || (text[0] == '-'))
+    {
+        if (text[0] == '-') sign = -1;
+        text++;
+    }
+  
+    for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value*10 + (int)(text[i] - '0');
+
+    return value*sign; 
 }
 #endif      // RAYGUI_STANDALONE
 
