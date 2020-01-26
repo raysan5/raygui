@@ -804,6 +804,11 @@ void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
     {
+        // NOTE: If we try to setup a font but default style has not been
+        // lazily loaded before, it will be overwritten, so we need to force
+        // default style loading first
+        if (!guiStyleLoaded) GuiLoadStyleDefault();
+
         guiFont = font;
         GuiSetStyle(DEFAULT, TEXT_SIZE, font.baseSize);
     }
