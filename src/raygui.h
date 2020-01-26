@@ -669,21 +669,23 @@ static const char *GetTextIcon(const char *text, int *iconId)
     *iconId = -1;
     if (text[0] == '#')     // Maybe we have an icon!
     {
-        char iconValue[4] = { 0 };
+        char iconValue[4] = { 0 };  // Maximum length for icon value: 3 digits + '\0'
 
-        int i = 1;
-        for (i = 1; i < 4; i++)
+        int pos = 1;
+        while ((pos < 4) && (text[pos] >= '0') && (text[pos] <= '9'))
         {
-            if ((text[i] != '#') && (text[i] != '\0')) iconValue[i - 1] = text[i];
-            else break;
+            iconValue[pos - 1] = text[pos];
+            pos++;
         }
+        
+        if (text[pos] == '#')
+        {
+            *iconId = TextToInteger(iconValue);
 
-        iconValue[3] = '\0';
-        *iconId = TextToInteger(iconValue);
-
-        // Move text pointer after icon
-        // WARNING: If only icon provided, it could point to EOL character!
-        if (*iconId >= 0) text += (i + 1);
+            // Move text pointer after icon
+            // WARNING: If only icon provided, it could point to EOL character!
+            if (*iconId >= 0) text += (pos + 1);
+        }
     }
 #endif
 
