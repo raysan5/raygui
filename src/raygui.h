@@ -156,6 +156,11 @@
     #endif
 #endif
 
+
+#if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_CALLOC) && !defined(RAYGUI_FREE)
+    #include <stdlib.h>                 // Required for: malloc(), calloc(), free()
+#endif
+
 // Allow custom memory allocators
 #ifndef RAYGUI_MALLOC
     #define RAYGUI_MALLOC(sz)       malloc(sz)
@@ -505,10 +510,6 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
 #include <string.h>             // Required for: strlen() on GuiTextBox()
-
-#if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_CALLOC) && !defined(RAYGUI_FREE)
-    #include <stdlib.h>         // Required for: malloc(), calloc(), free()
-#endif
 
 #if defined(RAYGUI_STANDALONE)
     #include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
@@ -2980,12 +2981,12 @@ void GuiLoadStyle(const char *fileName)
                                 int charsCount = 0;
                                 const char **chars = TextSplit(charValues, '\n', &charsCount);
 
-                                int *values = (int *)malloc(charsCount*sizeof(int));
+                                int *values = (int *)RAYGUI_MALLOC(charsCount*sizeof(int));
                                 for (int i = 0; i < charsCount; i++) values[i] = TextToInteger(chars[i]);
 
                                 font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
 
-                                free(values);
+                                RAYGUI_FREE(values);
                             }
                         }
                         else font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
@@ -3078,7 +3079,7 @@ void GuiLoadStyle(const char *fileName)
                     fread(&imFont.height, 1, sizeof(int), rgsFile);
                     fread(&imFont.format, 1, sizeof(int), rgsFile);
 
-                    imFont.data = (unsigned char *)malloc(fontImageSize);
+                    imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageSize);
                     fread(imFont.data, 1, fontImageSize, rgsFile);
 
                     font.texture = LoadTextureFromImage(imFont);
@@ -3087,11 +3088,11 @@ void GuiLoadStyle(const char *fileName)
                 }
 
                 // Load font recs data
-                font.recs = (Rectangle *)calloc(font.charsCount, sizeof(Rectangle));
+                font.recs = (Rectangle *)RAYGUI_CALLOC(font.charsCount, sizeof(Rectangle));
                 for (int i = 0; i < font.charsCount; i++) fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
 
                 // Load font chars info data
-                font.chars = (CharInfo *)calloc(font.charsCount, sizeof(CharInfo));
+                font.chars = (CharInfo *)RAYGUI_CALLOC(font.charsCount, sizeof(CharInfo));
                 for (int i = 0; i < font.charsCount; i++)
                 {
                     fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
@@ -3280,10 +3281,10 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         {
             if (loadIconsName)
             {
-                guiIconsName = (char **)malloc(iconsCount*sizeof(char **));
+                guiIconsName = (char **)RAYGUI_MALLOC(iconsCount*sizeof(char **));
                 for (int i = 0; i < iconsCount; i++)
                 {
-                    guiIconsName[i] = (char *)malloc(RICON_MAX_NAME_LENGTH);
+                    guiIconsName[i] = (char *)RAYGUI_MALLOC(RICON_MAX_NAME_LENGTH);
                     fread(guiIconsName[i], 32, 1, rgiFile);
                 }
             }
