@@ -134,8 +134,6 @@
     #include "raylib.h"
 #endif
 
-#define RAYGUIDEF               // We are building or using raygui as a static library (or Linux shared library)
-
 // Define functions scope to be used internally (static) or externally (extern) to the module including this file
 #if defined(RAYGUI_STATIC)
     #define RAYGUIDEF static            // Functions just visible to module including this file
