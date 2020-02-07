@@ -78,8 +78,8 @@ int main()
             
             showContentArea = GuiCheckBox((Rectangle){ 565, 80, 20, 20 }, "SHOW CONTENT AREA", showContentArea);
                 
-            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", panelContentRec.width, 1, 600, true);
-            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", panelContentRec.height, 1, 400, true);
+            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", TextFormat("%i", (int)panelContentRec.width), 1, 600, true);
+            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", TextFormat("%i", (int)panelContentRec.height), 1, 400, true);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
@@ -102,31 +102,31 @@ static void DrawStyleEditControls(void)
     
     int style = GuiGetStyle(SCROLLBAR, BORDER_WIDTH);
     GuiLabel((Rectangle){ 555, 195, 110, 10 }, "BORDER_WIDTH");
-    GuiSpinner((Rectangle){ 670, 190, 90, 20 }, &style, 0, 6, false);
+    GuiSpinner((Rectangle){ 670, 190, 90, 20 }, NULL, &style, 0, 6, false);
     GuiSetStyle(SCROLLBAR, BORDER_WIDTH, style);
     
     style = GuiGetStyle(SCROLLBAR, ARROWS_SIZE);
     GuiLabel((Rectangle){ 555, 220, 110, 10 }, "ARROWS_SIZE");
-    GuiSpinner((Rectangle){ 670, 215, 90, 20 }, &style, 4, 14, false);
+    GuiSpinner((Rectangle){ 670, 215, 90, 20 }, NULL, &style, 4, 14, false);
     GuiSetStyle(SCROLLBAR, ARROWS_SIZE, style);
     
-    style = GuiGetStyle(SCROLLBAR, INNER_PADDING);
-    GuiLabel((Rectangle){ 555, 245, 110, 10 }, "INNER_PADDING");
-    GuiSpinner((Rectangle){ 670, 240, 90, 20 }, &style, 0, 14, false);
-    GuiSetStyle(SCROLLBAR, INNER_PADDING, style);
+    style = GuiGetStyle(SCROLLBAR, SLIDER_PADDING);
+    GuiLabel((Rectangle){ 555, 245, 110, 10 }, "SLIDER_PADDING");
+    GuiSpinner((Rectangle){ 670, 240, 90, 20 }, NULL, &style, 0, 14, false);
+    GuiSetStyle(SCROLLBAR, SLIDER_PADDING, style);
     
     style = GuiCheckBox((Rectangle){ 565, 280, 20, 20 }, "ARROWS_VISIBLE", GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE));
     GuiSetStyle(SCROLLBAR, ARROWS_VISIBLE, style);
     
     style = GuiGetStyle(SCROLLBAR, SLIDER_PADDING);
     GuiLabel((Rectangle){ 555, 325, 110, 10 }, "SLIDER_PADDING");
-    GuiSpinner((Rectangle){ 670, 320, 90, 20 }, &style, 0, 14, false);
+    GuiSpinner((Rectangle){ 670, 320, 90, 20 }, NULL, &style, 0, 14, false);
     GuiSetStyle(SCROLLBAR, SLIDER_PADDING, style);
     
-    style = GuiGetStyle(SCROLLBAR, SLIDER_SIZE);
-    GuiLabel((Rectangle){ 555, 350, 110, 10 }, "SLIDER_SIZE");
-    GuiSpinner((Rectangle){ 670, 345, 90, 20 }, &style, 2, 100, false);
-    GuiSetStyle(SCROLLBAR, SLIDER_SIZE, style);
+    style = GuiGetStyle(SCROLLBAR, SLIDER_WIDTH);
+    GuiLabel((Rectangle){ 555, 350, 110, 10 }, "SLIDER_WIDTH");
+    GuiSpinner((Rectangle){ 670, 345, 90, 20 }, NULL, &style, 2, 100, false);
+    GuiSetStyle(SCROLLBAR, SLIDER_WIDTH, style);
     
     const char *text = GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE? "SCROLLBAR: LEFT" : "SCROLLBAR: RIGHT";
     style = GuiToggle((Rectangle){ 560, 110, 200, 35 }, text, GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE));
@@ -139,12 +139,12 @@ static void DrawStyleEditControls(void)
     
     style = GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH);
     GuiLabel((Rectangle){ 555, 35, 110, 10 }, "SCROLLBAR_WIDTH");
-    GuiSpinner((Rectangle){ 670, 30, 90, 20 }, &style, 6, 30, false);
+    GuiSpinner((Rectangle){ 670, 30, 90, 20 }, NULL, &style, 6, 30, false);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, style);
     
     style = GuiGetStyle(DEFAULT, BORDER_WIDTH);
     GuiLabel((Rectangle){ 555, 60, 110, 10 }, "BORDER_WIDTH");
-    GuiSpinner((Rectangle){ 670, 55, 90, 20 }, &style, 0, 20, false);
+    GuiSpinner((Rectangle){ 670, 55, 90, 20 }, NULL, &style, 0, 20, false);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, style);
     //----------------------------------------------------------
 }
