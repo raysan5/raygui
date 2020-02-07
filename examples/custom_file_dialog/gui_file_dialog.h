@@ -243,15 +243,15 @@ void GuiFileDialog(GuiFileDialogState *state)
         }
         
         int prevTextAlignment = GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT);
-        int prevElementsHeight = GuiGetStyle(LISTVIEW, ELEMENTS_HEIGHT);
+        int prevElementsHeight = GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT);
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
-        GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, 24);
+        GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
         
         // TODO: ListViewElements should be aligned left
-        state->filesListActive = GuiListViewEx((Rectangle){ state->position.x + 10, state->position.y + 70, 460, 164 }, dirFilesIcon, state->dirFilesCount, NULL, &state->filesListScrollIndex, state->filesListActive);
+        state->filesListActive = GuiListViewEx((Rectangle){ state->position.x + 10, state->position.y + 70, 460, 164 }, (const char **)dirFilesIcon, state->dirFilesCount, NULL, &state->filesListScrollIndex, state->filesListActive);
         
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
-        GuiSetStyle(LISTVIEW, ELEMENTS_HEIGHT, prevElementsHeight);
+        GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
         
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
         {
