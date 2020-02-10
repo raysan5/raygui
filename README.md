@@ -4,9 +4,9 @@
 
 raygui was initially inspired by [Unity IMGUI](https://docs.unity3d.com/Manual/GUIScriptingGuide.html) (immediate mode GUI API).
 
-raygui was originated as an auxiliar module for [raylib](https://github.com/raysan5/raylib) to create simple GUI interfaces using raylib graphic style (simple colors, plain rectangular shapes, wide borders, raylib default font...).
+raygui was originated as an auxiliar module for [raylib](https://github.com/raysan5/raylib) to create simple GUI interfaces using raylib graphic style (simple colors, plain rectangular shapes, wide borders...).
 
-raygui is intended for **tools development**; it has already been used to develop the following tools: [rFXGen](https://github.com/raysan5/rfxgen), [rTexViewer](https://raylibtech.itch.io/rtexviewer), [rGuiStyler](https://raylibtech.itch.io/rguistyler) and [rGuiLayout](https://raylibtech.itch.io/rguilayout).
+raygui is intended for **tools development**; it has already been used to develop the following tools: [rFXGen](https://github.com/raysan5/rfxgen), [rTexViewer](https://raylibtech.itch.io/rtexviewer), [rTexPacker](https://raylibtech.itch.io/rtexpacker) [rGuiStyler](https://raylibtech.itch.io/rguistyler), [rGuiLayout](https://raylibtech.itch.io/rguilayout) and [rGuiIcons](https://raylibtech.itch.io/rguiicons)
 
 <br>
 
@@ -45,9 +45,11 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 *rGuiStyler v3.1 - raygui styles editor, useful to create custom styles*
  
-## raygui icons: ricons
+## raygui icons
 
-`raygui` includes a separate module with a set of custom handcrafter icons, ready to be used and integrated in a easy way with `raygui`. This module is called `ricons.h` and can be automatically included just defining `RAYGUI_SUPPORT_ICONS` before including `raygui`. 
+`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_ICONS` before including `raygui`. 
+
+A set of custom handcrafter icons is provided in [`riconsdata`](src/riconsdata.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.  
 
 <img align="right" src="images/raygui_ricons.png">
 
