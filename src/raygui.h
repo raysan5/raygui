@@ -503,7 +503,8 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #if defined(RAYGUI_SUPPORT_ICONS)
-    #include "riconsdata.h"     // Required for: raygui icons data
+    #define RICONS_IMPLEMENTATION
+    #include "ricons.h"         // Required for: raygui icons data
 #endif
 
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()

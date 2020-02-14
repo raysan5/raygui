@@ -1,10 +1,10 @@
 /**********************************************************************************************
 *
-*   rIconsData - Icons data pack intended for tools development with raygui
+*   rIcons - Icons pack intended for tools development with raygui
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2020 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
@@ -287,6 +287,9 @@ typedef enum {
     RICON_255                      = 255,
 } guiIconName;
 
+#endif  // RICONS_H
+
+#if defined(RICONS_IMPLEMENTATION)
 //----------------------------------------------------------------------------------
 // Icons data (allocated on heap by default)
 // NOTE: A new icon set could be loaded over this array using GuiLoadIcons(),
@@ -550,5 +553,4 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_254
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_255
 };
-
-#endif  // RICONS_H
+#endif      // RICONS_IMPLEMENTATION
