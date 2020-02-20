@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.7-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v2.7 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -69,6 +69,7 @@
 *
 *
 *   VERSIONS HISTORY:
+*       2.7 (20-Feb-2020) Added possible tooltips API
 *       2.6 (09-Sep-2019) ADDED: GuiTextInputBox()
 *                         REDESIGNED: GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar(), GuiMessageBox()
 *                         REVIEWED: GuiTextBox(), GuiSpinner(), GuiValueBox(), GuiLoadStyle()
@@ -412,16 +413,16 @@ typedef enum {
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
 
-// Global gui modification functions
+// State modification functions
 RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
-
 RAYGUIDEF void GuiSetState(int state);                                  // Set gui state (global state)
 RAYGUIDEF int GuiGetState(void);                                        // Get gui state (global state)
 
+// Font set/get functions
 RAYGUIDEF void GuiSetFont(Font font);                                   // Set gui custom font (global state)
 RAYGUIDEF Font GuiGetFont(void);                                        // Get gui custom font (global state)
 
@@ -434,7 +435,6 @@ RAYGUIDEF void GuiEnableTooltip(void);                                  // Enabl
 RAYGUIDEF void GuiDisableTooltip(void);                                 // Disable gui tooltips
 RAYGUIDEF void GuiSetTooltip(const char *tooltip);                      // Set current tooltip for display
 RAYGUIDEF void GuiClearTooltip(void);                                   // Clear any tooltip registered
-RAYGUIDEF void GuiDrawTooltip(Rectangle bounds);                        // Draw tooltip relatively to bounds
 
 // Container/separator controls, useful for controls organization
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
@@ -773,6 +773,25 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
     }
 }
 
+// Draw tooltip relatively to bounds
+static void GuiDrawTooltip(Rectangle bounds)
+{
+    //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
+    
+    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
+    {
+        Vector2 mousePosition = GetMousePosition();
+        Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
+        Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
+        
+        DrawRectangleRec(tooltipBounds, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
+        DrawRectangleLinesEx(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha));
+        
+        tooltipBounds.x += 10;
+        GuiLabel(tooltipBounds, guiTooltip);
+    }
+}
+
 // Split controls text into multiple strings
 // Also check for multiple columns (required by GuiToggleGroup())
 static const char **GuiTextSplit(const char *text, int *count, int *textRow);
@@ -861,25 +880,6 @@ void GuiSetTooltip(const char *tooltip) { guiTooltip = tooltip; }
 
 // Clear any tooltip registered
 void GuiClearTooltip(void) { guiTooltip = NULL; }
-
-// Draw tooltip relatively to bounds
-void GuiDrawTooltip(Rectangle bounds)
-{
-    //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
-    
-    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
-    {
-        Vector2 mousePosition = GetMousePosition();
-        Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
-        Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
-        
-        DrawRectangleRec(tooltipBounds, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
-        DrawRectangleLinesEx(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha));
-        
-        tooltipBounds.x += 10;
-        GuiLabel(tooltipBounds, guiTooltip);
-    }
-}
 
 //----------------------------------------------------------------------------------
 // Gui Controls Functions Definition
