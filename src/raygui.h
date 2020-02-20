@@ -429,6 +429,13 @@ RAYGUIDEF Font GuiGetFont(void);                                        // Get g
 RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set one style property
 RAYGUIDEF int GuiGetStyle(int control, int property);                   // Get one style property
 
+// Tooltips set functions
+RAYGUIDEF void GuiEnableTooltip(void);                                  // Enable gui tooltips
+RAYGUIDEF void GuiDisableTooltip(void);                                 // Disable gui tooltips
+RAYGUIDEF void GuiSetTooltip(const char *tooltip);                      // Set current tooltip for display
+RAYGUIDEF void GuiClearTooltip(void);                                   // Clear any tooltip registered
+RAYGUIDEF void GuiDrawTooltip(Rectangle bounds);                        // Draw tooltip relatively to bounds
+
 // Container/separator controls, useful for controls organization
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
@@ -536,16 +543,20 @@ typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
 //----------------------------------------------------------------------------------
 static GuiControlState guiState = GUI_STATE_NORMAL;
 
-static Font guiFont = { 0 };            // NOTE: Highly coupled to raylib
-static bool guiLocked = false;
-static float guiAlpha = 1.0f;
+static Font guiFont = { 0 };            // Gui current font (WARNING: highly coupled to raylib)
+static bool guiLocked = false;          // Gui lock state (no inputs processed)
+static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
 
 // Global gui style array (allocated on heap by default)
 // NOTE: In raygui we manage a single int array with all the possible style properties.
 // When a new style is loaded, it loads over the global style... but default gui style
 // could always be recovered with GuiLoadStyleDefault()
 static unsigned int guiStyle[NUM_CONTROLS*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED)] = { 0 };
-static bool guiStyleLoaded = false;
+static bool guiStyleLoaded = false;     // Style loaded flag for lazy style initialization
+
+// Tooltips required variables
+static const char *guiTooltip = NULL;   // Gui tooltip currently active (user provided)
+static bool guiTooltipEnabled = true;   // Gui tooltips enabled
 
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
@@ -767,7 +778,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 static const char **GuiTextSplit(const char *text, int *count, int *textRow);
 
 //----------------------------------------------------------------------------------
-// Module Functions Definition
+// Gui Setup Functions Definition
 //----------------------------------------------------------------------------------
 
 // Enable gui global state
@@ -838,6 +849,41 @@ int GuiGetStyle(int control, int property)
     if (!guiStyleLoaded) GuiLoadStyleDefault();
     return guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
 }
+
+// Enable gui tooltips
+void GuiEnableTooltip(void) { guiTooltipEnabled = true; }
+
+// Disable gui tooltips
+void GuiDisableTooltip(void) { guiTooltipEnabled = false; }
+
+// Set current tooltip for display
+void GuiSetTooltip(const char *tooltip) { guiTooltip = tooltip; }
+
+// Clear any tooltip registered
+void GuiClearTooltip(void) { guiTooltip = NULL; }
+
+// Draw tooltip relatively to bounds
+void GuiDrawTooltip(Rectangle bounds)
+{
+    //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
+    
+    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
+    {
+        Vector2 mousePosition = GetMousePosition();
+        Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
+        Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
+        
+        DrawRectangleRec(tooltipBounds, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
+        DrawRectangleLinesEx(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha));
+        
+        tooltipBounds.x += 10;
+        GuiLabel(tooltipBounds, guiTooltip);
+    }
+}
+
+//----------------------------------------------------------------------------------
+// Gui Controls Functions Definition
+//----------------------------------------------------------------------------------
 
 // Window Box control
 bool GuiWindowBox(Rectangle bounds, const char *title)
@@ -1111,6 +1157,8 @@ bool GuiButton(Rectangle bounds, const char *text)
     DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
 
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+    
+    GuiDrawTooltip(bounds);
     //------------------------------------------------------------------
 
     return pressed;
