@@ -1879,8 +1879,11 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
         bounds.width - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
         bounds.height - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)
     };
+    
+    // Cursor position, [x, y] values should be updated
+    Rectangle cursor = { 0, 0, 1, GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) };
 
-    bool textHasChange = false;
+    int textWidth = 0;
     int currentLine = 0;
 
     // Update control
@@ -1894,41 +1897,30 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             state = GUI_STATE_PRESSED;
             framesCounter++;
 
+            int key = GetKeyPressed();
             int keyCount = strlen(text);
-            int maxWidth = textAreaBounds.width;
-            int maxHeight = textAreaBounds.height;
 
-            // Only allow keys in range [32..125]
+            // Introduce characters
             if (keyCount < (textSize - 1))
             {
-                int key = GetKeyPressed();
-
-                if (MeasureTextEx(guiFont, text, GuiGetStyle(DEFAULT, TEXT_SIZE), 1).y < (maxHeight - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                Vector2 textSize = MeasureTextEx(guiFont, text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
+                
+                if (textSize.y < (textAreaBounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
                 {
                     if (IsKeyPressed(KEY_ENTER))
                     {
                         text[keyCount] = '\n';
                         keyCount++;
                     }
-                    else if (((key >= 32) && (key <= 125)) || ((key >= 128) && (key < 255)))
+                    else if (((key >= 32) && (key < 255)))  // TODO: Support Unicode inputs
                     {
                         text[keyCount] = (char)key;
                         keyCount++;
-                        textHasChange = true;
-                    }
-                }
-                else if (GetTextWidth(strrchr(text, '\n')) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
-                {
-                    if (((key >= 32) && (key <= 125)) || ((key >= 128) && (key < 255)))
-                    {
-                        text[keyCount] = (char)key;
-                        keyCount++;
-                        textHasChange = true;
                     }
                 }
             }
-
-            // Delete text
+            
+            // Delete characters
             if (keyCount > 0)
             {
                 if (IsKeyPressed(KEY_BACKSPACE))
@@ -1936,8 +1928,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     keyCount--;
                     text[keyCount] = '\0';
                     framesCounter = 0;
+                    
                     if (keyCount < 0) keyCount = 0;
-                    textHasChange = true;
                 }
                 else if (IsKeyDown(KEY_BACKSPACE))
                 {
@@ -1945,71 +1937,30 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     text[keyCount] = '\0';
 
                     if (keyCount < 0) keyCount = 0;
-                    textHasChange = true;
                 }
             }
-
-            // Introduce automatic new line if necessary
-            if (textHasChange)
-            {
-                textHasChange = false;
-
-                char *lastLine = strrchr(text, '\n');
-                int maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
-
-                if (lastLine != NULL)
-                {
-                    if (GetTextWidth(lastLine) > maxWidth)
-                    {
-                        int firstIndex = lastLine - text;
-
-                        char *lastSpace = strrchr(lastLine, 32);
-
-                        if (lastSpace != NULL)
-                        {
-                            int secondIndex = lastSpace - lastLine;
-                            text[firstIndex + secondIndex] = '\n';
-                        }
-                        else
-                        {
-                            int len = (lastLine != NULL)? strlen(lastLine) : 0;
-                            char lastChar = lastLine[len - 1];
-                            lastLine[len - 1] = '\n';
-                            lastLine[len] = lastChar;
-                            lastLine[len + 1] = '\0';
-                            keyCount++;
-                        }
-                    }
-                }
-                else
-                {
-                    if (GetTextWidth(text) > maxWidth)
-                    {
-                        char *lastSpace = strrchr(text, 32);
-
-                        if (lastSpace != NULL)
-                        {
-                            int index = lastSpace - text;
-                            text[index] = '\n';
-                        }
-                        else
-                        {
-                            int len = (lastLine != NULL)? strlen(lastLine) : 0;
-                            char lastChar = lastLine[len - 1];
-                            lastLine[len - 1] = '\n';
-                            lastLine[len] = lastChar;
-                            lastLine[len + 1] = '\0';
-                            keyCount++;
-                        }
-                    }
-                }
-            }
-
-            // Counting how many new lines
+            
+            // Calculate cursor position considering text
+            char oneCharText[2] = { 0 };
+            int lastSpacePos = 0;
+            
             for (int i = 0; i < keyCount; i++)
             {
-                if (text[i] == '\n') currentLine++;
+                oneCharText[0] = text[i];
+                textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
+                
+                if (textWidth >= textAreaBounds.width)
+                {
+                    currentLine++;
+                    textWidth = 0;
+                    i = lastSpacePos;
+                }
+                
+                if (text[i] == ' ') lastSpacePos = i;
             }
+
+            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + textWidth - 1;
+            cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)/2 + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))*currentLine) + 2;
 
             // Exit edit mode
             if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0)) pressed = true;
@@ -2036,20 +1987,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
 
         // Draw blinking cursor
-        if (editMode && ((framesCounter/20)%2 == 0))
-        {
-            char *line = NULL;
-            if (currentLine > 0) line = strrchr(text, '\n');
-            else line = text;
-
-            Rectangle cursor = {
-                bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + GetTextWidth(line),
-                bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)/2 + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))*currentLine),
-                1, GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)
-            };
-
-            DrawRectangleRec(cursor, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
-        }
+        if (editMode && ((framesCounter/20)%2 == 0)) DrawRectangleRec(cursor, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
     else if (state == GUI_STATE_DISABLED)
     {
