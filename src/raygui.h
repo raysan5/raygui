@@ -2901,18 +2901,20 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
     {
         case GUI_STATE_NORMAL:
         {
-            // Draw vertical grid lines
-            for (int i = 0; i < linesV; i++)
+            if (subdivs > 0)
             {
-                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
-            }
+                // Draw vertical grid lines
+                for (int i = 0; i < linesV; i++)
+                {
+                    DrawRectangleRec(RAYGUI_CLITERAL(Rectangle) { bounds.x + spacing * i / subdivs, bounds.y, 1, bounds.height }, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                }
 
-            // Draw horizontal grid lines
-            for (int i = 0; i < linesH; i++)
-            {
-                DrawRectangleRec(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 }, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                // Draw horizontal grid lines
+                for (int i = 0; i < linesH; i++)
+                {
+                    DrawRectangleRec(RAYGUI_CLITERAL(Rectangle) { bounds.x, bounds.y + spacing * i / subdivs, bounds.width, 1 }, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                }
             }
-
         } break;
         default: break;
     }
