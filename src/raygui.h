@@ -2943,7 +2943,7 @@ void GuiLoadStyle(const char *fileName)
         {
             int controlId = 0;
             int propertyId = 0;
-            int propertyValue = 0;
+            unsigned int propertyValue = 0;
 
             while (!feof(rgsFile))
             {
@@ -2955,7 +2955,7 @@ void GuiLoadStyle(const char *fileName)
 
                         sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
 
-                        GuiSetStyle(controlId, propertyId, propertyValue);
+                        GuiSetStyle(controlId, propertyId, (int)propertyValue);
 
                     } break;
                     case 'f':
