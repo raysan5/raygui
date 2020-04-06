@@ -220,7 +220,7 @@
         int width;
         int height;
     } Rectangle;
-    
+
     // TODO: Texture2D type is very coupled to raylib, mostly required by GuiImageButton()
     // It should be redesigned to be provided by user
     typedef struct Texture2D {
@@ -691,7 +691,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
             iconValue[pos - 1] = text[pos];
             pos++;
         }
-        
+
         if (text[pos] == '#')
         {
             *iconId = TextToInteger(iconValue);
@@ -781,16 +781,16 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 static void GuiDrawTooltip(Rectangle bounds)
 {
     //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
-    
+
     if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
     {
         Vector2 mousePosition = GetMousePosition();
         Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
         Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
-        
+
         DrawRectangleRec(tooltipBounds, Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
         DrawRectangleLinesEx(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha));
-        
+
         tooltipBounds.x += 10;
         GuiLabel(tooltipBounds, guiTooltip);
     }
@@ -1161,7 +1161,7 @@ bool GuiButton(Rectangle bounds, const char *text)
     DrawRectangle(bounds.x + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.y + GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
 
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
-    
+
     GuiDrawTooltip(bounds);
     //------------------------------------------------------------------
 
@@ -1880,7 +1880,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
         bounds.width - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
         bounds.height - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)
     };
-    
+
     // Cursor position, [x, y] values should be updated
     Rectangle cursor = { 0, 0, 1, GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
 
@@ -1905,7 +1905,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             if (keyCount < (textSize - 1))
             {
                 Vector2 textSize = MeasureTextEx(guiFont, text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
-                
+
                 if (textSize.y < (textAreaBounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
                 {
                     if (IsKeyPressed(KEY_ENTER))
@@ -1920,7 +1920,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     }
                 }
             }
-            
+
             // Delete characters
             if (keyCount > 0)
             {
@@ -1929,7 +1929,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     keyCount--;
                     text[keyCount] = '\0';
                     framesCounter = 0;
-                    
+
                     if (keyCount < 0) keyCount = 0;
                 }
                 else if (IsKeyDown(KEY_BACKSPACE))
@@ -1940,23 +1940,23 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (keyCount < 0) keyCount = 0;
                 }
             }
-            
+
             // Calculate cursor position considering text
             char oneCharText[2] = { 0 };
             int lastSpacePos = 0;
-            
+
             for (int i = 0; i < keyCount; i++)
             {
                 oneCharText[0] = text[i];
                 textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
-                
+
                 if (textWidth >= textAreaBounds.width)
                 {
                     currentLine++;
                     textWidth = 0;
                     i = lastSpacePos;
                 }
-                
+
                 if (text[i] == ' ') lastSpacePos = i;
             }
 
@@ -3237,7 +3237,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // 0       | 4       | char       | Signature: "rGI "
     // 4       | 2       | short      | Version: 100
     // 6       | 2       | short      | reserved
-    
+
     // 8       | 2       | short      | Num icons (N)
     // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
 
@@ -3246,7 +3246,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // {
     //   12+32*i  | 32   | char       | Icon NameId
     // }
-    
+
     // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
     // S*S pixels/32bit per unsigned int = K unsigned int per icon
     // foreach (icon)
@@ -3255,7 +3255,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // }
 
     FILE *rgiFile = fopen(fileName, "rb");
-    
+
     char **guiIconsName = NULL;
 
     if (rgiFile != NULL)
@@ -3290,10 +3290,10 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             // Read icons data directly over guiIcons data array
             fread(guiIcons, iconsCount*(iconsSize*iconsSize/32), sizeof(unsigned int), rgiFile);
         }
-    
+
         fclose(rgiFile);
     }
-    
+
     return guiIconsName;
 }
 
@@ -3312,7 +3312,7 @@ void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
                 DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
             #endif
             }
-            
+
             if ((k == 15) || (k == 31)) y++;
         }
     }
@@ -3326,7 +3326,7 @@ unsigned int *GuiGetIconData(int iconId)
     memset(iconData, 0, RICON_DATA_ELEMENTS*sizeof(unsigned int));
 
     if (iconId < RICON_MAX_ICONS) memcpy(iconData, &guiIcons[iconId*RICON_DATA_ELEMENTS], RICON_DATA_ELEMENTS*sizeof(unsigned int));
-    
+
     return iconData;
 }
 
@@ -3341,7 +3341,7 @@ void GuiSetIconData(int iconId, unsigned int *data)
 void GuiSetIconPixel(int iconId, int x, int y)
 {
     #define BIT_SET(a,b)   ((a) |= (1<<(b)))
-    
+
     // This logic works for any RICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
     BIT_SET(guiIcons[iconId*RICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RICON_SIZE)*RICON_SIZE));
@@ -3357,7 +3357,7 @@ void GuiClearIconPixel(int iconId, int x, int y)
     BIT_CLEAR(guiIcons[iconId*RICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RICON_SIZE)*RICON_SIZE));
 }
 
-// Check icon pixel value 
+// Check icon pixel value
 bool GuiCheckIconPixel(int iconId, int x, int y)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
@@ -3683,10 +3683,10 @@ static int TextToInteger(const char *text)
         if (text[0] == '-') sign = -1;
         text++;
     }
-  
+
     for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value*10 + (int)(text[i] - '0');
 
-    return value*sign; 
+    return value*sign;
 }
 #endif      // RAYGUI_STANDALONE
 
