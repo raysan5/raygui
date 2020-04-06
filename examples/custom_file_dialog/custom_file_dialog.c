@@ -35,17 +35,17 @@ int main()
     //---------------------------------------------------------------------------------------
     int screenWidth = 800;
     int screenHeight = 560;
-    
+
     InitWindow(screenWidth, screenHeight, "raygui - custom modal dialog");
     SetExitKey(0);
 
     // Custom file dialog
-    GuiFileDialogState fileDialogState = InitGuiFileDialog();
+    GuiFileDialogState fileDialogState = InitGuiFileDialog(420, 310, GetWorkingDirectory(), false);
 
     bool exitWindow = false;
 
     char fileNameToLoad[512] = { 0 };
-    
+
     Texture texture = { 0 };
 
     SetTargetFPS(60);
@@ -57,7 +57,7 @@ int main()
         // Update
         //----------------------------------------------------------------------------------
         exitWindow = WindowShouldClose();
-        
+
         if (fileDialogState.SelectFilePressed)
         {
             // Load image file (if supported extension)
@@ -67,7 +67,7 @@ int main()
                 UnloadTexture(texture);
                 texture = LoadTexture(fileNameToLoad);
             }
-            
+
             fileDialogState.SelectFilePressed = false;
         }
         //----------------------------------------------------------------------------------
@@ -77,20 +77,20 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-            
+
             DrawTexture(texture, GetScreenWidth()/2 - texture.width/2, GetScreenHeight()/2 - texture.height/2 - 5, WHITE);
             DrawRectangleLines(GetScreenWidth()/2 - texture.width/2, GetScreenHeight()/2 - texture.height/2 - 5, texture.width, texture.height, BLACK);
- 
+
             DrawText(fileNameToLoad, 208, GetScreenHeight() - 20, 10, GRAY);
- 
+
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             if (fileDialogState.fileDialogActive) GuiLock();
 
             if (GuiButton((Rectangle){ 20, 20, 140, 30 }, GuiIconText(RICON_FILE_OPEN, "Open Image"))) fileDialogState.fileDialogActive = true;
-            
+
             GuiUnlock();
-            
+
             // GUI: Dialog Window
             //--------------------------------------------------------------------------------
             GuiFileDialog(&fileDialogState);
