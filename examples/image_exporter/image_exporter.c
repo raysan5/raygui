@@ -11,7 +11,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019 raylib technologies (@raylibtech)
+*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
 
