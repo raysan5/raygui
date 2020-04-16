@@ -427,7 +427,7 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
     if (dirFilesCount > 1)
     {
         const int MAX = 64;
-        unsigned int left = 0, stack[MAX], pos = 0, seed = rand(), len = dirFilesCount;
+        unsigned int left = 0, stack[64], pos = 0, seed = rand(), len = dirFilesCount;
 
         for ( ; ; )
         {
