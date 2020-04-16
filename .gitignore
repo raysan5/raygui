@@ -60,3 +60,5 @@
 *.cache
 *.ilk
 *.log
+
+build
