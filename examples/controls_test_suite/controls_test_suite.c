@@ -221,13 +221,13 @@ int main()
                 {
                     // TODO: Validate textInput value and save
                     
-                    strcpy(textInputFileName, textInput);
+                    TextCopy(textInputFileName, textInput);
                 }
                 
                 if ((result == 0) || (result == 1) || (result == 2)) 
                 {
                     showTextInputBox = false;
-                    strcpy(textInput, "\0");
+                    TextCopy(textInput, "\0");
                 }
             }
             

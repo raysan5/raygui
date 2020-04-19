@@ -120,7 +120,7 @@ void GuiFileDialog(GuiFileDialogState *state);
 
 #include "../../src/raygui.h"
 
-#include <string.h>     // Required for: strcpy()
+#include <string.h>     // Required for: strcmp()
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -188,24 +188,24 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
 
     state.fileTypeActive = 0;
 
-    strcpy(state.fileNameText, "\0");
+    TextCopy(state.fileNameText, "\0");
 
     // Custom variables initialization
     if (initPath && DirectoryExists(initPath))
     {
-        strcpy(state.dirPathText, initPath);
+        TextCopy(state.dirPathText, initPath);
     }
     else if (initPath && FileExists(initPath))
     {
-        strcpy(state.dirPathText, GetDirectoryPath(initPath));
-        strcpy(state.fileNameText, GetFileName(initPath));
+        TextCopy(state.dirPathText, GetDirectoryPath(initPath));
+        TextCopy(state.fileNameText, GetFileName(initPath));
     }
-    else strcpy(state.dirPathText, GetWorkingDirectory());
+    else TextCopy(state.dirPathText, GetWorkingDirectory());
 
-    strcpy(state.dirPathTextCopy, state.dirPathText);
-    strcpy(state.fileNameTextCopy, state.fileNameText);
+    TextCopy(state.dirPathTextCopy, state.dirPathText);
+    TextCopy(state.fileNameTextCopy, state.fileNameText);
 
-    strcpy(state.filterExt, "all");
+    TextCopy(state.filterExt, "all");
 
     state.dirFilesCount = 0;
     state.dirFiles = NULL;      // NOTE: Loaded lazily on window active
@@ -246,7 +246,7 @@ void GuiFileDialog(GuiFileDialogState *state)
 
             for(int f = 0; f < state->dirFilesCount; f++)
             {
-                if (strcmp(state->fileNameText, state->dirFiles[f]) == 0)
+                if (TextIsEqual(state->fileNameText, state->dirFiles[f]))
                 {
                     if (state->filesListActive != f) state->filesListScrollIndex = state->filesListActive = f; // make it active and visible only on first call
 
@@ -262,14 +262,14 @@ void GuiFileDialog(GuiFileDialogState *state)
         if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< .."))// || IsKeyReleased(KEY_DPAD_Y))
         {
             // Move dir path one level up
-            strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
+            TextCopy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
 
             // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
             FD_RELOAD_DIRPATH(state);
 
             state->filesListActive = -1;
-            strcpy(state->fileNameText, "\0");
-            strcpy(state->fileNameTextCopy, state->fileNameText);
+            TextCopy(state->fileNameText, "\0");
+            TextCopy(state->fileNameTextCopy, state->fileNameText);
         }
 
         if (GuiTextBox((Rectangle){ state->position.x + 10, state->position.y + 35, winWidth - 65, 25 }, state->dirPathText, 256, state->dirPathEditMode))
@@ -282,9 +282,9 @@ void GuiFileDialog(GuiFileDialogState *state)
                     // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
                     FD_RELOAD_DIRPATH(state);
 
-                    strcpy(state->dirPathTextCopy, state->dirPathText);
+                    TextCopy(state->dirPathTextCopy, state->dirPathText);
                 }
-                else strcpy(state->dirPathText, state->dirPathTextCopy);
+                else TextCopy(state->dirPathText, state->dirPathTextCopy);
             }
 
             state->dirPathEditMode = !state->dirPathEditMode;
@@ -308,23 +308,23 @@ void GuiFileDialog(GuiFileDialogState *state)
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
             //&& (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A)))
         {
-            strcpy(state->fileNameText, state->dirFiles[state->filesListActive]);
+            TextCopy(state->fileNameText, state->dirFiles[state->filesListActive]);
 
             if (DirectoryExists(TextFormat("%s/%s", state->dirPathText, state->fileNameText)))
             {
-                if (TextIsEqual(state->fileNameText, "..")) strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
-                else strcpy(state->dirPathText, TextFormat("%s/%s", strcmp(state->dirPathText, "/")==0 ? "" : state->dirPathText, state->fileNameText));
+                if (TextIsEqual(state->fileNameText, "..")) TextCopy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
+                else TextCopy(state->dirPathText, TextFormat("%s/%s", TextIsEqual(state->dirPathText, "/") ? "" : state->dirPathText, state->fileNameText));
 
-                strcpy(state->dirPathTextCopy, state->dirPathText);
+                TextCopy(state->dirPathTextCopy, state->dirPathText);
 
                 // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
                 FD_RELOAD_DIRPATH(state);
 
-                strcpy(state->dirPathTextCopy, state->dirPathText);
+                TextCopy(state->dirPathTextCopy, state->dirPathText);
 
                 state->filesListActive = -1;
-                strcpy(state->fileNameText, "\0");
-                strcpy(state->fileNameTextCopy, state->fileNameText);
+                TextCopy(state->fileNameText, "\0");
+                TextCopy(state->fileNameTextCopy, state->fileNameText);
             }
 
             state->prevFilesListActive = state->filesListActive;
@@ -345,14 +345,14 @@ void GuiFileDialog(GuiFileDialogState *state)
                         if (TextIsEqual(state->fileNameText, state->dirFiles[i]))
                         {
                             state->filesListActive = i;
-                            strcpy(state->fileNameTextCopy, state->fileNameText);
+                            TextCopy(state->fileNameTextCopy, state->fileNameText);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    strcpy(state->fileNameText, state->fileNameTextCopy);
+                    TextCopy(state->fileNameText, state->fileNameTextCopy);
                 }
             }
 
@@ -466,13 +466,13 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
             strncpy(validFiles[validFilesCount], files[i], MAX_DIR_PATH_LENGTH);
 
             // Only filter files by extensions, directories should be available
-            if (DirectoryExists(TextFormat("%s/%s", dir, files[i]))) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 1, files[i]));
+            if (DirectoryExists(TextFormat("%s/%s", dir, files[i]))) TextCopy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 1, files[i]));
             else
             {
                 // TODO: Assign custom filetype icons depending on file extension (image, audio, text, video, models...)
 
-                if (IsFileExtension(files[i], ".png")) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
-                else strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
+                if (IsFileExtension(files[i], ".png")) TextCopy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
+                else TextCopy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
             }
 
             validFilesCount++;
@@ -487,8 +487,8 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
                 {
                     // TODO: Assign custom filetype icons depending on file extension (image, audio, text, video, models...)
 
-                    if (IsFileExtension(files[i], ".png")) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
-                    else strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
+                    if (IsFileExtension(files[i], ".png")) TextCopy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
+                    else TextCopy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
 
                     validFilesCount++;
                 }

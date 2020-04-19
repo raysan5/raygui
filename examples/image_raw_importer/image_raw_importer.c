@@ -21,7 +21,6 @@
 #define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
-#include <string.h>             // Required for: strcpy()
 #include <stdlib.h>             // Required for: atoi()
 #include <math.h>               // Required for: round()
 
@@ -96,8 +95,8 @@ int main()
                 
                 // NOTE: Returned string is just a pointer to droppedFiles[0],
                 // we need to make a copy of that data somewhere else: fileName
-                strcpy(fileNamePath, droppedFiles[0]);
-                strcpy(fileName, GetFileName(droppedFiles[0]));
+                TextCopy(fileNamePath, droppedFiles[0]);
+                TextCopy(fileName, GetFileName(droppedFiles[0]));
                 
                 // Try to guess possible raw values
                 // Let's assume image is square, RGBA, 8 bit per channel

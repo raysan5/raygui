@@ -63,7 +63,7 @@ int main()
             // Load image file (if supported extension)
             if (IsFileExtension(fileDialogState.fileNameText, ".png"))
             {
-                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                TextCopy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
                 UnloadTexture(texture);
                 texture = LoadTexture(fileNameToLoad);
             }
