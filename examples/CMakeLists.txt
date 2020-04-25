@@ -34,7 +34,7 @@ foreach(example_source ${example_sources})
   # Setup the example
   add_executable(${example_name} ${example_source})
 
-  target_link_libraries(${example_name} LINK_INTERFACE_LIBRARIES ${raylib_LIBRARIES} raygui)
+  target_link_libraries(${example_name} ${raylib_LIBRARIES} raygui)
 
   string(REGEX MATCH ".*/.*/" resources_dir ${example_source})
   string(APPEND resources_dir "resources")
