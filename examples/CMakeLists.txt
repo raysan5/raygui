@@ -1,5 +1,3 @@
-find_package(Raylib)
-
 # Get the sources together
 set(example_dirs
 	custom_file_dialog
@@ -36,7 +34,7 @@ foreach(example_source ${example_sources})
   # Setup the example
   add_executable(${example_name} ${example_source})
 
-  target_link_libraries(${example_name} PUBLIC raylib raygui)
+  target_link_libraries(${example_name} LINK_INTERFACE_LIBRARIES ${raylib_LIBRARIES} raygui)
 
   string(REGEX MATCH ".*/.*/" resources_dir ${example_source})
   string(APPEND resources_dir "resources")

@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.11)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(raygui C)
+
+find_package(raylib QUIET)
+
+if(NOT raylib_FOUND)
+  message(WARNING "RayLib not found. Building from source.")
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindRaylib.cmake)
+endif()
 
 # Config options
 option(BUILD_EXAMPLES "Build the examples." ON)
