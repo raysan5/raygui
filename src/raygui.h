@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.7 - A simple and easy-to-use immediate-mode gui library
+*   raygui v2.8 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -69,6 +69,7 @@
 *
 *
 *   VERSIONS HISTORY:
+*       2.8 (03-May-2020) Centralized rectangles drawing to GuiDrawRectangle()
 *       2.7 (20-Feb-2020) Added possible tooltips API
 *       2.6 (09-Sep-2019) ADDED: GuiTextInputBox()
 *                         REDESIGNED: GuiListView*(), GuiDropdownBox(), GuiSlider*(), GuiProgressBar(), GuiMessageBox()
