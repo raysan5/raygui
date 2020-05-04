@@ -216,10 +216,10 @@
 
     // Rectangle type
     typedef struct Rectangle {
-        int x;
-        int y;
-        int width;
-        int height;
+        float x;
+        float y;
+        float width;
+        float height;
     } Rectangle;
 
     // TODO: Texture2D type is very coupled to raylib, mostly required by GuiImageButton()
