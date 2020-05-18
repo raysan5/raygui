@@ -552,7 +552,7 @@ static Font guiFont = { 0 };            // Gui current font (WARNING: highly cou
 static bool guiLocked = false;          // Gui lock state (no inputs processed)
 static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
 
-// Global gui style array (allocated on heap by default)
+// Global gui style array (allocated on data segment by default)
 // NOTE: In raygui we manage a single int array with all the possible style properties.
 // When a new style is loaded, it loads over the global style... but default gui style
 // could always be recovered with GuiLoadStyleDefault()
