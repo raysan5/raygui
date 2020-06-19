@@ -1768,21 +1768,27 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
             // Calculate cursor position considering text
             char oneCharText[2] = { 0 };
-            int lastSpacePos = 0;
+            int lastSpacePos = -1;
 
-            for (int i = 0; i < keyCount; i++)
+            for (int i = 0; i < keyCount && currentLine < keyCount; i++)
             {
                 oneCharText[0] = text[i];
                 textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
+
+                if (text[i] == ' ') lastSpacePos = i;
 
                 if (textWidth >= textAreaBounds.width)
                 {
                     currentLine++;
                     textWidth = 0;
-                    i = lastSpacePos;
-                }
 
-                if (text[i] == ' ') lastSpacePos = i;
+                    if(lastSpacePos > 0)
+                        i = lastSpacePos;
+                    else
+                        textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
+
+                    lastSpacePos = -1;
+                }
             }
 
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + textWidth - GuiGetStyle(DEFAULT, TEXT_SPACING);
