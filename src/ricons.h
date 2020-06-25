@@ -68,9 +68,9 @@ typedef enum {
     RICON_CROP                     = 36,
     RICON_CROP_ALPHA               = 37,
     RICON_SQUARE_TOGGLE            = 38,
-    RICON_SIMMETRY                 = 39,
-    RICON_SIMMETRY_HORIZONTAL      = 40,
-    RICON_SIMMETRY_VERTICAL        = 41,
+    RICON_SYMMETRY                 = 39,
+    RICON_SYMMETRY_HORIZONTAL      = 40,
+    RICON_SYMMETRY_VERTICAL        = 41,
     RICON_LENS                     = 42,
     RICON_LENS_BIG                 = 43,
     RICON_EYE_ON                   = 44,
@@ -291,7 +291,7 @@ typedef enum {
 
 #if defined(RICONS_IMPLEMENTATION)
 //----------------------------------------------------------------------------------
-// Icons data (allocated on heap by default)
+// Icons data (allocated on memory data section by default)
 // NOTE: A new icon set could be loaded over this array using GuiLoadIcons(),
 // just note that loaded icons set must be same RICON_SIZE
 //----------------------------------------------------------------------------------
