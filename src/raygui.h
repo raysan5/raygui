@@ -1782,10 +1782,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     currentLine++;
                     textWidth = 0;
 
-                    if(lastBreakingPos > 0)
-                        i = lastBreakingPos;
-                    else
-                        textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
+                    if (lastBreakingPos > 0) i = lastBreakingPos;
+                    else textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
 
                     lastBreakingPos = -1;
                 }
