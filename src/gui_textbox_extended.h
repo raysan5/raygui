@@ -92,7 +92,9 @@ RAYGUIDEF bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
 
 #if defined(GUI_TEXTBOX_EXTENDED_IMPLEMENTATION)
 
+#ifndef RAYGUI_H
 #include "raygui.h"
+#endif
 
 //----------------------------------------------------------------------------------
 // Defines and Macros

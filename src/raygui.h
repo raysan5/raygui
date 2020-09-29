@@ -253,6 +253,170 @@ typedef struct GuiStyleProp {
     int propertyValue;
 } GuiStyleProp;
 
+typedef enum {
+    GUI_SKIN_TYPE_SLICE9 = 0,   // 9 parts
+    GUI_SKIN_TYPE_SLICE1,       // 1 part
+} GuiSkinType;
+
+typedef enum {
+    GUI_SKIN_DRAW_STRECHED = 0,
+    GUI_SKIN_DRAW_TILED,    // WARN: don't use this mode too much (performance is bad especially with small tiles)
+    GUI_SKIN_DRAW_CENTERED, // NOTE: Only available when patch type is GUI_SKIN_TYPE_SLICE1
+    
+    // TODO: currently only one draw mode can be selected for both the borders and the center (with 9-slices), maybe use different drawing modes
+    // for example the borders could be tiled while the center will be stretched !! THIS WILL REQUIRE A REDESIGN !!
+} GuiSkinDraw;
+
+typedef struct {
+    unsigned short width, height;                   // (width,height) of the source rect in texture
+    unsigned short nx, ny, fx, fy, px, py, dx, dy;  // (x,y) coordinates of the source rect inside the texture for all states
+    unsigned short top, bottom, left, right;        // edges for the 9 slices (set only when type is GUI_SKIN_TYPE_SLICE9)
+    unsigned short margins;                         // margins around the control (inflates the bounds, very usefull, used for fake shadows our when we want to draw outside the control bounds)
+    unsigned char type;                             // style type (GUI_SKIN_TYPE_SLICE1/GUI_SKIN_TYPE_SLICE9)
+    unsigned char mode;                             // style draw mode (GUI_SKIN_DRAW_STRECHED,GUI_SKIN_DRAW_TILED,GUI_SKIN_DRAW_CENTERED)
+    // TODO: margins would be better as an array of 4 values but that would increase the struct size to 38 bytes (is it worth it?)
+} GuiSkinStyle; // Main style struct used by all controls (32 bytes)
+
+typedef GuiSkinStyle GuiSkinButton;
+typedef GuiSkinStyle GuiSkinPanel;
+typedef GuiSkinStyle GuiSkinStatusbar;
+typedef GuiSkinStyle GuiSkinValueBox;
+typedef GuiSkinStyle GuiSkinTextBox;        // TODO: maybe style the cursor too, ...hmmm but how will that work?
+typedef GuiSkinStyle GuiSkinTextBoxMulti;	// TODO: maybe style the cursor too, ...hmmm but how will that work?
+typedef GuiSkinStyle GuiSkinImageButton;
+typedef GuiSkinStyle GuiSkinTooltip;
+
+typedef struct {
+	GuiSkinPanel panel;
+	GuiSkinStatusbar titlebar;
+	GuiSkinButton button;
+} GuiSkinWindowBox;
+
+typedef struct {
+	GuiSkinStyle off;
+	GuiSkinStyle on;
+} GuiSkinToggle;
+
+typedef struct {
+	GuiSkinToggle item;
+	GuiSkinToggle first;
+	GuiSkinToggle last;
+} GuiSkinToggleGroup;
+
+typedef struct {
+	GuiSkinStyle body;
+	GuiSkinStyle checked;
+} GuiSkinCheckBox;
+
+typedef struct {
+	GuiSkinStyle body;
+	GuiSkinStyle button;
+} GuiSkinComboBox;
+
+typedef struct {
+	GuiSkinStyle body;
+    GuiSkinPanel listpanel;
+	GuiSkinStyle item;
+} GuiSkinDropBox;
+
+typedef struct {
+	GuiSkinValueBox valuebox;
+	GuiSkinButton left, right;
+} GuiSkinSpinner;
+
+typedef struct {
+	GuiSkinStyle body;
+	GuiSkinStyle slider;    // NOTE: only active when control is a slider
+    GuiSkinStyle bar;       // NOTE: only active when control is a sliderbar
+} GuiSkinSlider; // used both by slider and sliderbar
+
+typedef struct {
+    GuiSkinStyle body;
+    GuiSkinStyle progress;
+} GuiSkinProgressbar;
+
+typedef struct {
+	GuiSkinStyle body;
+	GuiSkinStyle selector;
+} GuiSkinColorPanel;
+
+typedef struct {
+    GuiSkinStyle body;
+    GuiSkinStyle rail;      // NOTE: style for the active area which holds the slider
+    GuiSkinStyle slider;    // NOTE: style for the slider bar
+} GuiSkinScrollbar;
+
+typedef struct {
+    GuiSkinStyle body;
+    GuiSkinStyle item;
+    GuiSkinStyle first;
+    GuiSkinStyle last;
+    GuiSkinScrollbar scrollbar;
+} GuiSkinList;
+
+typedef struct {
+	GuiSkinStyle body;
+	GuiSkinStyle corner;
+	GuiSkinScrollbar hscroll, vscroll;
+} GuiSkinScrollPanel;
+
+// Main skin struct, holds style for all controls
+typedef struct { 
+    char name[32];
+    
+    GuiSkinButton button;
+    GuiSkinImageButton imagebutton;
+    GuiSkinPanel panel;
+    GuiSkinStatusbar status;
+    GuiSkinWindowBox window;
+    GuiSkinScrollPanel scrollpanel;
+    GuiSkinList list;
+    GuiSkinScrollbar scrollbar;
+    GuiSkinToggle toggle;
+    GuiSkinToggleGroup togglegroup;
+    GuiSkinCheckBox checkbox;
+    GuiSkinComboBox combobox;
+    GuiSkinDropBox dropbox;
+    GuiSkinSpinner spinner;
+    GuiSkinSlider slider;
+    GuiSkinProgressbar progressbar;
+    GuiSkinValueBox valuebox;
+    GuiSkinTextBox textbox;
+    GuiSkinTextBoxMulti textboxmulti;
+    GuiSkinColorPanel colorpanel;
+    GuiSkinColorPanel colorbaralpha;
+    GuiSkinColorPanel colorbarhue;
+    GuiSkinTooltip tooltip;
+    bool useColor;
+} GuiSkin;
+
+// Skin ID's for controls
+typedef enum {
+    GUI_SKIN_BUTTON_SID = 0,
+    GUI_SKIN_IMGBUTTON_SID,
+    GUI_SKIN_PANEL_SID,
+    GUI_SKIN_STATUS_SID,
+    GUI_SKIN_WINDOW_SID,
+    GUI_SKIN_SCROLLPANEL_SID,
+    GUI_SKIN_LIST_SID,
+    GUI_SKIN_SCROLLBAR_SID,
+    GUI_SKIN_TOGGLE_SID,
+    GUI_SKIN_TOGGLEGROUP_SID,
+    GUI_SKIN_CHECKBOX_SID,
+    GUI_SKIN_COMBOBOX_SID,
+    GUI_SKIN_DROPBOX_SID,
+    GUI_SKIN_SPINNER_SID,
+    GUI_SKIN_SLIDER_SID,
+    GUI_SKIN_PROGRESSBAR_SID,
+    GUI_SKIN_VALUEBOX_SID,
+    GUI_SKIN_TEXTBOX_SID,
+    GUI_SKIN_TEXTBOXMULTI_SID,
+    GUI_SKIN_COLORPANEL_SID,
+    GUI_SKIN_COLORBARALPHA_SID,
+    GUI_SKIN_COLORBARHUE_SID,
+    GUI_SKIN_TOOLTIP_SID,
+} GuiSkinStyleId;
+
 // Gui control state
 typedef enum {
     GUI_STATE_NORMAL = 0,
@@ -431,6 +595,12 @@ RAYGUIDEF Font GuiGetFont(void);                                        // Get g
 RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set one style property
 RAYGUIDEF int GuiGetStyle(int control, int property);                   // Get one style property
 
+// Skin set/get functions
+RAYGUIDEF void GuiSetSkin(GuiSkin* skin);       // Sets the global skin style
+RAYGUIDEF GuiSkin* GuiGetSkin(void);            // Gets the global skin style
+RAYGUIDEF void GuiSetSkinTexture(Texture t);    // Sets the global skin texture. Note that the old texture will not be unloaded.
+RAYGUIDEF Texture GuiGetSkinTexture(void);      // Gets the global skin texture
+
 // Tooltips set functions
 RAYGUIDEF void GuiEnableTooltip(void);                                  // Enable gui tooltips
 RAYGUIDEF void GuiDisableTooltip(void);                                 // Disable gui tooltips
@@ -486,6 +656,11 @@ typedef GuiStyle (unsigned int *)
 RAYGUIDEF GuiStyle LoadGuiStyle(const char *fileName);          // Load style from file (.rgs)
 RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
 */
+
+// Skin loading/saving functions
+RAYGUIDEF int GuiSaveSkin(const char *fileName, const char* texPath, GuiSkin* skins, int count); // Save skin styles to file. If file exists it will be overwritten. Returns `0` on failure.
+RAYGUIDEF int GuiLoadSkin(const char *fileName, GuiSkin* skins, int count); // Load skin styles from a file. Returns `0` on failure or number of skin styles succesfully loaded.
+
 
 RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 
@@ -547,6 +722,9 @@ typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
 // Global Variables Definition
 //----------------------------------------------------------------------------------
 static GuiControlState guiState = GUI_STATE_NORMAL;
+
+static Texture guiTexture = {0};        // Gui skin texture
+static GuiSkin* guiSkin = NULL;
 
 static Font guiFont = { 0 };            // Gui current font (WARNING: highly coupled to raylib)
 static bool guiLocked = false;          // Gui lock state (no inputs processed)
@@ -638,7 +816,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text boun
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
+static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color, GuiSkinStyle* style, int state);   // Gui draw rectangle using default raygui style
 static void GuiDrawTooltip(Rectangle bounds);                   // Draw tooltip relatively to bounds
 
 static const char **GuiTextSplit(const char *text, int *count, int *textRow);   // Split controls text into multiple strings
@@ -717,6 +895,28 @@ int GuiGetStyle(int control, int property)
     return guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
 }
 
+// Sets the global skin
+void GuiSetSkin(GuiSkin* skin)
+{
+    guiSkin = skin;
+}
+
+// Gets the global skin
+GuiSkin* GuiGetSkin(void)
+{
+    return guiSkin;
+}
+
+// Sets the global skin texture. Note that the old texture will not be unloaded.
+void GuiSetSkinTexture(Texture t) {
+    guiTexture = t;
+}
+
+// Gets the global skin texture
+Texture GuiGetSkinTexture(void) {
+    return guiTexture;
+}
+
 // Enable gui tooltips
 void GuiEnableTooltip(void) { guiTooltipEnabled = true; }
 
@@ -760,8 +960,26 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
 
     // Draw control
     //--------------------------------------------------------------------
+    GuiSkinStyle style = {0}; // temporary style
+    if(guiSkin != NULL)
+	{
+        style = guiSkin->status; // Save status style
+        guiSkin->status = guiSkin->window.titlebar; // Override with the window status style
+    }
     GuiStatusBar(statusBar, title); // Draw window header as status bar
+    if(guiSkin != NULL)
+	{
+        guiSkin->status = style; // Restore status style
+        style = guiSkin->panel;
+        guiSkin->panel = guiSkin->window.panel;
+    }
     GuiPanel(windowPanel);          // Draw window base
+    if(guiSkin != NULL)
+	{
+        guiSkin->panel = style;  // Restore panel style
+        style = guiSkin->button;
+        guiSkin->button = guiSkin->window.button; // Override with the window button style
+    }
     
     // Draw window close button
     int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
@@ -775,6 +993,7 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
 #endif
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+	if(guiSkin != NULL) guiSkin->button = style; // Restore the button style
     //--------------------------------------------------------------------
 
     return clicked;
@@ -790,9 +1009,9 @@ void GuiGroupBox(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, GROUPBOX_LINE_THICK }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - 1, bounds.y, GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha), NULL, state);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, GROUPBOX_LINE_THICK }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha), NULL, state);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - 1, bounds.y, GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha), NULL, state);
 
     GuiLine(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, bounds.width, 1 }, text);
     //--------------------------------------------------------------------
@@ -809,7 +1028,7 @@ void GuiLine(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    if (text == NULL) GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height/2, bounds.width, 1 }, 0, BLANK, color);
+    if (text == NULL) GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height/2, bounds.width, 1 }, 0, BLANK, color, NULL, state);
     else
     {
         Rectangle textBounds = { 0 };
@@ -819,9 +1038,9 @@ void GuiLine(Rectangle bounds, const char *text)
         textBounds.y = bounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
         // Draw line with embedded text label: "--- text --------------"
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, LINE_TEXT_PADDING - 2, 1 }, 0, BLANK, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, LINE_TEXT_PADDING - 2, 1 }, 0, BLANK, color, NULL, state);
         GuiLabel(textBounds, text);
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + LINE_TEXT_PADDING + textBounds.width + 4, bounds.y, bounds.width - textBounds.width - LINE_TEXT_PADDING - 4, 1 }, 0, BLANK, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + LINE_TEXT_PADDING + textBounds.width + 4, bounds.y, bounds.width - textBounds.width - LINE_TEXT_PADDING - 4, 1 }, 0, BLANK, color, NULL, state);
     }
     //--------------------------------------------------------------------
 }
@@ -836,7 +1055,7 @@ void GuiPanel(Rectangle bounds)
     // Draw control
     //--------------------------------------------------------------------
     GuiDrawRectangle(bounds, PANEL_BORDER_WIDTH, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED: LINE_COLOR)), guiAlpha),
-                     Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BASE_COLOR_DISABLED : BACKGROUND_COLOR)), guiAlpha));
+                     Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BASE_COLOR_DISABLED : BACKGROUND_COLOR)), guiAlpha), guiSkin != NULL ? &guiSkin->panel : NULL, state);
     //--------------------------------------------------------------------
 }
 
@@ -912,14 +1131,16 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, 0, BLANK, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
+    GuiDrawRectangle(bounds, 0, BLANK, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiSkin != NULL ? &guiSkin->scrollpanel.body : NULL, state);        // Draw background
 
     // Save size of the scrollbar slider
     const int slider = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
 
+	GuiSkinScrollbar style = {0}; // Temporary scrollbar style
     // Draw horizontal scrollbar if visible
     if (hasHorizontalScrollBar)
     {
+		if(guiSkin != NULL) { style = guiSkin->scrollbar; guiSkin->scrollbar = guiSkin->scrollpanel.hscroll; } // Save the scrollbar style and overwrite it with the windowbox scrollbar style
         // Change scrollbar slider size to show the diff in size between the content width and the widget width
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, ((bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/content.width)*(bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth));
         scrollPos.x = -GuiScrollBar(horizontalScrollBar, -scrollPos.x, horizontalMin, horizontalMax);
@@ -928,6 +1149,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
     // Draw vertical scrollbar if visible
     if (hasVerticalScrollBar)
     {
+		if(guiSkin != NULL) guiSkin->scrollbar = guiSkin->scrollpanel.vscroll;  // Overwrite with windowbox scrollbar style
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, ((bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/content.height)* (bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth));
         scrollPos.y = -GuiScrollBar(verticalScrollBar, -scrollPos.y, verticalMin, verticalMax);
@@ -938,11 +1160,13 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
     {
         // TODO: Consider scroll bars side
         Rectangle corner = { horizontalScrollBar.x + horizontalScrollBar.width + 2, verticalScrollBar.y + verticalScrollBar.height + 2, horizontalScrollBarWidth - 4, verticalScrollBarWidth - 4 };
-        GuiDrawRectangle(corner, 0, BLANK, Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + (state*3))), guiAlpha));
+        GuiDrawRectangle(corner, 0, BLANK, Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT + (state*3))), guiAlpha), guiSkin != NULL ? &guiSkin->scrollpanel.corner : NULL, state);
     }
 
+	if(guiSkin != NULL) guiSkin->scrollbar = style; // Restore scrollbar style
+
     // Draw scrollbar lines depending on current state
-    GuiDrawRectangle(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, (float)BORDER + (state*3))), guiAlpha), BLANK);
+    GuiDrawRectangle(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, (float)BORDER + (state*3))), guiAlpha), BLANK, NULL, state);
     
     // Set scrollbar slider size back to the way it was before
     GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, slider);
@@ -994,7 +1218,7 @@ bool GuiButton(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
+    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha), guiSkin != NULL ? &guiSkin->button : NULL, state);
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     //------------------------------------------------------------------
 
@@ -1066,7 +1290,7 @@ bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rec
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
+    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha), guiSkin != NULL ? &guiSkin->imagebutton : NULL, state);
 
     if (text != NULL) GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     if (texture.id > 0) DrawTextureRec(texture, texSource, RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width/2 - texSource.width/2, bounds.y + bounds.height/2 - texSource.height/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
@@ -1104,12 +1328,12 @@ bool GuiToggle(Rectangle bounds, const char *text, bool active)
     //--------------------------------------------------------------------
     if (state == GUI_STATE_NORMAL)
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, (active? BORDER_COLOR_PRESSED : (BORDER + state*3)))), guiAlpha), Fade(GetColor(GuiGetStyle(TOGGLE, (active? BASE_COLOR_PRESSED : (BASE + state*3)))), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, (active? BORDER_COLOR_PRESSED : (BORDER + state*3)))), guiAlpha), Fade(GetColor(GuiGetStyle(TOGGLE, (active? BASE_COLOR_PRESSED : (BASE + state*3)))), guiAlpha), guiSkin != NULL ? (!active ? &guiSkin->toggle.off : &guiSkin->toggle.on ) : NULL, GUI_STATE_NORMAL);
         GuiDrawText(text, GetTextBounds(TOGGLE, bounds), GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TOGGLE, (active? TEXT_COLOR_PRESSED : (TEXT + state*3)))), guiAlpha));
     }
     else
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(TOGGLE, BASE + state*3)), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TOGGLE, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TOGGLE, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(TOGGLE, BASE + state*3)), guiAlpha), guiSkin != NULL ? &guiSkin->toggle.off : NULL, state);
         GuiDrawText(text, GetTextBounds(TOGGLE, bounds), GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TOGGLE, TEXT + state*3)), guiAlpha));
     }
     //--------------------------------------------------------------------
@@ -1133,6 +1357,9 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 
     int prevRow = rows[0];
 
+    GuiSkinToggle style = {0};
+    if(guiSkin != NULL) style = guiSkin->toggle;  // Save toggle style
+
     for (int i = 0; i < itemsCount; i++)
     {
         if (prevRow != rows[i])
@@ -1147,6 +1374,8 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 
         bounds.x += (bounds.width + GuiGetStyle(TOGGLE, GROUP_PADDING));
     }
+
+	if(guiSkin != NULL) guiSkin->toggle = style; // Restore toggle style
 
     return active;
 }
@@ -1193,7 +1422,16 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(CHECKBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(CHECKBOX, BORDER + (state*3))), guiAlpha), BLANK);
+    if(guiSkin != NULL) 
+    {
+        Color clr = BLANK;
+        if(guiSkin->checkbox.body.width > 0 && guiSkin->checkbox.body.height > 0)
+            clr = Fade(GetColor(GuiGetStyle(CHECKBOX, BORDER + (state*3))), guiAlpha);
+        GuiDrawRectangle(bounds, GuiGetStyle(CHECKBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(CHECKBOX, BORDER + (state*3))), guiAlpha), clr, &guiSkin->checkbox.body, state);
+    }
+    else
+        GuiDrawRectangle(bounds, GuiGetStyle(CHECKBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(CHECKBOX, BORDER + (state*3))), guiAlpha), BLANK, NULL, state);
+    
     
     if (checked)
     {
@@ -1201,7 +1439,7 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
                             bounds.y + GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, CHECK_PADDING),
                             bounds.width - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, CHECK_PADDING)),
                             bounds.height - 2*(GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, CHECK_PADDING)) };
-        GuiDrawRectangle(check, 0, BLANK, Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3)), guiAlpha));
+        GuiDrawRectangle(check, 0, BLANK, Fade(GetColor(GuiGetStyle(CHECKBOX, TEXT + state*3)), guiAlpha), guiSkin != NULL ? &guiSkin->checkbox.checked : NULL, state);
     }
 
     if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
@@ -1251,7 +1489,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
     // Draw control
     //--------------------------------------------------------------------
     // Draw combo box main
-    GuiDrawRectangle(bounds, GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(COMBOBOX, BASE + (state*3))), guiAlpha));
+    GuiDrawRectangle(bounds, GuiGetStyle(COMBOBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COMBOBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(COMBOBOX, BASE + (state*3))), guiAlpha), guiSkin != NULL ? &guiSkin->combobox.body : NULL, state);
     GuiDrawText(items[active], GetTextBounds(COMBOBOX, bounds), GuiGetStyle(COMBOBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(COMBOBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw selector using a custom button
@@ -1261,7 +1499,15 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
+    GuiSkinStyle style = {0};
+    if(guiSkin != NULL) // Set the combobox style for the button
+	{
+        style = guiSkin->button;
+        guiSkin->button = guiSkin->combobox.button;
+    }
     GuiButton(selector, TextFormat("%i/%i", active + 1, itemsCount));
+
+	if(guiSkin != NULL) guiSkin->button = style; // Reset the button style
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
@@ -1345,11 +1591,26 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Draw control
     //--------------------------------------------------------------------
-    if (editMode) GuiPanel(boundsOpen);
+    if (editMode) 
+    { 
+        GuiSkinPanel panel = {0};
+        
+        if(guiSkin != NULL) 
+        { 
+            // Draw dropdownbox panel using the correct style
+            panel = guiSkin->panel; // Save the panel style
+            guiSkin->panel = guiSkin->dropbox.listpanel; // Replace with the dropdown panel style
+        }
+        
+        GuiPanel(boundsOpen);
+        
+        if(guiSkin != NULL) guiSkin->panel = panel; // Restore panel style
+    }
 
-    GuiDrawRectangle(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE + state*3)), guiAlpha));
+    GuiDrawRectangle(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE + state*3)), guiAlpha), guiSkin != NULL ? &guiSkin->dropbox.body : NULL, state);
     GuiDrawText(items[itemSelected], GetTextBounds(DEFAULT, bounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + state*3)), guiAlpha));
 
+	GuiSkinStyle* itemStyle = guiSkin != NULL ? &guiSkin->dropbox.item : NULL;
     if (editMode)
     {
         // Draw visible items
@@ -1360,12 +1621,12 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
             if (i == itemSelected)
             {
-                GuiDrawRectangle(itemBounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_PRESSED)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_PRESSED)), guiAlpha));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_PRESSED)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_PRESSED)), guiAlpha), itemStyle, GUI_STATE_PRESSED);
                 GuiDrawText(items[i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT_COLOR_PRESSED)), guiAlpha));
             }
             else if (i == itemFocused)
             {
-                GuiDrawRectangle(itemBounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_FOCUSED)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_FOCUSED)), guiAlpha));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER_COLOR_FOCUSED)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE_COLOR_FOCUSED)), guiAlpha), itemStyle, GUI_STATE_FOCUSED);
                 GuiDrawText(items[i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT_COLOR_FOCUSED)), guiAlpha));
             }
             else GuiDrawText(items[i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT_COLOR_NORMAL)), guiAlpha));
@@ -1414,7 +1675,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             state = GUI_STATE_PRESSED;
             framesCounter++;
 
-            int key = GetKeyPressed();
+            int key = GetKeyPressed();      // Returns codepoint as Unicode
             int keyCount = strlen(text);
 
             // Only allow keys in range [32..125]
@@ -1422,15 +1683,18 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 int maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
-                if (GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                if ((GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE))) && (key >= 32))
                 {
-                    if (((key >= 32) && (key <= 125)) ||
-                        ((key >= 128) && (key < 255)))
+                    int byteLength = 0;
+                    const char *textUtf8 = CodepointToUtf8(key, &byteLength);
+                    
+                    for (int i = 0; i < byteLength; i++)
                     {
-                        text[keyCount] = (char)key;
+                        text[keyCount] = textUtf8[i];
                         keyCount++;
-                        text[keyCount] = '\0';
                     }
+
+                    text[keyCount] = '\0';
                 }
             }
 
@@ -1476,16 +1740,27 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     //--------------------------------------------------------------------
     if (state == GUI_STATE_PRESSED)
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha), guiSkin != NULL ? &guiSkin->textbox : NULL, GUI_STATE_PRESSED);
 
         // Draw blinking cursor
-        if (editMode && ((framesCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        if (editMode && ((framesCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha), NULL, state);
     }
     else if (state == GUI_STATE_DISABLED)
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha), guiSkin != NULL ? &guiSkin->textbox : NULL, GUI_STATE_DISABLED);
     }
-    else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
+    else 
+	{
+	    if(guiSkin != NULL)
+        {
+            Color clr = BLANK;
+            if(guiSkin->textbox.width > 0 && guiSkin->textbox.height > 0)
+                clr = Fade(GetColor(GuiGetStyle(TEXTBOX, BASE + (state*3))), guiAlpha);
+            GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), clr, &guiSkin->textbox, state);
+        }
+        else
+			GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK, NULL, state);	
+	}
 
     GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
@@ -1539,8 +1814,18 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
 
     // Draw control
     //--------------------------------------------------------------------
-    // TODO: Set Spinner properties for ValueBox
+    GuiSkinStyle style = {0};
+    if(guiSkin != NULL) 
+	{ // Change to the correct value box style
+        style = guiSkin->valuebox;
+        guiSkin->valuebox = guiSkin->spinner.valuebox;
+    }
+	// TODO: Set Spinner properties for ValueBox
     pressed = GuiValueBox(spinner, NULL, &tempValue, minValue, maxValue, editMode);
+    if(guiSkin != NULL) { 
+        guiSkin->valuebox = style; // Reset style for valuebox
+        style = guiSkin->button; // Save the button style
+    }
 
     // Draw value selector custom buttons
     // NOTE: BORDER_WIDTH and TEXT_ALIGNMENT forced values
@@ -1548,15 +1833,18 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+    if(guiSkin != NULL) guiSkin->button = guiSkin->spinner.left; // Change style for the left button
 
 #if defined(RAYGUI_SUPPORT_ICONS)
     if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
+	if(guiSkin != NULL) guiSkin->button = guiSkin->spinner.right; // Change style for the right button
     if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #else
     if (GuiButton(leftButtonBound, "<")) tempValue--;
+	if(guiSkin != NULL) guiSkin->button = guiSkin->spinner.right; // Change style for the right button
     if (GuiButton(rightButtonBound, ">")) tempValue++;
 #endif
-
+	if(guiSkin != NULL) guiSkin->button = style; // Reset button style
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
 
@@ -1672,8 +1960,17 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
     if (state == GUI_STATE_PRESSED) baseColor = GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_PRESSED));
     else if (state == GUI_STATE_DISABLED) baseColor = GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_DISABLED));
     
-    // WARNING: BLANK color does not work properly with Fade()
-    GuiDrawRectangle(bounds, GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER + (state*3))), guiAlpha), baseColor);
+    if(guiSkin != NULL)
+    {
+        if(guiSkin->valuebox.width > 0 && guiSkin->valuebox.height > 0) baseColor = GetColor(GuiGetStyle(VALUEBOX, BASE + (state*3)));
+        // WARNING: BLANK color does not work properly with Fade()
+        GuiDrawRectangle(bounds, GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER + (state*3))), guiAlpha), baseColor,  &guiSkin->valuebox, state);
+    }
+    else
+    {
+        // WARNING: BLANK color does not work properly with Fade()
+        GuiDrawRectangle(bounds, GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER + (state*3))), guiAlpha), baseColor, NULL, state);
+    }
     GuiDrawText(textValue, GetTextBounds(VALUEBOX, bounds), GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(VALUEBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw blinking cursor
@@ -1681,7 +1978,7 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
     {
         // NOTE: ValueBox internal text is always centered
         Rectangle cursor = { bounds.x + GetTextWidth(textValue)/2 + bounds.width/2 + 2, bounds.y + 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), 1, bounds.height - 4*GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
-        GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha), NULL, state);
     }
     
     // Draw text label if provided
@@ -1768,26 +2065,24 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
             // Calculate cursor position considering text
             char oneCharText[2] = { 0 };
-            int lastSpacePos = -1;
+            int lastBreakingPos = -1;
 
             for (int i = 0; i < keyCount && currentLine < keyCount; i++)
             {
                 oneCharText[0] = text[i];
                 textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
 
-                if (text[i] == ' ') lastSpacePos = i;
+                if (text[i] == ' ' || text[i] == '\n') lastBreakingPos = i;
 
-                if (textWidth >= textAreaBounds.width)
+                if ( text[i] == '\n' || textWidth >= textAreaBounds.width)
                 {
                     currentLine++;
                     textWidth = 0;
 
-                    if(lastSpacePos > 0)
-                        i = lastSpacePos;
-                    else
-                        textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
+                    if (lastBreakingPos > 0) i = lastBreakingPos;
+                    else textWidth += (GetTextWidth(oneCharText) + GuiGetStyle(DEFAULT, TEXT_SPACING));
 
-                    lastSpacePos = -1;
+                    lastBreakingPos = -1;
                 }
             }
 
@@ -1814,16 +2109,27 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     //--------------------------------------------------------------------
     if (state == GUI_STATE_PRESSED)
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha), guiSkin != NULL ? &guiSkin->textboxmulti : NULL, GUI_STATE_PRESSED);
 
         // Draw blinking cursor
-        if (editMode && ((framesCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        if (editMode && ((framesCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha), NULL, state);
     }
     else if (state == GUI_STATE_DISABLED)
     {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha), guiSkin != NULL ? &guiSkin->textboxmulti : NULL, GUI_STATE_DISABLED);
     }
-    else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
+    else 
+	{
+        if(guiSkin != NULL)
+        {
+            Color clr = BLANK;
+            if(guiSkin->textboxmulti.width > 0 && guiSkin->textboxmulti.height > 0) 
+                clr = Fade(GetColor(GuiGetStyle(TEXTBOX, BASE + (state*3))), guiAlpha);
+            GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), clr, &guiSkin->textboxmulti, state);
+        }
+        else
+            GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK, NULL, state);
+	}
 
     DrawTextRec(guiFont, text, textAreaBounds, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), true, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
@@ -1892,11 +2198,12 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != GUI_STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
+  	GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != GUI_STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha), guiSkin != NULL ? &guiSkin->slider.body : NULL, state);
 
+	GuiSkinStyle* style = guiSkin != NULL ? (sliderWidth == 0 ? &guiSkin->slider.bar : &guiSkin->slider.slider) : NULL;
     // Draw slider internal bar (depends on state)
-    if ((state == GUI_STATE_NORMAL) || (state == GUI_STATE_PRESSED)) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == GUI_STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
+    if ((state == GUI_STATE_NORMAL) || (state == GUI_STATE_PRESSED)) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha), style, state);
+    else if (state == GUI_STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha), style, state);
 
     // Draw left/right text if provided
     if (textLeft != NULL)
@@ -1953,11 +2260,19 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER + (state*3))), guiAlpha), BLANK);
+	if(guiSkin != NULL)
+	{
+		Color clr = BLANK;
+		if(guiSkin->progressbar.body.width > 0 && guiSkin->progressbar.body.height > 0)
+			clr = Fade(GetColor(GuiGetStyle(PROGRESSBAR, BASE + (state*3))), guiAlpha);
+		GuiDrawRectangle(bounds, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER + (state*3))), guiAlpha), clr, &guiSkin->progressbar.body, state);
+	}
+	else
+    	GuiDrawRectangle(bounds, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER + (state*3))), guiAlpha), BLANK, NULL, state);
 
     // Draw slider internal progress bar (depends on state)
-    if ((state == GUI_STATE_NORMAL) || (state == GUI_STATE_PRESSED)) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == GUI_STATE_FOCUSED) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, TEXT_COLOR_FOCUSED)), guiAlpha));
+    if ((state == GUI_STATE_NORMAL) || (state == GUI_STATE_PRESSED)) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BASE_COLOR_PRESSED)), guiAlpha), guiSkin != NULL ? &guiSkin->progressbar.progress : NULL, state);
+    else if (state == GUI_STATE_FOCUSED) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, TEXT_COLOR_FOCUSED)), guiAlpha), guiSkin != NULL ? &guiSkin->progressbar.progress : NULL, state);
 
     // Draw left/right text if provided
     if (textLeft != NULL)
@@ -1994,7 +2309,7 @@ void GuiStatusBar(Rectangle bounds, const char *text)
     // Draw control
     //--------------------------------------------------------------------
     GuiDrawRectangle(bounds, GuiGetStyle(STATUSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(STATUSBAR, (state != GUI_STATE_DISABLED)? BORDER_COLOR_NORMAL : BORDER_COLOR_DISABLED)), guiAlpha),
-                     Fade(GetColor(GuiGetStyle(STATUSBAR, (state != GUI_STATE_DISABLED)? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
+                     Fade(GetColor(GuiGetStyle(STATUSBAR, (state != GUI_STATE_DISABLED)? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha), guiSkin != NULL ? &guiSkin->status : NULL, state);
     GuiDrawText(text, GetTextBounds(STATUSBAR, bounds), GuiGetStyle(STATUSBAR, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(STATUSBAR, (state != GUI_STATE_DISABLED)? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
     //--------------------------------------------------------------------
 }
@@ -2021,7 +2336,7 @@ void GuiDummyRec(Rectangle bounds, const char *text)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED)? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
+    GuiDrawRectangle(bounds, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state != GUI_STATE_DISABLED)? BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha), NULL, state);
     GuiDrawText(text, GetTextBounds(DEFAULT, bounds), GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(BUTTON, (state != GUI_STATE_DISABLED)? TEXT_COLOR_NORMAL : TEXT_COLOR_DISABLED)), guiAlpha));
     //------------------------------------------------------------------
 }
@@ -2117,10 +2432,10 @@ int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   // Draw the background
+    GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha), guiSkin != NULL ? &guiSkin->scrollbar.body : NULL, state);   // Draw the background
     
-    GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
-    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
+    GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha), guiSkin != NULL ? &guiSkin->scrollbar.rail : NULL, state);     // Draw the scrollbar active area background
+    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha), guiSkin != NULL ? &guiSkin->scrollbar.slider : NULL, state);         // Draw the slider bar
 
     // Draw arrows
     const int padding = (spinnerSize - GuiGetStyle(SCROLLBAR, ARROWS_SIZE))/2;
@@ -2255,14 +2570,22 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));     // Draw background
+    GuiDrawRectangle(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiSkin != NULL ? &guiSkin->list.body : NULL, state);     // Draw background
 
     // Draw visible items
     for (int i = 0; ((i < visibleItems) && (text != NULL)); i++)
     {
+        GuiSkinStyle* style = NULL;
+        if(guiSkin != NULL)
+        {
+            style = &guiSkin->list.item;
+            if(startIndex+i == 0) style = &guiSkin->list.first;
+            else if(startIndex+i+1==count) style = &guiSkin->list.last;
+        }
+        
         if (state == GUI_STATE_DISABLED)
         {
-            if ((startIndex + i) == itemSelected) GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_DISABLED)), guiAlpha));
+            if ((startIndex + i) == itemSelected) GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_DISABLED)), guiAlpha), style, GUI_STATE_DISABLED);
 
             GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_DISABLED)), guiAlpha));
         }
@@ -2271,18 +2594,19 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
             if ((startIndex + i) == itemSelected)
             {
                 // Draw item selected
-                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)), guiAlpha));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)), guiAlpha), style, GUI_STATE_PRESSED);
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_PRESSED)), guiAlpha));
             }
             else if ((startIndex + i) == itemFocused)
             {
                 // Draw item focused
-                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)), guiAlpha));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), guiAlpha), Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)), guiAlpha), style, GUI_STATE_FOCUSED);
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_FOCUSED)), guiAlpha));
             }
             else
             {
                 // Draw item normal
+                if(style != NULL && style->width > 0 && style->height > 0) GuiDrawRectangle(itemBounds, 0, BLANK, Fade(GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_NORMAL)), guiAlpha), style, GUI_STATE_NORMAL);
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_NORMAL)), guiAlpha));
             }
         }
@@ -2307,9 +2631,15 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
         int prevScrollSpeed = GuiGetStyle(SCROLLBAR, SCROLL_SPEED); // Save default scroll speed
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, sliderSize);            // Change slider size
         GuiSetStyle(SCROLLBAR, SCROLL_SPEED, count - visibleItems); // Change scroll speed
-
+        GuiSkinScrollbar scroll = {0}; // Temporary skin style for the scrollbar
+        if(guiSkin != NULL) { 
+            scroll = guiSkin->scrollbar;  // Copy scrollbar skin style
+            guiSkin->scrollbar = guiSkin->list.scrollbar; // Override the default scrollbar skin with our list skin style
+        }
+        
         startIndex = GuiScrollBar(scrollBarBounds, startIndex, 0, count - visibleItems);
-
+        
+		if(guiSkin != NULL) guiSkin->scrollbar = scroll; // Reset the scrollbar skin style
         GuiSetStyle(SCROLLBAR, SCROLL_SPEED, prevScrollSpeed); // Reset scroll speed to default
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, prevSliderSize); // Reset slider size to default
     }
@@ -2387,14 +2717,23 @@ Color GuiColorPanelEx(Rectangle bounds, Color color, float hue)
 
         // Draw color picker: selector
         Rectangle selector = { pickerSelector.x - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, pickerSelector.y - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE), GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE) };
-        GuiDrawRectangle(selector, 0, BLANK, Fade(colWhite, guiAlpha));
+        GuiDrawRectangle(selector, 0, BLANK, Fade(colWhite, guiAlpha), guiSkin != NULL ? &guiSkin->colorpanel.selector : NULL, state);
     }
     else
     {
         DrawRectangleGradientEx(bounds, Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), 0.6f), guiAlpha));
     }
 
-    GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK);
+    if(guiSkin != NULL)
+    {
+        Color clr = BLANK;
+        if(guiSkin->colorpanel.body.width > 0 && guiSkin->colorpanel.body.height > 0)
+            clr = Fade(GetColor(GuiGetStyle(COLORPICKER, BASE + state*3)), guiAlpha);
+        
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), clr, &guiSkin->colorpanel.body, state);
+    }
+    else
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK, NULL, state);
     //--------------------------------------------------------------------
 
     return color;
@@ -2452,7 +2791,7 @@ float GuiColorBarAlpha(Rectangle bounds, float alpha)
             for (int y = 0; y < checksY; y++)
             {
                 Rectangle check = { bounds.x + x*COLORBARALPHA_CHECKED_SIZE, bounds.y + y*COLORBARALPHA_CHECKED_SIZE, COLORBARALPHA_CHECKED_SIZE, COLORBARALPHA_CHECKED_SIZE };
-                GuiDrawRectangle(check, 0, BLANK, ((x + y)%2)? Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), 0.4f), guiAlpha) : Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.4f), guiAlpha));
+                GuiDrawRectangle(check, 0, BLANK, ((x + y)%2)? Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), 0.4f), guiAlpha) : Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.4f), guiAlpha), NULL, state);
             }
         }
 
@@ -2460,10 +2799,23 @@ float GuiColorBarAlpha(Rectangle bounds, float alpha)
     }
     else DrawRectangleGradientEx(bounds, Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha));
 
-    GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK);
-
-    // Draw alpha bar: selector
-    GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha));
+    if(guiSkin != NULL)
+    {
+        Color clr = BLANK;
+        if(guiSkin->colorbaralpha.body.width > 0 && guiSkin->colorbaralpha.body.height > 0) 
+                clr = Fade(GetColor(GuiGetStyle(COLORPICKER, BASE + state*3)), guiAlpha);
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), clr, &guiSkin->colorbaralpha.body, state);
+        
+        // Draw alpha bar: selector
+        GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), &guiSkin->colorbaralpha.selector, state);
+    }
+    else
+    {
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK, NULL, state);
+        
+        // Draw alpha bar: selector
+        GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), NULL, state);
+    }
     //--------------------------------------------------------------------
 
     return alpha;
@@ -2525,10 +2877,23 @@ float GuiColorBarHue(Rectangle bounds, float hue)
     }
     else DrawRectangleGradientV(bounds.x, bounds.y, bounds.width, bounds.height, Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha));
 
-    GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK);
-
-    // Draw hue bar: selector
-    GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha));
+    if(guiSkin != NULL)
+    {
+        Color clr = BLANK;
+        if(guiSkin->colorbarhue.body.width > 0 && guiSkin->colorbarhue.body.height > 0) 
+                clr = Fade(GetColor(GuiGetStyle(COLORPICKER, BASE + state*3)), guiAlpha);
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), clr, &guiSkin->colorbarhue.body, state);
+        
+        // Draw hue bar: selector
+        GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), &guiSkin->colorbarhue.selector, state);
+    }
+    else 
+    {
+        GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK, NULL, state);
+        
+        // Draw hue bar: selector
+        GuiDrawRectangle(selector, 0, BLANK, Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), NULL, state);
+    }
     //--------------------------------------------------------------------
 
     return hue;
@@ -2723,14 +3088,14 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
                 for (int i = 0; i < linesV; i++)
                 {
                     Rectangle lineV = { bounds.x + spacing * i / subdivs, bounds.y, 1, bounds.height };
-                    GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                    GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA), NULL, state);
                 }
 
                 // Draw horizontal grid lines
                 for (int i = 0; i < linesH; i++)
                 {
                     Rectangle lineH = { bounds.x, bounds.y + spacing * i / subdivs, bounds.width, 1 };
-                    GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA));
+                    GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA * 4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), GRID_COLOR_ALPHA), NULL, state);
                 }
             }
         } break;
@@ -3009,6 +3374,451 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
 
     guiFont = GetFontDefault();     // Initialize default font
+}
+
+//----------------------------------------------------------------------------------
+// Skin loading/saving functions
+//----------------------------------------------------------------------------------
+
+// Save skin styles to file. If file exists it will be overwritten. Returns `0` on failure.
+int GuiSaveSkin(const char *fileName, const char* texPath, GuiSkin* skins, int count)
+{
+    if(skins == NULL || fileName == NULL || texPath == NULL || count == 0) return 0;
+    
+    FILE* f = fopen(fileName, "wb");
+    if(f == NULL) return 0;
+    
+    // Write help
+    fprintf(f, "#\n# raygui skin file (v1.03)\n#\n# NOTE: each skin file can hold many skins styles differentiated by the <skin_index> starting in ascending order from 0 "
+        "to a max of 31\n#\n# Skin properties:\n#   t  <texture_file>\n#   n  <skin_index> <skin_name>\n#   s  <skin_index> <style_id> <substyle_id> <width> <height> "
+        "<nx> <ny> <px> <py> <fx> <fy> <dx> <dy> <top_edge> <bottom_edge> <left_edge> <right_edge> <margins> <type> <mode>\n#\n\n");
+    
+    // Write the texture path
+    fprintf(f, "t %s\n\n", texPath);
+    
+    const char* const fmt = "s  %02i %02i %02i %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %03i %02i %02i    %s\n";
+    
+    int i = 0;
+    for(; i<count; ++i) 
+    {
+        const GuiSkin* skin = &skins[i];
+        
+        if(strlen(skin->name) != 0)
+            fprintf(f, "n  %02i %s\n", i, skin->name);
+            
+        fprintf(f, fmt, i, GUI_SKIN_BUTTON_SID, 0, skin->button.width, skin->button.height, skin->button.nx, skin->button.ny, skin->button.px, skin->button.py, 
+            skin->button.fx, skin->button.fy, skin->button.dx, skin->button.dy, skin->button.top, skin->button.bottom, skin->button.left, skin->button.right, 
+            skin->button.margins, skin->button.type, skin->button.mode, "BUTTON");
+            
+        fprintf(f, fmt, i, GUI_SKIN_IMGBUTTON_SID, 0, skin->imagebutton.width, skin->imagebutton.height, skin->imagebutton.nx, skin->imagebutton.ny, skin->imagebutton.px, 
+            skin->imagebutton.py, skin->imagebutton.fx, skin->imagebutton.fy, skin->imagebutton.dx, skin->imagebutton.dy, skin->imagebutton.top, skin->imagebutton.bottom, 
+            skin->imagebutton.left, skin->imagebutton.right, skin->imagebutton.margins, skin->imagebutton.type, skin->imagebutton.mode, "IMGBUTTON");
+            
+        fprintf(f, fmt, i, GUI_SKIN_PANEL_SID, 0, skin->panel.width, skin->panel.height, skin->panel.nx, skin->panel.ny, skin->panel.px, skin->panel.py, skin->panel.fx, 
+            skin->panel.fy, skin->panel.dx, skin->panel.dy, skin->panel.top, skin->panel.bottom, skin->panel.left, skin->panel.right, skin->panel.margins, skin->panel.type, 
+            skin->panel.mode, "PANEL");
+            
+        fprintf(f, fmt, i, GUI_SKIN_STATUS_SID, 0, skin->status.width, skin->status.height, skin->status.nx, skin->status.ny, skin->status.px, skin->status.py, skin->status.fx, 
+            skin->status.fy, skin->status.dx, skin->status.dy, skin->status.top, skin->status.bottom, skin->status.left, skin->status.right, skin->status.margins, 
+            skin->status.type, skin->status.mode, "STATUSBAR");
+            
+        fprintf(f, fmt, i, GUI_SKIN_WINDOW_SID, 0, skin->window.panel.width, skin->window.panel.height, skin->window.panel.nx, skin->window.panel.ny, skin->window.panel.px, 
+            skin->window.panel.py, skin->window.panel.fx, skin->window.panel.fy, skin->window.panel.dx, skin->window.panel.dy, skin->window.panel.top, skin->window.panel.bottom, 
+            skin->window.panel.left, skin->window.panel.right, skin->window.panel.margins, skin->window.panel.type, skin->window.panel.mode, "WINDOW_PANEL");
+        fprintf(f, fmt, i, GUI_SKIN_WINDOW_SID, 1, skin->window.titlebar.width, skin->window.titlebar.height, skin->window.titlebar.nx, skin->window.titlebar.ny, 
+            skin->window.titlebar.px, skin->window.titlebar.py, skin->window.titlebar.fx, skin->window.titlebar.fy, skin->window.titlebar.dx, skin->window.titlebar.dy, 
+            skin->window.titlebar.top, skin->window.titlebar.bottom, skin->window.titlebar.left, skin->window.titlebar.right, skin->window.titlebar.margins, 
+            skin->window.titlebar.type, skin->window.titlebar.mode, "WINDOW_TITLEBAR");
+        fprintf(f, fmt, i, GUI_SKIN_WINDOW_SID, 2, skin->window.button.width, skin->window.button.height, skin->window.button.nx, skin->window.button.ny, 
+            skin->window.button.px, skin->window.button.py, skin->window.button.fx, skin->window.button.fy, skin->window.button.dx, skin->window.button.dy, skin->window.button.top, 
+            skin->window.button.bottom, skin->window.button.left, skin->window.button.right, skin->window.button.margins, skin->window.button.type, 
+            skin->window.button.mode, "WINDOW_BUTTON");
+        
+
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 0, skin->scrollpanel.body.width, skin->scrollpanel.body.height, skin->scrollpanel.body.nx, skin->scrollpanel.body.ny, 
+            skin->scrollpanel.body.px, skin->scrollpanel.body.py, skin->scrollpanel.body.fx, skin->scrollpanel.body.fy, skin->scrollpanel.body.dx, skin->scrollpanel.body.dy, 
+            skin->scrollpanel.body.top, skin->scrollpanel.body.bottom, skin->scrollpanel.body.left, skin->scrollpanel.body.right, skin->scrollpanel.body.margins, 
+            skin->scrollpanel.body.type, skin->scrollpanel.body.mode, "SCROLLPANEL");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 1, skin->scrollpanel.corner.width, skin->scrollpanel.corner.height, skin->scrollpanel.corner.nx, skin->scrollpanel.corner.ny, 
+            skin->scrollpanel.corner.px, skin->scrollpanel.corner.py, skin->scrollpanel.corner.fx, skin->scrollpanel.corner.fy, skin->scrollpanel.corner.dx, 
+            skin->scrollpanel.corner.dy, skin->scrollpanel.corner.top, skin->scrollpanel.corner.bottom, skin->scrollpanel.corner.left, skin->scrollpanel.corner.right, 
+            skin->scrollpanel.corner.margins, skin->scrollpanel.corner.type, skin->scrollpanel.corner.mode, "SCROLLPANEL_CORNER");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 2, skin->scrollpanel.hscroll.body.width, skin->scrollpanel.hscroll.body.height, skin->scrollpanel.hscroll.body.nx, 
+            skin->scrollpanel.hscroll.body.ny, skin->scrollpanel.hscroll.body.px, skin->scrollpanel.hscroll.body.py, skin->scrollpanel.hscroll.body.fx, 
+            skin->scrollpanel.hscroll.body.fy, skin->scrollpanel.hscroll.body.dx, skin->scrollpanel.hscroll.body.dy, skin->scrollpanel.hscroll.body.top, 
+            skin->scrollpanel.hscroll.body.bottom, skin->scrollpanel.hscroll.body.left, skin->scrollpanel.hscroll.body.right, skin->scrollpanel.hscroll.body.margins, 
+            skin->scrollpanel.hscroll.body.type, skin->scrollpanel.hscroll.body.mode, "SCROLLPANEL_HSCROLL_BODY");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 3, skin->scrollpanel.hscroll.rail.width, skin->scrollpanel.hscroll.rail.height, skin->scrollpanel.hscroll.rail.nx, 
+            skin->scrollpanel.hscroll.rail.ny, skin->scrollpanel.hscroll.rail.px, skin->scrollpanel.hscroll.rail.py, skin->scrollpanel.hscroll.rail.fx, 
+            skin->scrollpanel.hscroll.rail.fy, skin->scrollpanel.hscroll.rail.dx, skin->scrollpanel.hscroll.rail.dy, skin->scrollpanel.hscroll.rail.top, 
+            skin->scrollpanel.hscroll.rail.bottom, skin->scrollpanel.hscroll.rail.left, skin->scrollpanel.hscroll.rail.right, skin->scrollpanel.hscroll.rail.margins, 
+            skin->scrollpanel.hscroll.rail.type, skin->scrollpanel.hscroll.rail.mode, "SCROLLPANEL_HSCROLL_RAIL");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 4, skin->scrollpanel.hscroll.slider.width, skin->scrollpanel.hscroll.slider.height, skin->scrollpanel.hscroll.slider.nx, 
+            skin->scrollpanel.hscroll.slider.ny, skin->scrollpanel.hscroll.slider.px, skin->scrollpanel.hscroll.slider.py, skin->scrollpanel.hscroll.slider.fx, 
+            skin->scrollpanel.hscroll.slider.fy, skin->scrollpanel.hscroll.slider.dx, skin->scrollpanel.hscroll.slider.dy, skin->scrollpanel.hscroll.slider.top, 
+            skin->scrollpanel.hscroll.slider.bottom, skin->scrollpanel.hscroll.slider.left, skin->scrollpanel.hscroll.slider.right, skin->scrollpanel.hscroll.slider.margins, 
+            skin->scrollpanel.hscroll.slider.type, skin->scrollpanel.hscroll.slider.mode, "SCROLLPANEL_HSCROLL_SLIDER");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 5, skin->scrollpanel.vscroll.body.width, skin->scrollpanel.vscroll.body.height, skin->scrollpanel.vscroll.body.nx, 
+            skin->scrollpanel.vscroll.body.ny, skin->scrollpanel.vscroll.body.px, skin->scrollpanel.vscroll.body.py, skin->scrollpanel.vscroll.body.fx, 
+            skin->scrollpanel.vscroll.body.fy, skin->scrollpanel.vscroll.body.dx, skin->scrollpanel.vscroll.body.dy, skin->scrollpanel.vscroll.body.top, 
+            skin->scrollpanel.vscroll.body.bottom, skin->scrollpanel.vscroll.body.left, skin->scrollpanel.vscroll.body.right, skin->scrollpanel.vscroll.body.margins, 
+            skin->scrollpanel.vscroll.body.type, skin->scrollpanel.vscroll.body.mode, "SCROLLPANEL_VSCROLL_BODY");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 6, skin->scrollpanel.vscroll.rail.width, skin->scrollpanel.vscroll.rail.height, skin->scrollpanel.vscroll.rail.nx, 
+            skin->scrollpanel.vscroll.rail.ny, skin->scrollpanel.vscroll.rail.px, skin->scrollpanel.vscroll.rail.py, skin->scrollpanel.vscroll.rail.fx, 
+            skin->scrollpanel.vscroll.rail.fy, skin->scrollpanel.vscroll.rail.dx, skin->scrollpanel.vscroll.rail.dy, skin->scrollpanel.vscroll.rail.top, 
+            skin->scrollpanel.vscroll.rail.bottom, skin->scrollpanel.vscroll.rail.left, skin->scrollpanel.vscroll.rail.right, skin->scrollpanel.vscroll.rail.margins, 
+            skin->scrollpanel.vscroll.rail.type, skin->scrollpanel.vscroll.rail.mode, "SCROLLPANEL_VSCROLL_RAIL");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLPANEL_SID, 7, skin->scrollpanel.vscroll.slider.width, skin->scrollpanel.vscroll.slider.height, skin->scrollpanel.vscroll.slider.nx, 
+            skin->scrollpanel.vscroll.slider.ny, skin->scrollpanel.vscroll.slider.px, skin->scrollpanel.vscroll.slider.py, skin->scrollpanel.vscroll.slider.fx, 
+            skin->scrollpanel.vscroll.slider.fy, skin->scrollpanel.vscroll.slider.dx, skin->scrollpanel.vscroll.slider.dy, skin->scrollpanel.vscroll.slider.top, 
+            skin->scrollpanel.vscroll.slider.bottom, skin->scrollpanel.vscroll.slider.left, skin->scrollpanel.vscroll.slider.right, skin->scrollpanel.vscroll.slider.margins, 
+            skin->scrollpanel.vscroll.slider.type, skin->scrollpanel.vscroll.slider.mode, "SCROLLPANEL_VSCROLL_SLIDER");
+            
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 0, skin->list.body.width, skin->list.body.height, skin->list.body.nx, skin->list.body.ny, skin->list.body.px, skin->list.body.py, 
+            skin->list.body.fx, skin->list.body.fy, skin->list.body.dx, skin->list.body.dy, skin->list.body.top, skin->list.body.bottom, skin->list.body.left, 
+            skin->list.body.right, skin->list.body.margins, skin->list.body.type, skin->list.body.mode, "LIST");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 1, skin->list.item.width, skin->list.item.height, skin->list.item.nx, skin->list.item.ny, skin->list.item.px, skin->list.item.py, 
+            skin->list.item.fx, skin->list.item.fy, skin->list.item.dx, skin->list.item.dy, skin->list.item.top, skin->list.item.bottom, skin->list.item.left, skin->list.item.right,
+            skin->list.item.margins, skin->list.item.type, skin->list.item.mode, "LIST_ITEM");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 2, skin->list.first.width, skin->list.first.height, skin->list.first.nx, skin->list.first.ny, skin->list.first.px, skin->list.first.py,
+            skin->list.first.fx, skin->list.first.fy, skin->list.first.dx, skin->list.first.dy, skin->list.first.top, skin->list.first.bottom, skin->list.first.left, 
+            skin->list.first.right, skin->list.first.margins, skin->list.first.type, skin->list.first.mode, "LIST_ITEM_FIRST");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 3, skin->list.last.width, skin->list.last.height, skin->list.last.nx, skin->list.last.ny, skin->list.last.px, skin->list.last.py, 
+            skin->list.last.fx, skin->list.last.fy, skin->list.last.dx, skin->list.last.dy, skin->list.last.top, skin->list.last.bottom, skin->list.last.left, skin->list.last.right,
+            skin->list.last.margins, skin->list.last.type, skin->list.last.mode, "LIST_ITEM_LAST");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 4, skin->list.scrollbar.body.width, skin->list.scrollbar.body.height, skin->list.scrollbar.body.nx, skin->list.scrollbar.body.ny, 
+            skin->list.scrollbar.body.px, skin->list.scrollbar.body.py, skin->list.scrollbar.body.fx, skin->list.scrollbar.body.fy, skin->list.scrollbar.body.dx, 
+            skin->list.scrollbar.body.dy, skin->list.scrollbar.body.top, skin->list.scrollbar.body.bottom, skin->list.scrollbar.body.left, skin->list.scrollbar.body.right, 
+            skin->list.scrollbar.body.margins, skin->list.scrollbar.body.type, skin->list.scrollbar.body.mode, "LIST_SCROLLBAR_BODY");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 5, skin->list.scrollbar.rail.width, skin->list.scrollbar.rail.height, skin->list.scrollbar.rail.nx, skin->list.scrollbar.rail.ny, 
+            skin->list.scrollbar.rail.px, skin->list.scrollbar.rail.py, skin->list.scrollbar.rail.fx, skin->list.scrollbar.rail.fy, skin->list.scrollbar.rail.dx, 
+            skin->list.scrollbar.rail.dy, skin->list.scrollbar.rail.top, skin->list.scrollbar.rail.bottom, skin->list.scrollbar.rail.left, skin->list.scrollbar.rail.right, 
+            skin->list.scrollbar.rail.margins, skin->list.scrollbar.rail.type, skin->list.scrollbar.rail.mode, "LIST_SCROLLBAR_RAIL");
+        fprintf(f, fmt, i, GUI_SKIN_LIST_SID, 6, skin->list.scrollbar.slider.width, skin->list.scrollbar.slider.height, skin->list.scrollbar.slider.nx, skin->list.scrollbar.slider.ny, 
+            skin->list.scrollbar.slider.px, skin->list.scrollbar.slider.py, skin->list.scrollbar.slider.fx, skin->list.scrollbar.slider.fy, skin->list.scrollbar.slider.dx, 
+            skin->list.scrollbar.slider.dy, skin->list.scrollbar.slider.top, skin->list.scrollbar.slider.bottom, skin->list.scrollbar.slider.left, skin->list.scrollbar.slider.right,
+            skin->list.scrollbar.slider.margins, skin->list.scrollbar.slider.type, skin->list.scrollbar.slider.mode, "LIST_SCROLLBAR_SLIDER");
+
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLBAR_SID, 0, skin->scrollbar.body.width, skin->scrollbar.body.height, skin->scrollbar.body.nx, skin->scrollbar.body.ny, skin->scrollbar.body.px, 
+            skin->scrollbar.body.py, skin->scrollbar.body.fx, skin->scrollbar.body.fy, skin->scrollbar.body.dx, skin->scrollbar.body.dy, skin->scrollbar.body.top, 
+            skin->scrollbar.body.bottom, skin->scrollbar.body.left, skin->scrollbar.body.right, skin->scrollbar.body.margins, skin->scrollbar.body.type, skin->scrollbar.body.mode, 
+            "SCROLLBAR");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLBAR_SID, 1, skin->scrollbar.rail.width, skin->scrollbar.rail.height, skin->scrollbar.rail.nx, skin->scrollbar.rail.ny, skin->scrollbar.rail.px, 
+            skin->scrollbar.rail.py, skin->scrollbar.rail.fx, skin->scrollbar.rail.fy, skin->scrollbar.rail.dx, skin->scrollbar.rail.dy, skin->scrollbar.rail.top, 
+            skin->scrollbar.rail.bottom, skin->scrollbar.rail.left, skin->scrollbar.rail.right, skin->scrollbar.rail.margins, skin->scrollbar.rail.type, skin->scrollbar.rail.mode, 
+            "SCROLLBAR_RAIL");
+        fprintf(f, fmt, i, GUI_SKIN_SCROLLBAR_SID, 2, skin->scrollbar.slider.width, skin->scrollbar.slider.height, skin->scrollbar.slider.nx, skin->scrollbar.slider.ny, 
+            skin->scrollbar.slider.px, skin->scrollbar.slider.py, skin->scrollbar.slider.fx, skin->scrollbar.slider.fy, skin->scrollbar.slider.dx, skin->scrollbar.slider.dy, 
+            skin->scrollbar.slider.top, skin->scrollbar.slider.bottom, skin->scrollbar.slider.left, skin->scrollbar.slider.right, skin->scrollbar.slider.margins, 
+            skin->scrollbar.slider.type, skin->scrollbar.slider.mode, "SCROLLBAR_SLIDER");
+
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLE_SID, 0, skin->toggle.off.width, skin->toggle.off.height, skin->toggle.off.nx, skin->toggle.off.ny, skin->toggle.off.px, 
+            skin->toggle.off.py, skin->toggle.off.fx, skin->toggle.off.fy, skin->toggle.off.dx, skin->toggle.off.dy, skin->toggle.off.top, skin->toggle.off.bottom, 
+            skin->toggle.off.left, skin->toggle.off.right, skin->toggle.off.margins, skin->toggle.off.type, skin->toggle.off.mode, "TOGGLE");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLE_SID, 1, skin->toggle.on.width, skin->toggle.on.height, skin->toggle.on.nx, skin->toggle.on.ny, skin->toggle.on.px, skin->toggle.on.py, 
+            skin->toggle.on.fx, skin->toggle.on.fy, skin->toggle.on.dx, skin->toggle.on.dy, skin->toggle.on.top, skin->toggle.on.bottom, skin->toggle.on.left, skin->toggle.on.right,
+            skin->toggle.on.margins, skin->toggle.on.type, skin->toggle.on.mode, "TOGGLE_ON");
+        
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 0, skin->togglegroup.item.off.width, skin->togglegroup.item.off.height, skin->togglegroup.item.off.nx, 
+            skin->togglegroup.item.off.ny, skin->togglegroup.item.off.px, skin->togglegroup.item.off.py, skin->togglegroup.item.off.fx, skin->togglegroup.item.off.fy, 
+            skin->togglegroup.item.off.dx, skin->togglegroup.item.off.dy, skin->togglegroup.item.off.top, skin->togglegroup.item.off.bottom, skin->togglegroup.item.off.left, 
+            skin->togglegroup.item.off.right, skin->togglegroup.item.off.margins, skin->togglegroup.item.off.type, skin->togglegroup.item.off.mode, "TOGGLEGROUP");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 1, skin->togglegroup.item.on.width, skin->togglegroup.item.on.height, skin->togglegroup.item.on.nx, skin->togglegroup.item.on.ny,
+            skin->togglegroup.item.on.px, skin->togglegroup.item.on.py, skin->togglegroup.item.on.fx, skin->togglegroup.item.on.fy, skin->togglegroup.item.on.dx, 
+            skin->togglegroup.item.on.dy, skin->togglegroup.item.on.top, skin->togglegroup.item.on.bottom, skin->togglegroup.item.on.left, skin->togglegroup.item.on.right, 
+            skin->togglegroup.item.on.margins, skin->togglegroup.item.on.type, skin->togglegroup.item.on.mode, "TOGGLEGROUP_ON");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 2, skin->togglegroup.first.off.width, skin->togglegroup.first.off.height, skin->togglegroup.first.off.nx, 
+            skin->togglegroup.first.off.ny, skin->togglegroup.first.off.px, skin->togglegroup.first.off.py, skin->togglegroup.first.off.fx, skin->togglegroup.first.off.fy, 
+            skin->togglegroup.first.off.dx, skin->togglegroup.first.off.dy, skin->togglegroup.first.off.top, skin->togglegroup.first.off.bottom, skin->togglegroup.first.off.left, 
+            skin->togglegroup.first.off.right, skin->togglegroup.first.off.margins, skin->togglegroup.first.off.type, skin->togglegroup.first.off.mode, "TOGGLEGROUP_FIRST");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 3, skin->togglegroup.first.on.width, skin->togglegroup.first.on.height, skin->togglegroup.first.on.nx, 
+            skin->togglegroup.first.on.ny, skin->togglegroup.first.on.px, skin->togglegroup.first.on.py, skin->togglegroup.first.on.fx, skin->togglegroup.first.on.fy, 
+            skin->togglegroup.first.on.dx, skin->togglegroup.first.on.dy, skin->togglegroup.first.on.top, skin->togglegroup.first.on.bottom, skin->togglegroup.first.on.left, 
+            skin->togglegroup.first.on.right, skin->togglegroup.first.on.margins, skin->togglegroup.first.on.type, skin->togglegroup.first.on.mode, "TOGGLEGROUP_FIRST_ON");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 4, skin->togglegroup.last.off.width, skin->togglegroup.last.off.height, skin->togglegroup.last.off.nx, 
+            skin->togglegroup.last.off.ny, skin->togglegroup.last.off.px, skin->togglegroup.last.off.py, skin->togglegroup.last.off.fx, skin->togglegroup.last.off.fy, 
+            skin->togglegroup.last.off.dx, skin->togglegroup.last.off.dy, skin->togglegroup.last.off.top, skin->togglegroup.last.off.bottom, skin->togglegroup.last.off.left, 
+            skin->togglegroup.last.off.right, skin->togglegroup.last.off.margins, skin->togglegroup.last.off.type, skin->togglegroup.last.off.mode, "TOGGLEGROUP_LAST");
+        fprintf(f, fmt, i, GUI_SKIN_TOGGLEGROUP_SID, 5, skin->togglegroup.last.on.width, skin->togglegroup.last.on.height, skin->togglegroup.last.on.nx, skin->togglegroup.last.on.ny,
+            skin->togglegroup.last.on.px, skin->togglegroup.last.on.py, skin->togglegroup.last.on.fx, skin->togglegroup.last.on.fy, skin->togglegroup.last.on.dx, 
+            skin->togglegroup.last.on.dy, skin->togglegroup.last.on.top, skin->togglegroup.last.on.bottom, skin->togglegroup.last.on.left, skin->togglegroup.last.on.right, 
+            skin->togglegroup.last.on.margins, skin->togglegroup.last.on.type, skin->togglegroup.last.on.mode, "TOGGLEGROUP_LAST_ON");
+            
+        fprintf(f, fmt, i, GUI_SKIN_CHECKBOX_SID, 0, skin->checkbox.body.width, skin->checkbox.body.height, skin->checkbox.body.nx, skin->checkbox.body.ny, skin->checkbox.body.px, 
+            skin->checkbox.body.py, skin->checkbox.body.fx, skin->checkbox.body.fy, skin->checkbox.body.dx, skin->checkbox.body.dy, skin->checkbox.body.top, 
+            skin->checkbox.body.bottom, skin->checkbox.body.left, skin->checkbox.body.right, skin->checkbox.body.margins, skin->checkbox.body.type, 
+            skin->checkbox.body.mode, "CHECKBOX");
+        fprintf(f, fmt, i, GUI_SKIN_CHECKBOX_SID, 1, skin->checkbox.checked.width, skin->checkbox.checked.height, skin->checkbox.checked.nx, skin->checkbox.checked.ny, 
+            skin->checkbox.checked.px, skin->checkbox.checked.py, skin->checkbox.checked.fx, skin->checkbox.checked.fy, skin->checkbox.checked.dx, skin->checkbox.checked.dy, 
+            skin->checkbox.checked.top, skin->checkbox.checked.bottom, skin->checkbox.checked.left, skin->checkbox.checked.right, skin->checkbox.checked.margins, 
+            skin->checkbox.checked.type, skin->checkbox.checked.mode, "CHECKBOX_CHECKED");
+
+        fprintf(f, fmt, i, GUI_SKIN_COMBOBOX_SID, 0, skin->combobox.body.width, skin->combobox.body.height, skin->combobox.body.nx, skin->combobox.body.ny, skin->combobox.body.px, 
+            skin->combobox.body.py, skin->combobox.body.fx, skin->combobox.body.fy, skin->combobox.body.dx, skin->combobox.body.dy, skin->combobox.body.top, 
+            skin->combobox.body.bottom, skin->combobox.body.left, skin->combobox.body.right, skin->combobox.body.margins, skin->combobox.body.type, skin->combobox.body.mode, 
+            "COMBOBOX");
+        fprintf(f, fmt, i, GUI_SKIN_COMBOBOX_SID, 1, skin->combobox.button.width, skin->combobox.button.height, skin->combobox.button.nx, skin->combobox.button.ny, 
+            skin->combobox.button.px, skin->combobox.button.py, skin->combobox.button.fx, skin->combobox.button.fy, skin->combobox.button.dx, skin->combobox.button.dy, 
+            skin->combobox.button.top, skin->combobox.button.bottom, skin->combobox.button.left, skin->combobox.button.right, skin->combobox.button.margins, 
+            skin->combobox.button.type, skin->combobox.button.mode, "COMBOBOX_BUTTON");
+            
+        fprintf(f, fmt, i, GUI_SKIN_DROPBOX_SID, 0, skin->dropbox.body.width, skin->dropbox.body.height, skin->dropbox.body.nx, skin->dropbox.body.ny, skin->dropbox.body.px, 
+            skin->dropbox.body.py, skin->dropbox.body.fx, skin->dropbox.body.fy, skin->dropbox.body.dx, skin->dropbox.body.dy, skin->dropbox.body.top, skin->dropbox.body.bottom, 
+            skin->dropbox.body.left, skin->dropbox.body.right, skin->dropbox.body.margins, skin->dropbox.body.type, skin->dropbox.body.mode, "DROPBOX");
+        fprintf(f, fmt, i, GUI_SKIN_DROPBOX_SID, 1, skin->dropbox.listpanel.width, skin->dropbox.listpanel.height, skin->dropbox.listpanel.nx, skin->dropbox.listpanel.ny, 
+            skin->dropbox.listpanel.px, skin->dropbox.listpanel.py, skin->dropbox.listpanel.fx, skin->dropbox.listpanel.fy, skin->dropbox.listpanel.dx, skin->dropbox.listpanel.dy, 
+            skin->dropbox.listpanel.top, skin->dropbox.listpanel.bottom, skin->dropbox.listpanel.left, skin->dropbox.listpanel.right, skin->dropbox.listpanel.margins, 
+            skin->dropbox.listpanel.type, skin->dropbox.listpanel.mode, "DROPBOX_LIST");
+        fprintf(f, fmt, i, GUI_SKIN_DROPBOX_SID, 2, skin->dropbox.item.width, skin->dropbox.item.height, skin->dropbox.item.nx, skin->dropbox.item.ny, skin->dropbox.item.px, 
+            skin->dropbox.item.py, skin->dropbox.item.fx, skin->dropbox.item.fy, skin->dropbox.item.dx, skin->dropbox.item.dy, skin->dropbox.item.top, skin->dropbox.item.bottom, 
+            skin->dropbox.item.left, skin->dropbox.item.right, skin->dropbox.item.margins, skin->dropbox.item.type, skin->dropbox.item.mode, "DROPBOX_ITEM");
+
+        fprintf(f, fmt, i, GUI_SKIN_SPINNER_SID, 0, skin->spinner.valuebox.width, skin->spinner.valuebox.height, skin->spinner.valuebox.nx, skin->spinner.valuebox.ny, 
+            skin->spinner.valuebox.px, skin->spinner.valuebox.py, skin->spinner.valuebox.fx, skin->spinner.valuebox.fy, skin->spinner.valuebox.dx, skin->spinner.valuebox.dy, 
+            skin->spinner.valuebox.top, skin->spinner.valuebox.bottom, skin->spinner.valuebox.left, skin->spinner.valuebox.right, skin->spinner.valuebox.margins, 
+            skin->spinner.valuebox.type, skin->spinner.valuebox.mode, "SPINNER_VALUEBOX");
+        fprintf(f, fmt, i, GUI_SKIN_SPINNER_SID, 1, skin->spinner.left.width, skin->spinner.left.height, skin->spinner.left.nx, skin->spinner.left.ny, skin->spinner.left.px, 
+            skin->spinner.left.py, skin->spinner.left.fx, skin->spinner.left.fy, skin->spinner.left.dx, skin->spinner.left.dy, skin->spinner.left.top, skin->spinner.left.bottom, 
+            skin->spinner.left.left, skin->spinner.left.right, skin->spinner.left.margins, skin->spinner.left.type, skin->spinner.left.mode, "SPINNER_LEFT_BUTTON");
+        fprintf(f, fmt, i, GUI_SKIN_SPINNER_SID, 2, skin->spinner.right.width, skin->spinner.right.height, skin->spinner.right.nx, skin->spinner.right.ny, skin->spinner.right.px,
+            skin->spinner.right.py, skin->spinner.right.fx, skin->spinner.right.fy, skin->spinner.right.dx, skin->spinner.right.dy, skin->spinner.right.top, 
+            skin->spinner.right.bottom, skin->spinner.right.left, skin->spinner.right.right, skin->spinner.right.margins, skin->spinner.right.type, skin->spinner.right.mode, 
+            "SPINNER_RIGHT_BUTTON");
+
+        fprintf(f, fmt, i, GUI_SKIN_SLIDER_SID, 0, skin->slider.body.width, skin->slider.body.height, skin->slider.body.nx, skin->slider.body.ny, skin->slider.body.px, 
+            skin->slider.body.py, skin->slider.body.fx, skin->slider.body.fy, skin->slider.body.dx, skin->slider.body.dy, skin->slider.body.top, skin->slider.body.bottom, 
+            skin->slider.body.left, skin->slider.body.right, skin->slider.body.margins, skin->slider.body.type, skin->slider.body.mode, "SLIDER");
+        fprintf(f, fmt, i, GUI_SKIN_SLIDER_SID, 1, skin->slider.slider.width, skin->slider.slider.height, skin->slider.slider.nx, skin->slider.slider.ny, skin->slider.slider.px, 
+            skin->slider.slider.py, skin->slider.slider.fx, skin->slider.slider.fy, skin->slider.slider.dx, skin->slider.slider.dy, skin->slider.slider.top, 
+            skin->slider.slider.bottom, skin->slider.slider.left, skin->slider.slider.right, skin->slider.slider.margins, skin->slider.slider.type, skin->slider.slider.mode, 
+            "SLIDER_SLIDER");
+        fprintf(f, fmt, i, GUI_SKIN_SLIDER_SID, 2, skin->slider.bar.width, skin->slider.bar.height, skin->slider.bar.nx, skin->slider.bar.ny, skin->slider.bar.px, 
+            skin->slider.bar.py, skin->slider.bar.fx, skin->slider.bar.fy, skin->slider.bar.dx, skin->slider.bar.dy, skin->slider.bar.top, skin->slider.bar.bottom, 
+            skin->slider.bar.left, skin->slider.bar.right, skin->slider.bar.margins, skin->slider.bar.type, skin->slider.bar.mode, "SLIDER_BAR");
+            
+        fprintf(f, fmt, i, GUI_SKIN_PROGRESSBAR_SID, 0, skin->progressbar.body.width, skin->progressbar.body.height, skin->progressbar.body.nx, skin->progressbar.body.ny, 
+            skin->progressbar.body.px, skin->progressbar.body.py, skin->progressbar.body.fx, skin->progressbar.body.fy, skin->progressbar.body.dx, skin->progressbar.body.dy, 
+            skin->progressbar.body.top, skin->progressbar.body.bottom, skin->progressbar.body.left, skin->progressbar.body.right, skin->progressbar.body.margins, 
+            skin->progressbar.body.type, skin->progressbar.body.mode, "PROGRESSBAR");
+        fprintf(f, fmt, i, GUI_SKIN_PROGRESSBAR_SID, 1, skin->progressbar.progress.width, skin->progressbar.progress.height, skin->progressbar.progress.nx, 
+            skin->progressbar.progress.ny, skin->progressbar.progress.px, skin->progressbar.progress.py, skin->progressbar.progress.fx, skin->progressbar.progress.fy, 
+            skin->progressbar.progress.dx, skin->progressbar.progress.dy, skin->progressbar.progress.top, skin->progressbar.progress.bottom, skin->progressbar.progress.left, 
+            skin->progressbar.progress.right, skin->progressbar.progress.margins, skin->progressbar.progress.type, skin->progressbar.progress.mode, "PROGRESSBAR_PROGRESS");
+            
+        fprintf(f, fmt, i, GUI_SKIN_VALUEBOX_SID, 0, skin->valuebox.width, skin->valuebox.height, skin->valuebox.nx, skin->valuebox.ny, skin->valuebox.px, skin->valuebox.py, 
+            skin->valuebox.fx, skin->valuebox.fy, skin->valuebox.dx, skin->valuebox.dy, skin->valuebox.top, skin->valuebox.bottom, skin->valuebox.left, skin->valuebox.right, 
+            skin->valuebox.margins, skin->valuebox.type, skin->valuebox.mode, "VALUEBOX");
+            
+        fprintf(f, fmt, i, GUI_SKIN_TEXTBOX_SID, 0, skin->textbox.width, skin->textbox.height, skin->textbox.nx, skin->textbox.ny, skin->textbox.px, skin->textbox.py, 
+            skin->textbox.fx, skin->textbox.fy, skin->textbox.dx, skin->textbox.dy, skin->textbox.top, skin->textbox.bottom, skin->textbox.left, skin->textbox.right, 
+            skin->textbox.margins, skin->textbox.type, skin->textbox.mode, "TEXTBOX");
+            
+        fprintf(f, fmt, i, GUI_SKIN_TEXTBOXMULTI_SID, 0, skin->textboxmulti.width, skin->textboxmulti.height, skin->textboxmulti.nx, skin->textboxmulti.ny, skin->textboxmulti.px, 
+            skin->textboxmulti.py, skin->textboxmulti.fx, skin->textboxmulti.fy, skin->textboxmulti.dx, skin->textboxmulti.dy, skin->textboxmulti.top, skin->textboxmulti.bottom, 
+            skin->textboxmulti.left, skin->textboxmulti.right, skin->textboxmulti.margins, skin->textboxmulti.type, skin->textboxmulti.mode, "TEXTBOXMULTI");
+            
+        fprintf(f, fmt, i, GUI_SKIN_COLORPANEL_SID, 0, skin->colorpanel.body.width, skin->colorpanel.body.height, skin->colorpanel.body.nx, skin->colorpanel.body.ny, 
+            skin->colorpanel.body.px, skin->colorpanel.body.py, skin->colorpanel.body.fx, skin->colorpanel.body.fy, skin->colorpanel.body.dx, skin->colorpanel.body.dy, 
+            skin->colorpanel.body.top, skin->colorpanel.body.bottom, skin->colorpanel.body.left, skin->colorpanel.body.right, skin->colorpanel.body.margins, 
+            skin->colorpanel.body.type, skin->colorpanel.body.mode, "COLORPANEL");
+        fprintf(f, fmt, i, GUI_SKIN_COLORPANEL_SID, 1, skin->colorpanel.selector.width, skin->colorpanel.selector.height, skin->colorpanel.selector.nx, skin->colorpanel.selector.ny,
+            skin->colorpanel.selector.px, skin->colorpanel.selector.py, skin->colorpanel.selector.fx, skin->colorpanel.selector.fy, skin->colorpanel.selector.dx, 
+            skin->colorpanel.selector.dy, skin->colorpanel.selector.top, skin->colorpanel.selector.bottom, skin->colorpanel.selector.left, skin->colorpanel.selector.right, 
+            skin->colorpanel.selector.margins, skin->colorpanel.selector.type, skin->colorpanel.selector.mode, "COLORPANEL_SELECTOR");
+            
+        fprintf(f, fmt, i, GUI_SKIN_COLORBARALPHA_SID, 0, skin->colorbaralpha.body.width, skin->colorbaralpha.body.height, skin->colorbaralpha.body.nx, skin->colorbaralpha.body.ny, 
+            skin->colorbaralpha.body.px, skin->colorbaralpha.body.py, skin->colorbaralpha.body.fx, skin->colorbaralpha.body.fy, skin->colorbaralpha.body.dx, 
+            skin->colorbaralpha.body.dy, skin->colorbaralpha.body.top, skin->colorbaralpha.body.bottom, skin->colorbaralpha.body.left, skin->colorbaralpha.body.right, 
+            skin->colorbaralpha.body.margins, skin->colorbaralpha.body.type, skin->colorbaralpha.body.mode, "COLORBARALPHA");
+        fprintf(f, fmt, i, GUI_SKIN_COLORBARALPHA_SID, 1, skin->colorbaralpha.selector.width, skin->colorbaralpha.selector.height, skin->colorbaralpha.selector.nx, 
+            skin->colorbaralpha.selector.ny, skin->colorbaralpha.selector.px, skin->colorbaralpha.selector.py, skin->colorbaralpha.selector.fx, skin->colorbaralpha.selector.fy, 
+            skin->colorbaralpha.selector.dx, skin->colorbaralpha.selector.dy, skin->colorbaralpha.selector.top, skin->colorbaralpha.selector.bottom, 
+            skin->colorbaralpha.selector.left, skin->colorbaralpha.selector.right, skin->colorbaralpha.selector.margins, skin->colorbaralpha.selector.type, 
+            skin->colorbaralpha.selector.mode, "COLORBARALPHA_SELECTOR");
+
+        fprintf(f, fmt, i, GUI_SKIN_COLORBARHUE_SID, 0, skin->colorbarhue.body.width, skin->colorbarhue.body.height, skin->colorbarhue.body.nx, skin->colorbarhue.body.ny, 
+            skin->colorbarhue.body.px, skin->colorbarhue.body.py, skin->colorbarhue.body.fx, skin->colorbarhue.body.fy, skin->colorbarhue.body.dx, skin->colorbarhue.body.dy, 
+            skin->colorbarhue.body.top, skin->colorbarhue.body.bottom, skin->colorbarhue.body.left, skin->colorbarhue.body.right, skin->colorbarhue.body.margins, 
+            skin->colorbarhue.body.type, skin->colorbarhue.body.mode, "COLORBARHUE");
+        fprintf(f, fmt, i, GUI_SKIN_COLORBARHUE_SID, 1, skin->colorbarhue.selector.width, skin->colorbarhue.selector.height, skin->colorbarhue.selector.nx, 
+            skin->colorbarhue.selector.ny, skin->colorbarhue.selector.px, skin->colorbarhue.selector.py, skin->colorbarhue.selector.fx, skin->colorbarhue.selector.fy, 
+            skin->colorbarhue.selector.dx, skin->colorbarhue.selector.dy, skin->colorbarhue.selector.top, skin->colorbarhue.selector.bottom, skin->colorbarhue.selector.left, 
+            skin->colorbarhue.selector.right, skin->colorbarhue.selector.margins, skin->colorbarhue.selector.type, skin->colorbarhue.selector.mode, "COLORBARHUE_SELECTOR");
+
+        fprintf(f, fmt, i, GUI_SKIN_TOOLTIP_SID, 0, skin->tooltip.width, skin->tooltip.height, skin->tooltip.nx, skin->tooltip.ny, skin->tooltip.px, skin->tooltip.py, 
+            skin->tooltip.fx, skin->tooltip.fy, skin->tooltip.dx, skin->tooltip.dy, skin->tooltip.top, skin->tooltip.bottom, skin->tooltip.left, skin->tooltip.right, 
+            skin->tooltip.margins, skin->tooltip.type, skin->tooltip.mode, "TOOLTIP");
+    }
+    
+    fclose(f);
+    return i;
+}
+
+// Load skin styles from a skin file where `skins` is a user provided array with `count` size . Returns `0` on failure or number of skins loaded sucesfully.
+int GuiLoadSkin(const char *fileName, GuiSkin* skins, int count)
+{
+    if(count == 0 || skins == NULL) return 0;
+    
+    FILE* f = fopen(fileName, "rb");
+    if(f == NULL) return 0;
+    
+    char buffer[256] = { 0 };
+    fgets(buffer, 256, f);
+    if(buffer[0] != '#') { fclose(f); return 0; }
+    
+    int r=0;
+    
+    char textureName[256] = {0};
+    while (!feof(f))
+    {
+        if(buffer[0] == 's')
+        {
+            int idx = count, style_id = -1, substyle_id = -1;
+            GuiSkinStyle style = {0};
+            
+            //s  <skin_index> <style_id> <substyle_id> <width> <height> <nx> <ny> <px> <py> <fx> <fy> <dx> <dy> <top_edge> <bottom_edge> <left_edge> <right_edge> <margins> <type> <mode>
+            sscanf(buffer, "s  %02d %02d %02d %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %4hu %03hu %02hhu %02hhu", &idx, &style_id, &substyle_id, 
+                &style.width, &style.height, &style.nx, &style.ny, &style.px, &style.py, &style.fx, &style.fy, &style.dx, &style.dy, &style.top, &style.bottom, &style.left, 
+                &style.right, &style.margins, &style.type, &style.mode);
+            if(idx < count)
+            {
+                GuiSkin* const skin = &skins[idx];
+                if(r < idx) r = idx;
+                
+                switch(style_id) {
+                    case GUI_SKIN_BUTTON_SID: 
+                        skin->button = style; 
+                    break;
+                    case GUI_SKIN_IMGBUTTON_SID: skin->imagebutton = style; break;
+                    case GUI_SKIN_STATUS_SID: skin->status = style; break;
+                    case GUI_SKIN_PANEL_SID: skin->panel = style; break;
+                    
+                    case GUI_SKIN_WINDOW_SID:
+                        if(substyle_id == 0) skin->window.panel = style;
+                        else if(substyle_id == 1) skin->window.titlebar = style;
+                        else if(substyle_id == 2) skin->window.button = style;
+                    break;
+                    
+                    case GUI_SKIN_SCROLLPANEL_SID: 
+                        if(substyle_id >= 0 && substyle_id <= 7)  {
+                            // NOTE: this might not be faster than using a switch but it's way shorter ;)
+                            GuiSkinStyle* arr[8] = {&skin->scrollpanel.body, &skin->scrollpanel.corner, &skin->scrollpanel.hscroll.body, &skin->scrollpanel.hscroll.rail, &skin->scrollpanel.hscroll.slider, 
+                                &skin->scrollpanel.vscroll.body, &skin->scrollpanel.vscroll.rail, &skin->scrollpanel.vscroll.slider};
+                            *arr[substyle_id] = style;
+                        }
+                    break;
+                    
+                    case GUI_SKIN_LIST_SID:
+                        if(substyle_id >= 0 && substyle_id <= 6) {
+                            // NOTE: this might not be faster than using a switch but it's way shorter ;)
+                            GuiSkinStyle* arr[7] = {&skin->list.body, &skin->list.item, &skin->list.first, &skin->list.last, &skin->list.scrollbar.body, &skin->list.scrollbar.rail, 
+                                &skin->list.scrollbar.slider};
+                            *arr[substyle_id] = style;
+                        }
+                    break;
+                    
+                    case GUI_SKIN_SCROLLBAR_SID:
+                        if(substyle_id == 0) skin->scrollbar.body = style;
+                        else if(substyle_id == 1) skin->scrollbar.rail = style;
+                        else if(substyle_id == 2) skin->scrollbar.slider = style;
+                    break;
+                    
+                    case GUI_SKIN_TOGGLE_SID:
+                        if(substyle_id == 0) skin->toggle.off = style;
+                        else if(substyle_id == 1) skin->toggle.on = style;
+                    break;
+                    
+                    case GUI_SKIN_TOGGLEGROUP_SID:
+                        if(substyle_id >= 0 && substyle_id <= 5) {
+                            // NOTE: this might not be faster than using a switch but it's way shorter ;)
+                            GuiSkinStyle* arr[6] = {&skin->togglegroup.item.off, &skin->togglegroup.item.on, &skin->togglegroup.first.off, &skin->togglegroup.first.on, 
+                            &skin->togglegroup.last.off, &skin->togglegroup.last.on};
+                            *arr[substyle_id] = style;
+                        }
+                    break;
+                    
+                    case GUI_SKIN_CHECKBOX_SID:
+                        if(substyle_id == 0) skin->checkbox.body = style;
+                        else if(substyle_id == 1) skin->checkbox.checked = style;
+                    break;
+                    
+                    case GUI_SKIN_COMBOBOX_SID:
+                        if(substyle_id == 0) skin->combobox.body = style;
+                        else if(substyle_id == 1) skin->combobox.button = style;
+                    break;
+                    
+                    case GUI_SKIN_DROPBOX_SID:
+                        if(substyle_id == 0) skin->dropbox.body = style;
+                        else if(substyle_id == 1) skin->dropbox.listpanel = style;
+                        else if(substyle_id == 2) skin->dropbox.item = style;
+                    break;
+                    
+                    case GUI_SKIN_SPINNER_SID:
+                        if(substyle_id == 0) skin->spinner.valuebox = style;
+                        else if(substyle_id == 1) skin->spinner.left= style;
+                        else if(substyle_id == 2) skin->spinner.right = style;
+                    break;
+                    
+                    case GUI_SKIN_SLIDER_SID:
+                        if(substyle_id == 0) skin->slider.body = style;
+                        else if(substyle_id == 1) skin->slider.slider= style;
+                        else if(substyle_id == 2) skin->slider.bar = style;
+                    break;
+ 
+                    case GUI_SKIN_PROGRESSBAR_SID:
+                        if(substyle_id == 0) skin->progressbar.body = style;
+                        else if(substyle_id == 1) skin->progressbar.progress = style;
+                    break;
+                    
+                    case GUI_SKIN_VALUEBOX_SID: skin->valuebox = style; break;
+                    case GUI_SKIN_TEXTBOX_SID: skin->textbox = style; break;
+                    case GUI_SKIN_TEXTBOXMULTI_SID: skin->textboxmulti = style; break;
+                    
+                    
+                    case GUI_SKIN_COLORPANEL_SID:
+                        if(substyle_id == 0) skin->colorpanel.body = style;
+                        else if(substyle_id == 1) skin->colorpanel.selector = style;
+                    break;
+                    
+                    case GUI_SKIN_COLORBARALPHA_SID:
+                        if(substyle_id == 0) skin->colorbaralpha.body = style;
+                        else if(substyle_id == 1) skin->colorbaralpha.selector = style;
+                    break;
+                    
+                    case GUI_SKIN_COLORBARHUE_SID:
+                        if(substyle_id == 0) skin->colorbarhue.body = style;
+                        else if(substyle_id == 1) skin->colorbarhue.selector = style;
+                    break;
+                    
+                    case GUI_SKIN_TOOLTIP_SID: skin->tooltip = style; break;
+                }
+            }
+        }
+        else if(buffer[0] == 't') 
+        {
+            // Load the first texture found (it should only be one)
+            if(textureName[0] == '\0') 
+            {
+                sscanf(buffer, "t  %[^\n]s", textureName);
+                Texture t = LoadTexture(TextFormat("%s/%s", GetDirectoryPath(fileName), textureName));
+                if(t.id > 0 ) { GuiSetSkinTexture(t); } // NOTE: the old texture won't be unloaded
+                else {fclose(f); return 0;} // Couldn't load texture
+            }
+        }
+        else if(buffer[0] == 'n') {
+            // Get skin style name
+            int idx = count;
+            char name[32] = {0};
+            //n <skin_index> <skin_name>
+            sscanf(buffer, "n  %02d %31s", &idx, name);
+            if(idx < count) strcpy(skins[idx].name, name);
+        }
+        
+        fgets(buffer, 256, f);
+    }
+    
+    fclose(f);
+    return r+1;
 }
 
 // Get text with icon id prepended
@@ -3329,26 +4139,115 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
     }
 }
 
-// Gui draw rectangle using default raygui plain style with borders
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
+static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color, GuiSkinStyle* style, int state)
 {
-    if (color.a > 0) 
+    if(style != NULL && guiTexture.id > 0 && style->width != 0 && style->height != 0)
     {
-        // Draw rectangle filled with color
-        DrawRectangle(rec.x, rec.y, rec.width, rec.height, color);
+        // Use color overlay?
+        const Color c = guiSkin->useColor ? color : Fade(WHITE, guiAlpha);
+        
+        // Calculate the source rectangle inside the texture based on state
+        Rectangle srcRec = RAYGUI_CLITERAL(Rectangle){ style->nx, style->ny, style->width, style->height };
+        if(state == GUI_STATE_FOCUSED) {srcRec.x = style->fx; srcRec.y = style->fy;}
+        else if(state == GUI_STATE_PRESSED) {srcRec.x = style->px; srcRec.y = style->py;}
+        else if(state == GUI_STATE_DISABLED) {srcRec.x = style->dx; srcRec.y = style->dy;}
+        
+        if(style->margins != 0)
+        {
+            // Inflate the bounds of the control when there are margins set
+            rec.x -= style->margins;
+            rec.y -= style->margins;
+            rec.width += 2*style->margins;
+            rec.height += 2*style->margins;
+        }
+        
+        // Constant origin vector set here since it's used by every draw function
+        const Vector2 origin = RAYGUI_CLITERAL(Vector2){0.0f,0.0f};
+        
+        if(style->mode == GUI_SKIN_DRAW_STRECHED) 
+        {
+            // DRAW STRETCHED
+            if(style->type == GUI_SKIN_TYPE_SLICE9)  // Draw 9 slices
+            {
+                NPatchInfo npi = {srcRec,style->left,style->top,style->right,style->bottom,NPT_9PATCH};
+                DrawTextureNPatch(guiTexture, npi, rec, origin, 0.0f, c);
+            }
+            else // Draw single slice
+            {
+                DrawTexturePro(guiTexture, srcRec, rec, origin, 0.0f, c);
+            }
+        }
+        else if(style->mode == GUI_SKIN_DRAW_TILED)
+        {
+            // DRAW TILED
+            if(style->type == GUI_SKIN_TYPE_SLICE9)  // Draw 9 slices
+            {
+                // NOTE: https://en.wikipedia.org/wiki/9-slice_scaling
+                
+                // WARN: `DrawTextureTiled()` performance is very bad especially with small tiles
+                Rectangle topLeft = RAYGUI_CLITERAL(Rectangle){srcRec.x, srcRec.y, style->left, style->top};
+                if(topLeft.width > 0 && topLeft.height > 0) DrawTextureRec(guiTexture, topLeft, RAYGUI_CLITERAL(Vector2){rec.x, rec.y}, c);
+                
+                Rectangle topRight = RAYGUI_CLITERAL(Rectangle) {srcRec.x + srcRec.width - style->right, srcRec.y, style->right, style->top};
+                if(topRight.width > 0 && topRight.height > 0) DrawTextureRec(guiTexture, topRight, RAYGUI_CLITERAL(Vector2){rec.x + rec.width - style->right, rec.y}, c);
+                
+                Rectangle topMiddle = RAYGUI_CLITERAL(Rectangle){srcRec.x + style->left, srcRec.y, srcRec.width - style->left - style->right, style->top};
+                if(topMiddle.width > 0 && topMiddle.height > 0) DrawTextureTiled(guiTexture, topMiddle, RAYGUI_CLITERAL(Rectangle){rec.x+style->left, rec.y, rec.width - style->left - style->right, style->top}, origin, 0.0f, 1.0f, c);
+                
+                Rectangle bottomLeft = RAYGUI_CLITERAL(Rectangle){srcRec.x, srcRec.y + srcRec.height - style->bottom, style->left, style->bottom };
+                if(bottomLeft.width > 0 && bottomLeft.height > 0) DrawTextureRec(guiTexture, bottomLeft, RAYGUI_CLITERAL(Vector2){rec.x, rec.y + rec.height - style->bottom}, c);
+                
+                Rectangle bottomRight = RAYGUI_CLITERAL(Rectangle){srcRec.x + srcRec.width - style->right, srcRec.y + srcRec.height - style->bottom, style->right, style->bottom };
+                if(bottomRight.width > 0 && bottomRight.height > 0) DrawTextureRec(guiTexture, bottomRight, RAYGUI_CLITERAL(Vector2){rec.x + rec.width - style->right, rec.y + rec.height - style->bottom}, c);
+                
+                Rectangle bottomMiddle = RAYGUI_CLITERAL(Rectangle){srcRec.x + style->left, srcRec.y + srcRec.height - style->bottom, srcRec.width - style->left - style->right, style->bottom };
+                if(bottomMiddle.width > 0 && bottomMiddle.height > 0) DrawTextureTiled(guiTexture, bottomMiddle, RAYGUI_CLITERAL(Rectangle){rec.x + style->left, rec.y + rec.height - style->bottom, rec.width - style->left - style->right, style->bottom}, origin, 0.0f, 1.0f, c);
+                
+                Rectangle centerLeft = RAYGUI_CLITERAL(Rectangle){srcRec.x, srcRec.y + style->top, style->left, srcRec.height - style->bottom - style->top };
+                if(centerLeft.width > 0 && centerLeft.height > 0) DrawTextureTiled(guiTexture, centerLeft, RAYGUI_CLITERAL(Rectangle){rec.x, rec.y + style->top, style->left, rec.height - style->bottom - style->top}, origin, 0.0f, 1.0f, c);
+                
+                Rectangle centerRight = RAYGUI_CLITERAL(Rectangle){srcRec.x + srcRec.width - style->right, srcRec.y + style->top, style->right, srcRec.height - style->top - style->bottom};
+                if(centerRight.width > 0 && centerRight.height > 0) DrawTextureTiled(guiTexture, centerRight, RAYGUI_CLITERAL(Rectangle){rec.x + rec.width - style->right, rec.y + style->top, style->right, rec.height - style->top - style->bottom}, origin, 0.0f, 1.0f, c);
+                
+                Rectangle centerMiddle = RAYGUI_CLITERAL(Rectangle){srcRec.x + style->left, srcRec.y + style->top, srcRec.width - style->right - style->left, srcRec.height - style->top - style->bottom};
+                if(centerMiddle.width > 0 && centerMiddle.height > 0) DrawTextureTiled(guiTexture, centerMiddle, RAYGUI_CLITERAL(Rectangle){rec.x + style->left, rec.y + style->top, rec.width - style->right - style->left, rec.height - style->top - style->bottom}, origin, 0.0f, 1.0f, c);
+            }
+            else // Draw single slice
+            {
+                DrawTextureTiled(guiTexture, srcRec, rec, origin, 0.0f, 1.0f, c);
+            }
+        }
+        else 
+        {
+            // DRAW CENTERED (only available for single slice)
+            if(style->type == GUI_SKIN_TYPE_SLICE1) {
+                Rectangle destRec = rec;
+                int dw = (rec.width - srcRec.width)/2;
+                if(dw > 0) { destRec.x += dw; destRec.width = srcRec.width; }
+                int dh = (rec.height - srcRec.height)/2;
+                if(dh > 0) { destRec.y += dh; destRec.height = srcRec.height; }
+                
+                DrawTexturePro(guiTexture, srcRec, destRec, origin, 0.0f, c);
+            }
+        }
     }
-    
-    if (borderWidth > 0) 
+    else 
     {
-        // Draw rectangle border lines with color
-        DrawRectangle(rec.x, rec.y, rec.width, borderWidth, borderColor);
-        DrawRectangle(rec.x, rec.y + borderWidth, borderWidth, rec.height - 2*borderWidth, borderColor);
-        DrawRectangle(rec.x + rec.width - borderWidth, rec.y + borderWidth, borderWidth, rec.height - 2*borderWidth, borderColor);
-        DrawRectangle(rec.x, rec.y + rec.height - borderWidth, rec.width, borderWidth, borderColor);
+        if (color.a > 0) 
+        {
+            // Draw rectangle filled with color
+            DrawRectangle(rec.x, rec.y, rec.width, rec.height, color);
+        }
+        
+        if (borderWidth > 0) 
+        {
+            // Draw rectangle border lines with color
+            DrawRectangle(rec.x, rec.y, rec.width, borderWidth, borderColor);
+            DrawRectangle(rec.x, rec.y + borderWidth, borderWidth, rec.height - 2*borderWidth, borderColor);
+            DrawRectangle(rec.x + rec.width - borderWidth, rec.y + borderWidth, borderWidth, rec.height - 2*borderWidth, borderColor);
+            DrawRectangle(rec.x, rec.y + rec.height - borderWidth, rec.width, borderWidth, borderColor);
+        }
     }
-    
-    // TODO: For n-patch-based style we would need: [state] and maybe [control]
-    // In this case all controls drawing logic should be moved to this function... I don't like it...
 }
 
 // Draw tooltip relatively to bounds
@@ -3362,7 +4261,7 @@ static void GuiDrawTooltip(Rectangle bounds)
         Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
         Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
 
-        GuiDrawRectangle(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
+        GuiDrawRectangle(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha), guiSkin != NULL ? &guiSkin->tooltip : NULL, GUI_STATE_NORMAL);
 
         tooltipBounds.x += 10;
         GuiLabel(tooltipBounds, guiTooltip);
@@ -3673,6 +4572,44 @@ static int TextToInteger(const char *text)
     for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value*10 + (int)(text[i] - '0');
 
     return value*sign;
+}
+
+// Encode codepoint into utf8 text (char array length returned as parameter)
+static const char *CodepointToUtf8(int codepoint, int *byteLength)
+{
+    static char utf8[6] = { 0 };
+    int length = 0;
+
+    if (codepoint <= 0x7f)
+    {
+        utf8[0] = (char)codepoint;
+        length = 1;
+    }
+    else if (codepoint <= 0x7ff)
+    {
+        utf8[0] = (char)(((codepoint >> 6) & 0x1f) | 0xc0);
+        utf8[1] = (char)((codepoint & 0x3f) | 0x80);
+        length = 2;
+    }
+    else if (codepoint <= 0xffff)
+    {
+        utf8[0] = (char)(((codepoint >> 12) & 0x0f) | 0xe0);
+        utf8[1] = (char)(((codepoint >>  6) & 0x3f) | 0x80);
+        utf8[2] = (char)((codepoint & 0x3f) | 0x80);
+        length = 3;
+    }
+    else if (codepoint <= 0x10ffff)
+    {
+        utf8[0] = (char)(((codepoint >> 18) & 0x07) | 0xf0);
+        utf8[1] = (char)(((codepoint >> 12) & 0x3f) | 0x80);
+        utf8[2] = (char)(((codepoint >>  6) & 0x3f) | 0x80);
+        utf8[3] = (char)((codepoint & 0x3f) | 0x80);
+        length = 4;
+    }
+
+    *byteLength = length;
+
+    return utf8;
 }
 #endif      // RAYGUI_STANDALONE
 
