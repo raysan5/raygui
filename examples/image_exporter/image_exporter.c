@@ -54,7 +54,7 @@ int main(int argc, char *argv[0])
     
     bool imageLoaded = false;
     float imageScale = 1.0f;
-    Rectangle imageRec = { 0.0f };
+    Rectangle imageRec = { 0 };
     
     bool btnExport = false;
 
