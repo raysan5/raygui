@@ -352,7 +352,8 @@ EXAMPLES = \
     image_raw_importer/image_raw_importer \
     portable_window/portable_window \
     scroll_panel/gui_scroll_panel \
-    text_box_selection/gui_text_box
+    text_box_selection/textbox_extended_demo \
+    text_editor/text_editor
 
 CURRENT_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 
