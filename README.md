@@ -60,7 +60,7 @@ A set of custom handcrafted icons is provided in [`riconsdata`](src/riconsdata.h
 ```
 To use any of those icons in your gui, just preprend *iconId* to any text written within `raygui` controls:
 ```c
-if (GuiButton(rec, "#05#Open Image") { /* ACTION */ }
+if (GuiButton(rec, "#05#Open Image")) { /* ACTION */ }
 ```
 or use the provided `GuiIconText()` function to prepend it automatically, using a clearer identifier.
 ```c
