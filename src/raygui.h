@@ -2784,7 +2784,7 @@ void GuiLoadStyle(const char *fileName)
                         int fontSize = 0;
                         char charmapFileName[256] = { 0 };
                         char fontFileName[256] = { 0 };
-                        sscanf(buffer, "f %d %s %[^\n]s", &fontSize, charmapFileName, fontFileName);
+                        sscanf(buffer, "f %d %s %[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
                         Font font = { 0 };
 
