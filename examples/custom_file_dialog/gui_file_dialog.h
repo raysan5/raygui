@@ -248,7 +248,7 @@ void GuiFileDialog(GuiFileDialogState *state)
             {
                 if (strcmp(state->fileNameText, state->dirFiles[f]) == 0)
                 {
-                    if (state->filesListActive != f) state->filesListScrollIndex = state->filesListActive = f; // make it active and visible only on first call
+                    if (state->filesListActive != f) state->filesListScrollIndex = state->filesListActive = f;  // Make it active and visible only on first call
 
                     break;
                 }
@@ -259,7 +259,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
         state->fileDialogActive = !GuiWindowBox((Rectangle){ state->position.x + 0, state->position.y + 0, winWidth, winHeight }, "#198#LuaJIT | Select File Dialog");
 
-        if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< .."))// || IsKeyReleased(KEY_DPAD_Y))
+        if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< ..")) // || IsKeyReleased(KEY_DPAD_Y))
         {
             // Move dir path one level up
             strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
@@ -366,7 +366,7 @@ void GuiFileDialog(GuiFileDialogState *state)
 #ifdef PLATFORM_DESKTOP
             25
 #else
-            25+30
+            25 + 30
 #endif
         }, "Select");// || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A);
 
@@ -395,8 +395,8 @@ void GuiFileDialog(GuiFileDialogState *state)
     }
 }
 
-// Read all filenames from directory (supported file types)
-static inline int _file_comp(const char *d1, const char *d2, const char *dir)
+// Compare two files from a directory
+static inline int FileCompare(const char *d1, const char *d2, const char *dir)
 {
     const bool b1 = DirectoryExists(TextFormat("%s/%s", dir, d1));
     const bool b2 = DirectoryExists(TextFormat("%s/%s", dir, d2));
@@ -409,6 +409,8 @@ static inline int _file_comp(const char *d1, const char *d2, const char *dir)
 
     return strcmp(d1, d2);
 }
+
+// Read all filenames from directory (supported file types)
 static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
 {
     int validFilesCount = 0;
@@ -429,29 +431,29 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
         const int MAX = 64;
         unsigned int left = 0, stack[64], pos = 0, seed = rand(), len = dirFilesCount;
 
-        for ( ; ; )
+        for (;;)
         {
-            for (; left+1 < len; len++)    /* sort left to len-1 */
+            for (; left + 1 < len; len++)    // Sort left to len - 1
             {
-                if (pos == MAX) len = stack[pos = 0];           /* stack overflow, reset */
-                char *pivot = files[left+seed%(len-left)];      /* pick random pivot */
-                seed = seed*69069+1;                            /* next pseudorandom number */
-                stack[pos++] = len;                             /* sort right part later */
+                if (pos == MAX) len = stack[pos = 0];               // Stack overflow, reset
+                char *pivot = files[left + seed%(len - left)];      // Pick random pivot
+                seed = seed*69069 + 1;                              // Next pseudo-random number
+                stack[pos++] = len;                                 // Sort right part later
 
-                for (unsigned int right = left-1; ; )         /* inner loop: partitioning */
+                for (unsigned int right = left - 1;;)               // Inner loop: partitioning
                 {
-                    while (_file_comp(files[++right], pivot, dir) < 0);/* look for greater element */
-                    while (_file_comp(pivot, files[--len], dir) < 0);  /* look for smaller element */
-                    if (right >= len) break;                    /* partition point found? */
+                    while (FileCompare(files[++right], pivot, dir) < 0); // Look for greater element
+                    while (FileCompare(pivot, files[--len], dir) < 0);   // Look for smaller element
+                    if (right >= len) break;                        // Partition point found?
                     char *temp = files[right];
-                    files[right] = files[len];                  /* the only swap */
+                    files[right] = files[len];                      // The only swap
                     files[len] = temp;
-                }                                               /* partitioned, continue left part */
+                }                                                   // Partitioned, continue left part
             }
 
-            if (pos == 0) break;                                            /* stack empty? */
-            left = len;                                         /* left to right is sorted */
-            len = stack[--pos];                                 /* get next range to sort */
+            if (pos == 0) break;                                    // Stack empty?
+            left = len;                                             // Left to right is sorted
+            len = stack[--pos];                                     // Get next range to sort
         }
     }
 
