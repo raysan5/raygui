@@ -164,7 +164,7 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
             }
             
-            int key = GetKeyPressed();
+            int key = GetCharPressed();
             
             // TODO: On key pressed, place new character in cursor position
 

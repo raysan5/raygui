@@ -590,7 +590,7 @@ static bool IsMouseButtonReleased(int button);
 
 static bool IsKeyDown(int key);
 static bool IsKeyPressed(int key);
-static int GetKeyPressed(void);         // -- GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()
+static int GetCharPressed(void);         // -- GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()
 //-------------------------------------------------------------------------------
 
 // Drawing required functions
@@ -1414,7 +1414,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             state = GUI_STATE_PRESSED;
             framesCounter++;
 
-            int key = GetKeyPressed();      // Returns codepoint as Unicode
+            int key = GetCharPressed();      // Returns codepoint as Unicode
             int keyCount = strlen(text);
 
             // Only allow keys in range [32..125]
@@ -1619,7 +1619,7 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
                 int maxWidth = bounds.width;
                 if (GetTextWidth(textValue) < maxWidth)
                 {
-                    int key = GetKeyPressed();
+                    int key = GetCharPressed();
                     if ((key >= 48) && (key <= 57))
                     {
                         textValue[keyCount] = (char)key;
@@ -1726,7 +1726,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             state = GUI_STATE_PRESSED;
             framesCounter++;
 
-            int key = GetKeyPressed();
+            int character = GetCharPressed();
             int keyCount = strlen(text);
 
             // Introduce characters
@@ -1741,9 +1741,9 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                         text[keyCount] = '\n';
                         keyCount++;
                     }
-                    else if (((key >= 32) && (key < 255)))  // TODO: Support Unicode inputs
+                    else if (((character >= 32) && (character < 255)))  // TODO: Support Unicode inputs
                     {
-                        text[keyCount] = (char)key;
+                        text[keyCount] = (char)character;
                         keyCount++;
                     }
                 }
