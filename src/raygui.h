@@ -137,25 +137,18 @@
 #endif
 
 // Define functions scope to be used internally (static) or externally (extern) to the module including this file
-#if defined(RAYGUI_STATIC)
-    #define RAYGUIDEF static            // Functions just visible to module including this file
-#else
-    #ifdef __cplusplus
-        #define RAYGUIDEF extern "C"    // Functions visible from other files (no name mangling of functions in C++)
-    #else
-        // NOTE: By default any function declared in a C file is extern
-        #define RAYGUIDEF extern        // Functions visible from other files
-    #endif
-#endif
-
 #if defined(_WIN32)
-    #if defined(BUILD_LIBTYPE_SHARED)
-        #define RAYGUIDEF __declspec(dllexport)     // We are building raygui as a Win32 shared library (.dll).
+    // Microsoft attibutes to tell compiler that symbols are imported/exported from a .dll
+    #if !defined(BUILD_LIBTYPE_SHARED)
+        #define RAYGUIDEF __declspec(dllexport)     // We are building raygui as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
         #define RAYGUIDEF __declspec(dllimport)     // We are using raygui as a Win32 shared library (.dll)
+    #else
+        #define RAYGUIDEF   // We are building or using raygui as a static library
     #endif
+#else
+    #define RAYGUIDEF       // We are building or using raygui as a static library (or Linux shared library)
 #endif
-
 
 #if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_CALLOC) && !defined(RAYGUI_FREE)
     #include <stdlib.h>                 // Required for: malloc(), calloc(), free()
@@ -180,6 +173,10 @@
 #define NUM_PROPS_EXTENDED               8      // Number of extended properties
 
 #define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
+
+#if defined(__cplusplus)
+extern "C" {            // Prevents name mangling of functions
+#endif
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -3716,3 +3713,7 @@ static const char *CodepointToUtf8(int codepoint, int *byteLength)
 #endif      // RAYGUI_STANDALONE
 
 #endif      // RAYGUI_IMPLEMENTATION
+
+#if defined(__cplusplus)
+}            // Prevents name mangling of functions
+#endif
