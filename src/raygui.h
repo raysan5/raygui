@@ -896,7 +896,11 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
                 if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
 
-            scrollPos.y += GetMouseWheelMove()*20;
+            int wheelMove = GetMouseWheelMove();
+
+            // Horizontal scroll (Shift + Mouse wheel)
+            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))) scrollPos.x += wheelMove*20;
+            else scrollPos.y += wheelMove*20; // Vertical scroll
         }
     }
 
