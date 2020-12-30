@@ -139,7 +139,7 @@
 // Define functions scope to be used internally (static) or externally (extern) to the module including this file
 #if defined(_WIN32)
     // Microsoft attibutes to tell compiler that symbols are imported/exported from a .dll
-    #if !defined(BUILD_LIBTYPE_SHARED)
+    #if defined(BUILD_LIBTYPE_SHARED)
         #define RAYGUIDEF __declspec(dllexport)     // We are building raygui as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
         #define RAYGUIDEF __declspec(dllimport)     // We are using raygui as a Win32 shared library (.dll)
