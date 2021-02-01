@@ -499,8 +499,6 @@ RAYGUIDEF void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pi
 RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
 #endif
 
-#endif // RAYGUI_H
-
 
 /***********************************************************************************
 *
@@ -3721,3 +3719,5 @@ static const char *CodepointToUtf8(int codepoint, int *byteLength)
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
 #endif
+
+#endif // RAYGUI_H
