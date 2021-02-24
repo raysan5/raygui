@@ -78,8 +78,8 @@ int main()
             
             showContentArea = GuiCheckBox((Rectangle){ 565, 80, 20, 20 }, "SHOW CONTENT AREA", showContentArea);
                 
-            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", TextFormat("%i", (int)panelContentRec.width), 1, 600, true);
-            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", TextFormat("%i", (int)panelContentRec.height), 1, 400, true);
+            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", TextFormat("%i", (int)panelContentRec.width), panelContentRec.width, 1, 600);
+            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", TextFormat("%i", (int)panelContentRec.height), panelContentRec.height, 1, 400);
             
         EndDrawing();
         //----------------------------------------------------------------------------------
