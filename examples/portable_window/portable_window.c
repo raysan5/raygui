@@ -81,7 +81,7 @@ int main()
 
             exitWindow = GuiWindowBox((Rectangle){ 0, 0, screenWidth, screenHeight }, "PORTABLE WINDOW");
             
-            DrawText(FormatText("Mouse Position: [ %.0f, %.0f ]", mousePosition.x, mousePosition.y), 10, 40, 10, DARKGRAY);
+            DrawText(TextFormat("Mouse Position: [ %.0f, %.0f ]", mousePosition.x, mousePosition.y), 10, 40, 10, DARKGRAY);
 
         EndDrawing();
         //----------------------------------------------------------------------------------

@@ -174,7 +174,7 @@ int main()
             if (texture.id != 0) 
             {
                 DrawTextureEx(texture, (Vector2){ screenWidth/2 - texture.width*imageScale/2, screenHeight/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
-                DrawText(FormatText("SCALE x%.0f", imageScale), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
+                DrawText(TextFormat("SCALE x%.0f", imageScale), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
             }
             else DrawText("drag & drop RAW image file", 320, 180, 10, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
 
@@ -187,7 +187,7 @@ int main()
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 30, 65, 20 }, "Import file:");
                 GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 30, 75, 20 }, fileName);
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 50, 65, 20 }, "File size:");
-                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, FormatText("%i bytes", dataSize));
+                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, TextFormat("%i bytes", dataSize));
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 85, 180, 80 }, "Resolution");
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 100, 33, 25 }, "Width:");
                 if (GuiValueBox((Rectangle){ windowOffset.x + 60, windowOffset.y + 100, 80, 25 }, NULL, &widthValue, 0, 8192, widthEditMode)) widthEditMode = !widthEditMode; 

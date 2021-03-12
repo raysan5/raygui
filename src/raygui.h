@@ -606,7 +606,7 @@ static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float 
 static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 
 static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount);  // -- GuiLoadStyle()
-static char *LoadText(const char *fileName);                // -- GuiLoadStyle()
+static char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
 static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
 //-------------------------------------------------------------------------------
 
@@ -2790,7 +2790,7 @@ void GuiLoadStyle(const char *fileName)
                         {
                             // Load characters from charmap file,
                             // expected '\n' separated list of integer values
-                            char *charValues = LoadText(charmapFileName);
+                            char *charValues = LoadFileText(charmapFileName);
                             if (charValues != NULL)
                             {
                                 int charsCount = 0;
