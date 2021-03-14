@@ -128,17 +128,17 @@ int main()
                     // Select correct format depending on channels and bpp
                     if (bpp == 8)
                     {
-                        if (channels == 1) format = UNCOMPRESSED_GRAYSCALE;
-                        else if (channels == 2) format = UNCOMPRESSED_GRAY_ALPHA;
-                        else if (channels == 3) format = UNCOMPRESSED_R8G8B8;
-                        else if (channels == 4) format = UNCOMPRESSED_R8G8B8A8;
+                        if (channels == 1) format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+                        else if (channels == 2) format = PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
+                        else if (channels == 3) format = PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+                        else if (channels == 4) format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
                     }
                     else if (bpp == 32)
                     {
-                        if (channels == 1) format = UNCOMPRESSED_R32;
+                        if (channels == 1) format = PIXELFORMAT_UNCOMPRESSED_R32;
                         else if (channels == 2) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
-                        else if (channels == 3) format = UNCOMPRESSED_R32G32B32;
-                        else if (channels == 4) format = UNCOMPRESSED_R32G32B32A32;
+                        else if (channels == 3) format = PIXELFORMAT_UNCOMPRESSED_R32G32B32;
+                        else if (channels == 4) format = PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
                     }
                     else if (bpp == 16) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
                 }
