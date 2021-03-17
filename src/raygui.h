@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v2.8 - A simple and easy-to-use immediate-mode gui library
+*   raygui v2.9-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -69,6 +69,7 @@
 *
 *
 *   VERSIONS HISTORY:
+*       2.9 (17-Mar-2021) Removed tooltip API
 *       2.8 (03-May-2020) Centralized rectangles drawing to GuiDrawRectangle()
 *       2.7 (20-Feb-2020) Added possible tooltips API
 *       2.6 (09-Sep-2019) ADDED: GuiTextInputBox()
@@ -130,7 +131,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "2.6-dev"
+#define RAYGUI_VERSION  "2.9-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -428,12 +429,6 @@ RAYGUIDEF Font GuiGetFont(void);                                        // Get g
 RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set one style property
 RAYGUIDEF int GuiGetStyle(int control, int property);                   // Get one style property
 
-// Tooltips set functions
-RAYGUIDEF void GuiEnableTooltip(void);                                  // Enable gui tooltips
-RAYGUIDEF void GuiDisableTooltip(void);                                 // Disable gui tooltips
-RAYGUIDEF void GuiSetTooltip(const char *tooltip);                      // Set current tooltip for display
-RAYGUIDEF void GuiClearTooltip(void);                                   // Clear any tooltip registered
-
 // Container/separator controls, useful for controls organization
 RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
 RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
@@ -463,6 +458,7 @@ RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text);                
 RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
 RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid control
+
 
 // Advance controls set
 RAYGUIDEF int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
@@ -554,10 +550,6 @@ static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
 static unsigned int guiStyle[NUM_CONTROLS*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED)] = { 0 };
 static bool guiStyleLoaded = false;     // Style loaded flag for lazy style initialization
 
-// Tooltips required variables
-static const char *guiTooltip = NULL;   // Gui tooltip currently active (user provided)
-static bool guiTooltipEnabled = true;   // Gui tooltips enabled
-
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
 //
@@ -634,7 +626,6 @@ static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon
 
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
-static void GuiDrawTooltip(Rectangle bounds);                   // Draw tooltip relatively to bounds
 
 static const char **GuiTextSplit(const char *text, int *count, int *textRow);   // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
@@ -711,19 +702,6 @@ int GuiGetStyle(int control, int property)
     if (!guiStyleLoaded) GuiLoadStyleDefault();
     return guiStyle[control*(NUM_PROPS_DEFAULT + NUM_PROPS_EXTENDED) + property];
 }
-
-// Enable gui tooltips
-void GuiEnableTooltip(void) { guiTooltipEnabled = true; }
-
-// Disable gui tooltips
-void GuiDisableTooltip(void) { guiTooltipEnabled = false; }
-
-// Set current tooltip for display
-void GuiSetTooltip(const char *tooltip) { guiTooltip = tooltip; }
-
-// Clear any tooltip registered
-void GuiClearTooltip(void) { guiTooltip = NULL; }
-
 
 //----------------------------------------------------------------------------------
 // Gui Controls Functions Definition
@@ -3348,24 +3326,6 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
     
     // TODO: For n-patch-based style we would need: [state] and maybe [control]
     // In this case all controls drawing logic should be moved to this function... I don't like it...
-}
-
-// Draw tooltip relatively to bounds
-static void GuiDrawTooltip(Rectangle bounds)
-{
-    //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
-
-    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
-    {
-        Vector2 mousePosition = GetMousePosition();
-        Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-        Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
-
-        GuiDrawRectangle(tooltipBounds, 1, Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), guiAlpha));
-
-        tooltipBounds.x += 10;
-        GuiLabel(tooltipBounds, guiTooltip);
-    }
 }
 
 // Split controls text into multiple strings
