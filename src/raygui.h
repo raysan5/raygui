@@ -721,7 +721,7 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
 
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, (float)statusBarHeight };
     if (bounds.height < statusBarHeight*2.0f) bounds.height = statusBarHeight*2.0f;
-    
+
     Rectangle windowPanel = { bounds.x, bounds.y + (float)statusBarHeight - 1, bounds.width, bounds.height - (float)statusBarHeight };
     Rectangle closeButtonRec = { statusBar.x + statusBar.width - GuiGetStyle(STATUSBAR, BORDER_WIDTH) - 20,
                                  statusBar.y + statusBarHeight/2.0f - 18.0f/2.0f, 18, 18 };
@@ -735,7 +735,7 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
     //--------------------------------------------------------------------
     GuiStatusBar(statusBar, title); // Draw window header as status bar
     GuiPanel(windowPanel);          // Draw window base
-    
+
     // Draw window close button
     int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
     int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
@@ -920,7 +920,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
 
     // Draw scrollbar lines depending on current state
     GuiDrawRectangle(bounds, GuiGetStyle(DEFAULT, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + (state*3))), guiAlpha), BLANK);
-    
+
     // Set scrollbar slider size back to the way it was before
     GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, slider);
     //--------------------------------------------------------------------
@@ -1171,7 +1171,7 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
     // Draw control
     //--------------------------------------------------------------------
     GuiDrawRectangle(bounds, GuiGetStyle(CHECKBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(CHECKBOX, BORDER + (state*3))), guiAlpha), BLANK);
-    
+
     if (checked)
     {
         Rectangle check = { bounds.x + GuiGetStyle(CHECKBOX, BORDER_WIDTH) + GuiGetStyle(CHECKBOX, CHECK_PADDING),
@@ -1403,7 +1403,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 {
                     int byteLength = 0;
                     const char *textUtf8 = CodepointToUtf8(key, &byteLength);
-                    
+
                     for (int i = 0; i < byteLength; i++)
                     {
                         text[keyCount] = textUtf8[i];
@@ -1650,19 +1650,19 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
     Color baseColor = BLANK;
     if (state == GUI_STATE_PRESSED) baseColor = GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_PRESSED));
     else if (state == GUI_STATE_DISABLED) baseColor = GetColor(GuiGetStyle(VALUEBOX, BASE_COLOR_DISABLED));
-    
+
     // WARNING: BLANK color does not work properly with Fade()
     GuiDrawRectangle(bounds, GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER + (state*3))), guiAlpha), baseColor);
     GuiDrawText(textValue, GetTextBounds(VALUEBOX, bounds), GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(VALUEBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw blinking cursor
-    if ((state == GUI_STATE_PRESSED) && (editMode && ((framesCounter/20)%2 == 0))) 
+    if ((state == GUI_STATE_PRESSED) && (editMode && ((framesCounter/20)%2 == 0)))
     {
         // NOTE: ValueBox internal text is always centered
         Rectangle cursor = { bounds.x + GetTextWidth(textValue)/2 + bounds.width/2 + 2, bounds.y + 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), 1, bounds.height - 4*GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
         GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
-    
+
     // Draw text label if provided
     if (text != NULL) GuiDrawText(text, textBounds, (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)? GUI_TEXT_ALIGN_LEFT : GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
     //--------------------------------------------------------------------
@@ -2095,7 +2095,7 @@ int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     // Draw control
     //--------------------------------------------------------------------
     GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   // Draw the background
-    
+
     GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
     GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
 
@@ -3309,13 +3309,13 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 // Gui draw rectangle using default raygui plain style with borders
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
 {
-    if (color.a > 0) 
+    if (color.a > 0)
     {
         // Draw rectangle filled with color
         DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, color);
     }
-    
-    if (borderWidth > 0) 
+
+    if (borderWidth > 0)
     {
         // Draw rectangle border lines with color
         DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, borderWidth, borderColor);
@@ -3323,7 +3323,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, borderColor);
         DrawRectangle((int)rec.x, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width, borderWidth, borderColor);
     }
-    
+
     // TODO: For n-patch-based style we would need: [state] and maybe [control]
     // In this case all controls drawing logic should be moved to this function... I don't like it...
 }
@@ -3543,7 +3543,7 @@ static Color Fade(Color color, float alpha)
 {
     if (alpha < 0.0f) alpha = 0.0f;
     else if (alpha > 1.0f) alpha = 1.0f;
-    
+
     Color result = { color.r, color.g, color.b, (unsigned char)(255.0f*alpha) };
 
     return result;
