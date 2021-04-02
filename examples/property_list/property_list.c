@@ -76,8 +76,11 @@ int main()
             
             GuiDMPropertyList((Rectangle){(SCREEN_WIDTH - 180)/2, (SCREEN_HEIGHT - 280)/2, 180, 280}, prop, SIZEOF(prop), &focus, &scroll);
         
-            if(prop[0].value.vbool)
+            if (prop[0].value.vbool >= 1)
+            {
                 DrawText(TextFormat("FOCUS:%i | SCROLL:%i | FPS:%i", focus, scroll, GetFPS()), prop[8].value.v2.x, prop[8].value.v2.y, 20, prop[11].value.vcolor);
+            }
+            
 		EndDrawing();
 		//----------------------------------------------------------------------------------
     }

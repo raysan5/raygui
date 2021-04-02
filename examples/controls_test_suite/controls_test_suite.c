@@ -160,9 +160,7 @@ int main()
 
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-            GuiSetTooltip("Save current file.");
             if (GuiButton((Rectangle){ 25, 255, 125, 30 }, GuiIconText(RICON_FILE_SAVE, "Save File"))) showTextInputBox = true;
-            GuiClearTooltip();
 
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "STATES");
             GuiLock();
