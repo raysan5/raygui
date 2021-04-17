@@ -1755,7 +1755,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 if (text[i] == ' ' || text[i] == '\n') lastBreakingPos = i;
 
-                if ( text[i] == '\n' || textWidth >= textAreaBounds.width)
+                if ( text[i] == '\n' || textWidth + 1 >= textAreaBounds.width)
                 {
                     currentLine++;
                     textWidth = 0;
