@@ -1685,7 +1685,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     };
 
     // Cursor position, [x, y] values should be updated
-    Rectangle cursor = { 0, 0, 1, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
+    Rectangle cursor = { 0, 0, GuiGetStyle(DEFAULT, TEXT_SIZE) * 0.1f, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
 
     int textWidth = 0;
     int currentLine = 0;
@@ -1768,7 +1768,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + textWidth - GuiGetStyle(DEFAULT, TEXT_SPACING);
-            cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)/2 + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))*currentLine);
+            cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) / 2 + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_SIZE)/2)*currentLine);
 
             // Exit edit mode
             if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
