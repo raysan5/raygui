@@ -1678,10 +1678,10 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     bool pressed = false;
 
     Rectangle textAreaBounds = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.y + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.width - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.height - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)
+        bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
+        bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
+        bounds.width - 2 * (GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)),
+        bounds.height - 2 * (GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))
     };
 
     // Cursor position, [x, y] values should be updated
@@ -1767,8 +1767,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
             }
 
-            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) + textWidth - GuiGetStyle(DEFAULT, TEXT_SPACING);
-            cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)/2 + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_SIZE)/2)*currentLine);
+            cursor.x = textAreaBounds.x + textWidth - GuiGetStyle(DEFAULT, TEXT_SPACING);
+            cursor.y = textAreaBounds.y + ((GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_SIZE)/2)*currentLine);
 
             // Exit edit mode
             if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
