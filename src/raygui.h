@@ -1685,7 +1685,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     };
 
     // Cursor position, [x, y] values should be updated
-    Rectangle cursor = { 0, 0, GuiGetStyle(DEFAULT, TEXT_SIZE) * 0.1f, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
+    Rectangle cursor = { 0, 0, (GuiGetStyle(DEFAULT, TEXT_SIZE) < 10) ? 1 : (GuiGetStyle(DEFAULT, TEXT_SIZE) * 0.1f), (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
 
     int textWidth = 0;
     int currentLine = 0;
