@@ -1373,7 +1373,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     bool pressed = false;
 
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
+        0, //gets set later
         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
         1,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
@@ -1434,9 +1434,14 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) pressed = true;
 
             // Check text alignment to position cursor properly
-            int textAlignment = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
-            if (textAlignment == GUI_TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
-            else if (textAlignment == GUI_TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
+            switch (GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT)) {
+					case GUI_TEXT_ALIGN_LEFT:
+						cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GetTextWidth(text) + 1;    break;
+					case GUI_TEXT_ALIGN_CENTER:
+						cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) / 2 + bounds.width / 2 + 2;                  break;
+					case GUI_TEXT_ALIGN_RIGHT:
+						cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) - GuiGetStyle(TEXTBOX, BORDER_WIDTH);        break;
+				}
         }
         else
         {
