@@ -496,6 +496,12 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 #endif
 
 
+#if defined(__cplusplus)
+}            // Prevents name mangling of functions
+#endif
+
+#endif // RAYGUI_H
+
 /***********************************************************************************
 *
 *   RAYGUI IMPLEMENTATION
@@ -3673,9 +3679,3 @@ static const char *CodepointToUtf8(int codepoint, int *byteLength)
 #endif      // RAYGUI_STANDALONE
 
 #endif      // RAYGUI_IMPLEMENTATION
-
-#if defined(__cplusplus)
-}            // Prevents name mangling of functions
-#endif
-
-#endif // RAYGUI_H
