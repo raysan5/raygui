@@ -49,7 +49,7 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 `raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_ICONS` before including `raygui`. 
 
-A set of custom handcrafted icons is provided in [`riconsdata`](src/riconsdata.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.  
+A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.  
 
 <img align="right" src="images/raygui_ricons.png">
 
