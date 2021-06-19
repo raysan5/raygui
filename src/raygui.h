@@ -637,6 +637,9 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow);   
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
 
+static void GuiBeginScissorMode(int x, int y, int width, int height);
+static void GuiEndScissorMode();
+
 //----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
 //----------------------------------------------------------------------------------
@@ -1404,7 +1407,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
-                if ((GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE))) && (key >= 32))
+                if ((key >= 32))
                 {
                     int byteLength = 0;
                     const char *textUtf8 = CodepointToUtf8(key, &byteLength);
@@ -1418,7 +1421,6 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     text[keyCount] = '\0';
                 }
             }
-
             // Delete text
             if (keyCount > 0)
             {
@@ -1429,7 +1431,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     framesCounter = 0;
                     if (keyCount < 0) keyCount = 0;
                 }
-                else if (IsKeyDown(KEY_BACKSPACE))
+                else if (IsKeyDown(KEY_DELETE))
                 {
                     if ((framesCounter > TEXTEDIT_CURSOR_BLINK_FRAMES) && (framesCounter%2) == 0) keyCount--;
                     text[keyCount] = '\0';
@@ -1457,6 +1459,11 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     }
     //--------------------------------------------------------------------
 
+    // Get the text bounds and figure out whether we need to shift the text and cursor
+    Rectangle tbounds = GetTextBounds(TEXTBOX, bounds);
+    bool shift = false;
+    if(GetTextWidth(text) > bounds.width - 16) {tbounds.x -= GetTextWidth(text) - (bounds.width - 16); shift = true;}
+
     // Draw control
     //--------------------------------------------------------------------
     if (state == GUI_STATE_PRESSED)
@@ -1464,7 +1471,12 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
 
         // Draw blinking cursor
-        if (editMode && ((framesCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        if (editMode && ((framesCounter/20)%2 == 0))
+        {
+            // Check if shifting is needed
+            if(shift) cursor.x = GetTextWidth(text) + tbounds.x;
+            GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        }
     }
     else if (state == GUI_STATE_DISABLED)
     {
@@ -1472,7 +1484,9 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     }
     else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
 
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    GuiBeginScissorMode(bounds.x, bounds.y, bounds.width, bounds.height);
+    GuiDrawText(text, tbounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    GuiEndScissorMode();
     //--------------------------------------------------------------------
 
     return pressed;
@@ -3169,6 +3183,18 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
+
+// Scissors
+static void GuiBeginScissorMode(int x, int y, int width, int height)
+{
+    BeginScissorMode(x,  y, width, height);
+}
+
+static void GuiEndScissorMode()
+{
+    EndScissorMode();
+}
+
 // Gui get text width using default font
 static int GetTextWidth(const char *text)
 {
