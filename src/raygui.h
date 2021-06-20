@@ -1380,12 +1380,12 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
     GuiControlState state = guiState;
     bool pressed = false;
-
+    
     Rectangle cursor = {
         bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
-        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
+        bounds.y + 8,
         1,
-        (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
+        bounds.height - 16
     };
 
     // Update control
