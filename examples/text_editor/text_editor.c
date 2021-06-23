@@ -211,7 +211,7 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
     {
         // Get next codepoint from byte string and glyph index in font
         int codepointByteCount = 0;
-        int codepoint = GetNextCodepoint(&text[i], &codepointByteCount);
+        int codepoint = GetCodepoint(&text[i], &codepointByteCount);
         int index = GetGlyphIndex(font, codepoint);
         
         Rectangle rec = { bounds.x + textOffsetX + font.chars[index].offsetX*scaleFactor,
