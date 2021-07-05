@@ -3083,9 +3083,10 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
                 for (int i = 0; i < iconsCount; i++)
                 {
                     guiIconsName[i] = (char *)RAYGUI_MALLOC(RICON_MAX_NAME_LENGTH);
-                    fread(guiIconsName[i], 32, 1, rgiFile);
+                    fread(guiIconsName[i], RICON_MAX_NAME_LENGTH, 1, rgiFile);
                 }
             }
+            else fseek(rgiFile, iconsCount*RICON_MAX_NAME_LENGTH, SEEK_CUR);
 
             // Read icons data directly over guiIcons data array
             fread(guiIcons, iconsCount*(iconsSize*iconsSize/32), sizeof(unsigned int), rgiFile);
