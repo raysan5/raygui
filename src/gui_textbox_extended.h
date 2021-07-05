@@ -204,7 +204,7 @@ RAYGUIDEF int GuiTextBoxGetByteIndex(const char *text, int start, int from, int 
     while ((text[i] != '\0') && (k < to))
     {
         int j = 0;
-        int letter = GetNextCodepoint(&text[i], &j);
+        int letter = GetCodepoint(&text[i], &j);
 
         if (letter == 0x3f) j = 1;
         i += j;
@@ -349,7 +349,7 @@ RAYGUIDEF void GuiTextBoxPaste(char *text, int textSize)
         for (int i = 0; i < (startIdx + size); guiTextBoxState.cursor++)
         {
             int next = 0;
-            int letter = GetNextCodepoint(&text[i], &next);
+            int letter = GetCodepoint(&text[i], &next);
             if (letter != 0x3f) i += next;
             else i += 1;
         }
@@ -846,7 +846,7 @@ static int GetPrevCodepoint(const char *text, const char *start, int *prev)
     {
         if ((((unsigned char)*p) >> 6) != 2)
         {
-            c = GetNextCodepoint(p, prev);
+            c = GetCodepoint(p, prev);
             break;
         }
     }
@@ -864,7 +864,7 @@ static inline unsigned int GuiCountCodepointsUntilNewline(const char *text)
     while ((*ptr != '\0') && (*ptr != '\n'))
     {
         int next = 0;
-        int letter = GetNextCodepoint(ptr, &next);
+        int letter = GetCodepoint(ptr, &next);
 
         if (letter == 0x3f) ptr += 1;
         else ptr += next;
@@ -897,7 +897,7 @@ static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *p
     {
         glyphWidth = 0;
         int next = 1;
-        letter = GetNextCodepoint(&text[i], &next);
+        letter = GetCodepoint(&text[i], &next);
         if (letter == 0x3f) next = 1;
         index = GetGlyphIndex(font, letter);
         i += next - 1;
