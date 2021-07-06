@@ -67,6 +67,13 @@ or use the provided `GuiIconText()` function to prepend it automatically, using 
 if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 ```
 
+## building as shared library
+
+`raygui` is intended to be used as a portable library to be integrated in code form into the target project but some users could require a shared/dynamic version of the library, for example, to create bindings. In that case, `raygui` can be built as a shared library using:
+```
+mv src/raygui.h src/raygui.c && gcc -shared -fpic -DRAYGUI_SUPPORT_ICONS -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 src/raygui.c -o raygui.so
+```
+
 license
 -------
 
