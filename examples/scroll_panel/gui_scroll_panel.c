@@ -13,7 +13,7 @@
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   COMPILATION (Linux - gcc):
-*	gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
+*    gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
 *
 *   LICENSE: zlib/libpng
 *

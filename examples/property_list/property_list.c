@@ -81,8 +81,8 @@ int main()
                 DrawText(TextFormat("FOCUS:%i | SCROLL:%i | FPS:%i", focus, scroll, GetFPS()), prop[8].value.v2.x, prop[8].value.v2.y, 20, prop[11].value.vcolor);
             }
             
-		EndDrawing();
-		//----------------------------------------------------------------------------------
+        EndDrawing();
+        //----------------------------------------------------------------------------------
     }
     
     GuiDMSaveProperties("test.props", prop, SIZEOF(prop));  // Save properties to `test.props` file at exit

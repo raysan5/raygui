@@ -19,7 +19,7 @@ WindowBox   |  GroupBox    |  Line        |  Panel
 #### Basic controls
 ```
 Label       |  Button      |  LabelButton |  ImageButton  |  Toggle      |  ToggleGroup |  CheckBox
-ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner     |  Slider   
+ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner     |  Slider
 SliderBar   |  ProgressBar |  StatusBar   |  ScrollBar    |  ScrollPanel |  DummyRec    |  Grid
 ```
 #### Advance controls
@@ -37,19 +37,19 @@ Some additional styles are also provided for convenience, just check [styles dir
 
 ![raygui additional styles](images/raygui_style_table_multi.png)
 
-Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool. 
+Custom styles can also be created very easily using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool.
 
 Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple and easy-to-use.
 
 ![rGuiStyler v3.1](images/rguistyler_v300.png)
 
 *rGuiStyler v3.1 - raygui styles editor, useful to create custom styles*
- 
+
 ## raygui icons
 
-`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_ICONS` before including `raygui`. 
+`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_ICONS` before including `raygui`.
 
-A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.  
+A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
 
 <img align="right" src="images/raygui_ricons.png">
 

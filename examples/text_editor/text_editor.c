@@ -94,8 +94,8 @@ int main(int argc, char **argv)
 
         // Draw
         //----------------------------------------------------------------------------------
-		BeginDrawing();
-		
+        BeginDrawing();
+        
             ClearBackground(RAYWHITE);
             
             // Draw textboxes extended
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
             if (GuiTextEditor((Rectangle){ 420, 20, 360, 410 }, text02, strlen(text02), textEditor02EditMode)) textEditor02EditMode = !textEditor02EditMode;
             //---------------------------------------------------------------------------------------
             
-		EndDrawing();
+        EndDrawing();
         //----------------------------------------------------------------------------------
     }
 

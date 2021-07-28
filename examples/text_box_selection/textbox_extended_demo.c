@@ -13,7 +13,7 @@
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   COMPILATION (Linux - gcc):
-*	gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
+*    gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
 *
 *   LICENSE: zlib/libpng
 *
@@ -87,9 +87,9 @@ int main(int argc, char **argv)
     InitWindow(screenWidth, screenHeight, "raygui - gui textboxBounds extended demo");
 
     // Generate a checked checked used by the color buttons
-	Image img = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
-	checked = LoadTextureFromImage(img);
-	UnloadImage(img);
+    Image img = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
+    checked = LoadTextureFromImage(img);
+    UnloadImage(img);
     
     Font font = { 0 };
     int fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
@@ -185,8 +185,8 @@ int main(int argc, char **argv)
 
         // Draw
         //----------------------------------------------------------------------------------
-		BeginDrawing();
-		
+        BeginDrawing();
+        
             ClearBackground(RAYWHITE);
             
             // Draw textboxes extended
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
             */
             //---------------------------------------------------------------------------------------
                 
-		EndDrawing();
+        EndDrawing();
         //----------------------------------------------------------------------------------
     }
 
