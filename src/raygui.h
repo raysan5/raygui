@@ -331,7 +331,9 @@ typedef enum {
 // Slider / SliderBar
 typedef enum {
     SLIDER_WIDTH = 16,
-    SLIDER_PADDING
+    SLIDER_PADDING,
+    SLIDER_LEFT_TEXT_CONTAINED,
+    SLIDER_RIGHT_TEXT_CONTAINED
 } GuiSliderProperty;
 
 // ProgressBar
@@ -1886,7 +1888,10 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(textLeft);  // TODO: Consider text icon
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
+        if(GuiGetStyle(SLIDER, SLIDER_LEFT_TEXT_CONTAINED))
+            textBounds.x = bounds.x + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        else
+            textBounds.x = bounds.x - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
         GuiDrawText(textLeft, textBounds, GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
@@ -1897,7 +1902,10 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(textRight);  // TODO: Consider text icon
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
+        if(GuiGetStyle(SLIDER, SLIDER_RIGHT_TEXT_CONTAINED))
+            textBounds.x = bounds.x + bounds.width - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        else
+            textBounds.x = bounds.x + bounds.width + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
         GuiDrawText(textRight, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
@@ -1947,7 +1955,10 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(textLeft);  // TODO: Consider text icon
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        if(GuiGetStyle(SLIDER, SLIDER_LEFT_TEXT_CONTAINED))
+            textBounds.x = bounds.x + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        else
+            textBounds.x = bounds.x - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
         GuiDrawText(textLeft, textBounds, GUI_TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(PROGRESSBAR, TEXT + (state*3))), guiAlpha));
@@ -1958,7 +1969,10 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(textRight);  // TODO: Consider text icon
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        if(GuiGetStyle(SLIDER, SLIDER_RIGHT_TEXT_CONTAINED))
+            textBounds.x = bounds.x + bounds.width - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
+        else
+            textBounds.x = bounds.x + bounds.width + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
         GuiDrawText(textRight, textBounds, GUI_TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(PROGRESSBAR, TEXT + (state*3))), guiAlpha));
@@ -2961,6 +2975,8 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 15);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
+    GuiSetStyle(SLIDER, SLIDER_LEFT_TEXT_CONTAINED, 0);
+    GuiSetStyle(SLIDER, SLIDER_RIGHT_TEXT_CONTAINED, 0);
     GuiSetStyle(PROGRESSBAR, PROGRESS_PADDING, 1);
     GuiSetStyle(CHECKBOX, CHECK_PADDING, 1);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 30);
