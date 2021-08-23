@@ -64,7 +64,7 @@
 *       the user (check library implementation for further details).
 *
 *   #define RAYGUI_SUPPORT_ICONS
-*       Includes riconsdata.h header defining a set of 128 icons (binary format) to be used on
+*       Includes ricons.h header defining a set of 256 icons (binary format) to be used on
 *       multiple controls and following raygui styles
 *
 *
