@@ -128,7 +128,7 @@ static GuiTextBoxState guiTextBoxState = {      // Keeps state of the active tex
 //----------------------------------------------------------------------------------
 static int GetPrevCodepoint(const char *text, const char *start, int *prev);
 static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *pos, int mode);
-static int GuiMeasureTextBoxRev(const char *text, int length, Rectangle rec, int *pos);                 // Highly synchronized with calculations in DrawTextRecEx()
+static int GuiMeasureTextBoxRev(const char *text, int length, Rectangle rec, int *pos);                 // Highly synchronized with calculations in DrawTextBoxedSelectable()
 
 static inline int GuiTextBoxGetCursorCoordinates(const char *text, int length, Rectangle rec, int pos); // Calculate cursor coordinates based on the cursor position `pos` inside the `text`.
 static inline int GuiTextBoxGetCursorFromMouse(const char *text, int length, Rectangle rec, int *pos);  // Calculate cursor position in textbox based on mouse coordinates.
@@ -759,7 +759,7 @@ RAYGUIDEF bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
                     selLength = guiTextBoxState.select - guiTextBoxState.cursor;
                 }
 
-                // We aren't drawing all of the text so make sure `DrawTextRecEx()` is selecting things correctly
+                // We aren't drawing all of the text so make sure `DrawTextBoxedSelectable()` is selecting things correctly
                 if (guiTextBoxState.start > selStart)
                 {
                     selLength -= guiTextBoxState.start - selStart;
@@ -827,7 +827,7 @@ RAYGUIDEF bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
     }
 
     // Finally draw the text and selection
-    DrawTextRecEx(guiFont, &text[textStartIndex], textRec, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), false, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha), selStart, selLength, GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)), GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG)));
+    DrawTextBoxedSelectable(guiFont, &text[textStartIndex], textRec, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING), false, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha), selStart, selLength, GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)), GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG)));
 
     return pressed;
 }
@@ -874,7 +874,7 @@ static inline unsigned int GuiCountCodepointsUntilNewline(const char *text)
     return len;
 }
 
-// Highly synchronized with calculations in DrawTextRecEx()
+// Highly synchronized with calculations in DrawTextBoxedSelectable()
 static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *pos, int mode)
 {
     // Get gui font properties
@@ -941,7 +941,7 @@ static int GuiMeasureTextBox(const char *text, int length, Rectangle rec, int *p
 }
 
 // Required by GuiTextBoxEx()
-// Highly synchronized with calculations in DrawTextRecEx()
+// Highly synchronized with calculations in DrawTextBoxedSelectable()
 static int GuiMeasureTextBoxRev(const char *text, int length, Rectangle rec, int *pos)
 {
     // Get gui font properties
