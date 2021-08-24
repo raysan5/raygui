@@ -213,7 +213,7 @@ int main(int argc, char **argv)
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     
             // Draw hexadecimal values viewer
-            DrawTextRecEx(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
+            DrawTextBoxedSelectable(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
 
             // Draw right-mouse-button-click menu and logic
             //---------------------------------------------------------------------------------------
