@@ -233,7 +233,7 @@
     // It should be redesigned to be provided by user
     typedef struct Font {
         int baseSize;           // Base size (default chars height)
-        int charsCount;         // Number of characters
+        int glyphCount;         // Number of characters
         Texture2D texture;      // Characters texture atlas
         Rectangle *recs;        // Characters rectangles in texture
         GlyphInfo *chars;       // Characters info data
@@ -1153,7 +1153,7 @@ static Font GetFontDefault(void);                           // -- GuiLoadStyleDe
 static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);                          // -- GetTextWidth(), GuiTextBoxMulti()
 static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 
-static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount);  // -- GuiLoadStyle()
+static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount);  // -- GuiLoadStyle()
 static char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
 static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
 //-------------------------------------------------------------------------------
@@ -1660,12 +1660,12 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 
     // Get substrings items from text (items pointers)
     int rows[TOGGLEGROUP_MAX_ELEMENTS] = { 0 };
-    int itemsCount = 0;
-    const char **items = GuiTextSplit(text, &itemsCount, rows);
+    int itemCount = 0;
+    const char **items = GuiTextSplit(text, &itemCount, rows);
 
     int prevRow = rows[0];
 
-    for (int i = 0; i < itemsCount; i++)
+    for (int i = 0; i < itemCount; i++)
     {
         if (prevRow != rows[i])
         {
@@ -1753,15 +1753,15 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
                            (float)bounds.y, (float)GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH), (float)bounds.height };
 
     // Get substrings items from text (items pointers, lengths and count)
-    int itemsCount = 0;
-    const char **items = GuiTextSplit(text, &itemsCount, NULL);
+    int itemCount = 0;
+    const char **items = GuiTextSplit(text, &itemCount, NULL);
 
     if (active < 0) active = 0;
-    else if (active > itemsCount - 1) active = itemsCount - 1;
+    else if (active > itemCount - 1) active = itemCount - 1;
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemsCount > 1))
+    if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemCount > 1))
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1771,7 +1771,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 active += 1;
-                if (active >= itemsCount) active = 0;
+                if (active >= itemCount) active = 0;
             }
 
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
@@ -1793,7 +1793,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-    GuiButton(selector, TextFormat("%i/%i", active + 1, itemsCount));
+    GuiButton(selector, TextFormat("%i/%i", active + 1, itemCount));
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
@@ -1811,11 +1811,11 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
     int itemFocused = -1;
 
     // Get substrings items from text (items pointers, lengths and count)
-    int itemsCount = 0;
-    const char **items = GuiTextSplit(text, &itemsCount, NULL);
+    int itemCount = 0;
+    const char **items = GuiTextSplit(text, &itemCount, NULL);
 
     Rectangle boundsOpen = bounds;
-    boundsOpen.height = (itemsCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
+    boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
 
     Rectangle itemBounds = bounds;
 
@@ -1823,7 +1823,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemsCount > 1))
+    if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemCount > 1))
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1841,7 +1841,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
             if (CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
 
             // Check focused and selected item
-            for (int i = 0; i < itemsCount; i++)
+            for (int i = 0; i < itemCount; i++)
             {
                 // Update item rectangle y position for next item
                 itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
@@ -1885,7 +1885,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
     if (editMode)
     {
         // Draw visible items
-        for (int i = 0; i < itemsCount; i++)
+        for (int i = 0; i < itemCount; i++)
         {
             // Update item rectangle y position for next item
             itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
@@ -1952,10 +1952,10 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 if ((GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE))) && (key >= 32))
                 {
-                    int byteLength = 0;
-                    const char *textUTF8 = CodepointToUTF8(key, &byteLength);
+                    int byteSize = 0;
+                    const char *textUTF8 = CodepointToUTF8(key, &byteSize);
 
-                    for (int i = 0; i < byteLength; i++)
+                    for (int i = 0; i < byteSize; i++)
                     {
                         text[keyCount] = textUTF8[i];
                         keyCount++;
@@ -2091,7 +2091,7 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
 }
 
 // Value Box control, updates input text with numbers
-// NOTE: Requires static variables: framesCounter
+// NOTE: Requires static variables: frameCounter
 bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
     #if !defined(VALUEBOX_MAX_CHARS)
@@ -2309,7 +2309,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
         int codepoint = GetCodepoint(text + i, &codepointLength);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f) -> TODO: review that case!
         Rectangle atlasRec = guiFont.recs[index];
-        GlyphInfo glyphInfo = guiFont.chars[index];         // Glyph measures
+        GlyphInfo glyphInfo = guiFont.glyphs[index];         // Glyph measures
         
         if ((codepointLength == 1) && (codepoint == '\n')) 
         {
@@ -2711,12 +2711,12 @@ int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 // List View control
 int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active)
 {
-    int itemsCount = 0;
+    int itemCount = 0;
     const char **items = NULL;
 
-    if (text != NULL) items = GuiTextSplit(text, &itemsCount, NULL);
+    if (text != NULL) items = GuiTextSplit(text, &itemCount, NULL);
 
-    return GuiListViewEx(bounds, items, itemsCount, NULL, scrollIndex, active);
+    return GuiListViewEx(bounds, items, itemCount, NULL, scrollIndex, active);
 }
 
 // List View control with extended parameters
@@ -3109,12 +3109,12 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 
     int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
 
-    int buttonsCount = 0;
-    const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
+    int buttonCount = 0;
+    const char **buttonsText = GuiTextSplit(buttons, &buttonCount, NULL);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + MESSAGEBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - MESSAGEBOX_BUTTON_HEIGHT - MESSAGEBOX_BUTTON_PADDING;
-    buttonBounds.width = (bounds.width - MESSAGEBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
+    buttonBounds.width = (bounds.width - MESSAGEBOX_BUTTON_PADDING*(buttonCount + 1))/buttonCount;
     buttonBounds.height = MESSAGEBOX_BUTTON_HEIGHT;
 
     Vector2 textSize = MeasureTextEx(guiFont, message, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
@@ -3137,7 +3137,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
     prevTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-    for (int i = 0; i < buttonsCount; i++)
+    for (int i = 0; i < buttonCount; i++)
     {
         if (GuiButton(buttonBounds, buttonsText[i])) clicked = i + 1;
         buttonBounds.x += (buttonBounds.width + MESSAGEBOX_BUTTON_PADDING);
@@ -3164,12 +3164,12 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 
     int btnIndex = -1;
 
-    int buttonsCount = 0;
-    const char **buttonsText = GuiTextSplit(buttons, &buttonsCount, NULL);
+    int buttonCount = 0;
+    const char **buttonsText = GuiTextSplit(buttons, &buttonCount, NULL);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + TEXTINPUTBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - TEXTINPUTBOX_BUTTON_HEIGHT - TEXTINPUTBOX_BUTTON_PADDING;
-    buttonBounds.width = (bounds.width - TEXTINPUTBOX_BUTTON_PADDING*(buttonsCount + 1))/buttonsCount;
+    buttonBounds.width = (bounds.width - TEXTINPUTBOX_BUTTON_PADDING*(buttonCount + 1))/buttonCount;
     buttonBounds.height = TEXTINPUTBOX_BUTTON_HEIGHT;
 
     int messageInputHeight = (int)bounds.height - WINDOW_STATUSBAR_HEIGHT - GuiGetStyle(STATUSBAR, BORDER_WIDTH) - TEXTINPUTBOX_BUTTON_HEIGHT - 2*TEXTINPUTBOX_BUTTON_PADDING;
@@ -3211,7 +3211,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-    for (int i = 0; i < buttonsCount; i++)
+    for (int i = 0; i < buttonCount; i++)
     {
         if (GuiButton(buttonBounds, buttonsText[i])) btnIndex = i + 1;
         buttonBounds.x += (buttonBounds.width + MESSAGEBOX_BUTTON_PADDING);
@@ -3335,20 +3335,20 @@ void GuiLoadStyle(const char *fileName)
                             char *charValues = LoadFileText(charmapFileName);
                             if (charValues != NULL)
                             {
-                                int charsCount = 0;
-                                const char **chars = TextSplit(charValues, '\n', &charsCount);
+                                int glyphCount = 0;
+                                const char **chars = TextSplit(charValues, '\n', &glyphCount);
 
-                                int *values = (int *)RAYGUI_MALLOC(charsCount*sizeof(int));
-                                for (int i = 0; i < charsCount; i++) values[i] = TextToInteger(chars[i]);
+                                int *values = (int *)RAYGUI_MALLOC(glyphCount*sizeof(int));
+                                for (int i = 0; i < glyphCount; i++) values[i] = TextToInteger(chars[i]);
 
-                                font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, charsCount);
+                                font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, glyphCount);
 
                                 RAYGUI_FREE(values);
                             }
                         }
                         else font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
 
-                        if ((font.texture.id > 0) && (font.charsCount > 0)) GuiSetFont(font);
+                        if ((font.texture.id > 0) && (font.glyphCount > 0)) GuiSetFont(font);
 
                     } break;
                     default: break;
@@ -3371,12 +3371,12 @@ void GuiLoadStyle(const char *fileName)
         char signature[5] = "";
         short version = 0;
         short reserved = 0;
-        int propertiesCount = 0;
+        int propertyCount = 0;
 
         fread(signature, 1, 4, rgsFile);
         fread(&version, 1, sizeof(short), rgsFile);
         fread(&reserved, 1, sizeof(short), rgsFile);
-        fread(&propertiesCount, 1, sizeof(int), rgsFile);
+        fread(&propertyCount, 1, sizeof(int), rgsFile);
 
         if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
@@ -3387,7 +3387,7 @@ void GuiLoadStyle(const char *fileName)
             short propertyId = 0;
             int propertyValue = 0;
 
-            for (int i = 0; i < propertiesCount; i++)
+            for (int i = 0; i < propertyCount; i++)
             {
                 fread(&controlId, 1, sizeof(short), rgsFile);
                 fread(&propertyId, 1, sizeof(short), rgsFile);
@@ -3418,7 +3418,7 @@ void GuiLoadStyle(const char *fileName)
                 Rectangle whiteRec = { 0 };
 
                 fread(&font.baseSize, 1, sizeof(int), rgsFile);
-                fread(&font.charsCount, 1, sizeof(int), rgsFile);
+                fread(&font.glyphCount, 1, sizeof(int), rgsFile);
                 fread(&fontType, 1, sizeof(int), rgsFile);
 
                 // Load font white rectangle
@@ -3445,17 +3445,17 @@ void GuiLoadStyle(const char *fileName)
                 }
 
                 // Load font recs data
-                font.recs = (Rectangle *)RAYGUI_CALLOC(font.charsCount, sizeof(Rectangle));
-                for (int i = 0; i < font.charsCount; i++) fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
+                font.recs = (Rectangle *)RAYGUI_CALLOC(font.glyphCount, sizeof(Rectangle));
+                for (int i = 0; i < font.glyphCount; i++) fread(&font.recs[i], 1, sizeof(Rectangle), rgsFile);
 
                 // Load font chars info data
-                font.chars = (GlyphInfo *)RAYGUI_CALLOC(font.charsCount, sizeof(GlyphInfo));
-                for (int i = 0; i < font.charsCount; i++)
+                font.glyphs = (GlyphInfo *)RAYGUI_CALLOC(font.glyphCount, sizeof(GlyphInfo));
+                for (int i = 0; i < font.glyphCount; i++)
                 {
-                    fread(&font.chars[i].value, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].offsetX, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].offsetY, 1, sizeof(int), rgsFile);
-                    fread(&font.chars[i].advanceX, 1, sizeof(int), rgsFile);
+                    fread(&font.glyphs[i].value, 1, sizeof(int), rgsFile);
+                    fread(&font.glyphs[i].offsetX, 1, sizeof(int), rgsFile);
+                    fread(&font.glyphs[i].offsetY, 1, sizeof(int), rgsFile);
+                    fread(&font.glyphs[i].advanceX, 1, sizeof(int), rgsFile);
                 }
 
                 GuiSetFont(font);
@@ -3585,7 +3585,7 @@ unsigned int *GuiGetIcons(void) { return guiIcons; }
 
 // Load raygui icons file (.rgi)
 // NOTE: In case nameIds are required, they can be requested with loadIconsName,
-// they are returned as a guiIconsName[iconsCount][RICON_MAX_NAME_LENGTH],
+// they are returned as a guiIconsName[iconCount][RICON_MAX_NAME_LENGTH],
 // guiIconsName[]][] memory should be manually freed!
 char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 {
@@ -3622,14 +3622,14 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         char signature[5] = "";
         short version = 0;
         short reserved = 0;
-        short iconsCount = 0;
-        short iconsSize = 0;
+        short iconCount = 0;
+        short iconSize = 0;
 
         fread(signature, 1, 4, rgiFile);
         fread(&version, 1, sizeof(short), rgiFile);
         fread(&reserved, 1, sizeof(short), rgiFile);
-        fread(&iconsCount, 1, sizeof(short), rgiFile);
-        fread(&iconsSize, 1, sizeof(short), rgiFile);
+        fread(&iconCount, 1, sizeof(short), rgiFile);
+        fread(&iconSize, 1, sizeof(short), rgiFile);
 
         if ((signature[0] == 'r') &&
             (signature[1] == 'G') &&
@@ -3638,17 +3638,17 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         {
             if (loadIconsName)
             {
-                guiIconsName = (char **)RAYGUI_MALLOC(iconsCount*sizeof(char **));
-                for (int i = 0; i < iconsCount; i++)
+                guiIconsName = (char **)RAYGUI_MALLOC(iconCount*sizeof(char **));
+                for (int i = 0; i < iconCount; i++)
                 {
                     guiIconsName[i] = (char *)RAYGUI_MALLOC(RICON_MAX_NAME_LENGTH);
                     fread(guiIconsName[i], RICON_MAX_NAME_LENGTH, 1, rgiFile);
                 }
             }
-            else fseek(rgiFile, iconsCount*RICON_MAX_NAME_LENGTH, SEEK_CUR);
+            else fseek(rgiFile, iconCount*RICON_MAX_NAME_LENGTH, SEEK_CUR);
 
             // Read icons data directly over guiIcons data array
-            fread(guiIcons, iconsCount*(iconsSize*iconsSize/32), sizeof(unsigned int), rgiFile);
+            fread(guiIcons, iconCount*(iconSize*iconSize/32), sizeof(unsigned int), rgiFile);
         }
 
         fclose(rgiFile);
@@ -4199,29 +4199,29 @@ static int TextToInteger(const char *text)
     return value*sign;
 }
 
-// Encode codepoint into UTF-8 text (char array length returned as parameter)
-static const char *CodepointToUTF8(int codepoint, int *byteLength)
+// Encode codepoint into UTF-8 text (char array size returned as parameter)
+static const char *CodepointToUTF8(int codepoint, int *byteSize)
 {
     static char utf8[6] = { 0 };
-    int length = 0;
+    int size = 0;
 
     if (codepoint <= 0x7f)
     {
         utf8[0] = (char)codepoint;
-        length = 1;
+        size = 1;
     }
     else if (codepoint <= 0x7ff)
     {
         utf8[0] = (char)(((codepoint >> 6) & 0x1f) | 0xc0);
         utf8[1] = (char)((codepoint & 0x3f) | 0x80);
-        length = 2;
+        size = 2;
     }
     else if (codepoint <= 0xffff)
     {
         utf8[0] = (char)(((codepoint >> 12) & 0x0f) | 0xe0);
         utf8[1] = (char)(((codepoint >>  6) & 0x3f) | 0x80);
         utf8[2] = (char)((codepoint & 0x3f) | 0x80);
-        length = 3;
+        size = 3;
     }
     else if (codepoint <= 0x10ffff)
     {
@@ -4229,10 +4229,10 @@ static const char *CodepointToUTF8(int codepoint, int *byteLength)
         utf8[1] = (char)(((codepoint >> 12) & 0x3f) | 0x80);
         utf8[2] = (char)(((codepoint >>  6) & 0x3f) | 0x80);
         utf8[3] = (char)((codepoint & 0x3f) | 0x80);
-        length = 4;
+        size = 4;
     }
 
-    *byteLength = length;
+    *byteSize = size;
 
     return utf8;
 }

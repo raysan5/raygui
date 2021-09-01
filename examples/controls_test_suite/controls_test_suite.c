@@ -127,10 +127,10 @@ int main()
 
         if (IsFileDropped())
         {
-            int dropsCount = 0;
-            char **droppedFiles = GetDroppedFiles(&dropsCount);
+            int dropFileCount = 0;
+            char **droppedFiles = GetDroppedFiles(&dropFileCount);
 
-            if ((dropsCount > 0) && IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
+            if ((dropFileCount > 0) && IsFileExtension(droppedFiles[0], ".rgs")) GuiLoadStyle(droppedFiles[0]);
 
             ClearDroppedFiles();    // Clear internal buffers
         }

@@ -166,7 +166,7 @@ static void DrawTextEx(Font font, const char *text, Vector2 position, float font
 //-------------------------------------------------------------------------------
 // GuiLoadStyle() required functions
 //-------------------------------------------------------------------------------
-static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int charsCount)
+static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount)
 {
     Font font = { 0 };
     
