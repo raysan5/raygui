@@ -2205,10 +2205,10 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     bool pressed = false;
 
     Rectangle textAreaBounds = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.y + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.width - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.height - 2*GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)
+        bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
+        bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
+        bounds.width - 2*(GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)),
+        bounds.height - 2*(GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))
     };
 
     // Cursor position, [x, y] values should be updated
