@@ -1931,6 +1931,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         4,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
     };
+    
+    if (cursor.height > bounds.height) cursor.height = bounds.height - GuiGetStyle(TEXTBOX, BORDER_WIDTH)*2;
 
     // Update control
     //--------------------------------------------------------------------
