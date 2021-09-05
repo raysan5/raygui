@@ -417,6 +417,7 @@ RAYGUIDEF void GuiEnable(void);                                         // Enabl
 RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
 RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
 RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
+RAYGUIDEF bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
 RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 RAYGUIDEF void GuiSetState(int state);                                  // Set gui state (global state)
 RAYGUIDEF int GuiGetState(void);                                        // Get gui state (global state)
@@ -1201,6 +1202,9 @@ void GuiLock(void) { guiLocked = true; }
 
 // Unlock gui global state
 void GuiUnlock(void) { guiLocked = false; }
+
+// Check if gui is locked (global state)
+bool GuiIsLocked(void) { return guiLocked; }
 
 // Set gui controls alpha global state
 void GuiFade(float alpha)
