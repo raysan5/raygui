@@ -47,6 +47,52 @@
 *
 *   It also provides a set of functions for styling the controls based on its properties (size, color).
 *
+*
+*   GUI STYLE (guiStyle):
+*
+*   raygui uses a global data array for all gui style properties (allocated on data segment by default),
+*   when a new style is loaded, it is loaded over the global style... but a default gui style could always be 
+*   recovered with GuiLoadStyleDefault() function, that overwrites the current style to the default one
+*
+*   The global style array size is fixed and depends on the number of controls and properties:
+*
+*       static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)];
+*
+*   guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
+*
+*   Note that the first set of BASE properties (by default guiStyle[0..15]) belong to the generic style
+*   used for all controls, when any of those base values is set, it is automatically populated to all
+*   controls, so, specific control values overwriting generic style should be set after base values.
+*
+*   After the first BASE set we have the EXTENDED properties (by default guiStyle[16..23]), those
+*   properties are actually common to all controls and can not be overwritten individually (like BASE ones)
+*   Some of those properties are: TEXT_SIZE, TEXT_SPACING, LINE_COLOR, BACKGROUND_COLOR
+*
+*   Custom control properties can be defined using the EXTENDED properties for each independent control.
+*
+*   TOOL: rGuiStyler is a visual tool to customize raygui style.
+*
+*
+*   GUI ICONS (guiIcons):
+*
+*   raygui could use a global array containing icons data (allocated on data segment by default),
+*   a custom icons set could be loaded over this array using GuiLoadIcons(), but loaded icons set 
+*   must be same RICON_SIZE and no more than RICON_MAX_ICONS will be loaded
+*
+*   Every icon is codified in binary form, using 1 bit per pixel, so, every 16x16 icon 
+*   requires 8 integers (16*16/32) to be stored in memory.
+*
+*   When the icon is draw, actually one quad per pixel is drawn if the bit for that pixel is set.
+*
+*   The global icons array size is fixed and depends on the number of icons and size:
+*
+*       static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS];
+*
+*   guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
+*
+*   TOOL: rGuiIcons is a visual tool to customize raygui icons.
+*
+*
 *   CONFIGURATION:
 *
 *   #define RAYGUI_IMPLEMENTATION
@@ -69,7 +115,8 @@
 *
 *   VERSIONS HISTORY:
 *
-*       3.0-dev (22-Aug-2021) Integrated ricons data to avoid external file
+*       3.0 (xx-Sep-2021) Integrated ricons data to avoid external file
+*                         REDESIGNED: GuiTextBoxMulti()
 *       2.9 (17-Mar-2021) Removed tooltip API
 *       2.8 (03-May-2020) Centralized rectangles drawing to GuiDrawRectangle()
 *       2.7 (20-Feb-2020) Added possible tooltips API
@@ -95,6 +142,7 @@
 *       1.0 (07-Jun-2016) Converted to header-only by Ramon Santamaria.
 *       0.9 (07-Mar-2016) Reviewed and tested by Albert Martos, Ian Eito, Sergio Martinez and Ramon Santamaria.
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
+*
 *
 *   CONTRIBUTORS:
 *
@@ -264,16 +312,16 @@ typedef enum {
 
 // Gui controls
 typedef enum {
-    DEFAULT = 0,
-    LABEL,          // LABELBUTTON
-    BUTTON,         // IMAGEBUTTON
-    TOGGLE,         // TOGGLEGROUP
-    SLIDER,         // SLIDERBAR
+    DEFAULT = 0,    // Generic control -> populates to all controls when set
+    LABEL,          // Used also for: LABELBUTTON
+    BUTTON,         // Used also for: IMAGEBUTTON
+    TOGGLE,         // Used also for: TOGGLEGROUP
+    SLIDER,         // Used also for: SLIDERBAR
     PROGRESSBAR,
     CHECKBOX,
     COMBOBOX,
     DROPDOWNBOX,
-    TEXTBOX,        // TEXTBOXMULTI
+    TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
     SPINNER,
     LISTVIEW,
@@ -283,6 +331,7 @@ typedef enum {
 } GuiControl;
 
 // Gui base properties for every control
+// NOTE: RAYGUI_MAX_PROPS_BASE properties (by default 16 properties)
 typedef enum {
     BORDER_COLOR_NORMAL = 0,
     BASE_COLOR_NORMAL,
@@ -303,9 +352,10 @@ typedef enum {
 } GuiControlProperty;
 
 // Gui extended properties depend on control
-// NOTE: We reserve a fixed size of additional properties per control
+// NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
 
-// DEFAULT properties
+// DEFAULT extended properties
+// NOTE: Those properties are actually common to all controls
 typedef enum {
     TEXT_SIZE = 16,
     TEXT_SPACING,
@@ -806,9 +856,15 @@ typedef enum {
 } guiIconName;
     
 //----------------------------------------------------------------------------------
-// Icons data (allocated on memory data section by default)
-// NOTE: A new icon set could be loaded over this array using GuiLoadIcons(),
-// just note that loaded icons set must be same RICON_SIZE
+// Icons data for all gui possible icons (allocated on data segment by default)
+//
+// NOTE 1: Every icon is codified in binary form, using 1 bit per pixel, so,
+// every 16x16 icon requires 8 integers (16*16/32) to be stored
+//
+// NOTE 2: A new icon set could be loaded over this array using GuiLoadIcons(),
+// but loaded icons set must be same RICON_SIZE and no more than RICON_MAX_ICONS
+//
+// guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
 //----------------------------------------------------------------------------------
 static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_NONE
@@ -1078,7 +1134,7 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
 #endif
 
 #define RAYGUI_MAX_CONTROLS             16      // Maximum number of standard controls
-#define RAYGUI_MAX_PROPS_DEFAULT        16      // Maximum number of standard properties
+#define RAYGUI_MAX_PROPS_BASE        16      // Maximum number of standard properties
 #define RAYGUI_MAX_PROPS_EXTENDED        8      // Maximum number of extended properties
 
 // TODO: Avoid animations and time-based states
@@ -1100,11 +1156,20 @@ static Font guiFont = { 0 };            // Gui current font (WARNING: highly cou
 static bool guiLocked = false;          // Gui lock state (no inputs processed)
 static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
 
-// Global gui style array (allocated on data segment by default)
-// NOTE: In raygui we manage a single int array with all the possible style properties.
-// When a new style is loaded, it loads over the global style... but default gui style
-// could always be recovered with GuiLoadStyleDefault()
-static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_DEFAULT + RAYGUI_MAX_PROPS_EXTENDED)] = { 0 };
+//----------------------------------------------------------------------------------
+// Style data array for all gui style properties (allocated on data segment by default)
+//
+// NOTE 1: First set of BASE properties are generic to all controls but could be individually
+// overwritten per control, first set of EXTENDED properties are generic to all controls and 
+// can not be overwritten individually but custom EXTENDED properties can be used by control
+//
+// NOTE 2: A new style set could be loaded over this array using GuiLoadStyle(), 
+// but default gui style could always be recovered with GuiLoadStyleDefault()
+//
+// guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
+//----------------------------------------------------------------------------------
+static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)] = { 0 };
+
 static bool guiStyleLoaded = false;     // Style loaded flag for lazy style initialization
 
 //----------------------------------------------------------------------------------
@@ -1247,12 +1312,12 @@ Font GuiGetFont(void)
 void GuiSetStyle(int control, int property, int value)
 {
     if (!guiStyleLoaded) GuiLoadStyleDefault();
-    guiStyle[control*(RAYGUI_MAX_PROPS_DEFAULT + RAYGUI_MAX_PROPS_EXTENDED) + property] = value;
+    guiStyle[control*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED) + property] = value;
 
     // Default properties are propagated to all controls
-    if ((control == 0) && (property < RAYGUI_MAX_PROPS_DEFAULT))
+    if ((control == 0) && (property < RAYGUI_MAX_PROPS_BASE))
     {
-        for (int i = 1; i < RAYGUI_MAX_CONTROLS; i++) guiStyle[i*(RAYGUI_MAX_PROPS_DEFAULT + RAYGUI_MAX_PROPS_EXTENDED) + property] = value;
+        for (int i = 1; i < RAYGUI_MAX_CONTROLS; i++) guiStyle[i*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED) + property] = value;
     }
 }
 
@@ -1260,7 +1325,7 @@ void GuiSetStyle(int control, int property, int value)
 int GuiGetStyle(int control, int property)
 {
     if (!guiStyleLoaded) GuiLoadStyleDefault();
-    return guiStyle[control*(RAYGUI_MAX_PROPS_DEFAULT + RAYGUI_MAX_PROPS_EXTENDED) + property];
+    return guiStyle[control*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED) + property];
 }
 
 //----------------------------------------------------------------------------------
@@ -3403,7 +3468,7 @@ void GuiLoadStyle(const char *fileName)
                     // NOTE: All DEFAULT properties should be defined first in the file
                     GuiSetStyle(0, (int)propertyId, propertyValue);
 
-                    if (propertyId < RAYGUI_MAX_PROPS_DEFAULT) for (int i = 1; i < RAYGUI_MAX_CONTROLS; i++) GuiSetStyle(i, (int)propertyId, propertyValue);
+                    if (propertyId < RAYGUI_MAX_PROPS_BASE) for (int i = 1; i < RAYGUI_MAX_CONTROLS; i++) GuiSetStyle(i, (int)propertyId, propertyValue);
                 }
                 else GuiSetStyle((int)controlId, (int)propertyId, propertyValue);
             }
@@ -3445,7 +3510,7 @@ void GuiLoadStyle(const char *fileName)
 
                     font.texture = LoadTextureFromImage(imFont);
 
-                    UnloadImage(imFont);
+                    RAYGUI_FREE(imFont.data);
                 }
 
                 // Load font recs data
@@ -3590,7 +3655,7 @@ unsigned int *GuiGetIcons(void) { return guiIcons; }
 // Load raygui icons file (.rgi)
 // NOTE: In case nameIds are required, they can be requested with loadIconsName,
 // they are returned as a guiIconsName[iconCount][RICON_MAX_NAME_LENGTH],
-// guiIconsName[]][] memory should be manually freed!
+// WARNING: guiIconsName[]][] memory should be manually freed!
 char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 {
     // Style File Structure (.rgi)
