@@ -2934,7 +2934,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 }
 
 // Color Panel control
-Color GuiColorPanelEx(Rectangle bounds, Color color, float hue)
+Color GuiColorPanel(Rectangle bounds, Color color)
 {
     GuiControlState state = guiState;
     Vector2 pickerSelector = { 0 };
@@ -2945,6 +2945,7 @@ Color GuiColorPanelEx(Rectangle bounds, Color color, float hue)
     pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
 
+    float hue = -1.0f;
     Vector3 maxHue = { hue >= 0.0f ? hue : hsv.x, 1.0f, 1.0f };
     Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
     Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
@@ -3010,11 +3011,6 @@ Color GuiColorPanelEx(Rectangle bounds, Color color, float hue)
     //--------------------------------------------------------------------
 
     return color;
-}
-
-Color GuiColorPanel(Rectangle bounds, Color color)
-{
-    return GuiColorPanelEx(bounds, color, -1.0f);
 }
 
 // Color Bar Alpha control
@@ -3165,6 +3161,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     hsv.x = GuiColorBarHue(boundsHue, hsv.x);
     //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
+    
     color = RAYGUI_CLITERAL(Color){ (unsigned char)roundf(rgb.x*255.0f), (unsigned char)roundf(rgb.y*255.0f), (unsigned char)roundf(rgb.z*255.0f), color.a };
 
     return color;
