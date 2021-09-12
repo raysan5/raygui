@@ -1235,6 +1235,9 @@ static const char **TextSplit(const char *text, char delimiter, int *count);    
 static int TextToInteger(const char *text);         // Get integer value from text
 
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
+
+static int GetCodepoint(const char *text, int *bytesProcessed); // Get next codepoint in a UTF-8 encoded text
+static const char *CodepointToUTF8(int codepoint, int *byteSize); // Encode codepoint into UTF-8 text (char array size returned as parameter)
 //-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
@@ -1252,9 +1255,6 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 static const char **GuiTextSplit(const char *text, int *count, int *textRow);   // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
-
-static const char *CodepointToUTF8(int codepoint, int *byteSize); // Encode codepoint into UTF-8 text (char array size returned as parameter)
-static int GetCodepoint(const char *text, int *bytesProcessed); // Get next codepoint in a UTF-8 encoded text
 
 //----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
