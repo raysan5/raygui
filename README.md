@@ -47,7 +47,7 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 ## raygui icons
 
-`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_ICONS` before including `raygui`.
+`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_RICONS` before including `raygui`.
 
 A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
 
@@ -55,7 +55,7 @@ A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This 
 
 ```c
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_ICONS
+#define RAYGUI_SUPPORT_RICONS
 #include "raygui.h"
 ```
 To use any of those icons in your gui, just preprend *iconId* to any text written within `raygui` controls:
@@ -71,7 +71,7 @@ if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 
 `raygui` is intended to be used as a portable library to be integrated in code form into the target project but some users could require a shared/dynamic version of the library, for example, to create bindings. In that case, `raygui` can be built as a shared library using:
 ```
-mv src/raygui.h src/raygui.c && gcc -shared -fpic -DRAYGUI_SUPPORT_ICONS -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 src/raygui.c -o raygui.so
+mv src/raygui.h src/raygui.c && gcc -shared -fpic -DRAYGUI_SUPPORT_RICONS -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 src/raygui.c -o raygui.so
 ```
 
 license
