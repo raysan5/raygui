@@ -24,7 +24,6 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again

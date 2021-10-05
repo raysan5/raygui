@@ -3,22 +3,21 @@
 *   raygui - portable window
 *
 *   DEPENDENCIES:
-*       raylib 2.1  - Windowing/input management and drawing.
-*       raygui 2.0  - Immediate-mode GUI controls.
+*       raylib 4.0  - Windowing/input management and drawing.
+*       raygui 3.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2021 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
 //------------------------------------------------------------------------------------
@@ -28,8 +27,8 @@ int main()
 {
     // Initialization
     //---------------------------------------------------------------------------------------
-    int screenWidth = 800;
-    int screenHeight = 600;
+    const int screenWidth = 800;
+    const int screenHeight = 600;
     
     SetConfigFlags(FLAG_WINDOW_UNDECORATED);
     InitWindow(screenWidth, screenHeight, "raygui - portable window");

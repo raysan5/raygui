@@ -21,9 +21,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
-
 
 //----------------------------------------------------------------------------------
 // Defines and Macros

@@ -37,10 +37,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
-
-#undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -49,8 +46,8 @@ int main()
 {
     // Initialization
     //---------------------------------------------------------------------------------------
-    int screenWidth = 690;
-    int screenHeight = 560;
+    const int screenWidth = 690;
+    const int screenHeight = 560;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
     SetExitKey(0);
