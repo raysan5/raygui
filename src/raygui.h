@@ -51,7 +51,7 @@
 *   GUI STYLE (guiStyle):
 *
 *   raygui uses a global data array for all gui style properties (allocated on data segment by default),
-*   when a new style is loaded, it is loaded over the global style... but a default gui style could always be 
+*   when a new style is loaded, it is loaded over the global style... but a default gui style could always be
 *   recovered with GuiLoadStyleDefault() function, that overwrites the current style to the default one
 *
 *   The global style array size is fixed and depends on the number of controls and properties:
@@ -76,10 +76,10 @@
 *   GUI ICONS (guiIcons):
 *
 *   raygui could use a global array containing icons data (allocated on data segment by default),
-*   a custom icons set could be loaded over this array using GuiLoadIcons(), but loaded icons set 
+*   a custom icons set could be loaded over this array using GuiLoadIcons(), but loaded icons set
 *   must be same RICON_SIZE and no more than RICON_MAX_ICONS will be loaded
 *
-*   Every icon is codified in binary form, using 1 bit per pixel, so, every 16x16 icon 
+*   Every icon is codified in binary form, using 1 bit per pixel, so, every 16x16 icon
 *   requires 8 integers (16*16/32) to be stored in memory.
 *
 *   When the icon is draw, actually one quad per pixel is drawn if the bit for that pixel is set.
@@ -109,7 +109,7 @@
 *       Avoid including embedded ricons data (256 icons, 16x16 pixels, 1-bit per pixel, 2KB)
 *
 *   #define RAYGUI_CUSTOM_RICONS
-*       Includes custom ricons.h header defining a set of custom icons, 
+*       Includes custom ricons.h header defining a set of custom icons,
 *       this file can be generated using rGuiIcons tool
 *
 *
@@ -575,7 +575,7 @@ RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 
 #define RICONS_IMPLEMENTATION
 #include "ricons.h"         // External icons data provided, it can be generated with rGuiIcons tool
-    
+
 #else   // Embedded raygui icons, no external file provided
 
 #define RICON_SIZE               16       // Size of icons (squared)
@@ -849,7 +849,7 @@ typedef enum {
     RICON_254                      = 254,
     RICON_255                      = 255,
 } guiIconName;
-    
+
 //----------------------------------------------------------------------------------
 // Icons data for all gui possible icons (allocated on data segment by default)
 //
@@ -1155,10 +1155,10 @@ static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
 // Style data array for all gui style properties (allocated on data segment by default)
 //
 // NOTE 1: First set of BASE properties are generic to all controls but could be individually
-// overwritten per control, first set of EXTENDED properties are generic to all controls and 
+// overwritten per control, first set of EXTENDED properties are generic to all controls and
 // can not be overwritten individually but custom EXTENDED properties can be used by control
 //
-// NOTE 2: A new style set could be loaded over this array using GuiLoadStyle(), 
+// NOTE 2: A new style set could be loaded over this array using GuiLoadStyle(),
 // but default gui style could always be recovered with GuiLoadStyleDefault()
 //
 // guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
@@ -1998,7 +1998,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         4,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
     };
-    
+
     if (cursor.height > bounds.height) cursor.height = bounds.height - GuiGetStyle(TEXTBOX, BORDER_WIDTH)*2;
 
     // Update control
@@ -2010,7 +2010,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         if (editMode)
         {
             state = GUI_STATE_PRESSED;
-            
+
             int key = GetCharPressed();      // Returns codepoint as Unicode
             int keyCount = (int)strlen(text);
 
@@ -2076,7 +2076,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
 
     GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-    
+
     // Draw cursor
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     //--------------------------------------------------------------------
@@ -2282,7 +2282,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
     // Cursor position, [x, y] values should be updated
     Rectangle cursor = { 0, -1, 4, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
-    
+
     float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;     // Character rectangle scaling factor
 
     // Update control
@@ -2296,7 +2296,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             state = GUI_STATE_PRESSED;
 
             // We get an Unicode codepoint
-            int codepoint = GetCharPressed();      
+            int codepoint = GetCharPressed();
             int textLength = (int)strlen(text);     // Length in bytes (UTF-8 string)
 
             // Introduce characters
@@ -2333,7 +2333,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                         // Remove latest UTF-8 unicode character introduced (n bytes)
                         int charUTF8Length = 0;
                         while (((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
-                    
+
                         textLength -= (charUTF8Length + 1);
                         text[textLength] = '\0';
                     }
@@ -2372,15 +2372,15 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     //int lastSpacePos = 0;
     //int lastSpaceWidth = 0;
     //int lastSpaceCursorPos = 0;
-    
+
     for (int i = 0, codepointLength = 0; text[i] != '\0'; i += codepointLength)
     {
         int codepoint = GetCodepoint(text + i, &codepointLength);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f) -> TODO: review that case!
         Rectangle atlasRec = guiFont.recs[index];
         GlyphInfo glyphInfo = guiFont.glyphs[index];         // Glyph measures
-        
-        if ((codepointLength == 1) && (codepoint == '\n')) 
+
+        if ((codepointLength == 1) && (codepoint == '\n'))
         {
             cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_PADDING));           // Line feed
             cursorPos.x = textAreaBounds.x;             // Carriage return
@@ -2392,7 +2392,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                 int glyphWidth = 0;
                 if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
                 else glyphWidth += (atlasRec.width + glyphInfo.offsetX);
-            
+
                 // Jump line if the end of the text box area has been reached
                 if ((cursorPos.x + (glyphWidth*scaleFactor)) > (textAreaBounds.x + textAreaBounds.width))
                 {
@@ -2403,7 +2403,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             else if (wrapMode == 2)
             {
                 /*
-                if ((codepointLength == 1) && (codepoint == ' ')) 
+                if ((codepointLength == 1) && (codepoint == ' '))
                 {
                     lastSpacePos = i;
                     lastSpaceWidth = 0;
@@ -2418,14 +2418,14 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
                 */
             }
-            
+
             // Draw current character glyph
             DrawTextCodepoint(guiFont, codepoint, cursorPos, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-            
+
             int glyphWidth = 0;
             if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
             else glyphWidth += (atlasRec.width + glyphInfo.offsetX);
-            
+
             cursorPos.x += (glyphWidth*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
             //if (i > lastSpacePos) lastSpaceWidth += (atlasRec.width + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         }
@@ -2433,7 +2433,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
     cursor.x = cursorPos.x;
     cursor.y = cursorPos.y;
-    
+
     // Draw cursor position considering text glyphs
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     //--------------------------------------------------------------------
@@ -2936,7 +2936,7 @@ Color GuiColorPanel(Rectangle bounds, Color color)
 {
     const Color colWhite = { 255, 255, 255, 255 };
     const Color colBlack = { 0, 0, 0, 255 };
-    
+
     GuiControlState state = guiState;
     Vector2 pickerSelector = { 0 };
 
@@ -3159,7 +3159,7 @@ Color GuiColorPicker(Rectangle bounds, Color color)
     hsv.x = GuiColorBarHue(boundsHue, hsv.x);
     //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
-    
+
     color = RAYGUI_CLITERAL(Color){ (unsigned char)roundf(rgb.x*255.0f), (unsigned char)roundf(rgb.y*255.0f), (unsigned char)roundf(rgb.z*255.0f), color.a };
 
     return color;
@@ -3892,7 +3892,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             // WARNING: If only icon provided, text could be pointing to eof character!
             if ((text != NULL) && (text[0] != '\0')) textWidth += RICON_TEXT_PADDING;
         }
-        
+
         // Check guiTextAlign global variables
         switch (alignment)
         {
