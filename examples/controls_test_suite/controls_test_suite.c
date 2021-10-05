@@ -22,15 +22,15 @@
 *
 *
 *   DEPENDENCIES:
-*       raylib 2.6-dev  - Windowing/input management and drawing.
-*       raygui 2.6-dev  - Immediate-mode GUI controls.
+*       raylib 4.0 - Windowing/input management and drawing.
+*       raygui 3.0 - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2021 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
@@ -145,6 +145,7 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
+            else if (!dropDown000EditMode && !dropDown001EditMode) GuiUnlock();
             //GuiDisable();
 
             // First GUI column
@@ -163,13 +164,13 @@ int main()
             if (GuiButton((Rectangle){ 25, 255, 125, 30 }, GuiIconText(RICON_FILE_SAVE, "Save File"))) showTextInputBox = true;
 
             GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "STATES");
-            GuiLock();
+            //GuiLock();
             GuiSetState(GUI_STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320, 115, 30 }, "NORMAL")) { }
             GuiSetState(GUI_STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355, 115, 30 }, "FOCUSED")) { }
             GuiSetState(GUI_STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "#15#PRESSED")) { }
             GuiSetState(GUI_STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
             GuiSetState(GUI_STATE_NORMAL);
-            GuiUnlock();
+            //GuiUnlock();
 
             comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
 
@@ -228,8 +229,6 @@ int main()
                     strcpy(textInput, "\0");
                 }
             }
-
-            GuiUnlock();
             //----------------------------------------------------------------------------------
 
         EndDrawing();

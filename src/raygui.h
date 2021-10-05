@@ -1895,7 +1895,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemCount > 1))
+    if ((state != GUI_STATE_DISABLED) && (editMode || !guiLocked) && (itemCount > 1))
     {
         Vector2 mousePoint = GetMousePosition();
 
