@@ -105,10 +105,10 @@
 *       internally in the library and input management and drawing functions must be provided by
 *       the user (check library implementation for further details).
 *
-*   #define RAYGUI_SUPPORT_RICONS
-*       Includes embedded ricons data (binary format) and definitions (by default 256 16x16 pixels, 2KB)
+*   #define RAYGUI_NO_RICONS
+*       Avoid including embedded ricons data (256 icons, 16x16 pixels, 1-bit per pixel, 2KB)
 *
-*   #define RAYGUI_SUPPORT_CUSTOM_RICONS
+*   #define RAYGUI_CUSTOM_RICONS
 *       Includes custom ricons.h header defining a set of custom icons, 
 *       this file can be generated using rGuiIcons tool
 *
@@ -187,17 +187,18 @@
     #include "raylib.h"
 #endif
 
-#ifndef RAYGUIDEF
-    #define RAYGUIDEF       // We are building or using rlgl as a static library (or Linux shared library)
+// Functions qualifiers/attributes definition
+#ifndef RAYGUIAPI
+    #define RAYGUIAPI       // We are defining our functions as 'extern' by default (implicit attribute)
 #endif
 
-// Define functions scope to be used internally (static) or externally (extern) to the module including this file
+// Function qualifiers in case library is build/used as a shared library
 #if defined(_WIN32)
-    // Microsoft attibutes to tell compiler that symbols are imported/exported from a .dll
+    // Microsoft attributes to tell compiler that symbols are imported/exported from a .dll
     #if defined(BUILD_LIBTYPE_SHARED)
-        #define RAYGUIDEF __declspec(dllexport)     // We are building raygui as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllexport)     // We are building this library as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
-        #define RAYGUIDEF __declspec(dllimport)     // We are using raygui as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllimport)     // We are using this library as a Win32 shared library (.dll)
     #endif
 #endif
 
@@ -463,87 +464,87 @@ extern "C" {            // Prevents name mangling of functions
 #endif
 
 // Global gui state control functions
-RAYGUIDEF void GuiEnable(void);                                         // Enable gui controls (global state)
-RAYGUIDEF void GuiDisable(void);                                        // Disable gui controls (global state)
-RAYGUIDEF void GuiLock(void);                                           // Lock gui controls (global state)
-RAYGUIDEF void GuiUnlock(void);                                         // Unlock gui controls (global state)
-RAYGUIDEF bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
-RAYGUIDEF void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
-RAYGUIDEF void GuiSetState(int state);                                  // Set gui state (global state)
-RAYGUIDEF int GuiGetState(void);                                        // Get gui state (global state)
+RAYGUIAPI void GuiEnable(void);                                         // Enable gui controls (global state)
+RAYGUIAPI void GuiDisable(void);                                        // Disable gui controls (global state)
+RAYGUIAPI void GuiLock(void);                                           // Lock gui controls (global state)
+RAYGUIAPI void GuiUnlock(void);                                         // Unlock gui controls (global state)
+RAYGUIAPI bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
+RAYGUIAPI void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
+RAYGUIAPI void GuiSetState(int state);                                  // Set gui state (global state)
+RAYGUIAPI int GuiGetState(void);                                        // Get gui state (global state)
 
 // Font set/get functions
-RAYGUIDEF void GuiSetFont(Font font);                                   // Set gui custom font (global state)
-RAYGUIDEF Font GuiGetFont(void);                                        // Get gui custom font (global state)
+RAYGUIAPI void GuiSetFont(Font font);                                   // Set gui custom font (global state)
+RAYGUIAPI Font GuiGetFont(void);                                        // Get gui custom font (global state)
 
 // Style set/get functions
-RAYGUIDEF void GuiSetStyle(int control, int property, int value);       // Set one style property
-RAYGUIDEF int GuiGetStyle(int control, int property);                   // Get one style property
+RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set one style property
+RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
 
 // Container/separator controls, useful for controls organization
-RAYGUIDEF bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
-RAYGUIDEF void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
-RAYGUIDEF void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
-RAYGUIDEF void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
-RAYGUIDEF Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll);               // Scroll Panel control
+RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
+RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
+RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
+RAYGUIAPI void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
+RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll);               // Scroll Panel control
 
 // Basic controls set
-RAYGUIDEF void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
-RAYGUIDEF bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
-RAYGUIDEF bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
-RAYGUIDEF bool GuiImageButton(Rectangle bounds, const char *text, Texture2D texture);                   // Image button control, returns true when clicked
-RAYGUIDEF bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);    // Image button extended control, returns true when clicked
-RAYGUIDEF bool GuiToggle(Rectangle bounds, const char *text, bool active);                              // Toggle Button control, returns true when active
-RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
-RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
-RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
-RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
-RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
-RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
-RAYGUIDEF bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
-RAYGUIDEF float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
-RAYGUIDEF float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
-RAYGUIDEF float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
-RAYGUIDEF void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
-RAYGUIDEF void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
-RAYGUIDEF int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
-RAYGUIDEF Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid control
+RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
+RAYGUIAPI bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+RAYGUIAPI bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
+RAYGUIAPI bool GuiImageButton(Rectangle bounds, const char *text, Texture2D texture);                   // Image button control, returns true when clicked
+RAYGUIAPI bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource);    // Image button extended control, returns true when clicked
+RAYGUIAPI bool GuiToggle(Rectangle bounds, const char *text, bool active);                              // Toggle Button control, returns true when active
+RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
+RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
+RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
+RAYGUIAPI bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
+RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
+RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
+RAYGUIAPI bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
+RAYGUIAPI bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
+RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
+RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
+RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
+RAYGUIAPI void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
+RAYGUIAPI void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
+RAYGUIAPI int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
+RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid control
 
 
 // Advance controls set
-RAYGUIDEF int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
-RAYGUIDEF int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
-RAYGUIDEF int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
-RAYGUIDEF int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text);   // Text Input Box control, ask for text
-RAYGUIDEF Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control (multiple color controls)
-RAYGUIDEF Color GuiColorPanel(Rectangle bounds, Color color);                                           // Color Panel control
-RAYGUIDEF float GuiColorBarAlpha(Rectangle bounds, float alpha);                                        // Color Bar Alpha control
-RAYGUIDEF float GuiColorBarHue(Rectangle bounds, float value);                                          // Color Bar Hue control
+RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
+RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
+RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
+RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text);   // Text Input Box control, ask for text
+RAYGUIAPI Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control (multiple color controls)
+RAYGUIAPI Color GuiColorPanel(Rectangle bounds, Color color);                                           // Color Panel control
+RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, float alpha);                                        // Color Bar Alpha control
+RAYGUIAPI float GuiColorBarHue(Rectangle bounds, float value);                                          // Color Bar Hue control
 
 // Styles loading functions
-RAYGUIDEF void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
-RAYGUIDEF void GuiLoadStyleDefault(void);                       // Load style default over global style
+RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
+RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
 
 /*
 typedef GuiStyle (unsigned int *)
-RAYGUIDEF GuiStyle LoadGuiStyle(const char *fileName);          // Load style from file (.rgs)
-RAYGUIDEF void UnloadGuiStyle(GuiStyle style);                  // Unload style
+RAYGUIAPI GuiStyle LoadGuiStyle(const char *fileName);          // Load style from file (.rgs)
+RAYGUIAPI void UnloadGuiStyle(GuiStyle style);                  // Unload style
 */
 
-RAYGUIDEF const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
+RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if !defined(RAYGUI_NO_RICONS)
 // Gui icons functionality
-RAYGUIDEF void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
+RAYGUIAPI void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
 
-RAYGUIDEF unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
-RAYGUIDEF unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
-RAYGUIDEF void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit data
+RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
+RAYGUIAPI unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
+RAYGUIAPI void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit data
 
-RAYGUIDEF void GuiSetIconPixel(int iconId, int x, int y);       // Set icon pixel value
-RAYGUIDEF void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pixel value
-RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
+RAYGUIAPI void GuiSetIconPixel(int iconId, int x, int y);       // Set icon pixel value
+RAYGUIAPI void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pixel value
+RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
 #endif
 
 #if defined(__cplusplus)
@@ -574,9 +575,9 @@ RAYGUIDEF bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
     #define RAYGUI_CLITERAL(name) (name)
 #endif
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if !defined(RAYGUI_NO_RICONS)
 
-#if defined(RAYGUI_SUPPORT_CUSTOM_RICONS)
+#if defined(RAYGUI_CUSTOM_RICONS)
 
 #define RICONS_IMPLEMENTATION
 #include "ricons.h"         // External icons data provided, it can be generated with rGuiIcons tool
@@ -1125,9 +1126,9 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_255
 };
 
-#endif      // RAYGUI_SUPPORT_CUSTOM_RICONS
+#endif      // RAYGUI_CUSTOM_RICONS
 
-#endif      // RAYGUI_SUPPORT_RICONS
+#endif      // !RAYGUI_NO_RICONS
 
 #ifndef RICON_SIZE
     #define RICON_SIZE                   0
@@ -1369,10 +1370,10 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
     int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-#if defined(RAYGUI_SUPPORT_RICONS)
-    clicked = GuiButton(closeButtonRec, GuiIconText(RICON_CROSS_SMALL, NULL));
-#else
+#if defined(RAYGUI_NO_RICONS)
     clicked = GuiButton(closeButtonRec, "x");
+#else
+    clicked = GuiButton(closeButtonRec, GuiIconText(RICON_CROSS_SMALL, NULL));
 #endif
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
@@ -2145,12 +2146,12 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_SUPPORT_RICONS)
-    if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
-    if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
-#else
+#if defined(RAYGUI_NO_RICONS)
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
+#else
+    if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
+    if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
 #endif
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
@@ -3626,7 +3627,9 @@ void GuiLoadStyleDefault(void)
 // a number that can change between ricon versions
 const char *GuiIconText(int iconId, const char *text)
 {
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if defined(RAYGUI_NO_RICONS)
+    return NULL;
+#else
     static char buffer[1024] = { 0 };
     memset(buffer, 0, 1024);
 
@@ -3642,12 +3645,10 @@ const char *GuiIconText(int iconId, const char *text)
     }
 
     return buffer;
-#else
-    return NULL;
 #endif
 }
 
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if !defined(RAYGUI_NO_RICONS)
 
 // Get full icons data pointer
 unsigned int *GuiGetIcons(void) { return guiIcons; }
@@ -3793,7 +3794,7 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 
     return (BIT_CHECK(guiIcons[iconId*8 + y/2], x + (y%2*16)));
 }
-#endif      // RAYGUI_SUPPORT_RICONS
+#endif      // !RAYGUI_NO_RICONS
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
@@ -3842,7 +3843,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 // NOTE: We support up to 999 values for iconId
 static const char *GetTextIcon(const char *text, int *iconId)
 {
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if !defined(RAYGUI_NO_RICONS)
     *iconId = -1;
     if (text[0] == '#')     // Maybe we have an icon!
     {
@@ -3927,7 +3928,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Draw text (with icon if available)
         //---------------------------------------------------------------------------------
-#if defined(RAYGUI_SUPPORT_RICONS)
+#if !defined(RAYGUI_NO_RICONS)
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
