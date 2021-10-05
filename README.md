@@ -53,25 +53,19 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 ## raygui icons
 
-`raygui` supports custom icons provided as an external array of data. To support icons just define `RAYGUI_SUPPORT_RICONS` before including `raygui`.
-
-A set of custom handcrafted icons is provided in [`ricons`](src/ricons.h). This set of icons can be created and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
+`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains 256 icons defined as 16x16 pixels each and each pixel is codified using 1-bit. The total size of the array is `2048 bytes`.
 
 <img align="right" src="images/raygui_ricons.png">
 
-```c
-#define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
-#include "raygui.h"
-```
-To use any of those icons in your gui, just preprend *iconId* to any text written within `raygui` controls:
+To use any of those icons, it's as easy as prefix the *#iconId#* number to **any text** written within a `raygui` controls:
 ```c
 if (GuiButton(rec, "#05#Open Image")) { /* ACTION */ }
 ```
-or use the provided `GuiIconText()` function to prepend it automatically, using a clearer identifier.
+It's also possible to use the provided `GuiIconText()` function to prefix it automatically, using a clearer identifier.
 ```c
 if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 ```
+Provided set of icons can be reviewed and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
 
 ## raygui support tools
 
