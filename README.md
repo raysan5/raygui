@@ -75,29 +75,32 @@ if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 
 ## raygui support tools
 
-### [rGuiStyler](https://raylibtech.itch.io/rguistyler)
+ - [**rGuiStyler**](https://raylibtech.itch.io/rguistyler) - A simple and easy-to-use raygui styles editor.
 
-A simple and easy-to-use raygui styles editor.
+   ![rGuiStyler v3.1](images/rguistyler_v300.png)
 
-![rGuiStyler v3.1](images/rguistyler_v300.png)
+ - [**rGuiIcons**](https://raylibtech.itch.io/rguiicons) - A simple and easy-to-use raygui icons editor.
 
-### [rGuiIcons](https://raylibtech.itch.io/rguiicons)
+   ![rGuiIcons v1.0](images/rguiicons_v100.png)
 
-A simple and easy-to-use raygui icons editor.
+ - [**rGuiLayout**](https://raylibtech.itch.io/rguilayout) - A simple and easy-to-use raygui layouts editor.
 
-![rGuiIcons v1.0](images/rguiicons_v100.png)
-
-### [rGuiLayout](https://raylibtech.itch.io/rguilayout)
-
-A simple and easy-to-use raygui layouts editor.
-
-![rGuiLayout v2.2](images/rguilayout_v220.png)
+   ![rGuiLayout v2.2](images/rguilayout_v220.png)
 
 ## building
 
-`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebas but some users could require a shared/dynamic version of the library, for example, to create bindings. In that case, `raygui` can be built as a (Linux) shared library using:
+`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebas but some users could require a shared/dynamic version of the library, for example, to create bindings. `raygui` can be built as a (Linux) shared library using:
+
+ - **Windows (MinGW, GCC)**
 ```
-mv src/raygui.h src/raygui.c && gcc -shared -fpic -DRAYGUI_SUPPORT_RICONS -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 src/raygui.c -o raygui.so
+copy src/raylib.h src/raylib.c
+gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTYPE_SHARED -static-libgcc -lopengl32 -lgdi32 -lwinmm -Wl,--out-implib,src/librayguidll.a
+```
+
+ - **Linux (GCC)**
+```
+mv src/raygui.h src/raygui.c
+gcc -o raygui.so src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ```
 
 ## license
