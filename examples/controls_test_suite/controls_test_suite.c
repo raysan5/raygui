@@ -39,6 +39,8 @@
 #define RAYGUI_IMPLEMENTATION
 #include "../../src/raygui.h"
 
+#include <string.h>             // Required for: strcpy()
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------

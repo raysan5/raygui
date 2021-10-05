@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.0-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.0 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -159,7 +159,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2021 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -181,29 +181,25 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "3.0-dev"
+#define RAYGUI_VERSION  "3.0"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
 #endif
 
-// Functions qualifiers/attributes definition
+// Function specifiers definition
 #ifndef RAYGUIAPI
-    #define RAYGUIAPI       // We are defining our functions as 'extern' by default (implicit attribute)
+    #define RAYGUIAPI       // Functions defined as 'extern' by default (implicit specifiers)
 #endif
 
-// Function qualifiers in case library is build/used as a shared library
+// Function specifiers in case library is build/used as a shared library (Windows)
+// NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
-    // Microsoft attributes to tell compiler that symbols are imported/exported from a .dll
     #if defined(BUILD_LIBTYPE_SHARED)
-        #define RAYGUIAPI __declspec(dllexport)     // We are building this library as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllexport)     // We are building the library as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
-        #define RAYGUIAPI __declspec(dllimport)     // We are using this library as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllimport)     // We are using the library as a Win32 shared library (.dll)
     #endif
-#endif
-
-#if !defined(RAYGUI_MALLOC) && !defined(RAYGUI_CALLOC) && !defined(RAYGUI_FREE)
-    #include <stdlib.h>                 // Required for: malloc(), calloc(), free()
 #endif
 
 // Allow custom memory allocators
@@ -561,13 +557,11 @@ RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
-#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf()
-#include <string.h>             // Required for: strlen() [GuiTextBox()]
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
+#include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
+#include <string.h>             // Required for: strlen() [GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()], memset(), memcpy()
+#include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
 #include <math.h>               // Required for: roundf() [GuiColorPicker()]
-
-#if defined(RAYGUI_STANDALONE)
-    #include <stdarg.h>         // Required for: va_list, va_start(), vfprintf(), va_end()
-#endif
 
 #ifdef __cplusplus
     #define RAYGUI_CLITERAL(name) name
