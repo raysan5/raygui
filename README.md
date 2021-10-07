@@ -9,16 +9,15 @@
 `raygui` is intended for **tools development**; it has already been used to develop [multiple publised tools](https://raylibtech.itch.io/rguiicons).
 
 <br>
-<br>
 
 ## features
 
- - Immediate-mode gui, no retained data
- - +28 basic and advance controls provided
- - Powerful styling system for colors, font and metrics
+ - **Immediate-mode** gui, no retained data
+ - **+28** basic and advance controls provided
+ - Powerful **styling system** for colors, font and metrics
  - Standalone usage mode supported (for other graphic libs)
- - Icons support, embedding a complete 1-bit icons pack
- - Multiple tools provided for raygui development
+ - **Icons support**, embedding a complete 1-bit icons pack
+ - Multiple **tools** provided for raygui development
 
 ## raygui controls
 
