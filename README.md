@@ -52,15 +52,15 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 ## raygui icons
 
-`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains 256 icons defined as 16x16 pixels each and each pixel is codified using 1-bit. The total size of the array is `2048 bytes`.
+`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains **256 possible icons** defined as **16x16 pixels** each; each pixel is codified using **1-bit**. The total size of the array is `2048 bytes`.
 
 <img align="right" src="images/raygui_ricons.png">
 
-To use any of those icons, it's as easy as prefix the *#iconId#* number to **any text** written within a `raygui` controls:
+To use any of those icons just prefix the *#iconId#* number to **any text** written within `raygui` controls:
 ```c
 if (GuiButton(rec, "#05#Open Image")) { /* ACTION */ }
 ```
-It's also possible to use the provided `GuiIconText()` function to prefix it automatically, using a clearer identifier.
+It's also possible to use the provided `GuiIconText()` function to prefix it automatically, using a clearer identifier (defined in `raygui.h`).
 ```c
 if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 ```
@@ -82,7 +82,7 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
 ## building
 
-`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebas but some users could require a shared/dynamic version of the library, for example, to create bindings. `raygui` can be built as a (Linux) shared library using:
+`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebase but some users could require a shared/dynamic version of the library, for example, to create bindings:
 
  - **Windows (MinGW, GCC)**
 ```
