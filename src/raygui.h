@@ -187,11 +187,6 @@
     #include "raylib.h"
 #endif
 
-// Function specifiers definition
-#ifndef RAYGUIAPI
-    #define RAYGUIAPI       // Functions defined as 'extern' by default (implicit specifiers)
-#endif
-
 // Function specifiers in case library is build/used as a shared library (Windows)
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
@@ -201,6 +196,15 @@
         #define RAYGUIAPI __declspec(dllimport)     // We are using the library as a Win32 shared library (.dll)
     #endif
 #endif
+
+// Function specifiers definition
+#ifndef RAYGUIAPI
+    #define RAYGUIAPI       // Functions defined as 'extern' by default (implicit specifiers)
+#endif
+
+//----------------------------------------------------------------------------------
+// Defines and Macros
+//----------------------------------------------------------------------------------
 
 // Allow custom memory allocators
 #ifndef RAYGUI_MALLOC
@@ -213,6 +217,8 @@
     #define RAYGUI_FREE(p)          free(p)
 #endif
 
+// TODO: Implement custom TraceLog()
+#define TRACELOG(level, ...) (void)0
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
