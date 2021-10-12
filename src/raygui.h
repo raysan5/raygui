@@ -1135,12 +1135,8 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
 #endif
 
 #define RAYGUI_MAX_CONTROLS             16      // Maximum number of standard controls
-#define RAYGUI_MAX_PROPS_BASE        16      // Maximum number of standard properties
+#define RAYGUI_MAX_PROPS_BASE           16      // Maximum number of standard properties
 #define RAYGUI_MAX_PROPS_EXTENDED        8      // Maximum number of extended properties
-
-// TODO: Avoid animations and time-based states
-// Functions using it: GuiTextBox(), GuiValueBox(), GuiTextBoxMulti()
-//#define TEXTEDIT_CURSOR_BLINK_FRAMES    20      // Text edit controls cursor blink timming
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -1415,7 +1411,7 @@ void GuiLine(Rectangle bounds, const char *text)
     else
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(text);      // TODO: Consider text icon
+        textBounds.width = (float)GetTextWidth(text);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + LINE_TEXT_PADDING;
         textBounds.y = bounds.y - (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -1471,7 +1467,6 @@ Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
     if (view.width > content.width) view.width = content.width;
     if (view.height > content.height) view.height = content.height;
 
-    // TODO: Review!
     const float horizontalMin = hasHorizontalScrollBar? ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH) : (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH);
     const float horizontalMax = hasHorizontalScrollBar? content.width - bounds.width + (float)verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH) - (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)verticalScrollBarWidth : 0) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
     const float verticalMin = hasVerticalScrollBar? (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
@@ -1977,7 +1972,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
         }
     }
 
-    // TODO: Avoid this function, use icon instead or 'v'
+    // TODO: Avoid DrawTriangle(), use icon or 'v' text instead
     DrawTriangle(RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2 },
                  RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
                  RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING) + 10, bounds.y + bounds.height/2 - 2 },
@@ -2382,14 +2377,14 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     for (int i = 0, codepointLength = 0; text[i] != '\0'; i += codepointLength)
     {
         int codepoint = GetCodepoint(text + i, &codepointLength);
-        int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f) -> TODO: review that case!
+        int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
         Rectangle atlasRec = guiFont.recs[index];
-        GlyphInfo glyphInfo = guiFont.glyphs[index];         // Glyph measures
+        GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
 
         if ((codepointLength == 1) && (codepoint == '\n'))
         {
-            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_PADDING));           // Line feed
-            cursorPos.x = textAreaBounds.x;             // Carriage return
+            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_PADDING));   // Line feed
+            cursorPos.x = textAreaBounds.x;                 // Carriage return
         }
         else
         {
@@ -2518,7 +2513,7 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
     if (textLeft != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textLeft);  // TODO: Consider text icon
+        textBounds.width = (float)GetTextWidth(textLeft);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -2529,7 +2524,7 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
     if (textRight != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textRight);  // TODO: Consider text icon
+        textBounds.width = (float)GetTextWidth(textRight);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -2579,7 +2574,7 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
     if (textLeft != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textLeft);  // TODO: Consider text icon
+        textBounds.width = (float)GetTextWidth(textLeft);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x - textBounds.width - GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -2590,7 +2585,7 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
     if (textRight != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textRight);  // TODO: Consider text icon
+        textBounds.width = (float)GetTextWidth(textRight);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(PROGRESSBAR, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -2643,7 +2638,6 @@ void GuiDummyRec(Rectangle bounds, const char *text)
 }
 
 // Scroll Bar control
-// TODO: I feel GuiScrollBar could be simplified...
 int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 {
     GuiControlState state = guiState;
@@ -3081,7 +3075,11 @@ float GuiColorBarAlpha(Rectangle bounds, float alpha)
 }
 
 // Color Bar Hue control
-// NOTE: Returns hue value normalized [0..1]
+// Returns hue value normalized [0..1]
+// NOTE: Other similar bars (for reference):
+//      Color GuiColorBarSat() [WHITE->color]
+//      Color GuiColorBarValue() [BLACK->color], HSV/HSL
+//      float GuiColorBarLuminance() [BLACK->WHITE]
 float GuiColorBarHue(Rectangle bounds, float hue)
 {
     GuiControlState state = guiState;
@@ -3143,10 +3141,6 @@ float GuiColorBarHue(Rectangle bounds, float hue)
 
     return hue;
 }
-
-// TODO: Color GuiColorBarSat() [WHITE->color]
-// TODO: Color GuiColorBarValue() [BLACK->color], HSV/HSL
-// TODO: float GuiColorBarLuminance() [BLACK->WHITE]
 
 // Color Picker control
 // NOTE: It's divided in multiple controls:
@@ -3475,7 +3469,6 @@ void GuiLoadStyle(const char *fileName)
             }
 
             // Font loading is highly dependant on raylib API to load font data and image
-            // TODO: Find some mechanism to support it in standalone mode
 #if !defined(RAYGUI_STANDALONE)
             // Load custom font if available
             int fontDataSize = 0;
@@ -3834,7 +3827,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     }
 
     // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
-    // More special cases (label side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
+    // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
 
     return textBounds;
 }
@@ -3958,9 +3951,6 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, borderColor);
         DrawRectangle((int)rec.x, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width, borderWidth, borderColor);
     }
-
-    // TODO: For n-patch-based style we would need: [state] and maybe [control]
-    // In this case all controls drawing logic should be moved to this function... I don't like it...
 }
 
 // Split controls text into multiple strings
@@ -4312,7 +4302,6 @@ static const char *CodepointToUTF8(int codepoint, int *byteSize)
 // Total number of bytes processed are returned as a parameter
 // NOTE: the standard says U+FFFD should be returned in case of errors
 // but that character is not supported by the default font in raylib
-// TODO: Optimize this code for speed!!
 static int GetCodepoint(const char *text, int *bytesProcessed)
 {
 /*
