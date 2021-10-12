@@ -23,7 +23,7 @@
 
 ### basic controls
 ```
-Label       |  Button      |  LabelButton |  ImageButton  |  Toggle      |  ToggleGroup |  CheckBox
+Label       |  Button      |  LabelButton |  Toggle       |  ToggleGroup |  CheckBox
 ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner     |  Slider
 SliderBar   |  ProgressBar |  StatusBar   |  ScrollBar    |  ScrollPanel |  DummyRec    |  Grid
 ```
