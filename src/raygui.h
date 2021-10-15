@@ -261,7 +261,7 @@
         float height;
     } Rectangle;
 
-    // TODO: Texture2D type is very coupled to raylib, mostly required by GuiImageButton()
+    // TODO: Texture2D type is very coupled to raylib, required by Font type
     // It should be redesigned to be provided by user
     typedef struct Texture2D {
         unsigned int id;        // OpenGL texture id
@@ -317,7 +317,7 @@ typedef enum {
 typedef enum {
     DEFAULT = 0,    // Generic control -> populates to all controls when set
     LABEL,          // Used also for: LABELBUTTON
-    BUTTON,         // Used also for: IMAGEBUTTON
+    BUTTON,
     TOGGLE,         // Used also for: TOGGLEGROUP
     SLIDER,         // Used also for: SLIDERBAR
     PROGRESSBAR,
@@ -1210,6 +1210,9 @@ static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color);      
 // Text required functions
 //-------------------------------------------------------------------------------
 static Font GetFontDefault(void);                           // -- GuiLoadStyleDefault()
+static Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
+static void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
+
 static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);                          // -- GetTextWidth(), GuiTextBoxMulti()
 static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 
@@ -4157,7 +4160,6 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 
 #define TEXTSPLIT_MAX_TEXT_BUFFER_LENGTH    1024        // Size of static buffer: TextSplit()
 #define TEXTSPLIT_MAX_SUBSTRINGS_COUNT       128        // Size of static pointers array: TextSplit()
-
 
 // Split string into multiple strings
 const char **TextSplit(const char *text, char delimiter, int *count)
