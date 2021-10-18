@@ -116,6 +116,7 @@
 *       3.0 (xx-Sep-2021) Integrated ricons data to avoid external file
 *                         REDESIGNED: GuiTextBoxMulti()
 *                         REMOVED: GuiImageButton*()
+*                         Multiple minor tweaks and bugs corrected
 *       2.9 (17-Mar-2021) REMOVED: Tooltip API
 *       2.8 (03-May-2020) Centralized rectangles drawing to GuiDrawRectangle()
 *       2.7 (20-Feb-2020) ADDED: Possible tooltips API
@@ -238,7 +239,7 @@
         float y;
     } Vector2;
 
-    // Vector3 type
+    // Vector3 type                 // -- ConvertHSVtoRGB(), ConvertRGBtoHSV()
     typedef struct Vector3 {
         float x;
         float y;
@@ -536,7 +537,7 @@ RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text wit
 
 #if !defined(RAYGUI_NO_RICONS)
 // Gui icons functionality
-RAYGUIAPI void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color);
+RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
 
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
 RAYGUIAPI unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
@@ -712,12 +713,12 @@ typedef enum {
     RICON_CROSS                    = 113,
     RICON_ARROW_LEFT               = 114,
     RICON_ARROW_RIGHT              = 115,
-    RICON_ARROW_BOTTOM             = 116,
-    RICON_ARROW_TOP                = 117,
+    RICON_ARROW_DOWN               = 116,
+    RICON_ARROW_UP                 = 117,
     RICON_ARROW_LEFT_FILL          = 118,
     RICON_ARROW_RIGHT_FILL         = 119,
-    RICON_ARROW_BOTTOM_FILL        = 120,
-    RICON_ARROW_TOP_FILL           = 121,
+    RICON_ARROW_DOWN_FILL          = 120,
+    RICON_ARROW_UP_FILL            = 121,
     RICON_AUDIO                    = 122,
     RICON_FX                       = 123,
     RICON_WAVE                     = 124,
@@ -982,12 +983,12 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x10080000, 0x04200810, 0x01800240, 0x02400180, 0x08100420, 0x00001008, 0x00000000,     // RICON_CROSS
     0x00000000, 0x02000000, 0x00800100, 0x00200040, 0x00200010, 0x00800040, 0x02000100, 0x00000000,     // RICON_ARROW_LEFT
     0x00000000, 0x00400000, 0x01000080, 0x04000200, 0x04000800, 0x01000200, 0x00400080, 0x00000000,     // RICON_ARROW_RIGHT
-    0x00000000, 0x00000000, 0x00000000, 0x08081004, 0x02200410, 0x00800140, 0x00000000, 0x00000000,     // RICON_ARROW_BOTTOM
-    0x00000000, 0x00000000, 0x01400080, 0x04100220, 0x10040808, 0x00000000, 0x00000000, 0x00000000,     // RICON_ARROW_TOP
+    0x00000000, 0x00000000, 0x00000000, 0x08081004, 0x02200410, 0x00800140, 0x00000000, 0x00000000,     // RICON_ARROW_DOWN
+    0x00000000, 0x00000000, 0x01400080, 0x04100220, 0x10040808, 0x00000000, 0x00000000, 0x00000000,     // RICON_ARROW_UP
     0x00000000, 0x02000000, 0x03800300, 0x03e003c0, 0x03e003f0, 0x038003c0, 0x02000300, 0x00000000,     // RICON_ARROW_LEFT_FILL
     0x00000000, 0x00400000, 0x01c000c0, 0x07c003c0, 0x07c00fc0, 0x01c003c0, 0x004000c0, 0x00000000,     // RICON_ARROW_RIGHT_FILL
-    0x00000000, 0x00000000, 0x00000000, 0x0ff81ffc, 0x03e007f0, 0x008001c0, 0x00000000, 0x00000000,     // RICON_ARROW_BOTTOM_FILL
-    0x00000000, 0x00000000, 0x01c00080, 0x07f003e0, 0x1ffc0ff8, 0x00000000, 0x00000000, 0x00000000,     // RICON_ARROW_TOP_FILL
+    0x00000000, 0x00000000, 0x00000000, 0x0ff81ffc, 0x03e007f0, 0x008001c0, 0x00000000, 0x00000000,     // RICON_ARROW_DOWN_FILL
+    0x00000000, 0x00000000, 0x01c00080, 0x07f003e0, 0x1ffc0ff8, 0x00000000, 0x00000000, 0x00000000,     // RICON_ARROW_UP_FILL
     0x00000000, 0x18a008c0, 0x32881290, 0x24822686, 0x26862482, 0x12903288, 0x08c018a0, 0x00000000,     // RICON_AUDIO
     0x00000000, 0x04800780, 0x004000c0, 0x662000f0, 0x08103c30, 0x130a0e18, 0x0000318e, 0x00000000,     // RICON_FX
     0x00000000, 0x00800000, 0x08880888, 0x2aaa0a8a, 0x0a8a2aaa, 0x08880888, 0x00000080, 0x00000000,     // RICON_WAVE
@@ -1187,7 +1188,7 @@ static bool guiStyleLoaded = false;     // Style loaded flag for lazy style init
 // Input required functions
 //-------------------------------------------------------------------------------
 static Vector2 GetMousePosition(void);
-static int GetMouseWheelMove(void);
+static float GetMouseWheelMove(void);
 static bool IsMouseButtonDown(int button);
 static bool IsMouseButtonPressed(int button);
 static bool IsMouseButtonReleased(int button);
@@ -1201,24 +1202,20 @@ static int GetCharPressed(void);         // -- GuiTextBox(), GuiTextBoxMulti(), 
 //-------------------------------------------------------------------------------
 static void DrawRectangle(int x, int y, int width, int height, Color color);        // -- GuiDrawRectangle(), GuiDrawIcon()
 
-static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4);     // -- GuiColorPicker()
-static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color);                              // -- GuiDropdownBox(), GuiScrollBar()
-
-//static void DrawTextBoxed(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint); // -- GuiTextBoxMulti()
+static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4); // -- GuiColorPicker()
 //-------------------------------------------------------------------------------
 
 // Text required functions
 //-------------------------------------------------------------------------------
+static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount); // -- GuiLoadStyle()
 static Font GetFontDefault(void);                           // -- GuiLoadStyleDefault()
 static Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
 static void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
-
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);                          // -- GetTextWidth(), GuiTextBoxMulti()
-static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
-
-static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount);  // -- GuiLoadStyle()
 static char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
 static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
+
+static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);   // -- GetTextWidth(), GuiTextBoxMulti()
+static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 //-------------------------------------------------------------------------------
 
 // raylib functions already implemented in raygui
@@ -1230,11 +1227,10 @@ static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if 
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
+static int GetCodepoint(const char *text, int *bytesProcessed);     // Get next codepoint in a UTF-8 encoded text
+static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
 
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
-
-static int GetCodepoint(const char *text, int *bytesProcessed); // Get next codepoint in a UTF-8 encoded text
-static const char *CodepointToUTF8(int codepoint, int *byteSize); // Encode codepoint into UTF-8 text (char array size returned as parameter)
 //-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
@@ -1932,15 +1928,15 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
             else GuiDrawText(items[i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT_COLOR_NORMAL)), guiAlpha));
         }
     }
-
-    // TODO: Avoid DrawTriangle(), use icon or 'v' text instead
-    DrawTriangle(RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2 },
-                 RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING) + 5, bounds.y + bounds.height/2 - 2 + 5 },
-                 RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING) + 10, bounds.y + bounds.height/2 - 2 },
-                 Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
-
-    //GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
-    //            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+    
+    // Draw arrows (using icon if available)
+#if defined(RAYGUI_NO_RICONS)
+    GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
+                GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+#else
+    GuiDrawText("#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
+                GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));   // RICON_ARROW_DOWN_FILL
+#endif
     //--------------------------------------------------------------------
 
     *active = itemSelected;
@@ -2693,45 +2689,20 @@ int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
     GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
 
-    // Draw arrows
-    const int padding = (spinnerSize - GuiGetStyle(SCROLLBAR, ARROWS_SIZE))/2;
-    const Vector2 lineCoords[] =
-    {
-        // Coordinates for <     0,1,2
-        { arrowUpLeft.x + padding, arrowUpLeft.y + spinnerSize/2 },
-        { arrowUpLeft.x + spinnerSize - padding, arrowUpLeft.y + padding },
-        { arrowUpLeft.x + spinnerSize - padding, arrowUpLeft.y + spinnerSize - padding },
-
-        // Coordinates for >     3,4,5
-        { arrowDownRight.x + padding, arrowDownRight.y + padding },
-        { arrowDownRight.x + spinnerSize - padding, arrowDownRight.y + spinnerSize/2 },
-        { arrowDownRight.x + padding, arrowDownRight.y + spinnerSize - padding },
-
-        // Coordinates for ∧     6,7,8
-        { arrowUpLeft.x + spinnerSize/2, arrowUpLeft.y + padding },
-        { arrowUpLeft.x + padding, arrowUpLeft.y + spinnerSize - padding },
-        { arrowUpLeft.x + spinnerSize - padding, arrowUpLeft.y + spinnerSize - padding },
-
-        // Coordinates for ∨     9,10,11
-        { arrowDownRight.x + padding, arrowDownRight.y + padding },
-        { arrowDownRight.x + spinnerSize/2, arrowDownRight.y + spinnerSize - padding },
-        { arrowDownRight.x + spinnerSize - padding, arrowDownRight.y + padding }
-    };
-
-    Color lineColor = Fade(GetColor(GuiGetStyle(BUTTON, TEXT + state*3)), guiAlpha);
-
+    // Draw arrows (using icon if available)
     if (GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE))
     {
-        if (isVertical)
-        {
-            DrawTriangle(lineCoords[6], lineCoords[7], lineCoords[8], lineColor);
-            DrawTriangle(lineCoords[9], lineCoords[10], lineCoords[11], lineColor);
-        }
-        else
-        {
-            DrawTriangle(lineCoords[2], lineCoords[1], lineCoords[0], lineColor);
-            DrawTriangle(lineCoords[5], lineCoords[4], lineCoords[3], lineColor);
-        }
+#if defined(RAYGUI_NO_RICONS)
+        GuiDrawText(isVertical? "^" : "<", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
+                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(isVertical? "v" : ">", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
+                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+#else
+        GuiDrawText(isVertical? "#121#" : "#118#", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
+                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RICON_ARROW_UP_FILL / RICON_ARROW_LEFT_FILL
+        GuiDrawText(isVertical? "#120#" : "#119#", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
+                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RICON_ARROW_DOWN_FILL / RICON_ARROW_RIGHT_FILL
+#endif
     }
     //--------------------------------------------------------------------
 
@@ -3682,7 +3653,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 }
 
 // Draw selected icon using rectangles pixel-by-pixel
-void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
+void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
 {
     #define BIT_CHECK(a,b) ((a) & (1<<(b)))
 
@@ -3693,7 +3664,7 @@ void GuiDrawIcon(int iconId, Vector2 position, int pixelSize, Color color)
             if (BIT_CHECK(guiIcons[iconId*RICON_DATA_ELEMENTS + i], k))
             {
             #if !defined(RAYGUI_STANDALONE)
-                DrawRectangle(position.x + (k%RICON_SIZE)*pixelSize, position.y + y*pixelSize, pixelSize, pixelSize, color);
+                DrawRectangle(posX + (k%RICON_SIZE)*pixelSize, posY + y*pixelSize, pixelSize, pixelSize, color);
             #endif
             }
 
@@ -3754,13 +3725,15 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
 // Gui get text width using default font
+// NOTE: Icon is not considered here
 static int GetTextWidth(const char *text)
 {
     Vector2 size = { 0 };
 
-    if ((text != NULL) && (text[0] != '\0')) size = MeasureTextEx(guiFont, text, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-
-    // TODO: Consider text icon width here???
+    if ((text != NULL) && (text[0] != '\0')) 
+    {
+        size = MeasureTextEx(guiFont, text, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+    }
 
     return (int)size.x;
 }
@@ -3815,7 +3788,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
             *iconId = TextToInteger(iconValue);
 
             // Move text pointer after icon
-            // WARNING: If only icon provided, it could point to EOL character!
+            // WARNING: If only icon provided, it could point to EOL character: '\0'
             if (*iconId >= 0) text += (pos + 1);
         }
     }
@@ -3832,7 +3805,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
     if ((text != NULL) && (text[0] != '\0'))
     {
         int iconId = 0;
-        text = GetTextIcon(text, &iconId);  // Check text for icon and move cursor
+        text = GetTextIcon(text, &iconId);              // Check text for icon and move cursor
 
         // Get text position depending on alignment and iconId
         //---------------------------------------------------------------------------------
@@ -3840,7 +3813,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         Vector2 position = { bounds.x, bounds.y };
 
-        // NOTE: We get text size after icon been processed
+        // NOTE: We get text size after icon has been processed
         int textWidth = GetTextWidth(text);
         int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
@@ -3849,7 +3822,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         {
             textWidth += RICON_SIZE;
 
-            // WARNING: If only icon provided, text could be pointing to eof character!
+            // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
             if ((text != NULL) && (text[0] != '\0')) textWidth += RICON_TEXT_PADDING;
         }
 
@@ -3886,7 +3859,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, RAYGUI_CLITERAL(Vector2){ position.x, bounds.y + bounds.height/2 - RICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height) }, 1, tint);
+            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), 1, tint);
             position.x += (RICON_SIZE + RICON_TEXT_PADDING);
         }
 #endif
