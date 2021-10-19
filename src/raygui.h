@@ -1928,7 +1928,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
             else GuiDrawText(items[i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT_COLOR_NORMAL)), guiAlpha));
         }
     }
-    
+
     // Draw arrows (using icon if available)
 #if defined(RAYGUI_NO_RICONS)
     GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
@@ -3730,7 +3730,7 @@ static int GetTextWidth(const char *text)
 {
     Vector2 size = { 0 };
 
-    if ((text != NULL) && (text[0] != '\0')) 
+    if ((text != NULL) && (text[0] != '\0'))
     {
         size = MeasureTextEx(guiFont, text, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
     }
