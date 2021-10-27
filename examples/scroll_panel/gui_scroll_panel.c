@@ -6,18 +6,18 @@
 *       - GuiScrollPanel()
 *
 *   DEPENDENCIES:
-*       raylib 2.4  - Windowing/input management and drawing.
-*       raygui 2.0  - Immediate-mode GUI controls.
+*       raylib 4.0  - Windowing/input management and drawing.
+*       raygui 3.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   COMPILATION (Linux - gcc):
-*	gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
+*       gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -std=c99 
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019 Vlad Adrian (@Demizdor) and Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2021 Vlad Adrian (@Demizdor) and Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
@@ -78,8 +78,8 @@ int main()
             
             showContentArea = GuiCheckBox((Rectangle){ 565, 80, 20, 20 }, "SHOW CONTENT AREA", showContentArea);
                 
-            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", TextFormat("%i", (int)panelContentRec.width), 1, 600, true);
-            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", TextFormat("%i", (int)panelContentRec.height), 1, 400, true);
+            panelContentRec.width = GuiSliderBar((Rectangle){ 590, 385, 145, 15}, "WIDTH", TextFormat("%i", (int)panelContentRec.width), panelContentRec.width, 1, 600);
+            panelContentRec.height = GuiSliderBar((Rectangle){ 590, 410, 145, 15 }, "HEIGHT", TextFormat("%i", (int)panelContentRec.height), panelContentRec.height, 1, 400);
             
         EndDrawing();
         //----------------------------------------------------------------------------------

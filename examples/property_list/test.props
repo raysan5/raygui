@@ -1,0 +1,27 @@
+#
+# Property types:
+#   b  <name> <flags> <value>                                    // Bool
+#   i  <name> <flags> <value> <min> <max> <step>                 // Int
+#   f  <name> <flags> <value> <min> <max> <step> <precision>     // Float
+#   t  <name> <flags> <value> <edit_length>                      // Text
+#   l  <name> <flags> <value> <active>                           // Select
+#   g  <name> <flags> <value>                                    // Section (Group)
+#   v2 <name> <flags> <x> <y>                                    // Vector 2D
+#   v3 <name> <flags> <x> <y> <z>                                // Vector 3D
+#   v4 <name> <flags> <x> <y> <z> <w>                            // Vector 4D
+#   r  <name> <flags> <x> <y> <width> <height>                   // Rectangle
+#   c  <name> <flags> <r> <g> <b> <a>                            // Color
+#
+
+b  Bool 0 1
+g  #102#SECTION 0 2
+i  Int 0 123 0 0 1
+f  Float 0 0.990000 0.000000 0.000000 1.000000 3
+t  Text 1 Hello! 30
+l  Select 0 ONE;TWO;THREE;FOUR 3
+i  Int Range 0 32 0 100 1
+r  Rect 1 0 0 100 200
+v2 Vec2 1 20.000000 20.000000
+v3 Vec3 1 12.000000 13.000000 14.000000
+v4 Vec4 1 12.000000 13.000000 14.000000 15.000000
+c  Color 1 94 68 197 160

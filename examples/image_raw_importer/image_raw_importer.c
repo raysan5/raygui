@@ -3,22 +3,21 @@
 *   raygui - image raw importer
 *
 *   DEPENDENCIES:
-*       raylib 2.1  - Windowing/input management and drawing.
-*       raygui 2.0  - Immediate-mode GUI controls.
+*       raylib 4.0  - Windowing/input management and drawing.
+*       raygui 3.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2015-2021 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
 #include <string.h>             // Required for: strcpy()
@@ -128,17 +127,17 @@ int main()
                     // Select correct format depending on channels and bpp
                     if (bpp == 8)
                     {
-                        if (channels == 1) format = UNCOMPRESSED_GRAYSCALE;
-                        else if (channels == 2) format = UNCOMPRESSED_GRAY_ALPHA;
-                        else if (channels == 3) format = UNCOMPRESSED_R8G8B8;
-                        else if (channels == 4) format = UNCOMPRESSED_R8G8B8A8;
+                        if (channels == 1) format = PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+                        else if (channels == 2) format = PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA;
+                        else if (channels == 3) format = PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+                        else if (channels == 4) format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
                     }
                     else if (bpp == 32)
                     {
-                        if (channels == 1) format = UNCOMPRESSED_R32;
+                        if (channels == 1) format = PIXELFORMAT_UNCOMPRESSED_R32;
                         else if (channels == 2) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
-                        else if (channels == 3) format = UNCOMPRESSED_R32G32B32;
-                        else if (channels == 4) format = UNCOMPRESSED_R32G32B32A32;
+                        else if (channels == 3) format = PIXELFORMAT_UNCOMPRESSED_R32G32B32;
+                        else if (channels == 4) format = PIXELFORMAT_UNCOMPRESSED_R32G32B32A32;
                     }
                     else if (bpp == 16) TraceLog(LOG_WARNING, "Channel bit-depth not supported!");
                 }
@@ -174,7 +173,7 @@ int main()
             if (texture.id != 0) 
             {
                 DrawTextureEx(texture, (Vector2){ screenWidth/2 - texture.width*imageScale/2, screenHeight/2 - texture.height*imageScale/2 }, 0, imageScale, WHITE);
-                DrawText(FormatText("SCALE x%.0f", imageScale), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
+                DrawText(TextFormat("SCALE x%.0f", imageScale), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
             }
             else DrawText("drag & drop RAW image file", 320, 180, 10, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
 
@@ -187,7 +186,7 @@ int main()
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 30, 65, 20 }, "Import file:");
                 GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 30, 75, 20 }, fileName);
                 GuiLabel((Rectangle){ windowOffset.x + 10, windowOffset.y + 50, 65, 20 }, "File size:");
-                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, FormatText("%i bytes", dataSize));
+                GuiLabel((Rectangle){ windowOffset.x + 85, windowOffset.y + 50, 75, 20 }, TextFormat("%i bytes", dataSize));
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 85, 180, 80 }, "Resolution");
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 100, 33, 25 }, "Width:");
                 if (GuiValueBox((Rectangle){ windowOffset.x + 60, windowOffset.y + 100, 80, 25 }, NULL, &widthValue, 0, 8192, widthEditMode)) widthEditMode = !widthEditMode; 

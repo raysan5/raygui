@@ -13,7 +13,7 @@
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   COMPILATION (Linux - gcc):
-*	gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
+*    gcc -o $(NAME_PART) $(FILE_NAME) -I../../src -lraylib -std=c99
 *
 *   LICENSE: zlib/libpng
 *
@@ -24,7 +24,6 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
@@ -87,9 +86,9 @@ int main(int argc, char **argv)
     InitWindow(screenWidth, screenHeight, "raygui - gui textboxBounds extended demo");
 
     // Generate a checked checked used by the color buttons
-	Image img = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
-	checked = LoadTextureFromImage(img);
-	UnloadImage(img);
+    Image img = GenImageChecked(26, 26, 5, 5, RAYWHITE, DARKGRAY);
+    checked = LoadTextureFromImage(img);
+    UnloadImage(img);
     
     Font font = { 0 };
     int fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
@@ -185,8 +184,8 @@ int main(int argc, char **argv)
 
         // Draw
         //----------------------------------------------------------------------------------
-		BeginDrawing();
-		
+        BeginDrawing();
+        
             ClearBackground(RAYWHITE);
             
             // Draw textboxes extended
@@ -213,7 +212,7 @@ int main(int argc, char **argv)
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
     
             // Draw hexadecimal values viewer
-            DrawTextRecEx(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
+            DrawTextBoxedSelectable(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
 
             // Draw right-mouse-button-click menu and logic
             //---------------------------------------------------------------------------------------
@@ -288,7 +287,7 @@ int main(int argc, char **argv)
             */
             //---------------------------------------------------------------------------------------
                 
-		EndDrawing();
+        EndDrawing();
         //----------------------------------------------------------------------------------
     }
 

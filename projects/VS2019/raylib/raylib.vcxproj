@@ -160,16 +160,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\raylib\src\raudio.c" />
-    <ClCompile Include="..\..\..\..\raylib\src\core.c" />
-    <ClCompile Include="..\..\..\..\raylib\src\models.c" />
+    <ClCompile Include="..\..\..\..\raylib\src\rcore.c" />
+    <ClCompile Include="..\..\..\..\raylib\src\rmodels.c" />
     <ClCompile Include="..\..\..\..\raylib\src\rglfw.c" />
-    <ClCompile Include="..\..\..\..\raylib\src\shapes.c" />
-    <ClCompile Include="..\..\..\..\raylib\src\text.c" />
-    <ClCompile Include="..\..\..\..\raylib\src\textures.c" />
+    <ClCompile Include="..\..\..\..\raylib\src\rshapes.c" />
+    <ClCompile Include="..\..\..\..\raylib\src\rtext.c" />
+    <ClCompile Include="..\..\..\..\raylib\src\rtextures.c" />
     <ClCompile Include="..\..\..\..\raylib\src\utils.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\raylib\src\camera.h" />
+    <ClInclude Include="..\..\..\..\raylib\src\rcamera.h" />
     <ClInclude Include="..\..\..\..\raylib\src\external\glad.h" />
     <ClInclude Include="..\..\..\..\raylib\src\external\jar_mod.h" />
     <ClInclude Include="..\..\..\..\raylib\src\external\jar_xm.h" />
@@ -180,7 +180,7 @@
     <ClInclude Include="..\..\..\..\raylib\src\external\stb_rect_pack.h" />
     <ClInclude Include="..\..\..\..\raylib\src\external\stb_truetype.h" />
     <ClInclude Include="..\..\..\..\raylib\src\external\stb_vorbis.h" />
-    <ClInclude Include="..\..\..\..\raylib\\src\gestures.h" />
+    <ClInclude Include="..\..\..\..\raylib\src\rgestures.h" />
     <ClInclude Include="..\..\..\..\raylib\src\raylib.h" />
     <ClInclude Include="..\..\..\..\raylib\src\raymath.h" />
     <ClInclude Include="..\..\..\..\raylib\src\rlgl.h" />

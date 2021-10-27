@@ -398,7 +398,7 @@ double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxV
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_SUPPORT_ICONS)
+#if defined(RAYGUI_SUPPORT_RICONS)
     if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) value -= step;
     if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) value += step;
 #else
@@ -417,7 +417,7 @@ double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxV
 
 
 void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* focus, int* scrollIndex) {
-    #ifdef RAYGUI_SUPPORT_ICONS
+    #ifdef RAYGUI_SUPPORT_RICONS
     #define PROPERTY_COLLAPSED_ICON "#120#"
     #define PROPERTY_EXPANDED_ICON "#121#"
     #else

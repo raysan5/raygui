@@ -3,24 +3,22 @@
 *   raygui - image exporter
 *
 *   DEPENDENCIES:
-*       raylib 2.1  - Windowing/input management and drawing.
-*       raygui 2.0  - Immediate-mode GUI controls.
+*       raylib 4.0  - Windowing/input management and drawing.
+*       raygui 3.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2015-2021 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
 
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
-
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -102,12 +100,12 @@ int main(int argc, char *argv[0])
                 
                 if (fileFormatActive == 0)        // PNG
                 {
-                    if ((GetExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".png"))) strcat(fileName, ".png\0");     // No extension provided
+                    if ((GetFileExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".png"))) strcat(fileName, ".png\0");     // No extension provided
                     ExportImage(image, fileName);
                 }
                 else if (fileFormatActive == 1)   // RAW
                 {
-                    if ((GetExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".raw"))) strcat(fileName, ".raw\0");     // No extension provided
+                    if ((GetFileExtension(fileName) == NULL) || (!IsFileExtension(fileName, ".raw"))) strcat(fileName, ".raw\0");     // No extension provided
                     
                     int dataSize = GetPixelDataSize(image.width, image.height, image.format);
                     
@@ -147,7 +145,7 @@ int main(int argc, char *argv[0])
                 DrawTextureEx(texture, (Vector2){ screenWidth/2 - (float)texture.width*imageScale/2, screenHeight/2 - (float)texture.height*imageScale/2 }, 0.0f, imageScale, WHITE);
                 
                 DrawRectangleLinesEx(imageRec, 1, CheckCollisionPointRec(GetMousePosition(), imageRec) ? RED : DARKGRAY); 
-                DrawText(FormatText("SCALE: %.2f%%", imageScale*100.0f), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
+                DrawText(TextFormat("SCALE: %.2f%%", imageScale*100.0f), 20, screenHeight - 40, 20, GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)));
             }
             else
             {
