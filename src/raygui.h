@@ -498,6 +498,7 @@ RAYGUIAPI bool GuiToggle(Rectangle bounds, const char *text, bool active);      
 RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
 RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
+RAYGUIAPI int GuiComboBoxEx(Rectangle bounds, const char **items, int itemCount, int active);           // Same semantics as GuiComboBox, but you can use an array of strings as input
 RAYGUIAPI bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI bool GuiDropdownBoxEx(Rectangle bounds, const char **items, int itemCount, int *active, bool editMode); // Same semantics as GuiDropdownBox, but you can use an array of strings as input
 RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
@@ -1775,16 +1776,22 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
 // Combo Box control, returns selected item index
 int GuiComboBox(Rectangle bounds, const char *text, int active)
 {
+    // Get substrings items from text (items pointers, lengths and count)
+    int itemCount = 0;
+    const char **items = GuiTextSplit(text, &itemCount, NULL);
+
+    return GuiComboBoxEx(bounds, items, itemCount, active);
+}
+
+// Combo Box control, returns selected item index
+int GuiComboBoxEx(Rectangle bounds, const char **items, int itemCount, int active)
+{
     GuiControlState state = guiState;
 
     bounds.width -= (GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH) + GuiGetStyle(COMBOBOX, COMBO_BUTTON_PADDING));
 
     Rectangle selector = { (float)bounds.x + bounds.width + GuiGetStyle(COMBOBOX, COMBO_BUTTON_PADDING),
                            (float)bounds.y, (float)GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH), (float)bounds.height };
-
-    // Get substrings items from text (items pointers, lengths and count)
-    int itemCount = 0;
-    const char **items = GuiTextSplit(text, &itemCount, NULL);
 
     if (active < 0) active = 0;
     else if (active > itemCount - 1) active = itemCount - 1;
