@@ -452,6 +452,7 @@ RAYGUIDEF int GuiToggleGroup(Rectangle bounds, const char *text, int active);   
 RAYGUIDEF bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIDEF int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 RAYGUIDEF bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
+RAYGUIDEF bool GuiDropdownBoxEx(Rectangle bounds, const char **items, int itemsCount, int *active, bool editMode); // Same semantics as GuiDropdownBox, but the items are parsed as an array + length
 RAYGUIDEF bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
 RAYGUIDEF bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
 RAYGUIDEF bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
@@ -1271,13 +1272,18 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
 // NOTE: Returns mouse click
 bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode)
 {
-    GuiControlState state = guiState;
-    int itemSelected = *active;
-    int itemFocused = -1;
-
     // Get substrings items from text (items pointers, lengths and count)
     int itemsCount = 0;
     const char **items = GuiTextSplit(text, &itemsCount, NULL);
+    return GuiDropdownBoxEx(bounds, items, itemsCount, active, editMode);
+}
+
+// Dropdown Box control using arrays of strings instead of a packed string
+bool GuiDropdownBoxEx(Rectangle bounds, const char **items, int itemsCount, int *active, bool editMode)
+{
+    GuiControlState state = guiState;
+    int itemSelected = *active;
+    int itemFocused = -1;
 
     Rectangle boundsOpen = bounds;
     boundsOpen.height = (itemsCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
