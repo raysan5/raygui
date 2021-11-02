@@ -29,7 +29,7 @@
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
 #define GUI_TEXTBOX_EXTENDED_IMPLEMENTATION
-#include "../../src/gui_textbox_extended.h"
+#include "../../src/extras/gui_textbox_extended.h"
 
 #include <limits.h>
 
