@@ -2079,6 +2079,14 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
         }
     }
 
+#if defined(RAYGUI_NO_RICONS)
+    if (GuiButton(leftButtonBound, "<")) tempValue--;
+    if (GuiButton(rightButtonBound, ">")) tempValue++;
+#else
+    if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
+    if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
+#endif
+
     if (!editMode)
     {
         if (tempValue < minValue) tempValue = minValue;
@@ -2098,13 +2106,7 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_NO_RICONS)
-    if (GuiButton(leftButtonBound, "<")) tempValue--;
-    if (GuiButton(rightButtonBound, ">")) tempValue++;
-#else
-    if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) tempValue--;
-    if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
-#endif
+
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
