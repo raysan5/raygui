@@ -86,7 +86,7 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
  - **Windows (MinGW, GCC)**
 ```
-copy src/raylib.h src/raylib.c
+copy src/raygui.h src/raygui.c
 gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTYPE_SHARED -static-libgcc -lopengl32 -lgdi32 -lwinmm -Wl,--out-implib,src/librayguidll.a
 ```
 
