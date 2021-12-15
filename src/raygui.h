@@ -574,15 +574,9 @@ RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pi
     #define RAYGUI_CLITERAL(name) (name)
 #endif
 
-#if !defined(RAYGUI_NO_RICONS)
+#if !defined(RAYGUI_NO_RICONS) && !defined(RAYGUI_CUSTOM_RICONS)
 
-#if defined(RAYGUI_CUSTOM_RICONS)
-
-#define RICONS_IMPLEMENTATION
-#include "ricons.h"         // External icons data provided, it can be generated with rGuiIcons tool
-
-#else   // Embedded raygui icons, no external file provided
-
+// Embedded raygui icons, no external file provided
 #define RICON_SIZE               16       // Size of icons (squared)
 #define RICON_MAX_ICONS         256       // Maximum number of icons
 #define RICON_MAX_NAME_LENGTH    32       // Maximum length of icon name id
@@ -1125,9 +1119,7 @@ static unsigned int guiIcons[RICON_MAX_ICONS*RICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RICON_255
 };
 
-#endif      // RAYGUI_CUSTOM_RICONS
-
-#endif      // !RAYGUI_NO_RICONS
+#endif      // !RAYGUI_NO_RICONS && !RAYGUI_CUSTOM_RICONS
 
 #ifndef RICON_SIZE
     #define RICON_SIZE                   0
