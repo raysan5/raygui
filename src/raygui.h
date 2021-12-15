@@ -3289,6 +3289,8 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 // Load raygui style file (.rgs)
 void GuiLoadStyle(const char *fileName)
 {
+    #define MAX_LINE_BUFFER_SIZE    256
+    
     bool tryBinary = false;
 
     // Try reading the files as text file first
@@ -3296,8 +3298,8 @@ void GuiLoadStyle(const char *fileName)
 
     if (rgsFile != NULL)
     {
-        char buffer[256] = { 0 };
-        fgets(buffer, 256, rgsFile);
+        char buffer[MAX_LINE_BUFFER_SIZE] = { 0 };
+        fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
 
         if (buffer[0] == '#')
         {
@@ -3314,7 +3316,6 @@ void GuiLoadStyle(const char *fileName)
                         // Style property: p <control_id> <property_id> <property_value> <property_name>
 
                         sscanf(buffer, "p %d %d 0x%x", &controlId, &propertyId, &propertyValue);
-
                         GuiSetStyle(controlId, propertyId, (int)propertyValue);
 
                     } break;
@@ -3342,12 +3343,19 @@ void GuiLoadStyle(const char *fileName)
                                 int *values = (int *)RAYGUI_MALLOC(glyphCount*sizeof(int));
                                 for (int i = 0; i < glyphCount; i++) values[i] = TextToInteger(chars[i]);
 
+                                if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
                                 font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, glyphCount);
+                                if (font.texture.id == 0) font = GetFontDefault();
 
                                 RAYGUI_FREE(values);
                             }
                         }
-                        else font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                        else 
+                        {
+                            if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
+                            font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
+                            if (font.texture.id == 0) font = GetFontDefault();
+                        }
 
                         if ((font.texture.id > 0) && (font.glyphCount > 0)) GuiSetFont(font);
 
@@ -3355,7 +3363,7 @@ void GuiLoadStyle(const char *fileName)
                     default: break;
                 }
 
-                fgets(buffer, 256, rgsFile);
+                fgets(buffer, MAX_LINE_BUFFER_SIZE, rgsFile);
             }
         }
         else tryBinary = true;
@@ -3439,7 +3447,9 @@ void GuiLoadStyle(const char *fileName)
                     imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageSize);
                     fread(imFont.data, 1, fontImageSize, rgsFile);
 
+                    if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
                     font.texture = LoadTextureFromImage(imFont);
+                    if (font.texture.id == 0) font = GetFontDefault();
 
                     RAYGUI_FREE(imFont.data);
                 }
