@@ -3282,7 +3282,7 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 void GuiLoadStyle(const char *fileName)
 {
     #define MAX_LINE_BUFFER_SIZE    256
-    
+
     bool tryBinary = false;
 
     // Try reading the files as text file first
@@ -3335,16 +3335,16 @@ void GuiLoadStyle(const char *fileName)
                                 int *values = (int *)RAYGUI_MALLOC(glyphCount*sizeof(int));
                                 for (int i = 0; i < glyphCount; i++) values[i] = TextToInteger(chars[i]);
 
-                                if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
+                                if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
                                 font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, glyphCount);
                                 if (font.texture.id == 0) font = GetFontDefault();
 
                                 RAYGUI_FREE(values);
                             }
                         }
-                        else 
+                        else
                         {
-                            if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
+                            if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
                             font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
                             if (font.texture.id == 0) font = GetFontDefault();
                         }
@@ -3439,7 +3439,7 @@ void GuiLoadStyle(const char *fileName)
                     imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageSize);
                     fread(imFont.data, 1, fontImageSize, rgsFile);
 
-                    if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture.id);
+                    if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
                     font.texture = LoadTextureFromImage(imFont);
                     if (font.texture.id == 0) font = GetFontDefault();
 
