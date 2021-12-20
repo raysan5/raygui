@@ -3279,6 +3279,8 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 //----------------------------------------------------------------------------------
 
 // Load raygui style file (.rgs)
+// NOTE: By default a binary file is expected, that file could contain a custom font,
+// in that case, custom font image atlas is GRAY+ALPHA and pixel data can be compressed (DEFLATE)
 void GuiLoadStyle(const char *fileName)
 {
     #define MAX_LINE_BUFFER_SIZE    256
@@ -3369,7 +3371,7 @@ void GuiLoadStyle(const char *fileName)
 
         if (rgsFile == NULL) return;
 
-        char signature[5] = "";
+        char signature[5] = { 0 };
         short version = 0;
         short reserved = 0;
         int propertyCount = 0;
@@ -3425,26 +3427,42 @@ void GuiLoadStyle(const char *fileName)
                 fread(&whiteRec, 1, sizeof(Rectangle), rgsFile);
 
                 // Load font image parameters
-                int fontImageSize = 0;
-                fread(&fontImageSize, 1, sizeof(int), rgsFile);
+                int fontImageUncompSize = 0;
+                int fontImageCompSize = 0;
+                fread(&fontImageUncompSize, 1, sizeof(int), rgsFile);
+                fread(&fontImageCompSize, 1, sizeof(int), rgsFile);
 
-                if (fontImageSize > 0)
+                Image imFont = { 0 };
+                imFont.mipmaps = 1;
+                fread(&imFont.width, 1, sizeof(int), rgsFile);
+                fread(&imFont.height, 1, sizeof(int), rgsFile);
+                fread(&imFont.format, 1, sizeof(int), rgsFile);
+
+                if (fontImageCompSize < fontImageUncompSize)
                 {
-                    Image imFont = { 0 };
-                    imFont.mipmaps = 1;
-                    fread(&imFont.width, 1, sizeof(int), rgsFile);
-                    fread(&imFont.height, 1, sizeof(int), rgsFile);
-                    fread(&imFont.format, 1, sizeof(int), rgsFile);
+                    // Compressed font atlas image data (DEFLATE), it requires DecompressData()
+                    int dataUncompSize = 0;
+                    unsigned char *compData = (unsigned char *)RAYGUI_MALLOC(fontImageCompSize);
+                    fread(compData, 1, fontImageCompSize, rgsFile);
+                    imFont.data = DecompressData(compData, fontImageCompSize, &dataUncompSize);
 
-                    imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageSize);
-                    fread(imFont.data, 1, fontImageSize, rgsFile);
+                    // Security check, dataUncompSize must match the provided fontImageUncompSize
+                    if (dataUncompSize != fontImageUncompSize) TRACELOG(LOG_WARNING, "Uncompressed Font atlas image data could be corrupted");
 
-                    if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
-                    font.texture = LoadTextureFromImage(imFont);
-                    if (font.texture.id == 0) font = GetFontDefault();
-
-                    RAYGUI_FREE(imFont.data);
+                    RAYGUI_FREE(compData);
                 }
+                else
+                {
+                    // Font atlas image data is not compressed
+                    imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageUncompSize);
+                    fread(imFont.data, 1, fontImageUncompSize, rgsFile);
+                }
+
+                if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
+                font.texture = LoadTextureFromImage(imFont);
+                if (font.texture.id == 0) font = GetFontDefault();
+
+                RAYGUI_FREE(imFont.data);
 
                 // Load font recs data
                 font.recs = (Rectangle *)RAYGUI_CALLOC(font.glyphCount, sizeof(Rectangle));
