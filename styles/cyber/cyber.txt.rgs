@@ -1,0 +1,24 @@
+#
+# rgs style text file (v3.1) - raygui style file generated using rGuiStyler
+#
+# Style properties:
+#   f <gen_font_size> <charmap_file> <font_file>
+#   p <control_id> <property_id> <property_value> <property_name>
+#
+f 14 0 Kyrou 7 Wide.ttf
+p 00 00 0x2f7486ff    DEFAULT_BORDER_COLOR_NORMAL
+p 00 01 0x024658ff    DEFAULT_BASE_COLOR_NORMAL
+p 00 02 0x51bfd3ff    DEFAULT_TEXT_COLOR_NORMAL
+p 00 03 0x82cde0ff    DEFAULT_BORDER_COLOR_FOCUSED
+p 00 04 0x3299b4ff    DEFAULT_BASE_COLOR_FOCUSED
+p 00 05 0xb6e1eaff    DEFAULT_TEXT_COLOR_FOCUSED
+p 00 06 0xeb7630ff    DEFAULT_BORDER_COLOR_PRESSED
+p 00 07 0xffbc51ff    DEFAULT_BASE_COLOR_PRESSED
+p 00 08 0xd86f36ff    DEFAULT_TEXT_COLOR_PRESSED
+p 00 09 0x134b5aff    DEFAULT_BORDER_COLOR_DISABLED
+p 00 10 0x02313dff    DEFAULT_BASE_COLOR_DISABLED
+p 00 11 0x17505fff    DEFAULT_TEXT_COLOR_DISABLED
+p 00 16 0x0000000e    DEFAULT_TEXT_SIZE
+p 00 17 0x00000000    DEFAULT_TEXT_SPACING
+p 00 18 0x81c0d0ff    DEFAULT_LINE_COLOR
+p 00 19 0x00222bff    DEFAULT_BACKGROUND_COLOR

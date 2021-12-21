@@ -3639,7 +3639,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 
     if (rgiFile != NULL)
     {
-        char signature[5] = "";
+        char signature[5] = { 0 };
         short version = 0;
         short reserved = 0;
         short iconCount = 0;
