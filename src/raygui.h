@@ -208,7 +208,6 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-
 // Allow custom memory allocators
 #ifndef RAYGUI_MALLOC
     #define RAYGUI_MALLOC(sz)       malloc(sz)
@@ -220,8 +219,14 @@
     #define RAYGUI_FREE(p)          free(p)
 #endif
 
-// TODO: Implement custom TraceLog()
-#define TRACELOG(level, ...) (void)0
+// Simple log system to avoid printf() calls if required
+// NOTE: Avoiding those calls, also avoids const strings memory usage
+#define RAYGUI_SUPPORT_LOG_INFO
+#if defined(RAYGUI_SUPPORT_LOG_INFO)
+  #define RAYGUI_LOG(...) printf(__VA_ARGS__)
+#else
+  #define RAYGUI_LOG(...)
+#endif
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
@@ -3472,7 +3477,7 @@ void GuiLoadStyle(const char *fileName)
                     imFont.data = DecompressData(compData, fontImageCompSize, &dataUncompSize);
 
                     // Security check, dataUncompSize must match the provided fontImageUncompSize
-                    if (dataUncompSize != fontImageUncompSize) TRACELOG(LOG_WARNING, "Uncompressed Font atlas image data could be corrupted");
+                    if (dataUncompSize != fontImageUncompSize) RAYGUI_LOG("WARNING: Uncompressed font atlas image data could be corrupted");
 
                     RAYGUI_FREE(compData);
                 }
