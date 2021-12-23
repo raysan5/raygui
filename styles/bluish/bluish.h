@@ -332,6 +332,7 @@ static void GuiLoadStyleBluish(void)
 
     // Load texture from image
     font.texture = LoadTextureFromImage(imFont);
+    UnloadImage(imFont);  // Uncompressed data can be unloaded from memory
 
     // Copy char recs data from global fontRecs
     // NOTE: Required to avoid issues if trying to free font
