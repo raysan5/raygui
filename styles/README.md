@@ -33,4 +33,4 @@ Here it is a quick overview of those styles, you can navigate to each directory 
 #### style: [terminal](terminal)
 ![terminal style](terminal/style_table.png)
 
-*NOTE: Those styles require latest raylib 2.6-dev and latest raygui 2.6-dev.*
+*NOTE: Those styles require raylib 4.0 and raygui 3.1.*
