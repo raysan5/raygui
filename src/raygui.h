@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.0 - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.1-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -184,7 +184,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "3.0"
+#define RAYGUI_VERSION  "3.1-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
