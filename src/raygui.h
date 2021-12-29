@@ -1252,10 +1252,12 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color
 // Gui Setup Functions Definition
 //----------------------------------------------------------------------------------
 // Enable gui global state
-void GuiEnable(void) { guiState = GUI_STATE_NORMAL; }
+// NOTE: We check for GUI_STATE_DISABLED to avoid messing custom global state setups
+void GuiEnable(void) { if (guiState == GUI_STATE_DISABLED) guiState = GUI_STATE_NORMAL; }
 
 // Disable gui global state
-void GuiDisable(void) { guiState = GUI_STATE_DISABLED; }
+// NOTE: We check for GUI_STATE_NORMAL to avoid messing custom global state setups
+void GuiDisable(void) { if (guiState == GUI_STATE_NORMAL) guiState = GUI_STATE_DISABLED; }
 
 // Lock gui global state
 void GuiLock(void) { guiLocked = true; }
