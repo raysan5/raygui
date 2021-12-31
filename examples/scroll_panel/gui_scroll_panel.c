@@ -17,7 +17,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2021 Vlad Adrian (@Demizdor) and Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2022 Vlad Adrian (@Demizdor) and Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
