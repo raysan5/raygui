@@ -862,7 +862,7 @@ typedef enum {
 // NOTE 1: Every icon is codified in binary form, using 1 bit per pixel, so,
 // every 16x16 icon requires 8 integers (16*16/32) to be stored
 //
-// NOTE 2: A new icon set could be loaded over this array using GuiLoadIcons(),
+// NOTE 2: A different icon set could be loaded over this array using GuiLoadIcons(),
 // but loaded icons set must be same RAYGUI_ICON_SIZE and no more than RAYGUI_ICON_MAX_ICONS
 //
 // guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
@@ -1129,7 +1129,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 #endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
 #ifndef RAYGUI_ICON_SIZE
-    #define RAYGUI_ICON_SIZE                   0
+    #define RAYGUI_ICON_SIZE             0
 #endif
 
 #define RAYGUI_MAX_CONTROLS             16      // Maximum number of standard controls
