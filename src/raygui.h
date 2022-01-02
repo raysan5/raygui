@@ -1332,16 +1332,16 @@ int GuiGetStyle(int control, int property)
 // Window Box control
 bool GuiWindowBox(Rectangle bounds, const char *title)
 {
+    // Window title bar height (including borders)
     // NOTE: This define is also used by GuiMessageBox() and GuiTextInputBox()
     #if !defined(RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT)
-        #define RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT        22
+        #define RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT        24
     #endif
 
     //GuiControlState state = guiState;
     bool clicked = false;
 
-    int statusBarHeight = RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + 2*GuiGetStyle(STATUSBAR, BORDER_WIDTH);
-    statusBarHeight += (statusBarHeight%2);
+    int statusBarHeight = RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT;
 
     Rectangle statusBar = { bounds.x, bounds.y, bounds.width, (float)statusBarHeight };
     if (bounds.height < statusBarHeight*2.0f) bounds.height = statusBarHeight*2.0f;
@@ -3122,7 +3122,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
         #define RAYGUI_MESSAGEBOX_BUTTON_HEIGHT    24
     #endif
     #if !defined(RAYGUI_MESSAGEBOX_BUTTON_PADDING)
-        #define RAYGUI_MESSAGEBOX_BUTTON_PADDING   10
+        #define RAYGUI_MESSAGEBOX_BUTTON_PADDING   12
     #endif
 
     int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
@@ -3177,7 +3177,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
         #define RAYGUI_TEXTINPUTBOX_BUTTON_PADDING     10
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_HEIGHT)
-        #define RAYGUI_TEXTINPUTBOX_HEIGHT             30
+        #define RAYGUI_TEXTINPUTBOX_HEIGHT             24
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH)
         #define RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH   256
