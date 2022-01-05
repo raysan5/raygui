@@ -24,17 +24,18 @@
 ### basic controls
 ```
 Label       |  Button      |  LabelButton |  Toggle       |  ToggleGroup |  CheckBox
-ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner     |  Slider
-SliderBar   |  ProgressBar |  StatusBar   |  ScrollBar    |  ScrollPanel |  DummyRec    |  Grid
+ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner
+Slider      |  SliderBar   |  ProgressBar |  StatusBar    |  DummyRec    |  Grid
+```
+### container/separator controls
+```
+WindowBox   |  GroupBox    |  Line        |  Panel        |  ScrollPanel
 ```
 ### advance controls
 ```
 ListView    |  ColorPicker |  MessageBox  |  TextInputBox
 ```
-### container/separator controls
-```
-WindowBox   |  GroupBox    |  Line        |  Panel
-```
+
 
 ## raygui styles
 
