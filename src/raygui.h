@@ -114,9 +114,11 @@
 *   VERSIONS HISTORY:
 *       3.1 (12-Jan-2021) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
 *                         REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
-*                         REVIEWED: GuiLine() for better alignment when including text
+*                         REVIEWED: External icons usage logic
+*                         REVIEWED: GuiLine() for centered alignment when including text
 *                         RENAMED: Multiple controls properties definitions to prepend RAYGUI_
 *                         RENAMED: RICON_ references to RAYGUI_ICON_ for library consistency
+*                         Projects updated and multiple tweaks
 *       3.0 (04-Nov-2021) Integrated ricons data to avoid external file
 *                         REDESIGNED: GuiTextBoxMulti()
 *                         REMOVED: GuiImageButton*()
