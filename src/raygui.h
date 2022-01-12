@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.1 - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.2-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -112,7 +112,13 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.1 (12-Jan-2021) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
+*       3.2 (xx-Feb-2022) REDESIGNED: GuiPanel() to support text parameter
+*                         REDESIGNED: GuiScrollPanel() to support text parameter
+*                         REDESIGNED: GuiColorPicker() to support text parameter
+*                         REDESIGNED: GuiColorPanel() to support text parameter
+*                         REDESIGNED: GuiColorBarAlpha() to support text parameter
+*                         REDESIGNED: GuiColorBarHue() to support text parameter
+*       3.1 (12-Jan-2022) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
 *                         REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
 *                         REVIEWED: External icons usage logic
 *                         REVIEWED: GuiLine() for centered alignment when including text
@@ -188,7 +194,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "3.1"
+#define RAYGUI_VERSION  "3.2-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -499,8 +505,8 @@ RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get o
 RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
 RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
 RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
-RAYGUIAPI void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
-RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll);               // Scroll Panel control
+RAYGUIAPI void GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
+RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll); // Scroll Panel control
 
 // Basic controls set
 RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
@@ -529,10 +535,10 @@ RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, 
 RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
 RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
 RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text);   // Text Input Box control, ask for text
-RAYGUIAPI Color GuiColorPicker(Rectangle bounds, Color color);                                          // Color Picker control (multiple color controls)
-RAYGUIAPI Color GuiColorPanel(Rectangle bounds, Color color);                                           // Color Panel control
-RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, float alpha);                                        // Color Bar Alpha control
-RAYGUIAPI float GuiColorBarHue(Rectangle bounds, float value);                                          // Color Bar Hue control
+RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
+RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
+RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha);                      // Color Bar Alpha control
+RAYGUIAPI float GuiColorBarHue(Rectangle bounds, const char *text, float value);                        // Color Bar Hue control
 
 // Styles loading functions
 RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
@@ -1355,7 +1361,7 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
     // Draw control
     //--------------------------------------------------------------------
     GuiStatusBar(statusBar, title); // Draw window header as status bar
-    GuiPanel(windowPanel);          // Draw window base
+    GuiPanel(windowPanel, NULL);    // Draw window base
 
     // Draw window close button
     int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
@@ -1427,13 +1433,15 @@ void GuiLine(Rectangle bounds, const char *text)
 }
 
 // Panel control
-void GuiPanel(Rectangle bounds)
+void GuiPanel(Rectangle bounds, const char *text)
 {
     #if !defined(RAYGUI_PANEL_BORDER_WIDTH)
         #define RAYGUI_PANEL_BORDER_WIDTH   1
     #endif
 
     GuiControlState state = guiState;
+
+    // TODO: Draw text somewhere if required, maybe like a window with a header section?
 
     // Draw control
     //--------------------------------------------------------------------
@@ -1910,7 +1918,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Draw control
     //--------------------------------------------------------------------
-    if (editMode) GuiPanel(boundsOpen);
+    if (editMode) GuiPanel(boundsOpen, NULL);
 
     GuiDrawRectangle(bounds, GuiGetStyle(DROPDOWNBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, BASE + state*3)), guiAlpha));
     GuiDrawText(items[itemSelected], GetTextBounds(DEFAULT, bounds), GuiGetStyle(DROPDOWNBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + state*3)), guiAlpha));
@@ -2877,7 +2885,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 }
 
 // Color Panel control
-Color GuiColorPanel(Rectangle bounds, Color color)
+Color GuiColorPanel(Rectangle bounds, const char *text, Color color)
 {
     const Color colWhite = { 255, 255, 255, 255 };
     const Color colBlack = { 0, 0, 0, 255 };
@@ -2958,7 +2966,7 @@ Color GuiColorPanel(Rectangle bounds, Color color)
 
 // Color Bar Alpha control
 // NOTE: Returns alpha value normalized [0..1]
-float GuiColorBarAlpha(Rectangle bounds, float alpha)
+float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha)
 {
     #if !defined(RAYGUI_COLORBARALPHA_CHECKED_SIZE)
         #define RAYGUI_COLORBARALPHA_CHECKED_SIZE   10
@@ -3027,7 +3035,7 @@ float GuiColorBarAlpha(Rectangle bounds, float alpha)
 //      Color GuiColorBarSat() [WHITE->color]
 //      Color GuiColorBarValue() [BLACK->color], HSV/HSL
 //      float GuiColorBarLuminance() [BLACK->WHITE]
-float GuiColorBarHue(Rectangle bounds, float hue)
+float GuiColorBarHue(Rectangle bounds, const char *text, float hue)
 {
     GuiControlState state = guiState;
     Rectangle selector = { (float)bounds.x - GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW), (float)bounds.y + hue/360.0f*bounds.height - GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT)/2, (float)bounds.width + GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW)*2, (float)GuiGetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT) };
@@ -3095,15 +3103,15 @@ float GuiColorBarHue(Rectangle bounds, float hue)
 //      float GuiColorBarAlpha(Rectangle bounds, float alpha)
 //      float GuiColorBarHue(Rectangle bounds, float value)
 // NOTE: bounds define GuiColorPanel() size
-Color GuiColorPicker(Rectangle bounds, Color color)
+Color GuiColorPicker(Rectangle bounds, const char *text, Color color)
 {
-    color = GuiColorPanel(bounds, color);
+    color = GuiColorPanel(bounds, NULL, color);
 
     Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle(COLORPICKER, HUEBAR_PADDING), (float)bounds.y, (float)GuiGetStyle(COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
     //Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + GuiGetStyle(COLORPICKER, BARS_PADDING), bounds.width, GuiGetStyle(COLORPICKER, BARS_THICK) };
 
     Vector3 hsv = ConvertRGBtoHSV(RAYGUI_CLITERAL(Vector3){ color.r/255.0f, color.g/255.0f, color.b/255.0f });
-    hsv.x = GuiColorBarHue(boundsHue, hsv.x);
+    hsv.x = GuiColorBarHue(boundsHue, NULL, hsv.x);
     //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
 
@@ -3278,6 +3286,9 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 
     // Draw control
     //--------------------------------------------------------------------
+    
+    // TODO: Draw background panel?
+
     switch (state)
     {
         case GUI_STATE_NORMAL:

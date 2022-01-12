@@ -23,7 +23,7 @@
 *
 *   DEPENDENCIES:
 *       raylib 4.0 - Windowing/input management and drawing.
-*       raygui 3.0 - Immediate-mode GUI controls.
+*       raygui 3.2 - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
@@ -190,7 +190,7 @@ int main()
 
             // Third GUI column
             if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 256, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
-            colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, colorPickerValue);
+            colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, colorPickerValue);
 
             sliderValue = GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", (float)sliderValue), sliderValue, -50, 100);
             sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), sliderBarValue, 0, 100);
@@ -201,7 +201,7 @@ int main()
 
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar");
 
-            alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, alphaValue);
+            alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, alphaValue);
 
             if (showMessageBox)
             {
