@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.1-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.1 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -14,6 +14,7 @@
 *       - GroupBox
 *       - Line
 *       - Panel
+*       - ScrollPanel
 *
 *   # Basic Controls
 *       - Label
@@ -32,8 +33,7 @@
 *       - SliderBar     --> Slider
 *       - ProgressBar
 *       - StatusBar
-*       - ScrollBar
-*       - ScrollPanel
+*       - ScrollBar     // TODO: Really? Do we need it? We have GuiScrollPanel()
 *       - DummyRec
 *       - Grid
 *
@@ -112,7 +112,9 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.1 (xx-Dec-2021) REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
+*       3.1 (12-Jan-2021) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
+*                         REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
+*                         REVIEWED: GuiLine() for better alignment when including text
 *                         RENAMED: Multiple controls properties definitions to prepend RAYGUI_
 *                         RENAMED: RICON_ references to RAYGUI_ICON_ for library consistency
 *       3.0 (04-Nov-2021) Integrated ricons data to avoid external file
@@ -184,7 +186,7 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "3.1-dev"
+#define RAYGUI_VERSION  "3.1"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -534,16 +536,9 @@ RAYGUIAPI float GuiColorBarHue(Rectangle bounds, float value);                  
 RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
 RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
 
-/*
-typedef GuiStyle (unsigned int *)
-RAYGUIAPI GuiStyle LoadGuiStyle(const char *fileName);          // Load style from file (.rgs)
-RAYGUIAPI void UnloadGuiStyle(GuiStyle style);                  // Unload style
-*/
-
+// Icons functionality
 RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
-
 #if !defined(RAYGUI_NO_ICONS)
-// Gui icons functionality
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
 
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
@@ -1403,7 +1398,7 @@ void GuiGroupBox(Rectangle bounds, const char *text)
 void GuiLine(Rectangle bounds, const char *text)
 {
     #if !defined(RAYGUI_LINE_TEXT_PADDING)
-        #define RAYGUI_LINE_TEXT_PADDING  10
+        #define RAYGUI_LINE_TEXT_PADDING  8
     #endif
 
     GuiControlState state = guiState;
@@ -1417,14 +1412,14 @@ void GuiLine(Rectangle bounds, const char *text)
     {
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(text);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.height = bounds.height;
         textBounds.x = bounds.x + RAYGUI_LINE_TEXT_PADDING;
-        textBounds.y = bounds.y - (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+        textBounds.y = bounds.y;
 
         // Draw line with embedded text label: "--- text --------------"
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, RAYGUI_LINE_TEXT_PADDING - 2, 1 }, 0, BLANK, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height/2, RAYGUI_LINE_TEXT_PADDING - 2, 1 }, 0, BLANK, color);
         GuiLabel(textBounds, text);
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + RAYGUI_LINE_TEXT_PADDING + textBounds.width + 4, bounds.y, bounds.width - textBounds.width - RAYGUI_LINE_TEXT_PADDING - 4, 1 }, 0, BLANK, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + RAYGUI_LINE_TEXT_PADDING + textBounds.width + 4, bounds.y + bounds.height/2, bounds.width - textBounds.width - RAYGUI_LINE_TEXT_PADDING - 4, 1 }, 0, BLANK, color);
     }
     //--------------------------------------------------------------------
 }
