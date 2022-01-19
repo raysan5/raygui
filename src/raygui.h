@@ -1451,7 +1451,7 @@ void GuiPanel(Rectangle bounds, const char *text)
 }
 
 // Scroll Panel control
-Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll)
+Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll)
 {
     GuiControlState state = guiState;
 
