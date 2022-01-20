@@ -1,3 +1,42 @@
+===| Description |===
+
+Generic Mobile System is a raster proportional sans serif typeface, extracted from various generic/knockoff mobile devices, created with libre/free font editor software FontForge.
+
+Source files: https://notabug.org/HarvettFox96/ttf-genericmobile/
+
+===| Update log |===
+
+Version 20190323.02:
+
+- OS/2 and TeX metric fixes.
+- Updated Panose.
+
+Version 20190323.01:
+
+- Added outline variant.
+- Minor fixes.
+
+Version 20190103.03:
+
+- Minor bearing tweaks. (Clásico only)
+- Minor fixes.
+
+Version 20190103.02:
+
+- Bearing tweaks from the different generic mobile phone as Cherry Mobile S5. (Clásico only)
+- Minor fixes.
+
+Version 20190103.01:
+
+- Initial public release.
+
+===| Copyright/attribution notice |===
+
+© 2009-2019 Jayvee Enaguas (HarvettFox96). Released under a libre/free public domain licence as Creative Commons Zero (CC0) 1.0. Applies worldwide countries including the Philippines, Spain, etc.
+
+
+-------------------------------------------------------------------------------
+
 Creative Commons Legal Code
 
 CC0 1.0 Universal
