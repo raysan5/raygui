@@ -1974,6 +1974,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     };
 
     if (cursor.height > bounds.height) cursor.height = bounds.height - GuiGetStyle(TEXTBOX, BORDER_WIDTH)*2;
+    if (cursor.y < (bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH))) cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH);
 
     // Update control
     //--------------------------------------------------------------------
