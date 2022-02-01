@@ -1,6 +1,6 @@
 style: sunny
 -------------
-Sweet, colorful, sunny! Inspired by the [playdate](https://play.date/) console and its [pulp](https://play.date/pulp/) editor!
+Sweet, colorful, sunny! Inspired by the [Playdate](https://play.date/) console and its [pulp](https://play.date/pulp/) editor!
 
 ![sunny style table](style_table.png)
 
