@@ -556,47 +556,8 @@ RAYGUIAPI void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit 
 RAYGUIAPI void GuiSetIconPixel(int iconId, int x, int y);       // Set icon pixel value
 RAYGUIAPI void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pixel value
 RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
-#endif
 
-#if defined(__cplusplus)
-}            // Prevents name mangling of functions
-#endif
-
-#endif // RAYGUI_H
-
-/***********************************************************************************
-*
-*   RAYGUI IMPLEMENTATION
-*
-************************************************************************************/
-
-#if defined(RAYGUI_IMPLEMENTATION)
-
-#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
-#include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
-#include <string.h>             // Required for: strlen() [GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()], memset(), memcpy()
-#include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
-#include <math.h>               // Required for: roundf() [GuiColorPicker()]
-
-#ifdef __cplusplus
-    #define RAYGUI_CLITERAL(name) name
-#else
-    #define RAYGUI_CLITERAL(name) (name)
-#endif
-
-#if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
-
-// Embedded raygui icons, no external file provided
-#define RAYGUI_ICON_SIZE               16       // Size of icons (squared)
-#define RAYGUI_ICON_MAX_ICONS         256       // Maximum number of icons
-#define RAYGUI_ICON_MAX_NAME_LENGTH    32       // Maximum length of icon name id
-
-// Icons data is defined by bit array (every bit represents one pixel)
-// Those arrays are stored as unsigned int data arrays, so every array
-// element defines 32 pixels (bits) of information
-// Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
-#define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
-
+#if !defined(RAYGUI_CUSTOM_ICONS)
 //----------------------------------------------------------------------------------
 // Icons enumeration
 //----------------------------------------------------------------------------------
@@ -858,6 +819,48 @@ typedef enum {
     RAYGUI_ICON_254                      = 254,
     RAYGUI_ICON_255                      = 255,
 } guiIconName;
+#endif
+
+#endif
+
+#if defined(__cplusplus)
+}            // Prevents name mangling of functions
+#endif
+
+#endif // RAYGUI_H
+
+/***********************************************************************************
+*
+*   RAYGUI IMPLEMENTATION
+*
+************************************************************************************/
+
+#if defined(RAYGUI_IMPLEMENTATION)
+
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
+#include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
+#include <string.h>             // Required for: strlen() [GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()], memset(), memcpy()
+#include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
+#include <math.h>               // Required for: roundf() [GuiColorPicker()]
+
+#ifdef __cplusplus
+    #define RAYGUI_CLITERAL(name) name
+#else
+    #define RAYGUI_CLITERAL(name) (name)
+#endif
+
+#if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
+
+// Embedded raygui icons, no external file provided
+#define RAYGUI_ICON_SIZE               16       // Size of icons (squared)
+#define RAYGUI_ICON_MAX_ICONS         256       // Maximum number of icons
+#define RAYGUI_ICON_MAX_NAME_LENGTH    32       // Maximum length of icon name id
+
+// Icons data is defined by bit array (every bit represents one pixel)
+// Those arrays are stored as unsigned int data arrays, so every array
+// element defines 32 pixels (bits) of information
+// Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
+#define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
 
 //----------------------------------------------------------------------------------
 // Icons data for all gui possible icons (allocated on data segment by default)
@@ -3288,7 +3291,7 @@ Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
 
     // Draw control
     //--------------------------------------------------------------------
-    
+
     // TODO: Draw background panel?
 
     switch (state)
@@ -3870,7 +3873,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
     #define TEXT_VALIGN_PIXEL_OFFSET(h)  ((int)h%2)     // Vertical alignment for pixel perfect
-    
+
     #if !defined(RAYGUI_ICON_TEXT_PADDING)
         #define RAYGUI_ICON_TEXT_PADDING   4
     #endif
@@ -3882,7 +3885,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Get text position depending on alignment and iconId
         //---------------------------------------------------------------------------------
-        
+
 
         Vector2 position = { bounds.x, bounds.y };
 
@@ -4213,7 +4216,7 @@ const char **TextSplit(const char *text, char delimiter, int *count)
     // all used memory is static... it has some limitations:
     //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ELEMENTS
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
-    
+
     #if !defined(RAYGUI_TEXTSPLIT_MAX_ELEMENTS)
         #define RAYGUI_TEXTSPLIT_MAX_ELEMENTS        128
     #endif
