@@ -78,6 +78,8 @@ typedef struct {
 
     int prevFilesListActive;
 
+    bool saveFileMode;
+
 } GuiFileDialogState;
 
 #ifdef __cplusplus
@@ -350,7 +352,7 @@ void GuiFileDialog(GuiFileDialogState *state)
                         }
                     }
                 }
-                else
+                else if (!state->saveFileMode)
                 {
                     strcpy(state->fileNameText, state->fileNameTextCopy);
                 }
