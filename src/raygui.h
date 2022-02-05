@@ -10,11 +10,11 @@
 *   Controls provided:
 *
 *   # Container/separators Controls
-*       - WindowBox
-*       - GroupBox
+*       - WindowBox     --> StatusBar, Panel
+*       - GroupBox      --> Line
 *       - Line
-*       - Panel
-*       - ScrollPanel
+*       - Panel         --> StatusBar
+*       - ScrollPanel   --> StatusBar
 *
 *   # Basic Controls
 *       - Label
@@ -33,7 +33,6 @@
 *       - SliderBar     --> Slider
 *       - ProgressBar
 *       - StatusBar
-*       - ScrollBar     // TODO: Really? Do we need it? We have GuiScrollPanel()
 *       - DummyRec
 *       - Grid
 *
@@ -112,7 +111,8 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.2 (xx-Feb-2022) REDESIGNED: GuiPanel() to support text parameter
+*       3.2 (xx-Feb-2022) REMOVED: GuiScrollBar(), only internal
+*                         REDESIGNED: GuiPanel() to support text parameter
 *                         REDESIGNED: GuiScrollPanel() to support text parameter
 *                         REDESIGNED: GuiColorPicker() to support text parameter
 *                         REDESIGNED: GuiColorPanel() to support text parameter
@@ -333,7 +333,9 @@ typedef enum {
 
 // Gui controls
 typedef enum {
-    DEFAULT = 0,    // Generic control -> populates to all controls when set
+    // Default -> populates to all controls when set
+    DEFAULT = 0,
+    // Basic controls
     LABEL,          // Used also for: LABELBUTTON
     BUTTON,
     TOGGLE,         // Used also for: TOGGLEGROUP
@@ -344,7 +346,7 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
-    SPINNER,
+    SPINNER,        // Uses: BUTTON, VALUEBOX
     LISTVIEW,
     COLORPICKER,
     SCROLLBAR,
@@ -387,7 +389,7 @@ typedef enum {
 // Label
 //typedef enum { } GuiLabelProperty;
 
-// Button
+// Button/Spinner
 //typedef enum { } GuiButtonProperty;
 
 // Toggle/ToggleGroup
@@ -469,6 +471,9 @@ typedef enum {
     HUEBAR_SELECTOR_HEIGHT,        // Right hue bar selector height
     HUEBAR_SELECTOR_OVERFLOW       // Right hue bar selector overflow
 } GuiColorPickerProperty;
+
+#define SCROLLBAR_LEFT_SIDE     0
+#define SCROLLBAR_RIGHT_SIDE    1
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -2150,8 +2155,6 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
     int tempTextAlign = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-
-
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlign);
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
