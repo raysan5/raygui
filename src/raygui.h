@@ -233,7 +233,7 @@
 // NOTE: Avoiding those calls, also avoids const strings memory usage
 #define RAYGUI_SUPPORT_LOG_INFO
 #if defined(RAYGUI_SUPPORT_LOG_INFO)
-  #define RAYGUI_LOG(...) printf(__VA_ARGS__)
+  #define RAYGUI_LOG(...)           printf(__VA_ARGS__)
 #else
   #define RAYGUI_LOG(...)
 #endif
@@ -526,9 +526,7 @@ RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char 
 RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
 RAYGUIAPI void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
 RAYGUIAPI void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
-RAYGUIAPI int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);                    // Scroll Bar control
-RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs);                                // Grid control
-
+RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs);              // Grid control, returns mouse cell position
 
 // Advance controls set
 RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
@@ -546,6 +544,7 @@ RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style de
 
 // Icons functionality
 RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
+
 #if !defined(RAYGUI_NO_ICONS)
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
 
@@ -1250,9 +1249,11 @@ static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
 
-static const char **GuiTextSplit(const char *text, int *count, int *textRow);   // Split controls text into multiple strings
+static const char **GuiTextSplit(const char *text, int *count, int *textRow);       // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
+
+static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
 
 //----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
@@ -1444,10 +1445,21 @@ void GuiPanel(Rectangle bounds, const char *text)
 
     GuiControlState state = guiState;
 
-    // TODO: Draw text somewhere if required, maybe like a window with a header section?
+    // Text will be drawn as a header bar (if provided)
+    Rectangle statusBar = { bounds.x, bounds.y, bounds.width, (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT };
+    if (bounds.height < RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT*2.0f) bounds.height = RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT*2.0f;
+
+    if (text != NULL)
+    {
+        // Move panel bounds after the header bar
+        bounds.y += (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1;
+        bounds.height -= (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + 1;
+    }
 
     // Draw control
     //--------------------------------------------------------------------
+    if (text != NULL) GuiStatusBar(statusBar, text);  // Draw panel header as status bar
+
     GuiDrawRectangle(bounds, RAYGUI_PANEL_BORDER_WIDTH, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED: LINE_COLOR)), guiAlpha),
                      Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BASE_COLOR_DISABLED : BACKGROUND_COLOR)), guiAlpha));
     //--------------------------------------------------------------------
@@ -1460,6 +1472,17 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
 
     Vector2 scrollPos = { 0.0f, 0.0f };
     if (scroll != NULL) scrollPos = *scroll;
+
+    // Text will be drawn as a header bar (if provided)
+    Rectangle statusBar = { bounds.x, bounds.y, bounds.width, (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT };
+    if (bounds.height < RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT*2.0f) bounds.height = RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT*2.0f;
+
+    if (text != NULL)
+    {
+        // Move panel bounds after the header bar
+        bounds.y += (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1;
+        bounds.height -= (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + 1;
+    }
 
     bool hasHorizontalScrollBar = (content.width > bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH))? true : false;
     bool hasVerticalScrollBar = (content.height > bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH))? true : false;
@@ -1514,7 +1537,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
             float wheelMove = GetMouseWheelMove();
 
             // Horizontal scroll (Shift + Mouse wheel)
-            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))) scrollPos.x += wheelMove*20;
+            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_SHIFT))) scrollPos.x += wheelMove*20;
             else scrollPos.y += wheelMove*20; // Vertical scroll
         }
     }
@@ -1528,6 +1551,8 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
 
     // Draw control
     //--------------------------------------------------------------------
+    if (text != NULL) GuiStatusBar(statusBar, text);  // Draw panel header as status bar
+
     GuiDrawRectangle(bounds, 0, BLANK, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
 
     // Save size of the scrollbar slider
@@ -2620,121 +2645,6 @@ void GuiDummyRec(Rectangle bounds, const char *text)
     //------------------------------------------------------------------
 }
 
-// Scroll Bar control
-int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
-{
-    GuiControlState state = guiState;
-
-    // Is the scrollbar horizontal or vertical?
-    bool isVertical = (bounds.width > bounds.height)? false : true;
-
-    // The size (width or height depending on scrollbar type) of the spinner buttons
-    const int spinnerSize = GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE)? (isVertical? (int)bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) : (int)bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH)) : 0;
-
-    // Arrow buttons [<] [>] [∧] [∨]
-    Rectangle arrowUpLeft = { 0 };
-    Rectangle arrowDownRight = { 0 };
-
-    // Actual area of the scrollbar excluding the arrow buttons
-    Rectangle scrollbar = { 0 };
-
-    // Slider bar that moves     --[///]-----
-    Rectangle slider = { 0 };
-
-    // Normalize value
-    if (value > maxValue) value = maxValue;
-    if (value < minValue) value = minValue;
-
-    const int range = maxValue - minValue;
-    int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
-
-    // Calculate rectangles for all of the components
-    arrowUpLeft = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
-
-    if (isVertical)
-    {
-        arrowDownRight = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize};
-        scrollbar = RAYGUI_CLITERAL(Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), arrowUpLeft.y + arrowUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING)), bounds.height - arrowUpLeft.height - arrowDownRight.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
-        sliderSize = (sliderSize >= scrollbar.height)? ((int)scrollbar.height - 2) : sliderSize;     // Make sure the slider won't get outside of the scrollbar
-        slider = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)), (float)bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)), (float)sliderSize };
-    }
-    else
-    {
-        arrowDownRight = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize};
-        scrollbar = RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x + arrowUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), bounds.width - arrowUpLeft.width - arrowDownRight.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING))};
-        sliderSize = (sliderSize >= scrollbar.width)? ((int)scrollbar.width - 2) : sliderSize;       // Make sure the slider won't get outside of the scrollbar
-        slider = RAYGUI_CLITERAL(Rectangle){ (float)scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)sliderSize, (float)bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)) };
-    }
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            state = GUI_STATE_FOCUSED;
-
-            // Handle mouse wheel
-            int wheel = (int)GetMouseWheelMove();
-            if (wheel != 0) value += wheel;
-
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-
-                state = GUI_STATE_PRESSED;
-            }
-            else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-            {
-                if (!isVertical)
-                {
-                    Rectangle scrollArea = { arrowUpLeft.x + arrowUpLeft.width, arrowUpLeft.y, scrollbar.width, bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH)};
-                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.x - scrollArea.x - slider.width/2)*range)/(scrollArea.width - slider.width) + minValue);
-                }
-                else
-                {
-                    Rectangle scrollArea = { arrowUpLeft.x, arrowUpLeft.y+arrowUpLeft.height, bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH),  scrollbar.height};
-                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.y - scrollArea.y - slider.height/2)*range)/(scrollArea.height - slider.height) + minValue);
-                }
-            }
-        }
-
-        // Normalize value
-        if (value > maxValue) value = maxValue;
-        if (value < minValue) value = minValue;
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   // Draw the background
-
-    GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
-    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
-
-    // Draw arrows (using icon if available)
-    if (GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE))
-    {
-#if defined(RAYGUI_NO_ICONS)
-        GuiDrawText(isVertical? "^" : "<", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
-        GuiDrawText(isVertical? "v" : ">", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
-#else
-        GuiDrawText(isVertical? "#121#" : "#118#", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RAYGUI_ICON_ARROW_UP_FILL / RAYGUI_ICON_ARROW_LEFT_FILL
-        GuiDrawText(isVertical? "#120#" : "#119#", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-                    GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RAYGUI_ICON_ARROW_DOWN_FILL / RAYGUI_ICON_ARROW_RIGHT_FILL
-#endif
-    }
-    //--------------------------------------------------------------------
-
-    return value;
-}
-
 // List View control
 int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active)
 {
@@ -3262,7 +3172,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 // NOTE: Returns grid mouse-hover selected cell
 // About drawing lines at subpixel spacing, simple put, not easy solution:
 // https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
-Vector2 GuiGrid(Rectangle bounds, float spacing, int subdivs)
+Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs)
 {
     // Grid lines alpha amount
     #if !defined(RAYGUI_GRID_ALPHA)
@@ -4139,6 +4049,121 @@ static Vector3 ConvertHSVtoRGB(Vector3 hsv)
     }
 
     return rgb;
+}
+
+// Scroll bar control (used by GuiScrollPanel())
+static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
+{
+    GuiControlState state = guiState;
+
+    // Is the scrollbar horizontal or vertical?
+    bool isVertical = (bounds.width > bounds.height) ? false : true;
+
+    // The size (width or height depending on scrollbar type) of the spinner buttons
+    const int spinnerSize = GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE) ? (isVertical ? (int)bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) : (int)bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH)) : 0;
+
+    // Arrow buttons [<] [>] [∧] [∨]
+    Rectangle arrowUpLeft = { 0 };
+    Rectangle arrowDownRight = { 0 };
+
+    // Actual area of the scrollbar excluding the arrow buttons
+    Rectangle scrollbar = { 0 };
+
+    // Slider bar that moves     --[///]-----
+    Rectangle slider = { 0 };
+
+    // Normalize value
+    if (value > maxValue) value = maxValue;
+    if (value < minValue) value = minValue;
+
+    const int range = maxValue - minValue;
+    int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
+
+    // Calculate rectangles for all of the components
+    arrowUpLeft = RAYGUI_CLITERAL(Rectangle) { (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
+
+    if (isVertical)
+    {
+        arrowDownRight = RAYGUI_CLITERAL(Rectangle) { (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
+        scrollbar = RAYGUI_CLITERAL(Rectangle) { bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), arrowUpLeft.y + arrowUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING)), bounds.height - arrowUpLeft.height - arrowDownRight.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
+        sliderSize = (sliderSize >= scrollbar.height) ? ((int)scrollbar.height - 2) : sliderSize;     // Make sure the slider won't get outside of the scrollbar
+        slider = RAYGUI_CLITERAL(Rectangle) { (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)), (float)bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)), (float)sliderSize };
+    }
+    else
+    {
+        arrowDownRight = RAYGUI_CLITERAL(Rectangle) { (float)bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
+        scrollbar = RAYGUI_CLITERAL(Rectangle) { arrowUpLeft.x + arrowUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), bounds.width - arrowUpLeft.width - arrowDownRight.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING)) };
+        sliderSize = (sliderSize >= scrollbar.width) ? ((int)scrollbar.width - 2) : sliderSize;       // Make sure the slider won't get outside of the scrollbar
+        slider = RAYGUI_CLITERAL(Rectangle) { (float)scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)sliderSize, (float)bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)) };
+    }
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            state = GUI_STATE_FOCUSED;
+
+            // Handle mouse wheel
+            int wheel = (int)GetMouseWheelMove();
+            if (wheel != 0) value += wheel;
+
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+
+                state = GUI_STATE_PRESSED;
+            }
+            else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (!isVertical)
+                {
+                    Rectangle scrollArea = { arrowUpLeft.x + arrowUpLeft.width, arrowUpLeft.y, scrollbar.width, bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
+                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.x - scrollArea.x - slider.width/2)*range)/(scrollArea.width - slider.width) + minValue);
+                }
+                else
+                {
+                    Rectangle scrollArea = { arrowUpLeft.x, arrowUpLeft.y+arrowUpLeft.height, bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH),  scrollbar.height };
+                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.y - scrollArea.y - slider.height/2)*range)/(scrollArea.height - slider.height) + minValue);
+                }
+            }
+        }
+
+        // Normalize value
+        if (value > maxValue) value = maxValue;
+        if (value < minValue) value = minValue;
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiDrawRectangle(bounds, GuiGetStyle(SCROLLBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(LISTVIEW, BORDER + state*3)), guiAlpha), Fade(GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED)), guiAlpha));   // Draw the background
+
+    GuiDrawRectangle(scrollbar, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL)), guiAlpha));     // Draw the scrollbar active area background
+    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BORDER + state*3)), guiAlpha));         // Draw the slider bar
+
+    // Draw arrows (using icon if available)
+    if (GuiGetStyle(SCROLLBAR, ARROWS_VISIBLE))
+    {
+#if defined(RAYGUI_NO_ICONS)
+        GuiDrawText(isVertical ? "^" : "<", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical ? bounds.width : bounds.height, isVertical ? bounds.width : bounds.height },
+            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(isVertical ? "v" : ">", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical ? bounds.width : bounds.height, isVertical ? bounds.width : bounds.height },
+            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))), guiAlpha));
+#else
+        GuiDrawText(isVertical ? "#121#" : "#118#", RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical ? bounds.width : bounds.height, isVertical ? bounds.width : bounds.height },
+            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RAYGUI_ICON_ARROW_UP_FILL / RAYGUI_ICON_ARROW_LEFT_FILL
+        GuiDrawText(isVertical ? "#120#" : "#119#", RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical ? bounds.width : bounds.height, isVertical ? bounds.width : bounds.height },
+            GUI_TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)), guiAlpha));   // RAYGUI_ICON_ARROW_DOWN_FILL / RAYGUI_ICON_ARROW_RIGHT_FILL
+#endif
+    }
+    //--------------------------------------------------------------------
+
+    return value;
 }
 
 #if defined(RAYGUI_STANDALONE)

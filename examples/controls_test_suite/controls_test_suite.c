@@ -197,7 +197,11 @@ int main()
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, NULL, progressValue, 0, 1);
 
             // NOTE: View rectangle could be used to perform some scissor test
-            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, "", (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
+            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, NULL, (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
+
+            GuiPanel((Rectangle){ 560, 25 + 180, 100, 160 }, "Panel Info");
+
+            GuiGrid((Rectangle) { 560, 25 + 180 + 180, 100, 120 }, NULL, 20, 2);
 
             GuiStatusBar((Rectangle){ 0, GetScreenHeight() - 20, GetScreenWidth(), 20 }, "This is a status bar");
 
