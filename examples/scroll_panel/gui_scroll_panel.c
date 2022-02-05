@@ -66,10 +66,10 @@ int main()
 
             DrawText(TextFormat("[%f, %f]", panelScroll.x, panelScroll.y), 4, 4, 20, RED);
 
-            Rectangle view = GuiScrollPanel(panelRec, "", panelContentRec, &panelScroll);
+            Rectangle view = GuiScrollPanel(panelRec, NULL, panelContentRec, &panelScroll);
 
             BeginScissorMode(view.x, view.y, view.width, view.height);
-                GuiGrid((Rectangle){panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height}, 16, 3);
+                GuiGrid((Rectangle){panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height}, NULL, 16, 3);
             EndScissorMode();
 
             if (showContentArea) DrawRectangle(panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height, Fade(RED, 0.1));
