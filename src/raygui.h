@@ -378,12 +378,12 @@ typedef enum {
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
 
 // DEFAULT extended properties
-// NOTE: Those properties are actually common to all controls
+// NOTE: Those properties are common to all controls or global
 typedef enum {
-    TEXT_SIZE = 16,
-    TEXT_SPACING,
-    LINE_COLOR,
-    BACKGROUND_COLOR,
+    TEXT_SIZE = 16,             // Text size (glyphs max height)
+    TEXT_SPACING,               // Text spacing between glyphs
+    LINE_COLOR,                 // Line control color
+    BACKGROUND_COLOR,           // Background color
 } GuiDefaultProperty;
 
 // Label
@@ -394,76 +394,74 @@ typedef enum {
 
 // Toggle/ToggleGroup
 typedef enum {
-    GROUP_PADDING = 16,
+    GROUP_PADDING = 16,         // ToggleGroup separation between toggles
 } GuiToggleProperty;
 
 // Slider/SliderBar
 typedef enum {
-    SLIDER_WIDTH = 16,
-    SLIDER_PADDING
+    SLIDER_WIDTH = 16,          // Slider size of internal bar
+    SLIDER_PADDING              // Slider/SliderBar internal bar padding
 } GuiSliderProperty;
 
 // ProgressBar
 typedef enum {
-    PROGRESS_PADDING = 16,
+    PROGRESS_PADDING = 16,      // ProgressBar internal padding
 } GuiProgressBarProperty;
-
-// CheckBox
-typedef enum {
-    CHECK_PADDING = 16
-} GuiCheckBoxProperty;
-
-// ComboBox
-typedef enum {
-    COMBO_BUTTON_WIDTH = 16,
-    COMBO_BUTTON_PADDING
-} GuiComboBoxProperty;
-
-// DropdownBox
-typedef enum {
-    ARROW_PADDING = 16,
-    DROPDOWN_ITEMS_PADDING
-} GuiDropdownBoxProperty;
-
-// TextBox/TextBoxMulti/ValueBox/Spinner
-typedef enum {
-    TEXT_INNER_PADDING = 16,
-    TEXT_LINES_PADDING,
-    COLOR_SELECTED_FG,
-    COLOR_SELECTED_BG
-} GuiTextBoxProperty;
-
-// Spinner
-typedef enum {
-    SPIN_BUTTON_WIDTH = 16,
-    SPIN_BUTTON_PADDING,
-} GuiSpinnerProperty;
 
 // ScrollBar
 typedef enum {
     ARROWS_SIZE = 16,
     ARROWS_VISIBLE,
-    SCROLL_SLIDER_PADDING,
+    SCROLL_SLIDER_PADDING,      // (SLIDERBAR, SLIDER_PADDING)
     SCROLL_SLIDER_SIZE,
     SCROLL_PADDING,
     SCROLL_SPEED,
 } GuiScrollBarProperty;
 
+// CheckBox
+typedef enum {
+    CHECK_PADDING = 16          // CheckBox internal check padding
+} GuiCheckBoxProperty;
+
+// ComboBox
+typedef enum {
+    COMBO_BUTTON_WIDTH = 16,    // ComboBox right button width
+    COMBO_BUTTON_SPACING        // ComboBox button separation
+} GuiComboBoxProperty;
+
+// DropdownBox
+typedef enum {
+    ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
+    DROPDOWN_ITEMS_SPACING      // DropdownBox items separation
+} GuiDropdownBoxProperty;
+
+// TextBox/TextBoxMulti/ValueBox/Spinner
+typedef enum {
+    TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
+    TEXT_LINES_SPACING,         // TextBoxMulti lines separation
+} GuiTextBoxProperty;
+
+// Spinner
+typedef enum {
+    SPIN_BUTTON_WIDTH = 16,     // Spinner left/right buttons width
+    SPIN_BUTTON_SPACING,        // Spinner buttons separation
+} GuiSpinnerProperty;
+
 // ListView
 typedef enum {
-    LIST_ITEMS_HEIGHT = 16,
-    LIST_ITEMS_PADDING,
-    SCROLLBAR_WIDTH,
-    SCROLLBAR_SIDE,
+    LIST_ITEMS_HEIGHT = 16,     // ListView items height
+    LIST_ITEMS_SPACING,         // ListView items separation
+    SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
+    SCROLLBAR_SIDE,             // ListView scrollbar side (0-left, 1-right)
 } GuiListViewProperty;
 
 // ColorPicker
 typedef enum {
     COLOR_SELECTOR_SIZE = 16,
-    HUEBAR_WIDTH,                  // Right hue bar width
-    HUEBAR_PADDING,                // Right hue bar separation from panel
-    HUEBAR_SELECTOR_HEIGHT,        // Right hue bar selector height
-    HUEBAR_SELECTOR_OVERFLOW       // Right hue bar selector overflow
+    HUEBAR_WIDTH,               // ColorPicker right hue bar width
+    HUEBAR_PADDING,             // ColorPicker right hue bar separation from panel
+    HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
+    HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
 } GuiColorPickerProperty;
 
 #define SCROLLBAR_LEFT_SIDE     0
@@ -1720,14 +1718,14 @@ bool GuiToggle(Rectangle bounds, const char *text, bool active)
 // Toggle Group control, returns toggled button index
 int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 {
-    #if !defined(RAYGUI_TOGGLEGROUP_MAX_ELEMENTS)
-        #define RAYGUI_TOGGLEGROUP_MAX_ELEMENTS    32
+    #if !defined(RAYGUI_TOGGLEGROUP_MAX_ITEMS)
+        #define RAYGUI_TOGGLEGROUP_MAX_ITEMS    32
     #endif
 
     float initBoundsX = bounds.x;
 
     // Get substrings items from text (items pointers)
-    int rows[RAYGUI_TOGGLEGROUP_MAX_ELEMENTS] = { 0 };
+    int rows[RAYGUI_TOGGLEGROUP_MAX_ITEMS] = { 0 };
     int itemCount = 0;
     const char **items = GuiTextSplit(text, &itemCount, rows);
 
@@ -1815,9 +1813,9 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
 {
     GuiControlState state = guiState;
 
-    bounds.width -= (GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH) + GuiGetStyle(COMBOBOX, COMBO_BUTTON_PADDING));
+    bounds.width -= (GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH) + GuiGetStyle(COMBOBOX, COMBO_BUTTON_SPACING));
 
-    Rectangle selector = { (float)bounds.x + bounds.width + GuiGetStyle(COMBOBOX, COMBO_BUTTON_PADDING),
+    Rectangle selector = { (float)bounds.x + bounds.width + GuiGetStyle(COMBOBOX, COMBO_BUTTON_SPACING),
                            (float)bounds.y, (float)GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH), (float)bounds.height };
 
     // Get substrings items from text (items pointers, lengths and count)
@@ -1883,7 +1881,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
     const char **items = GuiTextSplit(text, &itemCount, NULL);
 
     Rectangle boundsOpen = bounds;
-    boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
+    boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
     Rectangle itemBounds = bounds;
 
@@ -1912,7 +1910,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
             for (int i = 0; i < itemCount; i++)
             {
                 // Update item rectangle y position for next item
-                itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
+                itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
@@ -1956,7 +1954,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
         for (int i = 0; i < itemCount; i++)
         {
             // Update item rectangle y position for next item
-            itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING));
+            itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
             if (i == itemSelected)
             {
@@ -2094,8 +2092,8 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
     bool pressed = false;
     int tempValue = *value;
 
-    Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_PADDING), bounds.y,
-                          bounds.width - 2*(GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_PADDING)), bounds.height };
+    Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_SPACING), bounds.y,
+                          bounds.width - 2*(GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_SPACING)), bounds.height };
     Rectangle leftButtonBound = { (float)bounds.x, (float)bounds.y, (float)GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.height };
     Rectangle rightButtonBound = { (float)bounds.x + bounds.width - GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.y, (float)GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.height };
 
@@ -2388,7 +2386,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
         if ((codepointLength == 1) && (codepoint == '\n'))
         {
-            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_PADDING));   // Line feed
+            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
             cursorPos.x = textAreaBounds.x;                 // Carriage return
         }
         else
@@ -2402,7 +2400,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Jump line if the end of the text box area has been reached
                 if ((cursorPos.x + (glyphWidth*scaleFactor)) > (textAreaBounds.x + textAreaBounds.width))
                 {
-                    cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_PADDING));   // Line feed
+                    cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
                     cursorPos.x = textAreaBounds.x;     // Carriage return
                 }
             }
@@ -2662,18 +2660,18 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 
     // Check if we need a scroll bar
     bool useScrollBar = false;
-    if ((GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING))*count > bounds.height) useScrollBar = true;
+    if ((GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING))*count > bounds.height) useScrollBar = true;
 
     // Define base item rectangle [0]
     Rectangle itemBounds = { 0 };
-    itemBounds.x = bounds.x + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING);
-    itemBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
-    itemBounds.width = bounds.width - 2*GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    itemBounds.x = bounds.x + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING);
+    itemBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    itemBounds.width = bounds.width - 2*GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) - GuiGetStyle(DEFAULT, BORDER_WIDTH);
     itemBounds.height = (float)GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT);
     if (useScrollBar) itemBounds.width -= GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH);
 
     // Get items on the list
-    int visibleItems = (int)bounds.height/(GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING));
+    int visibleItems = (int)bounds.height/(GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING));
     if (visibleItems > count) visibleItems = count;
 
     int startIndex = (scrollIndex == NULL)? 0 : *scrollIndex;
@@ -2706,7 +2704,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
                 }
 
                 // Update item rectangle y position for next item
-                itemBounds.y += (GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING));
+                itemBounds.y += (GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING));
             }
 
             if (useScrollBar)
@@ -2724,7 +2722,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
         else itemFocused = -1;
 
         // Reset item rectangle y to [0]
-        itemBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
+        itemBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
     }
     //--------------------------------------------------------------------
 
@@ -2763,7 +2761,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
         }
 
         // Update item rectangle y position for next item
-        itemBounds.y += (GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING));
+        itemBounds.y += (GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING));
     }
 
     if (useScrollBar)
@@ -3497,15 +3495,13 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(PROGRESSBAR, PROGRESS_PADDING, 1);
     GuiSetStyle(CHECKBOX, CHECK_PADDING, 1);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 32);
-    GuiSetStyle(COMBOBOX, COMBO_BUTTON_PADDING, 2);
+    GuiSetStyle(COMBOBOX, COMBO_BUTTON_SPACING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
-    GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_PADDING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_LINES_PADDING, 4);
+    GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING, 2);
+    GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, 4);
     GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 4);
-    GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, 0xf0fffeff);
-    GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, 0x839affe0);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 24);
-    GuiSetStyle(SPINNER, SPIN_BUTTON_PADDING, 2);
+    GuiSetStyle(SPINNER, SPIN_BUTTON_SPACING, 2);
     GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
     GuiSetStyle(SCROLLBAR, ARROWS_VISIBLE, 0);
     GuiSetStyle(SCROLLBAR, ARROWS_SIZE, 6);
@@ -3514,7 +3510,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(SCROLLBAR, SCROLL_PADDING, 0);
     GuiSetStyle(SCROLLBAR, SCROLL_SPEED, 12);
     GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
-    GuiSetStyle(LISTVIEW, LIST_ITEMS_PADDING, 2);
+    GuiSetStyle(LISTVIEW, LIST_ITEMS_SPACING, 2);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 12);
     GuiSetStyle(LISTVIEW, SCROLLBAR_SIDE, SCROLLBAR_RIGHT_SIDE);
     GuiSetStyle(COLORPICKER, COLOR_SELECTOR_SIZE, 8);
@@ -3730,7 +3726,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
     switch (control)
     {
-        case COMBOBOX: bounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_PADDING)); break;
+        case COMBOBOX: bounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_SPACING)); break;
         case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
         default:
         {
@@ -3877,18 +3873,18 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
     // all used memory is static... it has some limitations:
-    //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ELEMENTS
+    //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ITEMS
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
     // NOTE: Those definitions could be externally provided if required
 
-    #if !defined(RAYGUI_TEXTSPLIT_MAX_ELEMENTS)
-        #define RAYGUI_TEXTSPLIT_MAX_ELEMENTS        128
+    #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
+        #define RAYGUI_TEXTSPLIT_MAX_ITEMS        128
     #endif
     #if !defined(RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE)
         #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE      1024
     #endif
 
-    static const char *result[RAYGUI_TEXTSPLIT_MAX_ELEMENTS] = { NULL };
+    static const char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL };
     static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 };
     memset(buffer, 0, RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE);
 
@@ -3915,7 +3911,7 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
             buffer[i] = '\0';   // Set an end of string at this point
 
             counter++;
-            if (counter == RAYGUI_TEXTSPLIT_MAX_ELEMENTS) break;
+            if (counter == RAYGUI_TEXTSPLIT_MAX_ITEMS) break;
         }
     }
 
@@ -4236,17 +4232,17 @@ const char **TextSplit(const char *text, char delimiter, int *count)
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
     // all used memory is static... it has some limitations:
-    //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ELEMENTS
+    //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ITEMS
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
 
-    #if !defined(RAYGUI_TEXTSPLIT_MAX_ELEMENTS)
-        #define RAYGUI_TEXTSPLIT_MAX_ELEMENTS        128
+    #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
+        #define RAYGUI_TEXTSPLIT_MAX_ITEMS        128
     #endif
     #if !defined(RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE)
         #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE      1024
     #endif
 
-    static const char *result[RAYGUI_TEXTSPLIT_MAX_ELEMENTS] = { NULL };
+    static const char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL };
     static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 };
     memset(buffer, 0, RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE);
 
@@ -4268,7 +4264,7 @@ const char **TextSplit(const char *text, char delimiter, int *count)
                 result[counter] = buffer + i + 1;
                 counter++;
 
-                if (counter == RAYGUI_TEXTSPLIT_MAX_ELEMENTS) break;
+                if (counter == RAYGUI_TEXTSPLIT_MAX_ITEMS) break;
             }
         }
     }
