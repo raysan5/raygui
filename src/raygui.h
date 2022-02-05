@@ -449,12 +449,6 @@ typedef enum {
     SCROLL_SPEED,
 } GuiScrollBarProperty;
 
-// ScrollBar side
-typedef enum {
-    SCROLLBAR_LEFT_SIDE = 0,
-    SCROLLBAR_RIGHT_SIDE
-} GuiScrollBarSide;
-
 // ListView
 typedef enum {
     LIST_ITEMS_HEIGHT = 16,
