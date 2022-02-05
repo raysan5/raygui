@@ -12,8 +12,8 @@
 
 ## features
 
- - **Immediate-mode** gui, no retained data
- - **+28** basic and advance controls provided
+ - **Immediate-mode gui, no retained data**
+ - **+25** controls provided (basic and advanced)
  - Powerful **styling system** for colors, font and metrics
  - Standalone usage mode supported (for other graphic libs)
  - **Icons support**, embedding a complete 1-bit icons pack
