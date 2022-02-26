@@ -3703,15 +3703,13 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 static int GetTextWidth(const char *text)
 {
     Vector2 size = { 0 };
-
-    int textSize = TextLength(text);
     int textIconOffset = 0;
 
     if ((text != NULL) && (text[0] != '\0'))
     {
         if (text[0] == '#')
         {
-            for (int i = 1; (text[i] != NULL) && (i < 5); i++)
+            for (int i = 1; (text[i] != '\0') && (i < 5); i++)
             {
                 if (text[i] == '#')
                 {
