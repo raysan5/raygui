@@ -1387,9 +1387,6 @@ void GuiGroupBox(Rectangle bounds, const char *text)
     #if !defined(RAYGUI_GROUPBOX_LINE_THICK)
         #define RAYGUI_GROUPBOX_LINE_THICK     1
     #endif
-    #if !defined(RAYGUI_GROUPBOX_TEXT_PADDING)
-        #define RAYGUI_GROUPBOX_TEXT_PADDING  10
-    #endif
 
     GuiControlState state = guiState;
 
@@ -1399,15 +1396,18 @@ void GuiGroupBox(Rectangle bounds, const char *text)
     GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, RAYGUI_GROUPBOX_LINE_THICK }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
     GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - 1, bounds.y, RAYGUI_GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
 
-    GuiLine(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, bounds.width, 0 }, text);
+    GuiLine(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2, bounds.width, GuiGetStyle(DEFAULT, TEXT_SIZE) }, text);
     //--------------------------------------------------------------------
 }
 
 // Line control
 void GuiLine(Rectangle bounds, const char *text)
 {
+    #if !defined(RAYGUI_LINE_ORIGIN_SIZE)
+        #define RAYGUI_LINE_MARGIN_TEXT  12
+    #endif
     #if !defined(RAYGUI_LINE_TEXT_PADDING)
-        #define RAYGUI_LINE_TEXT_PADDING  8
+        #define RAYGUI_LINE_TEXT_PADDING  4
     #endif
 
     GuiControlState state = guiState;
@@ -1422,13 +1422,13 @@ void GuiLine(Rectangle bounds, const char *text)
         Rectangle textBounds = { 0 };
         textBounds.width = (float)GetTextWidth(text);
         textBounds.height = bounds.height;
-        textBounds.x = bounds.x + RAYGUI_LINE_TEXT_PADDING;
+        textBounds.x = bounds.x + RAYGUI_LINE_MARGIN_TEXT;
         textBounds.y = bounds.y;
 
         // Draw line with embedded text label: "--- text --------------"
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height/2, RAYGUI_LINE_TEXT_PADDING - 2, 1 }, 0, BLANK, color);
-        GuiLabel(textBounds, text);
-        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + RAYGUI_LINE_TEXT_PADDING + textBounds.width + 4, bounds.y + bounds.height/2, bounds.width - textBounds.width - RAYGUI_LINE_TEXT_PADDING - 4, 1 }, 0, BLANK, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height/2, RAYGUI_LINE_MARGIN_TEXT - RAYGUI_LINE_TEXT_PADDING, 1 }, 0, BLANK, color);
+        GuiDrawText(text, textBounds, GUI_TEXT_ALIGN_LEFT, color);
+        GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + 12 + textBounds.width + 4, bounds.y + bounds.height/2, bounds.width - textBounds.width - RAYGUI_LINE_MARGIN_TEXT - RAYGUI_LINE_TEXT_PADDING, 1 }, 0, BLANK, color);
     }
     //--------------------------------------------------------------------
 }
@@ -3699,15 +3699,30 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 //----------------------------------------------------------------------------------
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
-// Gui get text width using default font
-// NOTE: Icon is not considered here
+// Gui get text width considering icon
 static int GetTextWidth(const char *text)
 {
     Vector2 size = { 0 };
 
+    int textSize = TextLength(text);
+    int textIconOffset = 0;
+
     if ((text != NULL) && (text[0] != '\0'))
     {
-        size = MeasureTextEx(guiFont, text, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        if (text[0] == '#')
+        {
+            for (int i = 1; (text[i] != NULL) && (i < 5); i++)
+            {
+                if (text[i] == '#')
+                {
+                    textIconOffset = i;
+                    break;
+                }
+            }
+        }
+
+        size = MeasureTextEx(guiFont, text + textIconOffset, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        if (textIconOffset > 0) size.x += (RAYGUI_ICON_SIZE - 4);   //RAYGUI_ICON_TEXT_PADDING
     }
 
     return (int)size.x;
