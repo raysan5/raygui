@@ -760,7 +760,7 @@ typedef enum {
     RAYGUI_ICON_HIDPI                    = 199,
     RAYGUI_ICON_FILETYPE_BINARY          = 200,
     RAYGUI_ICON_HEX                      = 201,
-    RAYGUI_ICON_202                      = 202,
+    RAYGUI_ICON_SHIELD                   = 202,
     RAYGUI_ICON_203                      = 203,
     RAYGUI_ICON_204                      = 204,
     RAYGUI_ICON_205                      = 205,
@@ -1072,7 +1072,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x09100000, 0x09f00910, 0x09100910, 0x00000910, 0x24a2779e, 0x27a224a2, 0x709e20a2, 0x00000000,     // RAYGUI_ICON_HIDPI
     0x3ff00000, 0x201c2010, 0x2a842e84, 0x2e842a84, 0x2ba42004, 0x2aa42aa4, 0x20042ba4, 0x00003ffc,     // RAYGUI_ICON_FILETYPE_BINARY
     0x00000000, 0x00000000, 0x00120012, 0x4a5e4bd2, 0x485233d2, 0x00004bd2, 0x00000000, 0x00000000,     // RAYGUI_ICON_HEX
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_202
+    0x01800000, 0x381c0660, 0x23c42004, 0x23c42044, 0x13c82204, 0x08101008, 0x02400420, 0x00000180,     // RAYGUI_ICON_SHIELD
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_203
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_204
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,     // RAYGUI_ICON_205
@@ -3788,8 +3788,6 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Get text position depending on alignment and iconId
         //---------------------------------------------------------------------------------
-
-
         Vector2 position = { bounds.x, bounds.y };
 
         // NOTE: We get text size after icon has been processed
