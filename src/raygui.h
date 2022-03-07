@@ -118,6 +118,7 @@
 *                         REDESIGNED: GuiColorPanel() to support text parameter
 *                         REDESIGNED: GuiColorBarAlpha() to support text parameter
 *                         REDESIGNED: GuiColorBarHue() to support text parameter
+*                         REDESIGNED: GuiTextInputBox() to support password
 *       3.1 (12-Jan-2022) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
 *                         REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
 *                         REVIEWED: External icons usage logic
@@ -529,7 +530,7 @@ RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int
 RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
 RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
 RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
-RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, bool secret);   // Text Input Box control, ask for text, supports secret
+RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive);   // Text Input Box control, ask for text, supports secret
 RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
 RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
 RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha);                      // Color Bar Alpha control
@@ -3083,7 +3084,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 }
 
 // Text Input Box control, ask for text
-int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int *secretViewActive)
+int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive)
 {
     #if !defined(RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT)
         #define RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT      28
@@ -3093,9 +3094,6 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_HEIGHT)
         #define RAYGUI_TEXTINPUTBOX_HEIGHT             28
-    #endif
-    #if !defined(RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH)
-        #define RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH   256
     #endif
 
     // Used to enable text edit mode
@@ -3128,7 +3126,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     Rectangle textBoxBounds = { 0 };
     textBoxBounds.x = bounds.x + RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
     textBoxBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - RAYGUI_TEXTINPUTBOX_HEIGHT/2;
-    if (message == NULL) textBoxBounds.y += messageInputHeight/2;
+    if (message == NULL) textBoxBounds.y = bounds.y + 24 + RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
     else textBoxBounds.y += (messageInputHeight/2 + messageInputHeight/4);
     textBoxBounds.width = bounds.width - RAYGUI_TEXTINPUTBOX_BUTTON_PADDING*2;
     textBoxBounds.height = RAYGUI_TEXTINPUTBOX_HEIGHT;
@@ -3149,13 +3147,13 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     if (secretViewActive != NULL)
     {
         if (GuiTextBox((Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height }, 
-            ((*secretViewActive == 1) || textEditMode)? text : "****************", RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH, textEditMode)) textEditMode = !textEditMode;
+            ((*secretViewActive == 1) || textEditMode)? text : "****************", textMaxSize, textEditMode)) textEditMode = !textEditMode;
 
         *secretViewActive = GuiToggle((Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, (*secretViewActive == 1)? "#44#" : "#45#", *secretViewActive);
     }
     else
     {
-        if (GuiTextBox(textBoxBounds, text, RAYGUI_TEXTINPUTBOX_MAX_TEXT_LENGTH, textEditMode)) textEditMode = !textEditMode;
+        if (GuiTextBox(textBoxBounds, text, textMaxSize, textEditMode)) textEditMode = !textEditMode;
     }
 
     int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
