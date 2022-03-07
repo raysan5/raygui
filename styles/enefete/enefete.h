@@ -343,8 +343,8 @@ static void GuiLoadStyleEnefete(void)
     // TODO: Setup a white rectangle on the font to be used on shapes drawing,
     // this way we make sure all gui can be drawn on a single pass because no texture change is required
     // NOTE: Setting up this rectangle is a manual process (for the moment)
-    //Rectangle whiteChar = { 0, 0, 0, 0 };
-    //SetShapesTexture(font.texture, whiteChar);
+    Rectangle whiteChar = { 99, 4, 2, 2 };
+    SetShapesTexture(font.texture, whiteChar);
 
     //-----------------------------------------------------------------
 
