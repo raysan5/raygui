@@ -31,7 +31,7 @@ Slider      |  SliderBar   |  ProgressBar |  StatusBar    |  DummyRec    |  Grid
 ```
 WindowBox   |  GroupBox    |  Line        |  Panel        |  ScrollPanel
 ```
-### advance controls
+### advanced controls
 ```
 ListView    |  ColorPicker |  MessageBox  |  TextInputBox
 ```
