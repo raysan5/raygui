@@ -111,7 +111,7 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.2 (xx-Feb-2022) REMOVED: GuiScrollBar(), only internal
+*       3.2 (xx-Mar-2022) REMOVED: GuiScrollBar(), only internal
 *                         REDESIGNED: GuiPanel() to support text parameter
 *                         REDESIGNED: GuiScrollPanel() to support text parameter
 *                         REDESIGNED: GuiColorPicker() to support text parameter
@@ -3812,16 +3812,18 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         Vector2 position = { bounds.x, bounds.y };
 
         // NOTE: We get text size after icon has been processed
-        int textWidth = GetTextWidth(text);
-        int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        // TODO: REVIEW: We consider text size in case of line breaks! -> MeasureTextEx() depends on raylib!
+        Vector2 textSize = MeasureTextEx(GuiGetFont(), text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
+        //int textWidth = GetTextWidth(text);
+        //int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
 
         // If text requires an icon, add size to measure
         if (iconId >= 0)
         {
-            textWidth += RAYGUI_ICON_SIZE;
+            textSize.x += RAYGUI_ICON_SIZE;
 
             // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
-            if ((text != NULL) && (text[0] != '\0')) textWidth += RAYGUI_ICON_TEXT_PADDING;
+            if ((text != NULL) && (text[0] != '\0')) textSize.x += RAYGUI_ICON_TEXT_PADDING;
         }
 
         // Check guiTextAlign global variables
@@ -3830,17 +3832,17 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             case GUI_TEXT_ALIGN_LEFT:
             {
                 position.x = bounds.x;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             case GUI_TEXT_ALIGN_CENTER:
             {
-                position.x = bounds.x + bounds.width/2 - textWidth/2;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                position.x = bounds.x + bounds.width/2 - textSize.x/2;
+                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             case GUI_TEXT_ALIGN_RIGHT:
             {
-                position.x = bounds.x + bounds.width - textWidth;
-                position.y = bounds.y + bounds.height/2 - textHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                position.x = bounds.x + bounds.width - textSize.x;
+                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
             } break;
             default: break;
         }
