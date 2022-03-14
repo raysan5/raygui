@@ -74,7 +74,7 @@ int main()
         
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
         
-            GuiGrid((Rectangle){0, 0, screenWidth, screenHeight},20.0f, 2); // Draw a fancy grid
+            GuiGrid((Rectangle){0, 0, screenWidth, screenHeight}, "Property List", 20.0f, 2); // Draw a fancy grid
             
             GuiDMPropertyList((Rectangle){(screenWidth - 180)/2, (screenHeight - 280)/2, 180, 280}, prop, SIZEOF(prop), &focus, &scroll);
         
