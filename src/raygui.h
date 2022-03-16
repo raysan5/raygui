@@ -476,11 +476,13 @@ typedef enum {
 //----------------------------------------------------------------------------------
 // Module Macro Functions Declaration
 //----------------------------------------------------------------------------------
-// Basic Controls set
+// Container/separator controls, useful for controls organization
 #define GuiGroupBox(bounds, text) GuiGroupBoxAlpha(bounds, text, guiAlpha)
 #define GuiLine(bounds, text) GuiLineAlpha(bounds, text, guiAlpha)
 #define GuiPanel(bounds, text) GuiPanelAlpha(bounds, text, guiAlpha)
 #define GuiScrollPanel(bounds, text, content, scroll) GuiScrollPanelAlpha(bounds, text, content, scroll, guiAlpha)
+
+// Basic Controls set
 #define GuiLabel(bounds, text) GuiLabelAlpha(bounds, text, guiAlpha)
 #define GuiButton(bounds, text) GuiButtonAlpha(bounds, text, guiAlpha)
 #define GuiLabelButton(bounds, text) GuiLabelButtonAlpha(bounds, text, guiAlpha)
@@ -1599,7 +1601,7 @@ Rectangle GuiScrollPanelAlpha(Rectangle bounds, const char *text, Rectangle cont
     {
         // Change scrollbar slider size to show the diff in size between the content width and the widget width
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, (int)(((bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)/(int)content.width)*((int)bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - verticalScrollBarWidth)));
-        scrollPos.x = (float)-GuiScrollBar(horizontalScrollBar, (int)-scrollPos.x, (int)horizontalMin, (int)horizontalMax, alpha);
+        scrollPos.x = (float)-GuiScrollBarAlpha(horizontalScrollBar, (int)-scrollPos.x, (int)horizontalMin, (int)horizontalMax, alpha);
     }
 
     // Draw vertical scrollbar if visible
@@ -1607,7 +1609,7 @@ Rectangle GuiScrollPanelAlpha(Rectangle bounds, const char *text, Rectangle cont
     {
         // Change scrollbar slider size to show the diff in size between the content height and the widget height
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, (int)(((bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)/(int)content.height)*((int)bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) - horizontalScrollBarWidth)));
-        scrollPos.y = (float)-GuiScrollBar(verticalScrollBar, (int)-scrollPos.y, (int)verticalMin, (int)verticalMax, alpha);
+        scrollPos.y = (float)-GuiScrollBarAlpha(verticalScrollBar, (int)-scrollPos.y, (int)verticalMin, (int)verticalMax, alpha);
     }
 
     // Draw detail corner rectangle if both scroll bars are visible
@@ -2820,7 +2822,7 @@ int GuiListViewAlphaEx(Rectangle bounds, const char **text, int count, int *focu
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, (int)sliderSize);            // Change slider size
         GuiSetStyle(SCROLLBAR, SCROLL_SPEED, count - visibleItems); // Change scroll speed
 
-        startIndex = GuiScrollBar(scrollBarBounds, startIndex, 0, count - visibleItems, alpha);
+        startIndex = GuiScrollBarAlpha(scrollBarBounds, startIndex, 0, count - visibleItems, alpha);
 
         GuiSetStyle(SCROLLBAR, SCROLL_SPEED, prevScrollSpeed); // Reset scroll speed to default
         GuiSetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE, prevSliderSize); // Reset slider size to default
