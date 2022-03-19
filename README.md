@@ -97,6 +97,14 @@ mv src/raygui.h src/raygui.c
 gcc -o raygui.so src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ```
 
+- **Mac (clang, homebrew installed raylib)**
+```
+cp src/raygui.h src/raygui.c
+brew install raylib
+gcc -o raygui.dynlib src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -framework OpenGL -lm -lpthread -ldl $(pkg-config --libs --cflags raylib)
+```
+
+
 ## license
 
 raygui is licensed under an unmodified zlib/libpng license, which is an OSI-certified, BSD-like license that allows static linking with closed source software. Check [LICENSE](LICENSE) for further details.
