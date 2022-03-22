@@ -257,7 +257,7 @@
         float y;
     } Vector2;
 
-    // Vector3 type                 // -- ConvertHSVtoRGB(), ConvertRGBtoHSV()
+    // Vector3 type
     typedef struct Vector3 {
         float x;
         float y;
@@ -556,9 +556,8 @@ RAYGUIAPI void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pi
 RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
 
 #if !defined(RAYGUI_CUSTOM_ICONS)
-//----------------------------------------------------------------------------------
+
 // Icons enumeration
-//----------------------------------------------------------------------------------
 typedef enum {
     RAYGUI_ICON_NONE                     = 0,
     RAYGUI_ICON_FOLDER_FILE_OPEN         = 1,
@@ -1146,7 +1145,12 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
 // Gui control property style color element
-typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
+typedef enum {
+    BORDER = 0,
+    BASE,
+    TEXT,
+    OTHER
+} GuiPropertyElement;
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -3149,7 +3153,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 
     if (secretViewActive != NULL)
     {
-        if (GuiTextBox(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height }, 
+        if (GuiTextBox(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height },
             ((*secretViewActive == 1) || textEditMode)? text : (char *) "****************", textMaxSize, textEditMode)) textEditMode = !textEditMode;
 
         *secretViewActive = GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, (*secretViewActive == 1)? "#44#" : "#45#", *secretViewActive);
