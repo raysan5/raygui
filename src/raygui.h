@@ -549,6 +549,7 @@ RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color 
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
 RAYGUIAPI unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
 RAYGUIAPI void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit data
+RAYGUIAPI void GuiSetIconScale(unsigned int scale);             // Set icon scale (1 by default)
 
 RAYGUIAPI void GuiSetIconPixel(int iconId, int x, int y);       // Set icon pixel value
 RAYGUIAPI void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pixel value
@@ -858,6 +859,8 @@ typedef enum {
 // element defines 32 pixels (bits) of information
 // Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
 #define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
+
+static unsigned int guiIconScale = 1;           // Icon default scale 
 
 //----------------------------------------------------------------------------------
 // Icons data for all gui possible icons (allocated on data segment by default)
@@ -3675,6 +3678,12 @@ void GuiSetIconData(int iconId, unsigned int *data)
     if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(&guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS], data, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
 }
 
+// Set icon scale (1 by default)
+void GuiSetIconScale(unsigned int scale)
+{
+    guiIconScale = (scale < 1)? 1 : scale;
+}
+
 // Set icon pixel value
 void GuiSetIconPixel(int iconId, int x, int y)
 {
@@ -3859,7 +3868,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), 1, tint);
+            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
             position.x += (RAYGUI_ICON_SIZE + RAYGUI_ICON_TEXT_PADDING);
         }
 #endif
