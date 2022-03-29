@@ -6,7 +6,7 @@
 
 `raygui` was originated as an auxiliar module for [raylib](https://github.com/raysan5/raylib) to create simple GUI interfaces using raylib graphic style (simple colors, plain rectangular shapes, wide borders...).
 
-`raygui` is intended for **tools development**; it has already been used to develop [multiple published tools](https://raylibtech.itch.io/rguiicons).
+`raygui` is intended for **tools development**; it has already been used to develop [multiple published tools](https://raylibtech.itch.io).
 
 <br>
 
