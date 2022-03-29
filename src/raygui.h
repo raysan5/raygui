@@ -2558,8 +2558,6 @@ float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight
 // Progress Bar control extended, shows current progress value
 float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue)
 {
-    if (value > maxValue) value =  maxValue // max
-    
     GuiControlState state = guiState;
 
     Rectangle progress = { bounds.x + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH),
@@ -2568,6 +2566,8 @@ float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRig
 
     // Update control
     //--------------------------------------------------------------------
+    if (value > maxValue) value = maxValue;
+
     if (state != GUI_STATE_DISABLED) progress.width = ((float)(value/(maxValue - minValue))*(float)(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH)));
     //--------------------------------------------------------------------
 
