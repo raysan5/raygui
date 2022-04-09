@@ -3873,7 +3873,12 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
+            int iconXAlign = 0;
+            if (GuiGetStyle(LABEL, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_CENTER)
+            	iconXAlign = (16*(guiIconScale-1))/2;
+            else if (GuiGetStyle(LABEL, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_RIGHT)
+            	iconXAlign = (16*(guiIconScale-1));
+            GuiDrawIcon(iconId, (int)position.x-iconXAlign, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height))-(16*(guiIconScale-1))/2, guiIconScale, tint);
             position.x += (RAYGUI_ICON_SIZE + RAYGUI_ICON_TEXT_PADDING);
         }
 #endif
