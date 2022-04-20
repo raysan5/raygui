@@ -1389,18 +1389,31 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
 void GuiGroupBox(Rectangle bounds, const char *text)
 {
     #if !defined(RAYGUI_GROUPBOX_LINE_THICK)
-        #define RAYGUI_GROUPBOX_LINE_THICK     1
+        #define RAYGUI_GROUPBOX_LINE_THICKNESS     1
     #endif
 
     GuiControlState state = guiState;
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, RAYGUI_GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, RAYGUI_GROUPBOX_LINE_THICK }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - 1, bounds.y, RAYGUI_GROUPBOX_LINE_THICK, bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(DEFAULT, (state == GUI_STATE_DISABLED)? BORDER_COLOR_DISABLED : LINE_COLOR)), guiAlpha));
+    float x      = bounds.x;
+    float y      = bounds.y;
+    float width  = bounds.width;
+    float height = bounds.height;
 
-    GuiLine(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2, bounds.width, GuiGetStyle(DEFAULT, TEXT_SIZE) }, text);
+    float sizeOfText = (float) GuiGetStyle(DEFAULT, TEXT_SIZE);
+
+    Color color = Fade(GetColor(GuiGetStyle(
+        DEFAULT, 
+        (state == GUI_STATE_DISABLED) ? BORDER_COLOR_DISABLED : LINE_COLOR)),  
+        guiAlpha);
+    
+    float thickness = RAYGUI_GROUPBOX_LINE_THICKNESS;
+
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ x, y, thickness, height }, 0, BLANK, color);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ x, y + height - thickness, width, thickness }, 0, BLANK, color);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ x + width - thickness, y, thickness, height }, 0, BLANK, color);
+    GuiLine(RAYGUI_CLITERAL(Rectangle){ x, y - sizeOfText/2, width, sizeOfText }, text);
     //--------------------------------------------------------------------
 }
 
