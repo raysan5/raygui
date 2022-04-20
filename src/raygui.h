@@ -1388,7 +1388,7 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
 // Group Box control with text name
 void GuiGroupBox(Rectangle bounds, const char *text)
 {
-    #if !defined(RAYGUI_GROUPBOX_LINE_THICK)
+    #if !defined(RAYGUI_GROUPBOX_LINE_THICKNESS)
         #define RAYGUI_GROUPBOX_LINE_THICKNESS     1
     #endif
 
