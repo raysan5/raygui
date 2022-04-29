@@ -21,9 +21,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_ICONS
 #include "../../src/raygui.h"
-
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -131,7 +129,7 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
     bool textWrap = true;           // TODO: Word-Wrap vs Char-Wrap -> textWrapMode { NO_WRAP_LOCK, NO_WRAP_OVERFLOW, CHAR_WRAP, WORD_WRAP }
 
     // WARNING: First string full traversal
-    int codepointCount = GetCodepointsCount(text);
+    int codepointCount = GetCodepointCount(text);
     
     int textLen = strlen(text);     // Text length in bytes
 
@@ -214,8 +212,8 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
         int codepoint = GetCodepoint(&text[i], &codepointByteCount);
         int index = GetGlyphIndex(font, codepoint);
         
-        Rectangle rec = { bounds.x + textOffsetX + font.chars[index].offsetX*scaleFactor,
-                          bounds.y + textOffsetY + font.chars[index].offsetY*scaleFactor, 
+        Rectangle rec = { bounds.x + textOffsetX + font.glyphs[index].offsetX*scaleFactor,
+                          bounds.y + textOffsetY + font.glyphs[index].offsetY*scaleFactor, 
                           font.recs[index].width*scaleFactor, font.recs[index].height*scaleFactor };
                           
         // Automatic line break to wrap text inside box
@@ -225,8 +223,8 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
             textOffsetX = 0.0f;
             
             // Recalculate drawing rectangle position
-            rec = (Rectangle){ bounds.x + textOffsetX + font.chars[index].offsetX*scaleFactor,
-                               bounds.y + textOffsetY + font.chars[index].offsetY*scaleFactor, 
+            rec = (Rectangle){ bounds.x + textOffsetX + font.glyphs[index].offsetX*scaleFactor,
+                               bounds.y + textOffsetY + font.glyphs[index].offsetY*scaleFactor, 
                                font.recs[index].width*scaleFactor, font.recs[index].height*scaleFactor };
         }
         
@@ -280,8 +278,8 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
         // TODO: Consider spacing when drawing selected characters background
         if (editMode && (selectStartCp != -1) && ((cp >= selectStartCp) && (cp <= (selectStartCp + selectLengthCp)))) DrawRectangleRec(rec, MAROON);
         
-        if (font.chars[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
-        else textOffsetX += ((float)font.chars[index].advanceX*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
+        if (font.glyphs[index].advanceX == 0) textOffsetX += ((float)font.recs[index].width*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
+        else textOffsetX += ((float)font.glyphs[index].advanceX*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
         
         i += (codepointByteCount - 1);   // Move text bytes counter to next codepoint
         cp++;

@@ -4,7 +4,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 project(raygui C)
 
 # Config options
-option(BUILD_RAYGUI_EXAMPLES "Build the examples." ON)
+option(BUILD_RAYGUI_EXAMPLES "Build the examples." OFF)
+
+# Force building examples if building in the root as standalone.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(BUILD_RAYGUI_EXAMPLES TRUE)
+endif()
 
 # Directory Variables
 set(RAYGUI_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../..)
@@ -26,14 +31,14 @@ if(${BUILD_RAYGUI_EXAMPLES})
 
     # Get the sources together
     set(example_dirs
+        controls_test_suite
         custom_file_dialog
+        image_exporter
         image_raw_importer
         portable_window
+        property_list
         scroll_panel
         text_box_selection
-        controls_test_suite
-        image_exporter
-        property_list
         text_editor
     )
 

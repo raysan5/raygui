@@ -24,13 +24,12 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_RICONS
 #include "../../src/raygui.h"
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
 #define GUI_TEXTBOX_EXTENDED_IMPLEMENTATION
-#include "../../src/gui_textbox_extended.h"
+#include "../../src/extras/gui_textbox_extended.h"
 
 #include <limits.h>
 
@@ -96,8 +95,8 @@ int main(int argc, char **argv)
     int fontSpacing = GuiGetStyle(DEFAULT, TEXT_SPACING);
     int padding = GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
     int border = GuiGetStyle(TEXTBOX, BORDER_WIDTH);
-    Color colorFG = GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_FG)); 
-    Color colorBG = GetColor(GuiGetStyle(TEXTBOX, COLOR_SELECTED_BG));
+    Color colorFG = GetColor(GuiGetStyle(TEXTBOX, TEXT_COLOR_FOCUSED)); // Color Selected Foreground
+    Color colorBG = GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)); // Color Selected Background
     Color *colorSelected = &colorFG;
 
     bool showMenu = false;
@@ -196,8 +195,8 @@ int main(int argc, char **argv)
             GuiSetStyle(DEFAULT, TEXT_SPACING, fontSpacing);
             GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, padding);
             GuiSetStyle(TEXTBOX, BORDER_WIDTH, border);
-            GuiSetStyle(TEXTBOX, COLOR_SELECTED_BG, ColorToInt(colorBG));
-            GuiSetStyle(TEXTBOX, COLOR_SELECTED_FG, ColorToInt(colorFG));
+            GuiSetStyle(TEXTBOX, BASE_COLOR_FOCUSED, ColorToInt(colorBG));
+            GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(colorFG));
 
             // TODO: GuiTextBoxEx() is not following editMode logic like GuiTextBox()
             if (GuiTextBoxEx(textboxBounds[0], text01, SIZEOF(text01) - 1, textBox01EditMode)) textBox01EditMode = !textBox01EditMode;

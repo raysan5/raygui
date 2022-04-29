@@ -1,0 +1,24 @@
+#
+# rgs style text file (v3.1) - raygui style file generated using rGuiStyler
+#
+# Style properties:
+#   f <gen_font_size> <charmap_file> <font_file>
+#   p <control_id> <property_id> <property_value> <property_name>
+#
+f 15 0 Westington.ttf
+p 00 00 0xda5757ff    DEFAULT_BORDER_COLOR_NORMAL
+p 00 01 0x753233ff    DEFAULT_BASE_COLOR_NORMAL
+p 00 02 0xe17373ff    DEFAULT_TEXT_COLOR_NORMAL
+p 00 03 0xfaaa97ff    DEFAULT_BORDER_COLOR_FOCUSED
+p 00 04 0xe06262ff    DEFAULT_BASE_COLOR_FOCUSED
+p 00 05 0xfdb4aaff    DEFAULT_TEXT_COLOR_FOCUSED
+p 00 06 0xe03c46ff    DEFAULT_BORDER_COLOR_PRESSED
+p 00 07 0x5b1e20ff    DEFAULT_BASE_COLOR_PRESSED
+p 00 08 0xc2474fff    DEFAULT_TEXT_COLOR_PRESSED
+p 00 09 0xa19292ff    DEFAULT_BORDER_COLOR_DISABLED
+p 00 10 0x706060ff    DEFAULT_BASE_COLOR_DISABLED
+p 00 11 0x9e8585ff    DEFAULT_TEXT_COLOR_DISABLED
+p 00 16 0x0000000f    TEXT_SIZE
+p 00 17 0x00000000    TEXT_SPACING
+p 00 18 0xfb8170ff    DEFAULT_LINE_COLOR
+p 00 19 0x3a1720ff    DEFAULT_BACKGROUND_COLOR

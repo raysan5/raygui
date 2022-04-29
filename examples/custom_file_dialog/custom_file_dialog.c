@@ -3,26 +3,24 @@
 *   raygui - custom file dialog to load image
 *
 *   DEPENDENCIES:
-*       raylib 2.6-dev  - Windowing/input management and drawing.
-*       raygui 2.6-dev  - Immediate-mode GUI controls.
+*       raylib 4.0  - Windowing/input management and drawing.
+*       raygui 3.0  - Immediate-mode GUI controls.
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2020 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2022 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#define RAYGUI_SUPPORT_ICONS
 #include "../../src/raygui.h"
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
-
 #define GUI_FILE_DIALOG_IMPLEMENTATION
 #include "gui_file_dialog.h"
 
@@ -87,7 +85,7 @@ int main()
             //----------------------------------------------------------------------------------
             if (fileDialogState.fileDialogActive) GuiLock();
 
-            if (GuiButton((Rectangle){ 20, 20, 140, 30 }, GuiIconText(RICON_FILE_OPEN, "Open Image"))) fileDialogState.fileDialogActive = true;
+            if (GuiButton((Rectangle){ 20, 20, 140, 30 }, GuiIconText(RAYGUI_ICON_FILE_OPEN, "Open Image"))) fileDialogState.fileDialogActive = true;
 
             GuiUnlock();
 

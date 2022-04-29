@@ -368,8 +368,8 @@ double GuiDMValueBox(Rectangle bounds, double value, double minValue, double max
 double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxValue, double step, int precision, bool editMode) {
     GuiControlState state = GuiGetState();
 
-    Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_PADDING), bounds.y,
-                          bounds.width - 2*(GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_PADDING)), bounds.height };
+    Rectangle spinner = { bounds.x + GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_SPACING), bounds.y,
+                          bounds.width - 2*(GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH) + GuiGetStyle(SPINNER, SPIN_BUTTON_SPACING)), bounds.height };
     Rectangle leftButtonBound = { (float)bounds.x, (float)bounds.y, (float)GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.height };
     Rectangle rightButtonBound = { (float)bounds.x + bounds.width - GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.y, (float)GuiGetStyle(SPINNER, SPIN_BUTTON_WIDTH), (float)bounds.height };
     
@@ -398,7 +398,7 @@ double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxV
     GuiSetStyle(BUTTON, BORDER_WIDTH, GuiGetStyle(SPINNER, BORDER_WIDTH));
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
-#if defined(RAYGUI_SUPPORT_ICONS)
+#if defined(RAYGUI_SUPPORT_RICONS)
     if (GuiButton(leftButtonBound, GuiIconText(RICON_ARROW_LEFT_FILL, NULL))) value -= step;
     if (GuiButton(rightButtonBound, GuiIconText(RICON_ARROW_RIGHT_FILL, NULL))) value += step;
 #else
@@ -417,7 +417,7 @@ double GuiDMSpinner(Rectangle bounds, double value, double minValue, double maxV
 
 
 void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* focus, int* scrollIndex) {
-    #ifdef RAYGUI_SUPPORT_ICONS
+    #ifdef RAYGUI_SUPPORT_RICONS
     #define PROPERTY_COLLAPSED_ICON "#120#"
     #define PROPERTY_EXPANDED_ICON "#121#"
     #else
@@ -457,9 +457,9 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
     Rectangle scrollBarBounds = {bounds.x + GuiGetStyle(LISTVIEW, BORDER_WIDTH), bounds.y + GuiGetStyle(LISTVIEW, BORDER_WIDTH),
                 GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH),  bounds.height - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)};
                 
-    absoluteBounds.x = bounds.x + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
-    absoluteBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH) + scroll;
-    absoluteBounds.width = bounds.width - 2*(GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH));
+    absoluteBounds.x = bounds.x + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH);
+    absoluteBounds.y = bounds.y + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH) + scroll;
+    absoluteBounds.width = bounds.width - 2*(GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH));
     
     if(useScrollBar) {
         if(GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)
@@ -469,7 +469,7 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
         absoluteBounds.width -= GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH); // adjust width to fit the scrollbar
     }
     
-    int maxScroll = absoluteBounds.height + 2*(GuiGetStyle(LISTVIEW, LIST_ITEMS_PADDING) + GuiGetStyle(DEFAULT, BORDER_WIDTH))-bounds.height;
+    int maxScroll = absoluteBounds.height + 2*(GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING) + GuiGetStyle(DEFAULT, BORDER_WIDTH))-bounds.height;
     
     // Update control
     //--------------------------------------------------------------------

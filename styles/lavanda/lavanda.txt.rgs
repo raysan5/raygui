@@ -1,0 +1,24 @@
+#
+# rgs style text file (v3.1) - raygui style file generated using rGuiStyler
+#
+# Style properties:
+#   f <gen_font_size> <charmap_file> <font_file>
+#   p <control_id> <property_id> <property_value> <property_name>
+#
+f 16 0 Cartridge.ttf
+p 00 00 0xab9bd3ff    DEFAULT_BORDER_COLOR_NORMAL
+p 00 01 0x3e4350ff    DEFAULT_BASE_COLOR_NORMAL
+p 00 02 0xdadaf4ff    DEFAULT_TEXT_COLOR_NORMAL
+p 00 03 0xee84a0ff    DEFAULT_BORDER_COLOR_FOCUSED
+p 00 04 0xf4b7c7ff    DEFAULT_BASE_COLOR_FOCUSED
+p 00 05 0xb7657bff    DEFAULT_TEXT_COLOR_FOCUSED
+p 00 06 0xd5c8dbff    DEFAULT_BORDER_COLOR_PRESSED
+p 00 07 0x966ec0ff    DEFAULT_BASE_COLOR_PRESSED
+p 00 08 0xd7ccf7ff    DEFAULT_TEXT_COLOR_PRESSED
+p 00 09 0x8fa2bdff    DEFAULT_BORDER_COLOR_DISABLED
+p 00 10 0x6b798dff    DEFAULT_BASE_COLOR_DISABLED
+p 00 11 0x8292a9ff    DEFAULT_TEXT_COLOR_DISABLED
+p 00 16 0x00000010    TEXT_SIZE
+p 00 17 0x00000001    TEXT_SPACING
+p 00 18 0x84adb7ff    DEFAULT_LINE_COLOR
+p 00 19 0x5b5b81ff    DEFAULT_BACKGROUND_COLOR
