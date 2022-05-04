@@ -1523,6 +1523,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = GUI_STATE_PRESSED;
             else state = GUI_STATE_FOCUSED;
 
+#if defined(SUPPORT_SCROLLBAR_KEY_INPUT)
             if (hasHorizontalScrollBar)
             {
                 if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
@@ -1534,7 +1535,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
                 if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
                 if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
-
+#endif
             float wheelMove = GetMouseWheelMove();
 
             // Horizontal scroll (Shift + Mouse wheel)
