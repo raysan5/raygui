@@ -3647,7 +3647,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 // Draw selected icon using rectangles pixel-by-pixel
 void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
 {
-    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
+    #define BIT_CHECK(a,b) ((a) & (1u<<(b)))
 
     for (int i = 0, y = 0; i < RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32; i++)
     {
@@ -3693,7 +3693,7 @@ void GuiSetIconScale(unsigned int scale)
 // Set icon pixel value
 void GuiSetIconPixel(int iconId, int x, int y)
 {
-    #define BIT_SET(a,b)   ((a) |= (1<<(b)))
+    #define BIT_SET(a,b)   ((a) |= (1u<<(b)))
 
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
@@ -3703,7 +3703,7 @@ void GuiSetIconPixel(int iconId, int x, int y)
 // Clear icon pixel value
 void GuiClearIconPixel(int iconId, int x, int y)
 {
-    #define BIT_CLEAR(a,b) ((a) &= ~((1)<<(b)))
+    #define BIT_CLEAR(a,b) ((a) &= ~((1u)<<(b)))
 
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
@@ -3713,7 +3713,7 @@ void GuiClearIconPixel(int iconId, int x, int y)
 // Check icon pixel value
 bool GuiCheckIconPixel(int iconId, int x, int y)
 {
-    #define BIT_CHECK(a,b) ((a) & (1<<(b)))
+    #define BIT_CHECK(a,b) ((a) & (1u<<(b)))
 
     return (BIT_CHECK(guiIcons[iconId*8 + y/2], x + (y%2*16)));
 }
