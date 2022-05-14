@@ -2048,7 +2048,6 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 {
                     keyCount--;
                     text[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
                 }
             }
 
@@ -2226,7 +2225,6 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
                 {
                     keyCount--;
                     textValue[keyCount] = '\0';
-                    if (keyCount < 0) keyCount = 0;
                     valueHasChanged = true;
                 }
             }
