@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   FileDialog v1.1 - Modal file dialog to open/save files
+*   FileDialog v1.2 - Modal file dialog to open/save files
 *
 *   MODULE USAGE:
 *       #define GUI_FILE_DIALOG_IMPLEMENTATION
@@ -157,7 +157,7 @@ FileInfo *dirFilesIcon = NULL;
 // Internal Module Functions Definition
 //----------------------------------------------------------------------------------
 // Read all filenames from directory (supported file types)
-static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt);
+static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt, char** validFiles);
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
 // List View control for files info with extended parameters
@@ -218,10 +218,12 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
 // Read files in new path
 static void FD_RELOAD_DIRPATH(GuiFileDialogState *state)
 {
-    for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) RL_FREE(state->dirFiles[i]);
     RL_FREE(state->dirFiles);
+    
+    state->dirFiles = NULL;
 
-    state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+    state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt, state->dirFiles);
     state->itemFocused = 0;
 }
 
@@ -244,7 +246,7 @@ void GuiFileDialog(GuiFileDialogState *state)
 
         if (state->dirFiles == NULL)
         {
-            state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+            state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt, state->dirFiles);
 
             for(int f = 0; f < state->dirFilesCount; f++)
             {
@@ -261,7 +263,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
         state->fileDialogActive = !GuiWindowBox((Rectangle){ state->position.x + 0, state->position.y + 0, winWidth, winHeight }, "#198# Select File Dialog");
 
-        if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< ..")) // || IsKeyReleased(KEY_DPAD_Y))
+        if (GuiButton((Rectangle){ state->position.x + 10, state->position.y + 35, 40, 25 }, "^")) // || IsKeyReleased(KEY_DPAD_Y))
         {
             // Move dir path one level up
             strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
@@ -274,7 +276,7 @@ void GuiFileDialog(GuiFileDialogState *state)
             strcpy(state->fileNameTextCopy, state->fileNameText);
         }
 
-        if (GuiTextBox((Rectangle){ state->position.x + 10, state->position.y + 35, winWidth - 65, 25 }, state->dirPathText, 256, state->dirPathEditMode))
+        if (GuiTextBox((Rectangle){ state->position.x + 20 + 40, state->position.y + 35, winWidth - 70, 25 }, state->dirPathText, 256, state->dirPathEditMode))
         {
             if (state->dirPathEditMode)
             {
@@ -382,7 +384,8 @@ void GuiFileDialog(GuiFileDialogState *state)
         if (!state->fileDialogActive)
         {
             // RL_FREE dirFiles memory
-            for (int i = 0; i < state->dirFilesCount; i++)
+            
+            for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
             {
                 RL_FREE(state->dirFiles[i]);
                 RL_FREE(dirFilesIcon[i]);
@@ -413,11 +416,13 @@ static inline int FileCompare(const char *d1, const char *d2, const char *dir)
 }
 
 // Read all filenames from directory (supported file types)
-static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
+static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt, char** validFiles)
 {
     int validFilesCount = 0;
-    char **validFiles = (char **)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
-    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_MALLOC(MAX_DIR_PATH_LENGTH);    // Max file name length
+    if (validFiles == NULL) {
+        validFiles = (char **)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
+        for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_MALLOC(MAX_DIR_PATH_LENGTH);    // Max file name length
+    }
 
     int filterExtCount = 0;
     const char **extensions = GuiTextSplit(filterExt, &filterExtCount, NULL);
