@@ -816,7 +816,7 @@ typedef enum {
     RAYGUI_ICON_253                      = 253,
     RAYGUI_ICON_254                      = 254,
     RAYGUI_ICON_255                      = 255,
-} guiIconName;
+} GuiIconName;
 #endif
 
 #endif
