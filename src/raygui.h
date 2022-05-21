@@ -3740,8 +3740,8 @@ static int GetTextWidth(const char *text)
                 }
             }
         }
-
-        size = MeasureTextEx(guiFont, text + textIconOffset, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE); // ensures guiFont is set
+        size = MeasureTextEx(guiFont, text + textIconOffset, fontSize, (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         if (textIconOffset > 0) size.x += (RAYGUI_ICON_SIZE - 4);   //ICON_TEXT_PADDING
     }
 
