@@ -294,7 +294,7 @@ void GuiFileDialog(GuiFileDialogState *state)
 
         int prevTextAlignment = GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT);
         int prevElementsHeight = GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT);
-        GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+        GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
 
         // TODO: ListViewElements should be aligned left
@@ -510,7 +510,7 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
 // List View control for files info with extended parameters
 static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int active)
 {
-    GuiControlState state = guiState;
+    GuiState state = guiState;
     int itemFocused = (focus == NULL)? -1 : *focus;
     int itemSelected = active;
 

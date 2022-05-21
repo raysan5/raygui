@@ -209,7 +209,7 @@ int main(int argc, char **argv)
             // Reset style to default
             GuiLoadStyleDefault();
             GuiSetFont(GetFontDefault());
-            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
     
             // Draw hexadecimal values viewer
             DrawTextBoxedSelectable(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
                 //int enabledItems[] = { textboxActive < 2 ? 1 : 0, textboxActive < 2 ? 1 : 0, GetClipboardText() != NULL, 1 };
                 int active = -1, focus = 0, scroll = 0;
                 
-                GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Fixes visual glitch with other alignments
+                GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT); // Fixes visual glitch with other alignments
                 active = GuiListViewEx(menuRect, menuItems, SIZEOF(menuItems), &focus, &scroll, active);
                 
                 if (active != -1)
@@ -268,9 +268,9 @@ int main(int argc, char **argv)
             if (GuiSpinner((Rectangle){495,340,100,20}, NULL, &width, 30, 300, true)) changed = true;
             GuiLabel((Rectangle){435,380,55,20}, "Height");
             if (GuiSpinner((Rectangle){495,380,100,20}, NULL, &height, 12, 60, true)) changed = true;
-            GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
+            GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
             GuiLabel((Rectangle){30,290,740,10}, GuiIconText(RICON_TEXT_T, " DRAG A FONT FILE (*.TTF, *.FNT) ANYWHERE TO CHANGE THE DEFAULT FONT!"));
-            GuiSetStyle(LABEL, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT);
+            GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             textboxBounds[textboxActive].y = 85 - height;
             textboxBounds[textboxActive].height = height;
             textboxBounds[textboxActive].width = width;
@@ -282,7 +282,7 @@ int main(int argc, char **argv)
             *colorSelected = GuiColorPicker((Rectangle){660,320,90,85}, *colorSelected);
             
             float alpha = colorSelected->a;
-            GuiSetStyle(SLIDER, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_LEFT); // Slider for the selected color alpha value
+            GuiSetStyle(SLIDER, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT); // Slider for the selected color alpha value
             colorSelected->a = GuiSlider((Rectangle){664,420,100,20}, GuiIconText(RICON_CROP_ALPHA, "Alpha"), NULL, alpha, 0.0f, 255.0f);
             */
             //---------------------------------------------------------------------------------------
