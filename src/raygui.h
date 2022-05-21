@@ -850,17 +850,15 @@ typedef enum {
 #if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
 
 // Embedded raygui icons, no external file provided
-#define RAYGUI_ICON_SIZE               16       // Size of icons (squared)
-#define RAYGUI_ICON_MAX_ICONS         256       // Maximum number of icons
-#define RAYGUI_ICON_MAX_NAME_LENGTH    32       // Maximum length of icon name id
+#define ICON_SIZE               16          // Size of icons (squared)
+#define ICON_MAX_ICONS         256          // Maximum number of icons
+#define ICON_MAX_NAME_LENGTH    32          // Maximum length of icon name id
 
 // Icons data is defined by bit array (every bit represents one pixel)
 // Those arrays are stored as unsigned int data arrays, so every array
 // element defines 32 pixels (bits) of information
-// Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
-#define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
-
-static unsigned int guiIconScale = 1;           // Icon default scale 
+// Number of elemens depend on ICON_SIZE (by default 16x16 pixels)
+#define ICON_DATA_ELEMENTS   (ICON_SIZE*ICON_SIZE/32)
 
 //----------------------------------------------------------------------------------
 // Icons data for all gui possible icons (allocated on data segment by default)
@@ -1156,6 +1154,8 @@ static GuiControlState guiState = GUI_STATE_NORMAL;
 static Font guiFont = { 0 };            // Gui current font (WARNING: highly coupled to raylib)
 static bool guiLocked = false;          // Gui lock state (no inputs processed)
 static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
+
+static unsigned int guiIconScale = 1;   // Gui icon default scale (if icons enabled)
 
 //----------------------------------------------------------------------------------
 // Style data array for all gui style properties (allocated on data segment by default)
