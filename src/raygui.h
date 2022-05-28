@@ -3547,20 +3547,23 @@ const char *GuiIconText(int iconId, const char *text)
     return NULL;
 #else
     static char buffer[1024] = { 0 };
-    memset(buffer, 0, 1024);
-
-    sprintf(buffer, "#%03i#", iconId);
+    static char iconBuffer[6] = {0};
 
     if (text != NULL)
     {
+        memset(buffer, 0, 1024);
+        sprintf(buffer, "#%03i#", iconId);
         for (int i = 5; i < 1024; i++)
         {
             buffer[i] = text[i - 5];
             if (text[i - 5] == '\0') break;
         }
-    }
-
     return buffer;
+    }
+    else {
+        sprintf(iconBuffer, "#%03i#", iconId&0x1ff);
+        return iconBuffer;
+    }
 #endif
 }
 
