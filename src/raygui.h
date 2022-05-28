@@ -2021,17 +2021,16 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
             int key = GetCharPressed();      // Returns codepoint as Unicode
             int keyCount = (int)strlen(text);
+            int byteSize = 0;
+            const char *textUTF8 = CodepointToUTF8(key, &byteSize);
 
             // Only allow keys in range [32..125]
-            if (keyCount < (textSize - 1))
+            if (keyCount + byteSize < textSize)
             {
                 float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
                 if ((GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE))) && (key >= 32))
                 {
-                    int byteSize = 0;
-                    const char *textUTF8 = CodepointToUTF8(key, &byteSize);
-
                     for (int i = 0; i < byteSize; i++)
                     {
                         text[keyCount] = textUTF8[i];
@@ -2047,7 +2046,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 if (IsKeyPressed(KEY_BACKSPACE))
                 {
-                    keyCount--;
+                    while (keyCount > 0 && (text[--keyCount] & 0xc0) == 0x80);
                     text[keyCount] = '\0';
                 }
             }
