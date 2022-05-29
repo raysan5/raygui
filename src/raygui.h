@@ -2025,7 +2025,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             const char *textUTF8 = CodepointToUTF8(key, &byteSize);
 
             // Only allow keys in range [32..125]
-            if (keyCount + byteSize < textSize)
+            if ((keyCount + byteSize) < textSize)
             {
                 float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
@@ -2046,7 +2046,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 if (IsKeyPressed(KEY_BACKSPACE))
                 {
-                    while (keyCount > 0 && (text[--keyCount] & 0xc0) == 0x80);
+                    while ((keyCount > 0) && ((text[--keyCount] & 0xc0) == 0x80));
                     text[keyCount] = '\0';
                 }
             }
@@ -3546,21 +3546,25 @@ const char *GuiIconText(int iconId, const char *text)
     return NULL;
 #else
     static char buffer[1024] = { 0 };
-    static char iconBuffer[6] = {0};
+    static char iconBuffer[6] = { 0 };
 
     if (text != NULL)
     {
         memset(buffer, 0, 1024);
         sprintf(buffer, "#%03i#", iconId);
+        
         for (int i = 5; i < 1024; i++)
         {
             buffer[i] = text[i - 5];
             if (text[i - 5] == '\0') break;
         }
-    return buffer;
+    
+        return buffer;
     }
-    else {
-        sprintf(iconBuffer, "#%03i#", iconId&0x1ff);
+    else 
+    {
+        sprintf(iconBuffer, "#%03i#", iconId & 0x1ff);
+        
         return iconBuffer;
     }
 #endif
@@ -3726,6 +3730,10 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 // Gui get text width considering icon
 static int GetTextWidth(const char *text)
 {
+    #if !defined(ICON_TEXT_PADDING)
+        #define ICON_TEXT_PADDING   4
+    #endif
+
     Vector2 size = { 0 };
     int textIconOffset = 0;
 
@@ -3742,9 +3750,12 @@ static int GetTextWidth(const char *text)
                 }
             }
         }
-        float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE); // ensures guiFont is set
+        
+        // Make sure guiFont is set, GuiGetStyle() initializes it lazynessly
+        float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+        
         size = MeasureTextEx(guiFont, text + textIconOffset, fontSize, (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-        if (textIconOffset > 0) size.x += (RAYGUI_ICON_SIZE - 4);   //ICON_TEXT_PADDING
+        if (textIconOffset > 0) size.x += (RAYGUI_ICON_SIZE - ICON_TEXT_PADDING);
     }
 
     return (int)size.x;
