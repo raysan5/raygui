@@ -315,7 +315,7 @@
 typedef struct GuiStyleProp {
     unsigned short controlId;
     unsigned short propertyId;
-    int propertyValue;
+    unsigned int propertyValue;
 } GuiStyleProp;
 
 // Gui control state
@@ -3355,13 +3355,13 @@ void GuiLoadStyle(const char *fileName)
         {
             short controlId = 0;
             short propertyId = 0;
-            int propertyValue = 0;
+            unsigned int propertyValue = 0;
 
             for (int i = 0; i < propertyCount; i++)
             {
                 fread(&controlId, 1, sizeof(short), rgsFile);
                 fread(&propertyId, 1, sizeof(short), rgsFile);
-                fread(&propertyValue, 1, sizeof(int), rgsFile);
+                fread(&propertyValue, 1, sizeof(unsigned int), rgsFile);
 
                 if (controlId == 0) // DEFAULT control
                 {
