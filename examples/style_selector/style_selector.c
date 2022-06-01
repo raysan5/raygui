@@ -41,6 +41,14 @@
 //#include "gui_icons.h"          // External icons data provided, it can be generated with rGuiIcons tool
 #include "../../src/raygui.h"
 
+// raygui embedded styles
+#include "styles/style_cyber.h"             // raygui style: cyber
+#include "styles/style_jungle.h"            // raygui style: jungle
+#include "styles/style_lavanda.h"           // raygui style: lavanda
+#include "styles/style_dark.h"              // raygui style: dark
+#include "styles/style_bluish.h"            // raygui style: bluish
+#include "styles/style_terminal.h"          // raygui style: terminal
+
 #include <string.h>             // Required for: strcpy()
 
 //------------------------------------------------------------------------------------
@@ -112,6 +120,10 @@ int main()
 
     char textInputFileName[256] = { 0 };
 
+    GuiLoadStyleBluish();
+    int visualStyleActive = 4;
+    int prevVisualStyleActive = 4;
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -135,6 +147,27 @@ int main()
 
             ClearDroppedFiles();    // Clear internal buffers
         }
+
+        if (visualStyleActive != prevVisualStyleActive)
+        {
+            GuiLoadStyleDefault();
+
+            switch (visualStyleActive)
+            {
+                case 0: break;      // Default style
+                case 1: GuiLoadStyleJungle(); break;
+                case 2: GuiLoadStyleLavanda(); break;
+                case 3: GuiLoadStyleDark(); break;
+                case 4: GuiLoadStyleBluish(); break;
+                case 5: GuiLoadStyleCyber(); break;
+                case 6: GuiLoadStyleTerminal(); break;
+                default: break;
+            }
+
+            GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+
+            prevVisualStyleActive = visualStyleActive;
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -143,6 +176,12 @@ int main()
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
+            
+            // Visuals options
+            GuiLabel((Rectangle){ 10, 10, 60, 24 }, "Style:");
+            visualStyleActive = GuiComboBox((Rectangle){ 60,10, 120, 24 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", visualStyleActive);
+
+            /*
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
@@ -234,6 +273,7 @@ int main()
                     strcpy(textInput, "\0");
                 }
             }
+            */
             //----------------------------------------------------------------------------------
 
         EndDrawing();

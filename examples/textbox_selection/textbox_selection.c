@@ -166,7 +166,7 @@ int main(int argc, char **argv)
         }
         
         // Convert text to hex representation and draw it on screen
-        char hex[(((textboxActive == 1) ? SIZEOF(text02) : SIZEOF(text01)) + 1)*3 + 1];
+        char *hex = RAYGUI_MALLOC((((textboxActive == 1) ? SIZEOF(text02) : SIZEOF(text01)) + 1)*3 + 1);
         char *text = (textboxActive == 1) ? text02 : text01;
         int maxSize = (textboxActive == 1) ? SIZEOF(text02) : SIZEOF(text01);
         for (int i = 0, j = 0; i < maxSize; ++i, j += 3) sprintf(&hex[j], "%02Xh ", (char)text[i]);
@@ -213,6 +213,8 @@ int main(int argc, char **argv)
     
             // Draw hexadecimal values viewer
             DrawTextBoxedSelectable(guiFont, hex, (Rectangle){ 20, 95, 760, 205 }, 20, 1, true, BLACK, startIdx*3, len*3, colorFG, colorBG);
+
+            RAYGUI_FREE(hex);
 
             // Draw right-mouse-button-click menu and logic
             //---------------------------------------------------------------------------------------

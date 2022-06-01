@@ -123,7 +123,7 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
     static int selectStartCp = -1;
     static int selectLengthCp = 0;
     
-    GuiControlState state = guiState;
+    GuiState state = guiState;
     bool pressed = false;
     
     bool textWrap = true;           // TODO: Word-Wrap vs Char-Wrap -> textWrapMode { NO_WRAP_LOCK, NO_WRAP_OVERFLOW, CHAR_WRAP, WORD_WRAP }
@@ -135,13 +135,13 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked)
     {
         Vector2 mousePoint = GetMousePosition();
 
         if (editMode)
         {
-            state = GUI_STATE_PRESSED;
+            state = STATE_PRESSED;
             framesCounter++;
             
             // TODO: Cursor position logic (mouse and keys)
@@ -173,7 +173,7 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
-                state = GUI_STATE_FOCUSED;
+                state = STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
             }
         }
@@ -195,8 +195,8 @@ bool GuiTextEditor(Rectangle bounds, char *text, int textSize, bool editMode)
     //--------------------------------------------------------------------
     DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
 
-    if (state == GUI_STATE_PRESSED) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == GUI_STATE_DISABLED) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
+    if (state == STATE_PRESSED) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
+    else if (state == STATE_DISABLED) DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
 
     Font font = GetFontDefault();
     

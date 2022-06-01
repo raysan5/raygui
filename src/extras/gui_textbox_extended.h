@@ -548,7 +548,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
 
     static int framesCounter = 0;           // Required for blinking cursor
 
-    GuiControlState state = guiState;
+    GuiState state = guiState;
     bool pressed = false;
 
     // Make sure length doesn't exceed `textSize`. `textSize` is actually the max amount of characters the textbox can handle.
@@ -588,7 +588,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != GUI_STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -615,7 +615,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
 
             if (active)
             {
-                state = GUI_STATE_PRESSED;
+                state = STATE_PRESSED;
                 framesCounter++;
 
                 // Make sure state doesn't have invalid values
@@ -910,7 +910,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
                 }
                 else selStart = selStart - guiTextBoxState.start;
             }
-            else state = GUI_STATE_FOCUSED;
+            else state = STATE_FOCUSED;
             
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(0))) pressed = true;
         }
@@ -941,7 +941,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
             
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
-                state = GUI_STATE_FOCUSED;
+                state = STATE_FOCUSED;
                 if (IsMouseButtonPressed(0)) pressed = true;
             }
 
@@ -954,7 +954,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
     //--------------------------------------------------------------------
     DrawRectangleLinesEx(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha));
 
-    if (state == GUI_STATE_PRESSED)
+    if (state == STATE_PRESSED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_FOCUSED)), guiAlpha));
 
@@ -964,7 +964,7 @@ RAYGUIAPI bool GuiTextBoxEx(Rectangle bounds, char *text, int textSize, bool edi
             DrawRectangle(cursorPos.x, cursorPos.y-1, 1, GuiGetStyle(DEFAULT, TEXT_SIZE)+2, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
         }
     }
-    else if (state == GUI_STATE_DISABLED)
+    else if (state == STATE_DISABLED)
     {
         DrawRectangle(bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.width - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), bounds.height - 2*GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
