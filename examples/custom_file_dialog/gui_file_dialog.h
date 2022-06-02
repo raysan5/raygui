@@ -157,7 +157,9 @@ FileInfo *dirFilesIcon = NULL;
 // Internal Module Functions Definition
 //----------------------------------------------------------------------------------
 // Read all filenames from directory (supported file types)
-static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt);
+static char **LoadDirectoryFiles(const char *dir, int *filesCount, char *filterExt);
+// Read files in new path
+static void ReloadDirectoryFiles(GuiFileDialogState *state);
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
 // List View control for files info with extended parameters
@@ -215,16 +217,6 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
     return state;
 }
 
-// Read files in new path
-static void FD_RELOAD_DIRPATH(GuiFileDialogState *state)
-{
-    for (int i = 0; i < state->dirFilesCount; i++) RL_FREE(state->dirFiles[i]);
-    RL_FREE(state->dirFiles);
-
-    state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
-    state->itemFocused = 0;
-}
-
 // Update and draw file dialog
 void GuiFileDialog(GuiFileDialogState *state)
 {
@@ -238,13 +230,13 @@ void GuiFileDialog(GuiFileDialogState *state)
         //------------------------------------------------------------------------------------
         if (dirFilesIcon == NULL)
         {
-            dirFilesIcon = (FileInfo *)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(FileInfo));    // Max files to read
-            for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)calloc(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
+            dirFilesIcon = (FileInfo *)RL_CALLOC(MAX_DIRECTORY_FILES, sizeof(FileInfo));    // Max files to read
+            for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)RL_CALLOC(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
         }
 
         if (state->dirFiles == NULL)
         {
-            state->dirFiles = ReadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+            state->dirFiles = LoadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
 
             for(int f = 0; f < state->dirFilesCount; f++)
             {
@@ -266,8 +258,8 @@ void GuiFileDialog(GuiFileDialogState *state)
             // Move dir path one level up
             strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
 
-            // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
-            FD_RELOAD_DIRPATH(state);
+            // Reload directory files (frees previous list)
+            ReloadDirectoryFiles(state);
 
             state->filesListActive = -1;
             strcpy(state->fileNameText, "\0");
@@ -281,8 +273,8 @@ void GuiFileDialog(GuiFileDialogState *state)
                 // Verify if a valid path has been introduced
                 if (DirectoryExists(state->dirPathText))
                 {
-                    // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
-                    FD_RELOAD_DIRPATH(state);
+                    // Reload directory files (frees previous list)
+                    ReloadDirectoryFiles(state);
 
                     strcpy(state->dirPathTextCopy, state->dirPathText);
                 }
@@ -319,8 +311,8 @@ void GuiFileDialog(GuiFileDialogState *state)
 
                 strcpy(state->dirPathTextCopy, state->dirPathText);
 
-                // RL_FREE previous dirFiles (reloaded by ReadDirectoryFiles())
-                FD_RELOAD_DIRPATH(state);
+                // Reload directory files (frees previous list)
+                ReloadDirectoryFiles(state);
 
                 strcpy(state->dirPathTextCopy, state->dirPathText);
 
@@ -381,13 +373,13 @@ void GuiFileDialog(GuiFileDialogState *state)
         // File dialog has been closed!
         if (!state->fileDialogActive)
         {
-            // RL_FREE dirFiles memory
-            for (int i = 0; i < state->dirFilesCount; i++)
+            // Free dirFiles memory
+            for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
             {
                 RL_FREE(state->dirFiles[i]);
                 RL_FREE(dirFilesIcon[i]);
             }
-
+            
             RL_FREE(state->dirFiles);
             RL_FREE(dirFilesIcon);
 
@@ -413,11 +405,11 @@ static inline int FileCompare(const char *d1, const char *d2, const char *dir)
 }
 
 // Read all filenames from directory (supported file types)
-static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
+static char **LoadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
 {
     int validFilesCount = 0;
-    char **validFiles = (char **)RL_MALLOC(MAX_DIRECTORY_FILES*sizeof(char *));    // Max files to read
-    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_MALLOC(MAX_DIR_PATH_LENGTH);    // Max file name length
+    char **validFiles = (char **)RL_CALLOC(MAX_DIRECTORY_FILES, sizeof(char *));    // Max files to read
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_CALLOC(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
 
     int filterExtCount = 0;
     const char **extensions = GuiTextSplit(filterExt, &filterExtCount, NULL);
@@ -504,6 +496,16 @@ static char **ReadDirectoryFiles(const char *dir, int *filesCount, char *filterE
 
     *filesCount = validFilesCount;
     return validFiles;
+}
+
+// Read files in new path
+static void ReloadDirectoryFiles(GuiFileDialogState *state)
+{
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) RL_FREE(state->dirFiles[i]);
+    RL_FREE(state->dirFiles);
+
+    state->dirFiles = LoadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+    state->itemFocused = 0;
 }
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
