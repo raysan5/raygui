@@ -3847,7 +3847,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // If text requires an icon, add size to measure
         if (iconId >= 0)
         {
-            textSize.x += RAYGUI_ICON_SIZE;
+            textSize.x += RAYGUI_ICON_SIZE*guiIconScale;
 
             // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
             if ((text != NULL) && (text[0] != '\0')) textSize.x += ICON_TEXT_PADDING;
@@ -3886,8 +3886,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
-            position.x += (RAYGUI_ICON_SIZE + ICON_TEXT_PADDING);
+            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
+            position.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
         }
 #endif
         DrawTextEx(guiFont, text, position, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
