@@ -378,6 +378,7 @@ typedef enum {
 
 // Gui extended properties depend on control
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
+//----------------------------------------------------------------------------------
 
 // DEFAULT extended properties
 // NOTE: Those properties are common to all controls or global
@@ -850,15 +851,16 @@ typedef enum {
 
 #if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
 
-// Embedded raygui icons, no external file provided
-#define RAYGUI_ICON_SIZE               16          // Size of icons (squared)
+// Embedded icons, no external file provided
+#define RAYGUI_ICON_SIZE               16          // Size of icons in pixels (squared)
 #define RAYGUI_ICON_MAX_ICONS         256          // Maximum number of icons
 #define RAYGUI_ICON_MAX_NAME_LENGTH    32          // Maximum length of icon name id
 
 // Icons data is defined by bit array (every bit represents one pixel)
-// Those arrays are stored as unsigned int data arrays, so every array
-// element defines 32 pixels (bits) of information
-// Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
+// Those arrays are stored as unsigned int data arrays, so,
+// every array element defines 32 pixels (bits) of information
+// One icon is defined by 8 int, (8 int * 32 bit = 256 bit = 16*16 pixels)
+// NOTE: Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
 #define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
 
 //----------------------------------------------------------------------------------
@@ -1150,13 +1152,13 @@ typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-static GuiState guiState = STATE_NORMAL;
+static GuiState guiState = STATE_NORMAL;    // Gui global state, if !STATE_NORMAL, forces defined state
 
-static Font guiFont = { 0 };            // Gui current font (WARNING: highly coupled to raylib)
-static bool guiLocked = false;          // Gui lock state (no inputs processed)
-static float guiAlpha = 1.0f;           // Gui element transpacency on drawing
+static Font guiFont = { 0 };                // Gui current font (WARNING: highly coupled to raylib)
+static bool guiLocked = false;              // Gui lock state (no inputs processed)
+static float guiAlpha = 1.0f;               // Gui element transpacency on drawing
 
-static unsigned int guiIconScale = 1;   // Gui icon default scale (if icons enabled)
+static unsigned int guiIconScale = 1;       // Gui icon default scale (if icons enabled)
 
 //----------------------------------------------------------------------------------
 // Style data array for all gui style properties (allocated on data segment by default)
@@ -1172,7 +1174,7 @@ static unsigned int guiIconScale = 1;   // Gui icon default scale (if icons enab
 //----------------------------------------------------------------------------------
 static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)] = { 0 };
 
-static bool guiStyleLoaded = false;     // Style loaded flag for lazy style initialization
+static bool guiStyleLoaded = false;         // Style loaded flag for lazy style initialization
 
 //----------------------------------------------------------------------------------
 // Standalone Mode Functions Declaration
