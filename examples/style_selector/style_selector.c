@@ -180,7 +180,7 @@ int main()
             GuiLabel((Rectangle){ 10, 10, 60, 24 }, "Style:");
             visualStyleActive = GuiComboBox((Rectangle){ 60,10, 120, 24 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", visualStyleActive);
 
-            GuiSetIconScale(2.0f);
+            GuiSetIconScale(2);
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
             GuiButton((Rectangle){ 25, 255, 300, 30 }, GuiIconText(ICON_FILE_SAVE, "Save File"));
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
