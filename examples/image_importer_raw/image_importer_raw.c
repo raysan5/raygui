@@ -83,7 +83,7 @@ int main()
         if (IsFileDropped())
         {
             int fileCount = 0;
-            char **droppedFiles = GetDroppedFiles(&fileCount);
+            char **droppedFiles = LoadDroppedFiles(&fileCount);
 
             // Check file extensions for drag-and-drop
             if ((fileCount == 1) && IsFileExtension(droppedFiles[0], ".raw"))
@@ -108,7 +108,7 @@ int main()
                 importWindowActive = true;
             }
 
-            ClearDroppedFiles();
+            UnloadDroppedFiles();
         }
         
         // Check if load button has been pressed

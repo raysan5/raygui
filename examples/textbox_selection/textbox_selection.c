@@ -142,7 +142,7 @@ int main(int argc, char **argv)
         if (IsFileDropped()) 
         {
             int count = 0;
-            char **files = GetDroppedFiles(&count);
+            char **files = LoadDroppedFiles(&count);
             
             if (IsFileExtension(files[0], ".ttf") || 
                 IsFileExtension(files[0], ".otf") || 
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
                 }
             }
             
-            ClearDroppedFiles();
+            UnloadDroppedFiles();
         }
         
         // Convert text to hex representation and draw it on screen
