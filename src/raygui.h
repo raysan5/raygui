@@ -2000,6 +2000,9 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     GuiState state = guiState;
     bool pressed = false;
+    int textWidth = GetTextWidth(text);
+    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
+    int textAlignment = editMode && textWidth >= textBounds.width ? TEXT_ALIGN_RIGHT : GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
 
     Rectangle cursor = {
         bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
@@ -2031,7 +2034,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
-                if ((GetTextWidth(text) < (maxWidth - GuiGetStyle(DEFAULT, TEXT_SIZE))) && (key >= 32))
+                if (key >= 32)
                 {
                     for (int i = 0; i < byteSize; i++)
                     {
@@ -2056,9 +2059,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) pressed = true;
 
             // Check text alignment to position cursor properly
-            int textAlignment = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
             if (textAlignment == TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
-            else if (textAlignment == TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING);
+            else if (textAlignment == TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) - GuiGetStyle(TEXTBOX, BORDER_WIDTH);
         }
         else
         {
@@ -2083,7 +2085,15 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     }
     else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
 
-    GuiDrawText(text, GetTextBounds(TEXTBOX, bounds), GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    // in case we edit and text does not fit in the textbox show right aligned and character clipped, slower but working
+    while (editMode && textWidth >= textBounds.width && *text)
+    {
+        int bytes = 0;
+        GetCodepoint(text, &bytes);
+        text += bytes;
+        textWidth = GetTextWidth(text);
+    }
+    GuiDrawText(text, textBounds, textAlignment, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw cursor
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
@@ -3782,7 +3792,9 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         {
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
             else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
-        } break;
+            textBounds.width -= 2 * GuiGetStyle(control, TEXT_PADDING);
+        }
+        break;
     }
 
     // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
