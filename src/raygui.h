@@ -2355,7 +2355,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
                     {
                         // Remove latest UTF-8 unicode character introduced (n bytes)
                         int charUTF8Length = 0;
-                        while (charUTF8Length < textLength && ((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
+                        while ((charUTF8Length < textLength) && ((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
 
                         textLength -= (charUTF8Length + 1);
                         text[textLength] = '\0';
