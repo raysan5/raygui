@@ -2320,7 +2320,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             int codepoint = GetCharPressed();
             int textLength = (int)strlen(text);     // Length in bytes (UTF-8 string)
             int byteSize = 0;
-            const char *textUTF8 = CodepointToUTF8(key, &byteSize)
+            const char *textUTF8 = CodepointToUTF8(codepoint, &byteSize);
 
             // Introduce characters
             if ((textLength + byteSize) < textSize)
