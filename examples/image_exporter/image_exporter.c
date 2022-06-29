@@ -66,12 +66,11 @@ int main(int argc, char *argv[])
         //----------------------------------------------------------------------------------
         if (IsFileDropped())
         {
-            int fileCount = 0;
-            char **droppedFiles = LoadDroppedFiles(&fileCount);
+            FilePathList droppedFiles = LoadDroppedFiles();
 
-            if (fileCount == 1)
+            if (droppedFiles.count == 1)
             {
-                Image imTemp = LoadImage(droppedFiles[0]);
+                Image imTemp = LoadImage(droppedFiles.paths[0]);
                 
                 if (imTemp.data != NULL)
                 {
@@ -89,7 +88,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            UnloadDroppedFiles();
+            UnloadDroppedFiles(droppedFiles);
         }
     
         if (btnExport)

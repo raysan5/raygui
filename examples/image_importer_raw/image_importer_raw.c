@@ -82,21 +82,20 @@ int main()
         // Check if a file is dropped
         if (IsFileDropped())
         {
-            int fileCount = 0;
-            char **droppedFiles = LoadDroppedFiles(&fileCount);
+            FilePathList droppedFiles = LoadDroppedFiles();
 
             // Check file extensions for drag-and-drop
-            if ((fileCount == 1) && IsFileExtension(droppedFiles[0], ".raw"))
+            if ((droppedFiles.count == 1) && IsFileExtension(droppedFiles.paths[0], ".raw"))
             {
-                FILE *imageFile = fopen(droppedFiles[0], "rb");
+                FILE *imageFile = fopen(droppedFiles.paths[0], "rb");
                 fseek(imageFile, 0L, SEEK_END);
                 dataSize = ftell(imageFile);
                 fclose(imageFile);
                 
                 // NOTE: Returned string is just a pointer to droppedFiles[0],
                 // we need to make a copy of that data somewhere else: fileName
-                strcpy(fileNamePath, droppedFiles[0]);
-                strcpy(fileName, GetFileName(droppedFiles[0]));
+                strcpy(fileNamePath, droppedFiles.paths[0]);
+                strcpy(fileName, GetFileName(droppedFiles.paths[0]));
                 
                 // Try to guess possible raw values
                 // Let's assume image is square, RGBA, 8 bit per channel
@@ -108,7 +107,7 @@ int main()
                 importWindowActive = true;
             }
 
-            UnloadDroppedFiles();
+            UnloadDroppedFiles(droppedFiles);
         }
         
         // Check if load button has been pressed
