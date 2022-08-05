@@ -93,13 +93,13 @@ gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTY
 
  - **Linux (GCC)**
 ```
-make
+make -f projects/make/Makefile
 ```
 
 - **Mac (clang, homebrew installed raylib)**
 ```
 brew install pkg-config raylib
-make
+make -f projects/make/Makefile
 ```
 
 
