@@ -93,15 +93,13 @@ gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTY
 
  - **Linux (GCC)**
 ```
-mv src/raygui.h src/raygui.c
-gcc -o raygui.so src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+make
 ```
 
 - **Mac (clang, homebrew installed raylib)**
 ```
-cp src/raygui.h src/raygui.c
-brew install raylib
-gcc -o raygui.dynlib src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -framework OpenGL -lm -lpthread -ldl $(pkg-config --libs --cflags raylib)
+brew install pkg-config raylib
+make
 ```
 
 
