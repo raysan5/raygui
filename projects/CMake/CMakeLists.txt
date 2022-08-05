@@ -3,12 +3,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(raygui C)
 
-# Config options
-option(BUILD_RAYGUI_EXAMPLES "Build the examples." OFF)
-
 # Force building examples if building in the root as standalone.
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(BUILD_RAYGUI_EXAMPLES TRUE)
+    set(DEFAULT_BUILD_RAYGUI_EXAMPLES ON)
+else()
+    set(DEFAULT_BUILD_RAYGUI_EXAMPLES OFF)
+endif()
+
+# Config options
+option(BUILD_RAYGUI_EXAMPLES "Build the examples." ${DEFAULT_BUILD_RAYGUI_EXAMPLES})
+option(BUILD_RAYGUI_LIBRARY "Build static library." OFF)
+
+if(${BUILD_RAYGUI_EXAMPLES} OR ${BUILD_RAYGUI_LIBRARY})
+    find_package(Raylib)
 endif()
 
 # Directory Variables
@@ -17,18 +24,20 @@ set(RAYGUI_SRC ${RAYGUI_ROOT}/src)
 set(RAYGUI_EXAMPLES ${RAYGUI_ROOT}/examples)
 
 # raygui
-add_library(raygui INTERFACE)
-file(GLOB sources ${RAYGUI_SRC}/*.h)
-set(RAYGUI_HEADERS ${sources})
-install(FILES
-    ${RAYGUI_HEADERS} DESTINATION include
+if(${BUILD_RAYGUI_LIBRARY})
+    add_library(raygui STATIC ${RAYGUI_SRC}/raygui.c)
+    target_link_libraries(raygui PUBLIC raylib)
+    install(TARGETS raygui)
+else()
+    add_library(raygui INTERFACE)
+endif()
+install(FILES ${RAYGUI_SRC}/raygui.h ${RAYGUI_SRC}/raygui.c
+        DESTINATION include
 )
 target_include_directories(raygui INTERFACE ${RAYGUI_SRC})
 
 # Examples
 if(${BUILD_RAYGUI_EXAMPLES})
-    find_package(Raylib)
-
     # Get the sources together
     set(example_dirs
         controls_test_suite
