@@ -66,14 +66,13 @@ int main(int argc, char **argv)
         // Fonts drag & drop logic
         if (IsFileDropped()) 
         {
-            int count = 0;
-            char **files = LoadDroppedFiles(&count);
+            FilePathList files = LoadDroppedFiles();
             
-            if (IsFileExtension(files[0], ".ttf") || 
-                IsFileExtension(files[0], ".otf") || 
-                IsFileExtension(files[0], ".fnt"))
+            if (IsFileExtension(files.paths[0], ".ttf") || 
+                IsFileExtension(files.paths[0], ".otf") || 
+                IsFileExtension(files.paths[0], ".fnt"))
             {
-                Font fnt = LoadFont(files[0]);
+                Font fnt = LoadFont(files.paths[0]);
                 
                 if (fnt.texture.id != 0)
                 {
@@ -86,7 +85,7 @@ int main(int argc, char **argv)
                 }
             }
             
-            UnloadDroppedFiles();
+            UnloadDroppedFiles(files);
         }
         //----------------------------------------------------------------------------------
 
