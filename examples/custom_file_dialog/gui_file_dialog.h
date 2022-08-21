@@ -68,8 +68,7 @@ typedef struct {
 
     // Custom state variables (depend on development software)
     // NOTE: This variables should be added manually if required
-    char **dirFiles;
-    int dirFilesCount;
+    FilePathList dirFiles;
 
     char filterExt[256];
 
@@ -156,8 +155,6 @@ FileInfo *dirFilesIcon = NULL;
 //----------------------------------------------------------------------------------
 // Internal Module Functions Definition
 //----------------------------------------------------------------------------------
-// Read all filenames from directory (supported file types)
-static char **LoadDirectoryFiles(const char *dir, int *filesCount, char *filterExt);
 // Read files in new path
 static void ReloadDirectoryFiles(GuiFileDialogState *state);
 
@@ -211,8 +208,7 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
 
     strcpy(state.filterExt, "all");
 
-    state.dirFilesCount = 0;
-    state.dirFiles = NULL;      // NOTE: Loaded lazily on window active
+    state.dirFiles.count = 0;
 
     return state;
 }
@@ -234,13 +230,13 @@ void GuiFileDialog(GuiFileDialogState *state)
             for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)RL_CALLOC(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
         }
 
-        if (state->dirFiles == NULL)
+        if (state->dirFiles.paths == NULL)
         {
-            state->dirFiles = LoadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+            state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, state->filterExt, false);
 
-            for(int f = 0; f < state->dirFilesCount; f++)
+            for(int f = 0; f < state->dirFiles.count; f++)
             {
-                if (strcmp(state->fileNameText, state->dirFiles[f]) == 0)
+                if (strcmp(state->fileNameText, state->dirFiles.paths[f]) == 0)
                 {
                     if (state->filesListActive != f) state->filesListScrollIndex = state->filesListActive = f;  // Make it active and visible only on first call
 
@@ -292,9 +288,9 @@ void GuiFileDialog(GuiFileDialogState *state)
         // TODO: ListViewElements should be aligned left
 # if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
         FileInfo fileInfo;
-        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, fileInfo, state->dirFilesCount, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
+        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, fileInfo, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
 # else
-        state->filesListActive = GuiListViewEx((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, (const char**)dirFilesIcon, state->dirFilesCount, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
+        state->filesListActive = GuiListViewEx((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, (const char**)dirFilesIcon, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
 # endif
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
@@ -302,7 +298,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
             //&& (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A)))
         {
-            strcpy(state->fileNameText, state->dirFiles[state->filesListActive]);
+            strcpy(state->fileNameText, state->dirFiles.paths[state->filesListActive]);
 
             if (DirectoryExists(TextFormat("%s/%s", state->dirPathText, state->fileNameText)))
             {
@@ -334,9 +330,9 @@ void GuiFileDialog(GuiFileDialogState *state)
                 if (FileExists(TextFormat("%s/%s", state->dirPathText, state->fileNameText)))
                 {
                     // Select filename from list view
-                    for (int i = 0; i < state->dirFilesCount; i++)
+                    for (int i = 0; i < state->dirFiles.count; i++)
                     {
-                        if (TextIsEqual(state->fileNameText, state->dirFiles[i]))
+                        if (TextIsEqual(state->fileNameText, state->dirFiles.paths[i]))
                         {
                             state->filesListActive = i;
                             strcpy(state->fileNameTextCopy, state->fileNameText);
@@ -376,15 +372,17 @@ void GuiFileDialog(GuiFileDialogState *state)
             // Free dirFiles memory
             for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
             {
-                RL_FREE(state->dirFiles[i]);
                 RL_FREE(dirFilesIcon[i]);
             }
             
-            RL_FREE(state->dirFiles);
+            UnloadDirectoryFiles(state->dirFiles);
+            state->dirFiles.count = 0;
+            state->dirFiles.capacity = 0;
+            state->dirFiles.paths = NULL;
+
             RL_FREE(dirFilesIcon);
 
             dirFilesIcon = NULL;
-            state->dirFiles = NULL;
         }
     }
 }
@@ -404,107 +402,12 @@ static inline int FileCompare(const char *d1, const char *d2, const char *dir)
     return strcmp(d1, d2);
 }
 
-// Read all filenames from directory (supported file types)
-static char **LoadDirectoryFiles(const char *dir, int *filesCount, char *filterExt)
-{
-    int validFilesCount = 0;
-    char **validFiles = (char **)RL_CALLOC(MAX_DIRECTORY_FILES, sizeof(char *));    // Max files to read
-    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) validFiles[i] = (char *)RL_CALLOC(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
-
-    int filterExtCount = 0;
-    const char **extensions = GuiTextSplit(filterExt, &filterExtCount, NULL);
-    bool filterExtensions = true;
-
-    int dirFilesCount = 0;
-    char **files = LoadDirectoryFiles(dir, &dirFilesCount);
-
-    // Sort files and directories: dir by name + files by name
-    // https://en.wikibooks.org/wiki/Algorithm_Implementation/Sorting/Quicksort#C
-    if (dirFilesCount > 1)
-    {
-        const int MAX = 64;
-        unsigned int left = 0, stack[64], pos = 0, seed = rand(), len = dirFilesCount;
-
-        for (;;)
-        {
-            for (; left + 1 < len; len++)    // Sort left to len - 1
-            {
-                if (pos == MAX) len = stack[pos = 0];               // Stack overflow, reset
-                char *pivot = files[left + seed%(len - left)];      // Pick random pivot
-                seed = seed*69069 + 1;                              // Next pseudo-random number
-                stack[pos++] = len;                                 // Sort right part later
-
-                for (unsigned int right = left - 1;;)               // Inner loop: partitioning
-                {
-                    while (FileCompare(files[++right], pivot, dir) < 0); // Look for greater element
-                    while (FileCompare(pivot, files[--len], dir) < 0);   // Look for smaller element
-                    if (right >= len) break;                        // Partition point found?
-                    char *temp = files[right];
-                    files[right] = files[len];                      // The only swap
-                    files[len] = temp;
-                }                                                   // Partitioned, continue left part
-            }
-
-            if (pos == 0) break;                                    // Stack empty?
-            left = len;                                             // Left to right is sorted
-            len = stack[--pos];                                     // Get next range to sort
-        }
-    }
-
-    if (TextIsEqual(extensions[0], "all")) filterExtensions = false;
-
-    for (int i = 0; (i < dirFilesCount) && (validFilesCount < MAX_DIRECTORY_FILES); i++)
-    {
-        if (TextIsEqual(files[i], ".")) continue;
-
-        if (!filterExtensions)
-        {
-            strncpy(validFiles[validFilesCount], files[i], MAX_DIR_PATH_LENGTH);
-
-            // Only filter files by extensions, directories should be available
-            if (DirectoryExists(TextFormat("%s/%s", dir, files[i]))) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 1, files[i]));
-            else
-            {
-                // TODO: Assign custom filetype icons depending on file extension (image, audio, text, video, models...)
-
-                if (IsFileExtension(files[i], ".png")) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
-                else strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
-            }
-
-            validFilesCount++;
-        }
-        else
-        {
-            for (int j = 0; j < filterExtCount; j++)
-            {
-                // Check file type extensions supported
-                // NOTE: We just store valid files list
-                if (IsFileExtension(files[i], extensions[j]))
-                {
-                    // TODO: Assign custom filetype icons depending on file extension (image, audio, text, video, models...)
-
-                    if (IsFileExtension(files[i], ".png")) strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 12, files[i]));
-                    else strcpy(dirFilesIcon[validFilesCount], TextFormat("#%i#%s", 10, files[i]));
-
-                    validFilesCount++;
-                }
-            }
-        }
-    }
-
-    UnloadDirectoryFiles();
-
-    *filesCount = validFilesCount;
-    return validFiles;
-}
-
 // Read files in new path
 static void ReloadDirectoryFiles(GuiFileDialogState *state)
 {
-    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) RL_FREE(state->dirFiles[i]);
-    RL_FREE(state->dirFiles);
+    UnloadDirectoryFiles(state->dirFiles);
 
-    state->dirFiles = LoadDirectoryFiles(state->dirPathText, &state->dirFilesCount, state->filterExt);
+    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, state->filterExt, false);
     state->itemFocused = 0;
 }
 
