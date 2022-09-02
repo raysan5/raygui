@@ -2032,7 +2032,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             // Only allow keys in range [32..125]
             if ((keyCount + byteSize) < textSize)
             {
-                float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
+                //float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
 
                 if (key >= 32)
                 {
