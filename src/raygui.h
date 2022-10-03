@@ -3548,7 +3548,18 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_HEIGHT, 8);
     GuiSetStyle(COLORPICKER, HUEBAR_SELECTOR_OVERFLOW, 2);
 
-    guiFont = GetFontDefault();     // Initialize default font
+    if (guiFont.texture.id != GetFontDefault().texture.id)
+    {
+        // Unload previous font texture
+        UnloadTexture(guiFont.texture);
+
+        // Setup default raylib font
+        guiFont = GetFontDefault(); 
+
+        // Setup default raylib font rectangle
+        Rectangle whiteChar = { 41, 46, 2, 8 };
+        SetShapesTexture(guiFont.texture, whiteChar);
+    }
 }
 
 // Get text with icon id prepended
