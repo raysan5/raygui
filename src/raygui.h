@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.2 - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.5-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *
@@ -111,6 +111,10 @@
 *
 *
 *   VERSIONS HISTORY:
+*       3.5 (xx-xxx-2022) REDESIGNED: GuiDrawText() to divide drawing by lines
+*                         REMOVED: MeasureTextEx() dependency, logic directly implemented
+*                         REMOVED: DrawTextEx() dependency, logic directly implemented
+*                         ADDED: Helper functions to split text in separate lines
 *       3.2 (22-May-2022) RENAMED: Some enum values, for unification, avoiding prefixes
 *                         REMOVED: GuiScrollBar(), only internal
 *                         REDESIGNED: GuiPanel() to support text parameter
@@ -1221,9 +1225,6 @@ static Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
 static void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
 static char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
 static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
-
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing);   // -- GetTextWidth(), GuiTextBoxMulti()
-static void DrawTextEx(Font font, const char *text, Vector2 position, float fontSize, float spacing, Color tint);  // -- GuiDrawText()
 //-------------------------------------------------------------------------------
 
 // raylib functions already implemented in raygui
@@ -1235,8 +1236,9 @@ static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if 
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
-static int GetCodepoint(const char *text, int *bytesProcessed);     // Get next codepoint in a UTF-8 encoded text
-static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
+
+static int GetCodepointNext(const char *text, int *bytesProcessed);  // Get next codepoint in a UTF-8 encoded text
+static const char *CodepointToUTF8(int codepoint, int *byteSize);    // Encode codepoint into UTF-8 text (char array size returned as parameter)
 
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
 //-------------------------------------------------------------------------------
@@ -1246,14 +1248,14 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
 //----------------------------------------------------------------------------------
-static int GetTextWidth(const char *text);                      // Gui get text width using default font
+static int GetTextWidth(const char *text);                      // Gui get text width using gui font and style
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
 
-static const char **GuiTextSplit(const char *text, int *count, int *textRow);       // Split controls text into multiple strings
+static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
 
@@ -1607,7 +1609,7 @@ void GuiLabel(Rectangle bounds, const char *text)
 
     // Update control
     //--------------------------------------------------------------------
-    // ...
+    //...
     //--------------------------------------------------------------------
 
     // Draw control
@@ -1655,7 +1657,7 @@ bool GuiLabelButton(Rectangle bounds, const char *text)
     bool pressed = false;
 
     // NOTE: We force bounds.width to be all text
-    float textWidth = MeasureTextEx(guiFont, text, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING)).x;
+    float textWidth = GetTextWidth(text);
     if (bounds.width < textWidth) bounds.width = textWidth;
 
     // Update control
@@ -1725,7 +1727,7 @@ bool GuiToggle(Rectangle bounds, const char *text, bool active)
     return active;
 }
 
-// Toggle Group control, returns toggled button index
+// Toggle Group control, returns toggled button codepointIndex
 int GuiToggleGroup(Rectangle bounds, const char *text, int active)
 {
     #if !defined(RAYGUI_TOGGLEGROUP_MAX_ITEMS)
@@ -1737,7 +1739,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int active)
     // Get substrings items from text (items pointers)
     int rows[RAYGUI_TOGGLEGROUP_MAX_ITEMS] = { 0 };
     int itemCount = 0;
-    const char **items = GuiTextSplit(text, &itemCount, rows);
+    const char **items = GuiTextSplit(text, ';', &itemCount, rows);
 
     int prevRow = rows[0];
 
@@ -1818,7 +1820,7 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
     return checked;
 }
 
-// Combo Box control, returns selected item index
+// Combo Box control, returns selected item codepointIndex
 int GuiComboBox(Rectangle bounds, const char *text, int active)
 {
     GuiState state = guiState;
@@ -1830,7 +1832,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
 
     // Get substrings items from text (items pointers, lengths and count)
     int itemCount = 0;
-    const char **items = GuiTextSplit(text, &itemCount, NULL);
+    const char **items = GuiTextSplit(text, ';', &itemCount, NULL);
 
     if (active < 0) active = 0;
     else if (active > itemCount - 1) active = itemCount - 1;
@@ -1888,7 +1890,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Get substrings items from text (items pointers, lengths and count)
     int itemCount = 0;
-    const char **items = GuiTextSplit(text, &itemCount, NULL);
+    const char **items = GuiTextSplit(text, ';', &itemCount, NULL);
 
     Rectangle boundsOpen = bounds;
     boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
@@ -1999,13 +2001,13 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     GuiState state = guiState;
+    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
+
     bool pressed = false;
     int textWidth = GetTextWidth(text);
-    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
-    int textAlignment = editMode && textWidth >= textBounds.width ? TEXT_ALIGN_RIGHT : GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
 
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
+        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + textWidth + 2,
         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
         4,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
@@ -2057,10 +2059,6 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) pressed = true;
-
-            // Check text alignment to position cursor properly
-            if (textAlignment == TEXT_ALIGN_CENTER) cursor.x = bounds.x + GetTextWidth(text)/2 + bounds.width/2 + 1;
-            else if (textAlignment == TEXT_ALIGN_RIGHT) cursor.x = bounds.x + bounds.width - GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING) - GuiGetStyle(TEXTBOX, BORDER_WIDTH);
         }
         else
         {
@@ -2085,15 +2083,21 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     }
     else GuiDrawRectangle(bounds, 1, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
 
-    // in case we edit and text does not fit in the textbox show right aligned and character clipped, slower but working
-    while (editMode && textWidth >= textBounds.width && *text)
+    if (editMode)
     {
-        int bytes = 0;
-        GetCodepoint(text, &bytes);
-        text += bytes;
-        textWidth = GetTextWidth(text);
+        // In case we edit and text does not fit in the textbox,
+        // we move text pointer to a position it fits inside the text box
+        while ((textWidth >= textBounds.width) && (text[0] != '\0'))
+        {
+            int codepointSize = 0;
+            GetCodepoint(text, &codepointSize);
+            text += codepointSize;
+            textWidth = GetTextWidth(text);
+            cursor.x = textBounds.x + textWidth + 2;
+        }
     }
-    GuiDrawText(text, textBounds, textAlignment, Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+
+    GuiDrawText(text, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw cursor
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
@@ -2398,7 +2402,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
     for (int i = 0, codepointLength = 0; text[i] != '\0'; i += codepointLength)
     {
-        int codepoint = GetCodepoint(text + i, &codepointLength);
+        int codepoint = GetCodepointNext(text + i, &codepointLength);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
         Rectangle atlasRec = guiFont.recs[index];
         GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
@@ -2667,7 +2671,7 @@ int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active
     int itemCount = 0;
     const char **items = NULL;
 
-    if (text != NULL) items = GuiTextSplit(text, &itemCount, NULL);
+    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount, NULL);
 
     return GuiListViewEx(bounds, items, itemCount, NULL, scrollIndex, active);
 }
@@ -3064,19 +3068,19 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
     int clicked = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
 
     int buttonCount = 0;
-    const char **buttonsText = GuiTextSplit(buttons, &buttonCount, NULL);
+    const char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount, NULL);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - RAYGUI_MESSAGEBOX_BUTTON_HEIGHT - RAYGUI_MESSAGEBOX_BUTTON_PADDING;
     buttonBounds.width = (bounds.width - RAYGUI_MESSAGEBOX_BUTTON_PADDING*(buttonCount + 1))/buttonCount;
     buttonBounds.height = RAYGUI_MESSAGEBOX_BUTTON_HEIGHT;
 
-    Vector2 textSize = MeasureTextEx(guiFont, message, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
+    int textWidth = GetTextWidth(message);
 
     Rectangle textBounds = { 0 };
-    textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
+    textBounds.x = bounds.x + bounds.width/2 - textWidth/2;
     textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
-    textBounds.width = textSize.x;
+    textBounds.width = textWidth;
     textBounds.height = bounds.height - RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 3*RAYGUI_MESSAGEBOX_BUTTON_PADDING - RAYGUI_MESSAGEBOX_BUTTON_HEIGHT;
 
     // Draw control
@@ -3107,13 +3111,13 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive)
 {
     #if !defined(RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT)
-        #define RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT      28
+        #define RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT      24
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_BUTTON_PADDING)
         #define RAYGUI_TEXTINPUTBOX_BUTTON_PADDING     12
     #endif
     #if !defined(RAYGUI_TEXTINPUTBOX_HEIGHT)
-        #define RAYGUI_TEXTINPUTBOX_HEIGHT             28
+        #define RAYGUI_TEXTINPUTBOX_HEIGHT             26
     #endif
 
     // Used to enable text edit mode
@@ -3123,7 +3127,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     int btnIndex = -1;
 
     int buttonCount = 0;
-    const char **buttonsText = GuiTextSplit(buttons, &buttonCount, NULL);
+    const char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount, NULL);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT - RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
@@ -3135,12 +3139,12 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     Rectangle textBounds = { 0 };
     if (message != NULL)
     {
-        Vector2 textSize = MeasureTextEx(guiFont, message, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), 1);
+        int textSize = GetTextWidth(message);
 
-        textBounds.x = bounds.x + bounds.width/2 - textSize.x/2;
-        textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + messageInputHeight/4 - textSize.y/2;
-        textBounds.width = textSize.x;
-        textBounds.height = textSize.y;
+        textBounds.x = bounds.x + bounds.width/2 - textSize/2;
+        textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + messageInputHeight/4 - (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+        textBounds.width = textSize;
+        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
     }
 
     Rectangle textBoxBounds = { 0 };
@@ -3167,7 +3171,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     if (secretViewActive != NULL)
     {
         static char stars[] = "****************";
-        if (GuiTextBox(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height }, 
+        if (GuiTextBox(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height },
             ((*secretViewActive == 1) || textEditMode)? text : stars, textMaxSize, textEditMode)) textEditMode = !textEditMode;
 
         *secretViewActive = GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, (*secretViewActive == 1)? "#44#" : "#45#", *secretViewActive);
@@ -3554,7 +3558,7 @@ void GuiLoadStyleDefault(void)
         UnloadTexture(guiFont.texture);
 
         // Setup default raylib font
-        guiFont = GetFontDefault(); 
+        guiFont = GetFontDefault();
 
         // Setup default raylib font rectangle
         Rectangle whiteChar = { 41, 46, 2, 8 };
@@ -3577,19 +3581,19 @@ const char *GuiIconText(int iconId, const char *text)
     {
         memset(buffer, 0, 1024);
         sprintf(buffer, "#%03i#", iconId);
-        
+
         for (int i = 5; i < 1024; i++)
         {
             buffer[i] = text[i - 5];
             if (text[i - 5] == '\0') break;
         }
-    
+
         return buffer;
     }
-    else 
+    else
     {
         sprintf(iconBuffer, "#%03i#", iconId & 0x1ff);
-        
+
         return iconBuffer;
     }
 #endif
@@ -3759,7 +3763,7 @@ static int GetTextWidth(const char *text)
         #define ICON_TEXT_PADDING   4
     #endif
 
-    Vector2 size = { 0 };
+    Vector2 textSize = { 0 };
     int textIconOffset = 0;
 
     if ((text != NULL) && (text[0] != '\0'))
@@ -3775,15 +3779,43 @@ static int GetTextWidth(const char *text)
                 }
             }
         }
-        
+
+        text += textIconOffset;
+
         // Make sure guiFont is set, GuiGetStyle() initializes it lazynessly
         float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        
-        size = MeasureTextEx(guiFont, text + textIconOffset, fontSize, (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-        if (textIconOffset > 0) size.x += (RAYGUI_ICON_SIZE - ICON_TEXT_PADDING);
+
+        // Custom MeasureText() implementation
+        if ((guiFont.texture.id > 0) && (text != NULL))
+        {
+            // Get size in bytes of text, considering end of line and line break
+            int size = 0;
+            for (int i = 0; i < MAX_LINE_BUFFER_SIZE; i++)
+            {
+                if ((text[i] != '\0') && (text[i] != '\n')) size++;
+                else break;
+            }
+
+            float scaleFactor = fontSize/(float)guiFont.baseSize;
+            textSize.y = (float)guiFont.baseSize*scaleFactor;
+            float glyphWidth = 0.0f;
+
+            for (int i = 0, codepointSize = 0; i < size; i += codepointSize)
+            {
+                int codepoint = GetCodepointNext(&text[i], &codepointSize);
+                int codepointIndex = GetGlyphIndex(guiFont, codepoint);
+
+                if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+                else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
+
+                textSize.x += glyphWidth;
+            }
+        }
+
+        if (textIconOffset > 0) textSize.x += (RAYGUI_ICON_SIZE - ICON_TEXT_PADDING);
     }
 
-    return (int)size.x;
+    return (int)textSize.x;
 }
 
 // Get text bounds considering control bounds
@@ -3793,7 +3825,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 
     textBounds.x = bounds.x + GuiGetStyle(control, BORDER_WIDTH);
     textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH);
-    textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH);
+    textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH);
 
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
@@ -3847,6 +3879,39 @@ static const char *GetTextIcon(const char *text, int *iconId)
     return text;
 }
 
+// Get text divided into lines (by line-breaks '\n')
+char **GetTextLines(char *text, int *count)
+{
+#define RAYGUI_MAX_TEXT_LINES   128
+
+    static char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
+    memset(lines, 0, sizeof(char *));
+
+    int textLen = strlen(text);
+
+    lines[0] = text;
+    int len = 0;
+    *count = 1;
+    int lineSize = 0;   // Stores current line size, not returned
+
+    for (int i = 0, k = 0; (i < textLen) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
+    {
+        if (text[i] == '\n')
+        {
+            lineSize = len;
+            k++;
+            lines[k] = &text[i + 1];     // WARNING: next value is valid?
+            len = 0;
+            *count += 1;
+        }
+        else len++;
+    }
+
+    //lines[*count - 1].size = len;
+
+    return lines;
+}
+
 // Gui draw text using default font
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
@@ -3856,69 +3921,117 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         #define ICON_TEXT_PADDING   4
     #endif
 
+    // We process the text lines one by one
     if ((text != NULL) && (text[0] != '\0'))
     {
-        int iconId = 0;
-        text = GetTextIcon(text, &iconId);              // Check text for icon and move cursor
+        // Get text lines ('\n' delimiter) to process lines individually
+        // NOTE: We can't use GuiTextSplit() because it can be already use before calling
+        // GuiDrawText() and static buffer would be overriden :(
+        int lineCount = 0;
+        char **lines = GetTextLines(text, &lineCount);
 
-        // Get text position depending on alignment and iconId
-        //---------------------------------------------------------------------------------
-        Vector2 position = { bounds.x, bounds.y };
+        Rectangle textBounds = GetTextBounds(LABEL, bounds);
+        float totalHeight = lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+        float posOffsetY = 0;
 
-        // NOTE: We get text size after icon has been processed
-        // TODO: REVIEW: We consider text size in case of line breaks! -> MeasureTextEx() depends on raylib!
-        Vector2 textSize = MeasureTextEx(GuiGetFont(), text, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
-        //int textWidth = GetTextWidth(text);
-        //int textHeight = GuiGetStyle(DEFAULT, TEXT_SIZE);
-
-        // If text requires an icon, add size to measure
-        if (iconId >= 0)
+        for (int i = 0; i < lineCount; i++)
         {
-            textSize.x += RAYGUI_ICON_SIZE*guiIconScale;
+            int iconId = 0;
+            lines[i] = GetTextIcon(lines[i], &iconId);      // Check text for icon and move cursor
 
-            // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
-            if ((text != NULL) && (text[0] != '\0')) textSize.x += ICON_TEXT_PADDING;
-        }
+            // Get text position depending on alignment and iconId
+            //---------------------------------------------------------------------------------
+            Vector2 position = { bounds.x, bounds.y };
 
-        // Check guiTextAlign global variables
-        switch (alignment)
-        {
-            case TEXT_ALIGN_LEFT:
+            // TODO: We get text size after icon has been processed
+            // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
+            int textSizeX = GetTextWidth(lines[i]);
+
+            // If text requires an icon, add size to measure
+            if (iconId >= 0)
             {
-                position.x = bounds.x;
-                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-            } break;
-            case TEXT_ALIGN_CENTER:
-            {
-                position.x = bounds.x + bounds.width/2 - textSize.x/2;
-                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-            } break;
-            case TEXT_ALIGN_RIGHT:
-            {
-                position.x = bounds.x + bounds.width - textSize.x;
-                position.y = bounds.y + bounds.height/2 - textSize.y/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-            } break;
-            default: break;
-        }
+                textSizeX += RAYGUI_ICON_SIZE*guiIconScale;
 
-        // NOTE: Make sure we get pixel-perfect coordinates,
-        // In case of decimals we got weird text positioning
-        position.x = (float)((int)position.x);
-        position.y = (float)((int)position.y);
-        //---------------------------------------------------------------------------------
+                // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
+                if ((lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX += ICON_TEXT_PADDING;
+            }
 
-        // Draw text (with icon if available)
-        //---------------------------------------------------------------------------------
+            // Check guiTextAlign global variables
+            switch (alignment)
+            {
+                case TEXT_ALIGN_LEFT:
+                {
+                    position.x = bounds.x;
+                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                } break;
+                case TEXT_ALIGN_CENTER:
+                {
+                    position.x = bounds.x +  bounds.width/2 - textSizeX/2;
+                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                } break;
+                case TEXT_ALIGN_RIGHT:
+                {
+                    position.x = bounds.x + bounds.width - textSizeX;
+                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
+                } break;
+                default: break;
+            }
+
+            // NOTE: Make sure we get pixel-perfect coordinates,
+            // In case of decimals we got weird text positioning
+            position.x = (float)((int)position.x);
+            position.y = (float)((int)position.y);
+            //---------------------------------------------------------------------------------
+
+            // Draw text (with icon if available)
+            //---------------------------------------------------------------------------------
 #if !defined(RAYGUI_NO_ICONS)
-        if (iconId >= 0)
-        {
-            // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
-            position.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
-        }
+            if (iconId >= 0)
+            {
+                // NOTE: We consider icon height, probably different than text size
+                GuiDrawIcon(iconId, (int)position.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
+                position.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
+            }
 #endif
-        DrawTextEx(guiFont, text, position, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
-        //---------------------------------------------------------------------------------
+            //DrawTextEx(guiFont, text, position, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING), tint);
+
+            // Get size in bytes of text, 
+            // considering end of line and line break
+            int size = 0;
+            for (int c = 0; (lines[i][c] != '\0') && (lines[i][c] != '\n'); c++, size++){ }
+            float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
+
+            int textOffsetY = 0;
+            float textOffsetX = 0.0f;
+            for (int c = 0, codepointSize = 0; c < size; c += codepointSize)
+            {
+                int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
+                int index = GetGlyphIndex(guiFont, codepoint);
+
+                // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
+                // but we need to draw all of the bad bytes using the '?' symbol moving one byte
+                if (codepoint == 0x3f) codepointSize = 1;
+
+                if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
+                else
+                {
+                    if ((codepoint != ' ') && (codepoint != '\t'))
+                    {
+                        // TODO: Draw only required text glyphs fitting the bounds.width, '...' can be appended at the end of the text
+                        if (textOffsetX < bounds.width)
+                        {
+                            DrawTextCodepoint(guiFont, codepoint, (Vector2) { position.x + textOffsetX, position.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), tint);
+                        }
+                    }
+
+                    if (guiFont.glyphs[index].advanceX == 0) textOffsetX += ((float)guiFont.recs[index].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+                    else textOffsetX += ((float)guiFont.glyphs[index].advanceX*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+                }
+            }
+
+            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f;    // TODO: GuiGetStyle(DEFAULT, TEXT_LINE_SPACING)?
+            //---------------------------------------------------------------------------------
+        }
     }
 }
 
@@ -3943,7 +4056,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 
 // Split controls text into multiple strings
 // Also check for multiple columns (required by GuiToggleGroup())
-static const char **GuiTextSplit(const char *text, int *count, int *textRow)
+static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow)
 {
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
@@ -3952,15 +4065,18 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
     // NOTE: Those definitions could be externally provided if required
 
+    // WARNING: HACK: TODO: Review!
+    // textRow is an externally provided array of integers that stores row number for every splitted string
+
     #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
-        #define RAYGUI_TEXTSPLIT_MAX_ITEMS        128
+        #define RAYGUI_TEXTSPLIT_MAX_ITEMS          128
     #endif
     #if !defined(RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE)
-        #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE      1024
+        #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE     1024
     #endif
 
-    static const char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL };
-    static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 };
+    static const char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL };   // String pointers array (points to buffer data)
+    static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 };         // Buffer data (text input copy with '\0' added)
     memset(buffer, 0, RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE);
 
     result[0] = buffer;
@@ -3973,7 +4089,7 @@ static const char **GuiTextSplit(const char *text, int *count, int *textRow)
     {
         buffer[i] = text[i];
         if (buffer[i] == '\0') break;
-        else if ((buffer[i] == ';') || (buffer[i] == '\n'))
+        else if ((buffer[i] == delimiter) || (buffer[i] == '\n'))
         {
             result[counter] = buffer + i + 1;
 
@@ -4409,107 +4525,39 @@ static const char *CodepointToUTF8(int codepoint, int *byteSize)
 // Total number of bytes processed are returned as a parameter
 // NOTE: the standard says U+FFFD should be returned in case of errors
 // but that character is not supported by the default font in raylib
-static int GetCodepoint(const char *text, int *bytesProcessed)
+static int GetCodepointNext(const char *text, int *bytesProcessed)
 {
-/*
-    UTF-8 specs from https://www.ietf.org/rfc/rfc3629.txt
+    const char *ptr = text;
+    int codepoint = 0x3f;       // Codepoint (defaults to '?')
+    *codepointSize = 0;
 
-    Char. number range  |        UTF-8 octet sequence
-      (hexadecimal)    |              (binary)
-    --------------------+---------------------------------------------
-    0000 0000-0000 007F | 0xxxxxxx
-    0000 0080-0000 07FF | 110xxxxx 10xxxxxx
-    0000 0800-0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx
-    0001 0000-0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-*/
-    // NOTE: on decode errors we return as soon as possible
-
-    int code = 0x3f;   // Codepoint (defaults to '?')
-    int octet = (unsigned char)(text[0]); // The first UTF8 octet
-    *bytesProcessed = 1;
-
-    if (octet <= 0x7f)
+    // Get current codepoint and bytes processed
+    if (0xf0 == (0xf8 & ptr[0]))
     {
-        // Only one octet (ASCII range x00-7F)
-        code = text[0];
+        // 4 byte UTF-8 codepoint
+        codepoint = ((0x07 & ptr[0]) << 18) | ((0x3f & ptr[1]) << 12) | ((0x3f & ptr[2]) << 6) | (0x3f & ptr[3]);
+        *codepointSize = 4;
     }
-    else if ((octet & 0xe0) == 0xc0)
+    else if (0xe0 == (0xf0 & ptr[0]))
     {
-        // Two octets
-
-        // [0]xC2-DF    [1]UTF8-tail(x80-BF)
-        unsigned char octet1 = text[1];
-
-        if ((octet1 == '\0') || ((octet1 >> 6) != 2)) { *bytesProcessed = 2; return code; } // Unexpected sequence
-
-        if ((octet >= 0xc2) && (octet <= 0xdf))
-        {
-            code = ((octet & 0x1f) << 6) | (octet1 & 0x3f);
-            *bytesProcessed = 2;
-        }
+        // 3 byte UTF-8 codepoint */
+        codepoint = ((0x0f & ptr[0]) << 12) | ((0x3f & ptr[1]) << 6) | (0x3f & ptr[2]);
+        *codepointSize = 3;
     }
-    else if ((octet & 0xf0) == 0xe0)
+    else if (0xc0 == (0xe0 & ptr[0]))
     {
-        // Three octets
-        unsigned char octet1 = text[1];
-        unsigned char octet2 = '\0';
-
-        if ((octet1 == '\0') || ((octet1 >> 6) != 2)) { *bytesProcessed = 2; return code; } // Unexpected sequence
-
-        octet2 = text[2];
-
-        if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { *bytesProcessed = 3; return code; } // Unexpected sequence
-
-        // [0]xE0    [1]xA0-BF       [2]UTF8-tail(x80-BF)
-        // [0]xE1-EC [1]UTF8-tail    [2]UTF8-tail(x80-BF)
-        // [0]xED    [1]x80-9F       [2]UTF8-tail(x80-BF)
-        // [0]xEE-EF [1]UTF8-tail    [2]UTF8-tail(x80-BF)
-
-        if (((octet == 0xe0) && !((octet1 >= 0xa0) && (octet1 <= 0xbf))) ||
-            ((octet == 0xed) && !((octet1 >= 0x80) && (octet1 <= 0x9f)))) { *bytesProcessed = 2; return code; }
-
-        if ((octet >= 0xe0) && (0 <= 0xef))
-        {
-            code = ((octet & 0xf) << 12) | ((octet1 & 0x3f) << 6) | (octet2 & 0x3f);
-            *bytesProcessed = 3;
-        }
+        // 2 byte UTF-8 codepoint
+        codepoint = ((0x1f & ptr[0]) << 6) | (0x3f & ptr[1]);
+        *codepointSize = 2;
     }
-    else if ((octet & 0xf8) == 0xf0)
+    else
     {
-        // Four octets
-        if (octet > 0xf4) return code;
-
-        unsigned char octet1 = text[1];
-        unsigned char octet2 = '\0';
-        unsigned char octet3 = '\0';
-
-        if ((octet1 == '\0') || ((octet1 >> 6) != 2)) { *bytesProcessed = 2; return code; }  // Unexpected sequence
-
-        octet2 = text[2];
-
-        if ((octet2 == '\0') || ((octet2 >> 6) != 2)) { *bytesProcessed = 3; return code; }  // Unexpected sequence
-
-        octet3 = text[3];
-
-        if ((octet3 == '\0') || ((octet3 >> 6) != 2)) { *bytesProcessed = 4; return code; }  // Unexpected sequence
-
-        // [0]xF0       [1]x90-BF       [2]UTF8-tail  [3]UTF8-tail
-        // [0]xF1-F3    [1]UTF8-tail    [2]UTF8-tail  [3]UTF8-tail
-        // [0]xF4       [1]x80-8F       [2]UTF8-tail  [3]UTF8-tail
-
-        if (((octet == 0xf0) && !((octet1 >= 0x90) && (octet1 <= 0xbf))) ||
-            ((octet == 0xf4) && !((octet1 >= 0x80) && (octet1 <= 0x8f)))) { *bytesProcessed = 2; return code; } // Unexpected sequence
-
-        if (octet >= 0xf0)
-        {
-            code = ((octet & 0x7) << 18) | ((octet1 & 0x3f) << 12) | ((octet2 & 0x3f) << 6) | (octet3 & 0x3f);
-            *bytesProcessed = 4;
-        }
+        // 1 byte UTF-8 codepoint
+        codepoint = ptr[0];
+        *codepointSize = 1;
     }
 
-    if (code > 0x10ffff) code = 0x3f;     // Codepoints after U+10ffff are invalid
-
-    return code;
+    return codepoint;
 }
 #endif      // RAYGUI_STANDALONE
 
