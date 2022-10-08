@@ -10,7 +10,7 @@
 
 <br>
 
-**WARNING: Latest `raygui` from GitHub master branch is always aligned with latest `raylib` from GitHub master branch.**
+**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch.**
 
 **Make sure to use the appropiate versions.**
 
