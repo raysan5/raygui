@@ -2090,7 +2090,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         while ((textWidth >= textBounds.width) && (text[0] != '\0'))
         {
             int codepointSize = 0;
-            GetCodepoint(text, &codepointSize);
+            GetCodepointNext(text, &codepointSize);
             text += codepointSize;
             textWidth = GetTextWidth(text);
             cursor.x = textBounds.x + textWidth + 2;
