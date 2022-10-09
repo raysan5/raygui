@@ -502,7 +502,7 @@ RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set o
 RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
 
 // Container/separator controls, useful for controls organization
-RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
+RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title, bool closeButton = true);                                       // Window Box control, shows a window that can be closed
 RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
 RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
 RAYGUIAPI void GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
@@ -531,7 +531,7 @@ RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int
 // Advance controls set
 RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
 RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
-RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
+RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons, bool closeButton = true);                 // Message Box control, displays a message
 RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive);   // Text Input Box control, ask for text, supports secret
 RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
 RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
@@ -1341,7 +1341,7 @@ int GuiGetStyle(int control, int property)
 //----------------------------------------------------------------------------------
 
 // Window Box control
-bool GuiWindowBox(Rectangle bounds, const char *title)
+bool GuiWindowBox(Rectangle bounds, const char *title, bool closeButton)
 {
     // Window title bar height (including borders)
     // NOTE: This define is also used by GuiMessageBox() and GuiTextInputBox()
@@ -1372,17 +1372,20 @@ bool GuiWindowBox(Rectangle bounds, const char *title)
     GuiPanel(windowPanel, NULL);    // Draw window base
 
     // Draw window close button
-    int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-    int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-    GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+    if (closeButton)
+    {
+        int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
+        int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+        GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+        GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 #if defined(RAYGUI_NO_ICONS)
-    clicked = GuiButton(closeButtonRec, "x");
+        clicked = GuiButton(closeButtonRec, "x");
 #else
-    clicked = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
+        clicked = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
 #endif
-    GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-    GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+        GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+        GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+    }
     //--------------------------------------------------------------------
 
     return clicked;
@@ -3052,7 +3055,7 @@ Color GuiColorPicker(Rectangle bounds, const char *text, Color color)
 }
 
 // Message Box control
-int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons)
+int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons, bool closeButton)
 {
     #if !defined(RAYGUI_MESSAGEBOX_BUTTON_HEIGHT)
         #define RAYGUI_MESSAGEBOX_BUTTON_HEIGHT    24
@@ -3081,7 +3084,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
 
     // Draw control
     //--------------------------------------------------------------------
-    if (GuiWindowBox(bounds, title)) clicked = 0;
+    if (GuiWindowBox(bounds, title, closeButton)) clicked = 0;
 
     int prevTextAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
