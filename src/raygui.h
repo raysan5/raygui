@@ -87,7 +87,7 @@
 *
 *   guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
 *
-*   TOOL: rGuiIcons is a visual tool to customize raygui icons.
+*   TOOL: rGuiIcons is a visual tool to customize raygui icons and create new ones.
 *
 *
 *   CONFIGURATION:
@@ -1136,6 +1136,9 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_254
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_255
 };
+
+// NOTE: We keep a pointer to the icons array, useful to point to other sets if required
+static unsigned int *guiIconsPtr = guiIcons;
 
 #endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
@@ -3602,7 +3605,7 @@ const char *GuiIconText(int iconId, const char *text)
 #if !defined(RAYGUI_NO_ICONS)
 
 // Get full icons data pointer
-unsigned int *GuiGetIcons(void) { return guiIcons; }
+unsigned int *GuiGetIcons(void) { return guiIconsPtr; }
 
 // Load raygui icons file (.rgi)
 // NOTE: In case nameIds are required, they can be requested with loadIconsName,
@@ -3668,8 +3671,8 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             }
             else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
 
-            // Read icons data directly over guiIcons data array
-            fread(guiIcons, iconCount*(iconSize*iconSize/32), sizeof(unsigned int), rgiFile);
+            // Read icons data directly over internal icons array
+            fread(guiIconsPtr, iconCount*(iconSize*iconSize/32), sizeof(unsigned int), rgiFile);
         }
 
         fclose(rgiFile);
@@ -3687,7 +3690,7 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
     {
         for (int k = 0; k < 32; k++)
         {
-            if (BIT_CHECK(guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS + i], k))
+            if (BIT_CHECK(guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS + i], k))
             {
             #if !defined(RAYGUI_STANDALONE)
                 DrawRectangle(posX + (k%RAYGUI_ICON_SIZE)*pixelSize, posY + y*pixelSize, pixelSize, pixelSize, color);
@@ -3706,7 +3709,7 @@ unsigned int *GuiGetIconData(int iconId)
     static unsigned int iconData[RAYGUI_ICON_DATA_ELEMENTS] = { 0 };
     memset(iconData, 0, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
 
-    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(iconData, &guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS], RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(iconData, &guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS], RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
 
     return iconData;
 }
@@ -3715,7 +3718,7 @@ unsigned int *GuiGetIconData(int iconId)
 // NOTE: Data must be provided as unsigned int array (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32 elements)
 void GuiSetIconData(int iconId, unsigned int *data)
 {
-    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(&guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS], data, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
+    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(&guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS], data, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
 }
 
 // Set icon scale (1 by default)
@@ -3731,7 +3734,7 @@ void GuiSetIconPixel(int iconId, int x, int y)
 
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_SET(guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
+    BIT_SET(guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
 }
 
 // Clear icon pixel value
@@ -3741,7 +3744,7 @@ void GuiClearIconPixel(int iconId, int x, int y)
 
     // This logic works for any RAYGUI_ICON_SIZE pixels icons,
     // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_CLEAR(guiIcons[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
+    BIT_CLEAR(guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
 }
 
 // Check icon pixel value
@@ -3749,7 +3752,7 @@ bool GuiCheckIconPixel(int iconId, int x, int y)
 {
     #define BIT_CHECK(a,b) ((a) & (1u<<(b)))
 
-    return (BIT_CHECK(guiIcons[iconId*8 + y/2], x + (y%2*16)));
+    return (BIT_CHECK(guiIconsPtr[iconId*8 + y/2], x + (y%2*16)));
 }
 #endif      // !RAYGUI_NO_ICONS
 
