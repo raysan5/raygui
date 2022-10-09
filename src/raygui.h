@@ -111,7 +111,9 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.5 (xx-xxx-2022) REDESIGNED: GuiDrawText() to divide drawing by lines
+*       3.5 (xx-xxx-2022) ADDED: Multiple new icons, useful for code editing tools
+*                         REMOVED: Unneeded icon editing functions 
+*                         REDESIGNED: GuiDrawText() to divide drawing by lines
 *                         REMOVED: MeasureTextEx() dependency, logic directly implemented
 *                         REMOVED: DrawTextEx() dependency, logic directly implemented
 *                         ADDED: Helper functions to split text in separate lines
@@ -550,16 +552,9 @@ RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style de
 RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 
 #if !defined(RAYGUI_NO_ICONS)
+RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
+RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName);  // Load raygui icons file (.rgi) into internal icons data
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
-
-RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get full icons data pointer
-RAYGUIAPI unsigned int *GuiGetIconData(int iconId);             // Get icon bit data
-RAYGUIAPI void GuiSetIconData(int iconId, unsigned int *data);  // Set icon bit data
-RAYGUIAPI void GuiSetIconScale(unsigned int scale);             // Set icon scale (1 by default)
-
-RAYGUIAPI void GuiSetIconPixel(int iconId, int x, int y);       // Set icon pixel value
-RAYGUIAPI void GuiClearIconPixel(int iconId, int x, int y);     // Clear icon pixel value
-RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
 
 #if !defined(RAYGUI_CUSTOM_ICONS)
 //----------------------------------------------------------------------------------
@@ -3603,7 +3598,6 @@ const char *GuiIconText(int iconId, const char *text)
 }
 
 #if !defined(RAYGUI_NO_ICONS)
-
 // Get full icons data pointer
 unsigned int *GuiGetIcons(void) { return guiIconsPtr; }
 
@@ -3700,59 +3694,6 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
             if ((k == 15) || (k == 31)) y++;
         }
     }
-}
-
-// Get icon bit data
-// NOTE: Bit data array grouped as unsigned int (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32 elements)
-unsigned int *GuiGetIconData(int iconId)
-{
-    static unsigned int iconData[RAYGUI_ICON_DATA_ELEMENTS] = { 0 };
-    memset(iconData, 0, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
-
-    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(iconData, &guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS], RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
-
-    return iconData;
-}
-
-// Set icon bit data
-// NOTE: Data must be provided as unsigned int array (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32 elements)
-void GuiSetIconData(int iconId, unsigned int *data)
-{
-    if (iconId < RAYGUI_ICON_MAX_ICONS) memcpy(&guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS], data, RAYGUI_ICON_DATA_ELEMENTS*sizeof(unsigned int));
-}
-
-// Set icon scale (1 by default)
-void GuiSetIconScale(unsigned int scale)
-{
-    guiIconScale = (scale < 1)? 1 : scale;
-}
-
-// Set icon pixel value
-void GuiSetIconPixel(int iconId, int x, int y)
-{
-    #define BIT_SET(a,b)   ((a) |= (1u<<(b)))
-
-    // This logic works for any RAYGUI_ICON_SIZE pixels icons,
-    // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_SET(guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
-}
-
-// Clear icon pixel value
-void GuiClearIconPixel(int iconId, int x, int y)
-{
-    #define BIT_CLEAR(a,b) ((a) &= ~((1u)<<(b)))
-
-    // This logic works for any RAYGUI_ICON_SIZE pixels icons,
-    // For example, in case of 16x16 pixels, every 2 lines fit in one unsigned int data element
-    BIT_CLEAR(guiIconsPtr[iconId*RAYGUI_ICON_DATA_ELEMENTS + y/(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)], x + (y%(sizeof(unsigned int)*8/RAYGUI_ICON_SIZE)*RAYGUI_ICON_SIZE));
-}
-
-// Check icon pixel value
-bool GuiCheckIconPixel(int iconId, int x, int y)
-{
-    #define BIT_CHECK(a,b) ((a) & (1u<<(b)))
-
-    return (BIT_CHECK(guiIconsPtr[iconId*8 + y/2], x + (y%2*16)));
 }
 #endif      // !RAYGUI_NO_ICONS
 
