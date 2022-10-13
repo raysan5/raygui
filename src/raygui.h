@@ -112,6 +112,7 @@
 *
 *   VERSIONS HISTORY:
 *       3.5 (xx-xxx-2022) ADDED: Multiple new icons, useful for code editing tools
+*                         ADDED: GuiTabBar(), based on GuiToggle()
 *                         REMOVED: Unneeded icon editing functions 
 *                         REDESIGNED: GuiDrawText() to divide drawing by lines
 *                         REMOVED: MeasureTextEx() dependency, logic directly implemented
@@ -512,6 +513,7 @@ RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);               
 RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
 RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
 RAYGUIAPI void GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
+RAYGUIAPI int GuiTabBar(Rectangle bounds, const char **text, int count, int *active);                   // Tab Bar control, returns TAB to be closed or -1
 RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll); // Scroll Panel control
 
 // Basic controls set
@@ -1467,6 +1469,58 @@ void GuiPanel(Rectangle bounds, const char *text)
     GuiDrawRectangle(bounds, RAYGUI_PANEL_BORDER_WIDTH, Fade(GetColor(GuiGetStyle(DEFAULT, (state == STATE_DISABLED)? BORDER_COLOR_DISABLED: LINE_COLOR)), guiAlpha),
                      Fade(GetColor(GuiGetStyle(DEFAULT, (state == STATE_DISABLED)? BASE_COLOR_DISABLED : BACKGROUND_COLOR)), guiAlpha));
     //--------------------------------------------------------------------
+}
+
+// Tab Bar control
+// NOTE: Using GuiToggle() for the TABS
+int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
+{
+#define RAYGUI_TABBAR_ITEM_WIDTH    160
+
+    GuiState state = guiState;
+
+    int closing = -1;
+    Rectangle tabBounds = { bounds.x, bounds.y, RAYGUI_TABBAR_ITEM_WIDTH, bounds.height };
+    Vector2 mousePoint = GetMousePosition();
+
+    if (*active < 0) *active = 0;
+    else if (*active > count - 1) *active = count - 1;
+
+    // Draw control
+    //--------------------------------------------------------------------
+    for (int i = 0; i < count; i++)
+    {
+        tabBounds.x = bounds.x + (RAYGUI_TABBAR_ITEM_WIDTH + 4)*i;
+
+        int textAlignment = GuiGetStyle(TOGGLE, TEXT_ALIGNMENT);
+        int textPadding = GuiGetStyle(TOGGLE, TEXT_PADDING);
+        GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+        GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
+        if (i == *active) GuiToggle(tabBounds, GuiIconText(12, text[i]), true);
+        else if (GuiToggle(tabBounds, GuiIconText(12, text[i]), false) == true) *active = i;
+        GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
+        GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
+
+        // Draw tab close button
+        // NOTE: Only draw close button for curren tab: if (CheckCollisionPointRec(mousePoint, tabBounds))
+        int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
+        int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+        GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+        GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+#if defined(RAYGUI_NO_ICONS)
+        if (GuiButton(closeButtonRec, "x")) closing = i;
+#else
+        if (GuiButton((Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(ICON_CROSS_SMALL, NULL))) closing = i;
+#endif
+        GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+        GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+    }
+
+    GuiDrawRectangle((Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TOGGLE, BORDER_COLOR_NORMAL)));
+    //GuiLine((Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, NULL);
+    //--------------------------------------------------------------------
+
+    return closing;     // Return closing tab requested
 }
 
 // Scroll Panel control
