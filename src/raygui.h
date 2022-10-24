@@ -1510,14 +1510,14 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
 #if defined(RAYGUI_NO_ICONS)
         if (GuiButton(closeButtonRec, "x")) closing = i;
 #else
-        if (GuiButton((Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(ICON_CROSS_SMALL, NULL))) closing = i;
+        if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(ICON_CROSS_SMALL, NULL))) closing = i;
 #endif
         GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
         GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
     }
 
-    GuiDrawRectangle((Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TOGGLE, BORDER_COLOR_NORMAL)));
-    //GuiLine((Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, NULL);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TOGGLE, BORDER_COLOR_NORMAL)));
+    //GuiLine(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, NULL);
     //--------------------------------------------------------------------
 
     return closing;     // Return closing tab requested
