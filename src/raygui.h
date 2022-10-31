@@ -298,6 +298,15 @@
         int format;             // Data format (PixelFormat type)
     } Texture2D;
 
+    // Image, pixel data stored in CPU memory (RAM)
+    typedef struct Image {
+        void *data;             // Image raw data
+        int width;              // Image base width
+        int height;             // Image base height
+        int mipmaps;            // Mipmap levels, 1 by default
+        int format;             // Data format (PixelFormat type)
+    } Image;
+
     // GlyphInfo, font characters glyphs info
     typedef struct GlyphInfo {
         int value;              // Character value (Unicode)
@@ -311,11 +320,13 @@
     // It should be redesigned to be provided by user
     typedef struct Font {
         int baseSize;           // Base size (default chars height)
-        int glyphCount;         // Number of characters
-        Texture2D texture;      // Characters texture atlas
-        Rectangle *recs;        // Characters rectangles in texture
-        GlyphInfo *chars;       // Characters info data
+        int glyphCount;         // Number of glyph characters
+        int glyphPadding;       // Padding around the glyph characters
+        Texture2D texture;      // Texture atlas containing the glyphs
+        Rectangle *recs;        // Rectangles in texture for the glyphs
+        GlyphInfo *glyphs;      // Glyphs info data
     } Font;
+
 #endif
 
 // Style property
