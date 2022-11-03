@@ -1576,7 +1576,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
 
     float horizontalMin = hasHorizontalScrollBar? ((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH) : (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)-verticalScrollBarWidth : 0) - (float)GuiGetStyle(DEFAULT, BORDER_WIDTH);
     float horizontalMax = hasHorizontalScrollBar? content.width - bounds.width + (float)verticalScrollBarWidth + GuiGetStyle(DEFAULT, BORDER_WIDTH) - (((float)GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)verticalScrollBarWidth : 0) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
-    float verticalMin = hasVerticalScrollBar? 0 : -1;
+    float verticalMin = hasVerticalScrollBar? 0.0f : -1.0f;
     float verticalMax = hasVerticalScrollBar? content.height - bounds.height + (float)horizontalScrollBarWidth + (float)GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)-GuiGetStyle(DEFAULT, BORDER_WIDTH);
 
     // Update control
@@ -1720,7 +1720,7 @@ bool GuiLabelButton(Rectangle bounds, const char *text)
     bool pressed = false;
 
     // NOTE: We force bounds.width to be all text
-    float textWidth = GetTextWidth(text);
+    float textWidth = (float)GetTextWidth(text);
     if (bounds.width < textWidth) bounds.width = textWidth;
 
     // Update control
@@ -3143,7 +3143,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
     Rectangle textBounds = { 0 };
     textBounds.x = bounds.x + bounds.width/2 - textWidth/2;
     textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
-    textBounds.width = textWidth;
+    textBounds.width = (float)textWidth;
     textBounds.height = bounds.height - RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 3*RAYGUI_MESSAGEBOX_BUTTON_PADDING - RAYGUI_MESSAGEBOX_BUTTON_HEIGHT;
 
     // Draw control
@@ -3206,7 +3206,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 
         textBounds.x = bounds.x + bounds.width/2 - textSize/2;
         textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + messageInputHeight/4 - (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-        textBounds.width = textSize;
+        textBounds.width = (float)textSize;
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
     }
 
@@ -3896,14 +3896,14 @@ char **GetTextLines(char *text, int *count)
     static char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
     memset(lines, 0, sizeof(char *));
 
-    int textLen = strlen(text);
+    int textSize = (int)strlen(text);
 
     lines[0] = text;
     int len = 0;
     *count = 1;
     int lineSize = 0;   // Stores current line size, not returned
 
-    for (int i = 0, k = 0; (i < textLen) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
+    for (int i = 0, k = 0; (i < textSize) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
     {
         if (text[i] == '\n')
         {
@@ -3937,10 +3937,10 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // NOTE: We can't use GuiTextSplit() because it can be already use before calling
         // GuiDrawText() and static buffer would be overriden :(
         int lineCount = 0;
-        char **lines = GetTextLines(text, &lineCount);
+        const char **lines = GetTextLines(text, &lineCount);
 
         Rectangle textBounds = GetTextBounds(LABEL, bounds);
-        float totalHeight = lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+        float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
         float posOffsetY = 0;
 
         for (int i = 0; i < lineCount; i++)
