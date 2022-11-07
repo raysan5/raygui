@@ -3283,9 +3283,9 @@ Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs)
     {
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            // NOTE: Cell values must be rounded to int
-            currentCell.x = (float)((int)((mousePoint.x - bounds.x)/spacing));
-            currentCell.y = (float)((int)((mousePoint.y - bounds.y)/spacing));
+            // NOTE: Cell values must be the upper left of the cell the mouse is in
+            currentCell.x = floorf((mousePoint.x - bounds.x)/spacing));
+            currentCell.y = floorf((mousePoint.y - bounds.y)/spacing));
         }
     }
     //--------------------------------------------------------------------
