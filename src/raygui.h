@@ -1248,8 +1248,8 @@ static const char *TextFormat(const char *text, ...);               // Formattin
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
 
-static int GetCodepointNext(const char *text, int *bytesProcessed);  // Get next codepoint in a UTF-8 encoded text
-static const char *CodepointToUTF8(int codepoint, int *byteSize);    // Encode codepoint into UTF-8 text (char array size returned as parameter)
+static int GetCodepointNext(const char *text, int *codepointSize);  // Get next codepoint in a UTF-8 encoded text
+static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
 
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
 //-------------------------------------------------------------------------------
@@ -2463,14 +2463,14 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     //int lastSpaceWidth = 0;
     //int lastSpaceCursorPos = 0;
 
-    for (int i = 0, codepointLength = 0; text[i] != '\0'; i += codepointLength)
+    for (int i = 0, codepointSize = 0; text[i] != '\0'; i += codepointSize)
     {
-        int codepoint = GetCodepointNext(text + i, &codepointLength);
+        int codepoint = GetCodepointNext(text + i, &codepointSize);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
         Rectangle atlasRec = guiFont.recs[index];
         GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
 
-        if ((codepointLength == 1) && (codepoint == '\n'))
+        if ((codepointSize == 1) && (codepoint == '\n'))
         {
             cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
             cursorPos.x = textAreaBounds.x;                 // Carriage return
@@ -2493,7 +2493,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
             else if (wrapMode == 2)
             {
                 /*
-                if ((codepointLength == 1) && (codepoint == ' '))
+                if ((codepointSize == 1) && (codepoint == ' '))
                 {
                     lastSpacePos = i;
                     lastSpaceWidth = 0;
@@ -4543,7 +4543,7 @@ static const char *CodepointToUTF8(int codepoint, int *byteSize)
 // Total number of bytes processed are returned as a parameter
 // NOTE: the standard says U+FFFD should be returned in case of errors
 // but that character is not supported by the default font in raylib
-static int GetCodepointNext(const char *text, int *bytesProcessed)
+static int GetCodepointNext(const char *text, int *codepointSize)
 {
     const char *ptr = text;
     int codepoint = 0x3f;       // Codepoint (defaults to '?')
