@@ -446,12 +446,16 @@ static void ReloadDirectoryFiles(GuiFileDialogState *state)
             {
                 strcpy(dirFilesIcon[i], TextFormat("#10#%s", GetFileName(state->dirFiles.paths[i])));
             }
-            else strcpy(dirFilesIcon[i], TextFormat("#8#%s", GetFileName(state->dirFiles.paths[i])));
+            else if (IsFileExtension(state->dirFiles.paths[i], ".exe;.bin;.raw;.msi"))
+            {
+                strcpy(dirFilesIcon[i], TextFormat("#200#%s", GetFileName(state->dirFiles.paths[i])));
+            }
+            else strcpy(dirFilesIcon[i], TextFormat("#218#%s", GetFileName(state->dirFiles.paths[i])));
         }
         else
         {
             // Path is a directory, add a directory icon
-            strcpy(dirFilesIcon[i], TextFormat("#204#%s", GetFileName(state->dirFiles.paths[i])));
+            strcpy(dirFilesIcon[i], TextFormat("#1#%s", GetFileName(state->dirFiles.paths[i])));
         }
     }
 }
