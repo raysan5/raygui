@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   FileDialog v1.1 - Modal file dialog to open/save files
+*   FileDialog v1.2 - Modal file dialog to open/save files
 *
 *   MODULE USAGE:
 *       #define GUI_FILE_DIALOG_IMPLEMENTATION
@@ -39,41 +39,39 @@
 
 #include "raylib.h"
 
-// WARNING: raygui implementation is expected to be defined before including this header
-#undef RAYGUI_IMPLEMENTATION
-#include "../../src/raygui.h"
-
 #ifndef GUI_FILE_DIALOG_H
 #define GUI_FILE_DIALOG_H
 
+// Gui file dialog context data
 typedef struct {
-    Vector2 position;
-    Vector2 size;
 
-    bool fileDialogActive;
+    // Window management variables
+    bool windowActive;
+    Rectangle windowBounds;
+    Vector2 panOffset;
+    bool dragMode;
+    bool supportDrag;
 
+    // UI variables
     bool dirPathEditMode;
-    char dirPathText[256];
+    char dirPathText[1024];
 
     int filesListScrollIndex;
     bool filesListEditMode;
     int filesListActive;
 
     bool fileNameEditMode;
-    char fileNameText[256];
+    char fileNameText[1024];
     bool SelectFilePressed;
     bool CancelFilePressed;
     int fileTypeActive;
     int itemFocused;
 
-    // Custom state variables (depend on development software)
-    // NOTE: This variables should be added manually if required
+    // Custom state variables
     FilePathList dirFiles;
-
     char filterExt[256];
-
-    char dirPathTextCopy[256];
-    char fileNameTextCopy[256];
+    char dirPathTextCopy[1024];
+    char fileNameTextCopy[1024];
 
     int prevFilesListActive;
 
@@ -103,7 +101,7 @@ extern "C" {            // Prevents name mangling of functions
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath, bool active);
+GuiFileDialogState InitGuiFileDialog(const char *initPath);
 void GuiFileDialog(GuiFileDialogState *state);
 
 #ifdef __cplusplus
@@ -126,13 +124,12 @@ void GuiFileDialog(GuiFileDialogState *state);
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-#define MAX_DIRECTORY_FILES    1024
-#define MAX_DIR_PATH_LENGTH    1024
+#define MAX_DIRECTORY_FILES    2048
+#define MAX_ICON_PATH_LENGTH    512
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
 // Detailed file info type
 typedef struct FileInfo {
@@ -144,13 +141,13 @@ typedef struct FileInfo {
 } FileInfo;
 #else
 // Filename only
-typedef char *FileInfo;
+typedef char *FileInfo;             // Files are just a path string
 #endif
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-FileInfo *dirFilesIcon = NULL;
+FileInfo *dirFilesIcon = NULL;      // Path string + icon (for fancy drawing)
 
 //----------------------------------------------------------------------------------
 // Internal Module Functions Definition
@@ -166,18 +163,19 @@ static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *f
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
-GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath, bool active)
+GuiFileDialogState InitGuiFileDialog(const char *initPath)
 {
     GuiFileDialogState state = { 0 };
 
-    // Default dialog size is 440x310
-    state.size.x = width == -1 ? 440 : width;
-    state.size.y = height == -1 ? 310 : height;
-    state.position = (Vector2){ GetScreenWidth()/2 - state.size.x/2, GetScreenHeight()/2 - state.size.y/2 };
+    // Init window data
+    state.windowBounds = (Rectangle){ GetScreenWidth()/2 - 440/2, GetScreenHeight()/2 - 310/2, 440, 310 };
+    state.windowActive = false;
+    state.supportDrag = true;
+    state.dragMode = false;
+    state.panOffset = (Vector2){ 0, 0 };
 
-    state.fileDialogActive = active;
+    // Init path data
     state.dirPathEditMode = false;
-
     state.filesListActive = -1;
     state.prevFilesListActive = state.filesListActive;
     state.filesListScrollIndex = 0;
@@ -203,10 +201,12 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
     }
     else strcpy(state.dirPathText, GetWorkingDirectory());
 
+    // TODO: Why we keep a copy?
     strcpy(state.dirPathTextCopy, state.dirPathText);
     strcpy(state.fileNameTextCopy, state.fileNameText);
 
-    strcpy(state.filterExt, "all");
+    state.filterExt[0] = '\0';
+    //strcpy(state.filterExt, "all");
 
     state.dirFiles.count = 0;
 
@@ -216,40 +216,61 @@ GuiFileDialogState InitGuiFileDialog(int width, int height, const char *initPath
 // Update and draw file dialog
 void GuiFileDialog(GuiFileDialogState *state)
 {
-    if (state->fileDialogActive)
+    if (state->windowActive)
     {
-        const int winWidth = state->size.x;
-        const int winHeight = state->size.y;
+        // Update window dragging
+        //----------------------------------------------------------------------------------------
+        if (state->supportDrag)
+        {
+            Vector2 mousePosition = GetMousePosition();
+
+            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                // Window can be dragged from the top window bar
+                if (CheckCollisionPointRec(mousePosition, (Rectangle){ state->windowBounds.x, state->windowBounds.y, (float)state->windowBounds.width, RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT }))
+                {
+                    state->dragMode = true;
+                    state->panOffset.x = mousePosition.x - state->windowBounds.x;
+                    state->panOffset.y = mousePosition.y - state->windowBounds.y;
+                }
+            }
+
+            if (state->dragMode)
+            {
+                state->windowBounds.x = (mousePosition.x - state->panOffset.x);
+                state->windowBounds.y = (mousePosition.y - state->panOffset.y);
+
+                // Check screen limits to avoid moving out of screen
+                if (state->windowBounds.x < 0) state->windowBounds.x = 0;
+                else if (state->windowBounds.x > (GetScreenWidth() - state->windowBounds.width)) state->windowBounds.x = GetScreenWidth() - state->windowBounds.width;
+
+                if (state->windowBounds.y < 0) state->windowBounds.y = 0;
+                else if (state->windowBounds.y > (GetScreenHeight() - state->windowBounds.height)) state->windowBounds.y = GetScreenHeight() - state->windowBounds.height;
+
+                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) state->dragMode = false;
+            }
+        }
+        //----------------------------------------------------------------------------------------
 
         // Load dirFilesIcon and state->dirFiles lazily on windows open
-        // NOTE: they are automatically unloaded at fileDialog closing
-        //------------------------------------------------------------------------------------
+        // NOTE: They are automatically unloaded at fileDialog closing
+        //----------------------------------------------------------------------------------------
         if (dirFilesIcon == NULL)
         {
             dirFilesIcon = (FileInfo *)RL_CALLOC(MAX_DIRECTORY_FILES, sizeof(FileInfo));    // Max files to read
-            for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)RL_CALLOC(MAX_DIR_PATH_LENGTH, 1);    // Max file name length
+            for (int i = 0; i < MAX_DIRECTORY_FILES; i++) dirFilesIcon[i] = (char *)RL_CALLOC(MAX_ICON_PATH_LENGTH, 1);    // Max file name length
         }
 
-        if (state->dirFiles.paths == NULL)
-        {
-            state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, state->filterExt, false);
+        // Load current directory files
+        if (state->dirFiles.paths == NULL) ReloadDirectoryFiles(state);
+        //----------------------------------------------------------------------------------------
 
-            for(int f = 0; f < state->dirFiles.count; f++)
-            {
-                if (strcmp(state->fileNameText, state->dirFiles.paths[f]) == 0)
-                {
-                    if (state->filesListActive != f) state->filesListScrollIndex = state->filesListActive = f;  // Make it active and visible only on first call
+        // Draw window and controls
+        //----------------------------------------------------------------------------------------
+        state->windowActive = !GuiWindowBox(state->windowBounds, "#198# Select File Dialog");
 
-                    break;
-                }
-            }
-        }
-        //------------------------------------------------------------------------------------
-
-        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)), 0.85f));
-        state->fileDialogActive = !GuiWindowBox((Rectangle){ state->position.x + 0, state->position.y + 0, winWidth, winHeight }, "#198# Select File Dialog");
-
-        if (GuiButton((Rectangle){ state->position.x + winWidth - 50, state->position.y + 35, 40, 25 }, "< ..")) // || IsKeyReleased(KEY_DPAD_Y))
+        // Draw previous directory button + logic
+        if (GuiButton((Rectangle){ state->windowBounds.x + state->windowBounds.width - 48, state->windowBounds.y + 24 + 12, 40, 24 }, "< .."))
         {
             // Move dir path one level up
             strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
@@ -258,11 +279,12 @@ void GuiFileDialog(GuiFileDialogState *state)
             ReloadDirectoryFiles(state);
 
             state->filesListActive = -1;
-            strcpy(state->fileNameText, "\0");
-            strcpy(state->fileNameTextCopy, state->fileNameText);
+            memset(state->fileNameText, 0, 1024);
+            memset(state->fileNameTextCopy, 0, 1024);
         }
 
-        if (GuiTextBox((Rectangle){ state->position.x + 10, state->position.y + 35, winWidth - 65, 25 }, state->dirPathText, 256, state->dirPathEditMode))
+        // Draw current directory text box info + path editing logic
+        if (GuiTextBox((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + 24 + 12, state->windowBounds.width - 48 - 16, 24 }, state->dirPathText, 1024, state->dirPathEditMode))
         {
             if (state->dirPathEditMode)
             {
@@ -280,30 +302,29 @@ void GuiFileDialog(GuiFileDialogState *state)
             state->dirPathEditMode = !state->dirPathEditMode;
         }
 
+        // List view elements are aligned left
         int prevTextAlignment = GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT);
         int prevElementsHeight = GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT);
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
-
-        // TODO: ListViewElements should be aligned left
 # if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
-        FileInfo fileInfo;
-        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, fileInfo, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
+        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 8, state->position.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, fileInfo, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
 # else
-        state->filesListActive = GuiListViewEx((Rectangle){ state->position.x + 10, state->position.y + 70, winWidth - 20, winHeight - 135 }, (const char**)dirFilesIcon, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
+        state->filesListActive = GuiListViewEx((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, dirFilesIcon, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
 # endif
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
 
+        // Check if a path has been selected, if it is a directory, move to that directory (and reload paths)
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
             //&& (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A)))
         {
-            strcpy(state->fileNameText, state->dirFiles.paths[state->filesListActive]);
+            strcpy(state->fileNameText, GetFileName(state->dirFiles.paths[state->filesListActive]));
 
             if (DirectoryExists(TextFormat("%s/%s", state->dirPathText, state->fileNameText)))
             {
                 if (TextIsEqual(state->fileNameText, "..")) strcpy(state->dirPathText, GetPrevDirectoryPath(state->dirPathText));
-                else strcpy(state->dirPathText, TextFormat("%s/%s", strcmp(state->dirPathText, "/")==0 ? "" : state->dirPathText, state->fileNameText));
+                else strcpy(state->dirPathText, TextFormat("%s/%s", (strcmp(state->dirPathText, "/") == 0)? "" : state->dirPathText, state->fileNameText));
 
                 strcpy(state->dirPathTextCopy, state->dirPathText);
 
@@ -320,9 +341,10 @@ void GuiFileDialog(GuiFileDialogState *state)
             state->prevFilesListActive = state->filesListActive;
         }
 
-        GuiLabel((Rectangle){ state->position.x + 10, state->position.y + winHeight - 60, 68, 25 }, "File name:");
-
-        if (GuiTextBox((Rectangle){ state->position.x + 75, state->position.y + winHeight - 60, winWidth - 200, 25 }, state->fileNameText, 128, state->fileNameEditMode))
+        // Draw bottom controls
+        //--------------------------------------------------------------------------------------
+        GuiLabel((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + state->windowBounds.height - 68, 60, 24 }, "File name:");
+        if (GuiTextBox((Rectangle){ state->windowBounds.x + 72, state->windowBounds.y + state->windowBounds.height - 68, state->windowBounds.width - 184, 24 }, state->fileNameText, 128, state->fileNameEditMode))
         {
             if (*state->fileNameText)
             {
@@ -349,40 +371,33 @@ void GuiFileDialog(GuiFileDialogState *state)
             state->fileNameEditMode = !state->fileNameEditMode;
         }
 
-        state->fileTypeActive = GuiComboBox((Rectangle){ state->position.x + 75, state->position.y  + winHeight - 30, winWidth - 200, 25 }, "All files", state->fileTypeActive);
-        GuiLabel((Rectangle){ state->position.x + 10, state->position.y + winHeight - 30, 68, 25 }, "File filter:");
+        GuiLabel((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + state->windowBounds.height - 24 - 12, 68, 24 }, "File filter:");
+        state->fileTypeActive = GuiComboBox((Rectangle){ state->windowBounds.x + 72, state->windowBounds.y + state->windowBounds.height - 24 - 12, state->windowBounds.width - 184, 24 }, "All files", state->fileTypeActive);
 
-        state->SelectFilePressed = GuiButton((Rectangle){ state->position.x + winWidth - 120, state->position.y + winHeight - 60, 110,
-#ifdef PLATFORM_DESKTOP
-            25
-#else
-            25 + 30
-#endif
-        }, "Select");// || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A);
+        state->SelectFilePressed = GuiButton((Rectangle){ state->windowBounds.x + state->windowBounds.width - 96 - 8, state->windowBounds.y + state->windowBounds.height - 68, 96, 24 }, "Select");
 
-        if (state->SelectFilePressed) state->fileDialogActive = false;
+        if (GuiButton((Rectangle){ state->windowBounds.x + state->windowBounds.width - 96 - 8, state->windowBounds.y + state->windowBounds.height - 24 - 12, 96, 24 }, "Cancel")) state->windowActive = false;
+        //--------------------------------------------------------------------------------------
 
-#ifdef PLATFORM_DESKTOP
-        if (GuiButton((Rectangle){ state->position.x + winWidth - 120, state->position.y + winHeight - 30, 110, 25 }, "Quit")) state->fileDialogActive = false;
-#endif
+        // Exit on file selected
+        if (state->SelectFilePressed) state->windowActive = false;
 
-        // File dialog has been closed!
-        if (!state->fileDialogActive)
+        // File dialog has been closed, free all memory before exit
+        if (!state->windowActive)
         {
-            // Free dirFiles memory
-            for (int i = 0; i < MAX_DIRECTORY_FILES; i++)
-            {
-                RL_FREE(dirFilesIcon[i]);
-            }
-            
+            // Free dirFilesIcon memory
+            for (int i = 0; i < MAX_DIRECTORY_FILES; i++) RL_FREE(dirFilesIcon[i]);
+
+            RL_FREE(dirFilesIcon);
+            dirFilesIcon = NULL;
+
+            // Unload directory file paths
             UnloadDirectoryFiles(state->dirFiles);
+
+            // Reset state variables
             state->dirFiles.count = 0;
             state->dirFiles.capacity = 0;
             state->dirFiles.paths = NULL;
-
-            RL_FREE(dirFilesIcon);
-
-            dirFilesIcon = NULL;
         }
     }
 }
@@ -407,8 +422,38 @@ static void ReloadDirectoryFiles(GuiFileDialogState *state)
 {
     UnloadDirectoryFiles(state->dirFiles);
 
-    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, state->filterExt, false);
+    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, (state->filterExt[0] == '\0')? NULL : state->filterExt, false);
     state->itemFocused = 0;
+
+    // Reset dirFilesIcon memory
+    for (int i = 0; i < MAX_DIRECTORY_FILES; i++) memset(dirFilesIcon[i], 0, MAX_ICON_PATH_LENGTH);
+
+    // Copy paths as icon + fileNames into dirFilesIcon
+    for (int i = 0; i < state->dirFiles.count; i++)
+    {
+        if (IsPathFile(state->dirFiles.paths[i]))
+        {
+            // Path is a file, a file icon for convenience (for some recognized extensions)
+            if (IsFileExtension(state->dirFiles.paths[i], ".png;.bmp;.tga;.gif;.jpg;.jpeg;.psd;.hdr;.qoi;.dds;.pkm;.ktx;.pvr;.astc"))
+            {
+                strcpy(dirFilesIcon[i], TextFormat("#12#%s", GetFileName(state->dirFiles.paths[i])));
+            }
+            else if (IsFileExtension(state->dirFiles.paths[i], ".wav;.mp3;.ogg;.flac;.xm;.mod;.it;.wma;.aiff"))
+            {
+                strcpy(dirFilesIcon[i], TextFormat("#11#%s", GetFileName(state->dirFiles.paths[i])));
+            }
+            else if (IsFileExtension(state->dirFiles.paths[i], ".txt;.info;.md;.nfo;.xml;.json;.c;.cpp;.cs;.lua;.py;.glsl;.vs;.fs"))
+            {
+                strcpy(dirFilesIcon[i], TextFormat("#10#%s", GetFileName(state->dirFiles.paths[i])));
+            }
+            else strcpy(dirFilesIcon[i], TextFormat("#8#%s", GetFileName(state->dirFiles.paths[i])));
+        }
+        else
+        {
+            // Path is a directory, add a directory icon
+            strcpy(dirFilesIcon[i], TextFormat("#204#%s", GetFileName(state->dirFiles.paths[i])));
+        }
+    }
 }
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)

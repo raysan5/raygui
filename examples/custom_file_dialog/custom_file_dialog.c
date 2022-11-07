@@ -38,7 +38,7 @@ int main()
     SetExitKey(0);
 
     // Custom file dialog
-    GuiFileDialogState fileDialogState = InitGuiFileDialog(420, 310, GetWorkingDirectory(), false);
+    GuiFileDialogState fileDialogState = InitGuiFileDialog(GetWorkingDirectory());
 
     bool exitWindow = false;
 
@@ -83,9 +83,9 @@ int main()
 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            if (fileDialogState.fileDialogActive) GuiLock();
+            if (fileDialogState.windowActive) GuiLock();
 
-            if (GuiButton((Rectangle){ 20, 20, 140, 30 }, GuiIconText(ICON_FILE_OPEN, "Open Image"))) fileDialogState.fileDialogActive = true;
+            if (GuiButton((Rectangle){ 20, 20, 140, 30 }, GuiIconText(ICON_FILE_OPEN, "Open Image"))) fileDialogState.windowActive = true;
 
             GuiUnlock();
 
