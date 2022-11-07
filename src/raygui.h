@@ -3284,8 +3284,8 @@ Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs)
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
             // NOTE: Cell values must be rounded to int
-            currentCell.x = (int)((mousePoint.x - bounds.x)/spacing);
-            currentCell.y = (int)((mousePoint.y - bounds.y)/spacing);
+            currentCell.x = roundf((mousePoint.x - bounds.x)/spacing);
+            currentCell.y = roundf((mousePoint.y - bounds.y)/spacing);
         }
     }
     //--------------------------------------------------------------------
@@ -3889,11 +3889,11 @@ static const char *GetTextIcon(const char *text, int *iconId)
 }
 
 // Get text divided into lines (by line-breaks '\n')
-char **GetTextLines(char *text, int *count)
+const char **GetTextLines(const char *text, int *count)
 {
 #define RAYGUI_MAX_TEXT_LINES   128
 
-    static char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
+    static const char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
     memset(lines, 0, sizeof(char *));
 
     int textSize = (int)strlen(text);
