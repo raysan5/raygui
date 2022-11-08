@@ -1248,7 +1248,7 @@ static const char *TextFormat(const char *text, ...);               // Formattin
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
 
-static int GetCodepointNext(const char *text, int *codepointSize);  // Get next codepoint in a UTF-8 encoded text
+static int GetCodepoint(const char *text, int *codepointSize);  // Get next codepoint in a UTF-8 encoded text
 static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
 
 static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
@@ -2153,7 +2153,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         while ((textWidth >= textBounds.width) && (text[0] != '\0'))
         {
             int codepointSize = 0;
-            GetCodepointNext(text, &codepointSize);
+            GetCodepoint(text, &codepointSize);
             text += codepointSize;
             textWidth = GetTextWidth(text);
             cursor.x = textBounds.x + textWidth + 2;
@@ -2465,7 +2465,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
 
     for (int i = 0, codepointSize = 0; text[i] != '\0'; i += codepointSize)
     {
-        int codepoint = GetCodepointNext(text + i, &codepointSize);
+        int codepoint = GetCodepoint(text + i, &codepointSize);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
         Rectangle atlasRec = guiFont.recs[index];
         GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
@@ -3811,7 +3811,7 @@ static int GetTextWidth(const char *text)
 
             for (int i = 0, codepointSize = 0; i < size; i += codepointSize)
             {
-                int codepoint = GetCodepointNext(&text[i], &codepointSize);
+                int codepoint = GetCodepoint(&text[i], &codepointSize);
                 int codepointIndex = GetGlyphIndex(guiFont, codepoint);
 
                 if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
@@ -4014,7 +4014,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             float textOffsetX = 0.0f;
             for (int c = 0, codepointSize = 0; c < size; c += codepointSize)
             {
-                int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
+                int codepoint = GetCodepoint(&lines[i][c], &codepointSize);
                 int index = GetGlyphIndex(guiFont, codepoint);
 
                 // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
@@ -4543,7 +4543,7 @@ static const char *CodepointToUTF8(int codepoint, int *byteSize)
 // Total number of bytes processed are returned as a parameter
 // NOTE: the standard says U+FFFD should be returned in case of errors
 // but that character is not supported by the default font in raylib
-static int GetCodepointNext(const char *text, int *codepointSize)
+static int GetCodepoint(const char *text, int *codepointSize)
 {
     const char *ptr = text;
     int codepoint = 0x3f;       // Codepoint (defaults to '?')
