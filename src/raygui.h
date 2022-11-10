@@ -326,7 +326,6 @@
         Rectangle *recs;        // Rectangles in texture for the glyphs
         GlyphInfo *glyphs;      // Glyphs info data
     } Font;
-
 #endif
 
 // Style property
@@ -1492,7 +1491,6 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
 
     int closing = -1;
     Rectangle tabBounds = { bounds.x, bounds.y, RAYGUI_TABBAR_ITEM_WIDTH, bounds.height };
-    Vector2 mousePoint = GetMousePosition();
 
     if (*active < 0) *active = 0;
     else if (*active > count - 1) *active = count - 1;
@@ -3891,10 +3889,10 @@ static const char *GetTextIcon(const char *text, int *iconId)
 // Get text divided into lines (by line-breaks '\n')
 const char **GetTextLines(const char *text, int *count)
 {
-#define RAYGUI_MAX_TEXT_LINES   128
+    #define RAYGUI_MAX_TEXT_LINES   128
 
     static const char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
-    memset(lines, 0, sizeof(char *));
+    for (int i = 0; i < RAYGUI_MAX_TEXT_LINES; i++) lines[i] = NULL;    // Init NULL pointers to substrings
 
     int textSize = (int)strlen(text);
 
@@ -3939,7 +3937,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         int lineCount = 0;
         const char **lines = GetTextLines(text, &lineCount);
 
-        Rectangle textBounds = GetTextBounds(LABEL, bounds);
+        //Rectangle textBounds = GetTextBounds(LABEL, bounds);
         float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
         float posOffsetY = 0;
 
