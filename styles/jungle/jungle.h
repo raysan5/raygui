@@ -7,7 +7,7 @@
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
 //                                                                              //
-// Copyright (c) 2020-2022 raylib technologies (@raylibtech)                    //
+// Copyright (c) 2020-2023 raylib technologies (@raylibtech)                    //
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
