@@ -1543,6 +1543,9 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
         }
     }
+
+    // Draw tab-bar bottom line
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TOGGLE, BORDER_COLOR_NORMAL)));
     //--------------------------------------------------------------------
 
     return closing;     // Return closing tab requested
