@@ -349,11 +349,11 @@ EXAMPLES = \
     controls_test_suite/controls_test_suite \
     custom_file_dialog/custom_file_dialog \
     image_exporter/image_exporter \
-    image_raw_importer/image_raw_importer \
+    image_importer_raw/image_importer_raw \
+    property_list/property_list \
     portable_window/portable_window \
-    scroll_panel/gui_scroll_panel \
-    text_box_selection/textbox_extended_demo \
-    text_editor/text_editor
+    scroll_panel/scroll_panel \
+    style_selector/style_selector
 
 CURRENT_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 
