@@ -572,6 +572,7 @@ RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text wit
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
 RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName);  // Load raygui icons file (.rgi) into internal icons data
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
+RAYGUIAPI void GuiSetIconScale(int scale);                      // Set icon drawing size
 
 #if !defined(RAYGUI_CUSTOM_ICONS)
 //----------------------------------------------------------------------------------
@@ -3796,6 +3797,13 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
         }
     }
 }
+
+// Set icon drawing size
+void GuiSetIconScale(int scale)
+{
+    if (scale >= 1) guiIconScale = scale;
+}
+
 #endif      // !RAYGUI_NO_ICONS
 
 //----------------------------------------------------------------------------------
