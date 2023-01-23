@@ -95,6 +95,12 @@ copy src/raygui.h src/raygui.c
 gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTYPE_SHARED -static-libgcc -lopengl32 -lgdi32 -lwinmm -Wl,--out-implib,src/librayguidll.a
 ```
 
+ - **Windows (MSVC)**
+```
+copy src\raylib.h src\raylib.c
+cl /O2 /I../raylib/src/ /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH ../raylib/build/raylib/Release/raylib.lib /subsystem:windows /machine:x64
+```
+
  - **Linux (GCC)**
 ```
 mv src/raygui.h src/raygui.c
