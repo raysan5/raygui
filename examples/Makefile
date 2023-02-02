@@ -353,7 +353,8 @@ EXAMPLES = \
     property_list/property_list \
     portable_window/portable_window \
     scroll_panel/scroll_panel \
-    style_selector/style_selector
+    style_selector/style_selector \
+    custom_sliders/custom_sliders
 
 CURRENT_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 
