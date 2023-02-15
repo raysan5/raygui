@@ -23,7 +23,6 @@
 //----------------------------------------------------------------------------------
 // Controls Functions Declaration
 //----------------------------------------------------------------------------------
-
 float GuiVerticalSlider(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue);
 float GuiVerticalSliderBar(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue);
 float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue, int sliderHeight);
@@ -46,15 +45,12 @@ int main()
     int screenWidth = 800;
     int screenHeight = 450;
 
-    InitWindow(screenWidth, screenHeight, "ustom sliders");
+    InitWindow(screenWidth, screenHeight, "raygui - custom sliders");
 
-    // layout_name: controls initialization
-    //----------------------------------------------------------------------------------
     float value = 0.5f;
-    bool Slider_EditMode = false;
-    bool VerticalSlider_EditMode = false;
-    bool VerticalSliderBar_EditMode = false;
-    //----------------------------------------------------------------------------------
+    bool sliderEditMode = false;
+    bool vSliderEditMode = false;
+    bool vSliderBarEditMode = false;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -73,29 +69,20 @@ int main()
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); 
 
-            if (VerticalSlider_EditMode || VerticalSliderBar_EditMode)
-                GuiLock();
-            else
-                GuiUnlock();
-            
-            char buffer[128];
-            snprintf(buffer, 128, "%.2f", value);
+            if (vSliderEditMode || vSliderBarEditMode) GuiLock();
+            else GuiUnlock();
 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             GuiGroupBox((Rectangle){ 66, 24, 276, 312 }, "STANDARD");
-            value = GuiSlider((Rectangle){ 96, 48, 216, 16 }, buffer, buffer, value, 0.0f, 1.0f);
-            value = GuiVerticalSlider((Rectangle){ 120, 120, 24, 192 }, buffer, buffer, value, 0.0f, 1.0f);
-            value = GuiVerticalSliderBar((Rectangle){ 264, 120, 24, 192 }, buffer, buffer, value, 0.0f, 1.0f);
+            value = GuiSlider((Rectangle){ 96, 48, 216, 16 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
+            value = GuiVerticalSlider((Rectangle){ 120, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
+            value = GuiVerticalSliderBar((Rectangle){ 264, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
 
             GuiGroupBox((Rectangle){ 378, 24, 276, 312 }, "OWNING");
-            if(GuiSliderOwning((Rectangle){ 408, 48, 216, 16 }, buffer, buffer, &value, 0.0f, 1.0f, Slider_EditMode))
-                Slider_EditMode = !Slider_EditMode;
-            if(GuiVerticalSliderOwning((Rectangle){ 432, 120, 24, 192 }, buffer, buffer, &value, 0.0f, 1.0f, VerticalSlider_EditMode))
-              VerticalSlider_EditMode = !VerticalSlider_EditMode;
-            if(GuiVerticalSliderBarOwning((Rectangle){ 576, 120, 24, 192 }, buffer, buffer, &value, 0.0f, 1.0f, VerticalSliderBar_EditMode))
-              VerticalSliderBar_EditMode = !VerticalSliderBar_EditMode;
-
+            if (GuiSliderOwning((Rectangle){ 408, 48, 216, 16 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, sliderEditMode)) sliderEditMode = !sliderEditMode;
+            if (GuiVerticalSliderOwning((Rectangle){ 432, 120, 24, 192 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, vSliderEditMode)) vSliderEditMode = !vSliderEditMode;
+            if (GuiVerticalSliderBarOwning((Rectangle){ 576, 120, 24, 192 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, vSliderBarEditMode)) vSliderBarEditMode = !vSliderBarEditMode;
             //----------------------------------------------------------------------------------
 
         EndDrawing();
@@ -113,8 +100,6 @@ int main()
 //------------------------------------------------------------------------------------
 // Controls Functions Definitions (local)
 //------------------------------------------------------------------------------------
-
-
 float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue, int sliderHeight)
 {
     GuiState state = (GuiState)GuiGetState();
@@ -190,10 +175,8 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
     GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
 
     // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) 
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) 
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
+    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
+    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
 
     // Draw top/bottom text if provided
     if (textTop != NULL)
@@ -232,7 +215,6 @@ float GuiVerticalSliderBar(Rectangle bounds, const char *textTop, const char *te
     return GuiVerticalSliderPro(bounds, textTop, textBottom, value, minValue, maxValue, 0);
 }
 
-
 float GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode)
 {
     GuiState state = (GuiState)GuiGetState();
@@ -246,7 +228,8 @@ float GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *tex
         bounds.x, 
         bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),       
         0, 
-        bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
+        bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING)
+    };
 
     if (sliderWidth > 0)        // Slider
     {
@@ -354,8 +337,6 @@ bool GuiSliderBarOwning(Rectangle bounds, const char *textLeft, const char *text
 {
     return GuiSliderProOwning(bounds, textLeft, textRight, value, minValue, maxValue, 0, editMode);
 }
-
-
 
 float GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode)
 {
