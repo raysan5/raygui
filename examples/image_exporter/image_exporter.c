@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
                     int dataSize = GetPixelDataSize(image.width, image.height, image.format);
                     
                     FILE *rawFile = fopen(fileName, "wb");  
-                    fwrite(image.data, dataSize, 1, rawFile);
+                    fwrite(image.data, 1, dataSize, rawFile);
                     fclose(rawFile);
                 }
                 else if (fileFormatActive == 2)   // CODE
