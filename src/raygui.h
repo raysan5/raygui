@@ -2486,7 +2486,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
     //int lastSpaceWidth = 0;
     //int lastSpaceCursorPos = 0;
 
-    for (int i = 0, codepointSize = 0; text[i] != '\0'; i += codepointSize)
+    for (int i = 0, codepointSize = 0; (text != NULL) && (text[i] != '\0'); i += codepointSize)
     {
         int codepoint = GetCodepointNext(text + i, &codepointSize);
         int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
