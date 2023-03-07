@@ -144,9 +144,9 @@ int main()
 
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
-            if (dropDown000EditMode || dropDown001EditMode) GuiLock();
-            else if (!dropDown000EditMode && !dropDown001EditMode) GuiUnlock();
-            //GuiDisable();
+            // Check all possible events that require GuiLock
+            if (dropDown000EditMode || 
+                dropDown001EditMode) GuiLock();
 
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
@@ -175,6 +175,7 @@ int main()
             comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
+            GuiUnlock();
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
 
