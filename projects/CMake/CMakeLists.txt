@@ -33,13 +33,13 @@ if(${BUILD_RAYGUI_EXAMPLES})
     set(example_dirs
         controls_test_suite
         custom_file_dialog
+        custom_sliders
         image_exporter
-        image_raw_importer
+        image_importer_raw
         portable_window
         property_list
         scroll_panel
-        text_box_selection
-        text_editor
+        style_selector
     )
 
     set(example_sources)
