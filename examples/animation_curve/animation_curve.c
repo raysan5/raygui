@@ -174,7 +174,9 @@ int main()
 
             // GUI
             //----------------------------------------------------------------------------------
-            if(showHelp){
+            
+			// Help window
+			if(showHelp){
                 if(GuiWindowBox((Rectangle) {margin, margin, settingsRect.x-2*margin, curves[1].end-2*margin}, "help")){
                     showHelp = false;
                 }
@@ -188,17 +190,14 @@ int main()
                 GuiLabel((Rectangle) {helpTextRect.x, helpTextRect.y+helpTextRect.height, helpTextRect.width, fontSize}, "- Right click to remove a point");
                 helpTextRect.height += fontSize+margin/2;
                 DrawRectangleGradientV(margin, margin+curves[1].end-2*margin, settingsRect.x-2*margin, 12, (Color){0,0,0,100}, BLANK);
-            }
+            } 
 
-            // Help window
-           
             // Settings panel
             GuiScrollPanel(settingsRect, "Settings", contentRect, &scrollOffset);
             // Clip rendering
             BeginScissorMode(settingsRect.x, settingsRect.y+RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.width, settingsRect.height);
             // Rebuild the content Rect
             contentRect = (Rectangle) {settingsRect.x+margin, RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT+margin, settingsRect.width-2*margin-GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), 0};
-            // Global settings
 
             // Help button
             if(GuiButton((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize}, GuiIconText(showHelp ? ICON_EYE_ON : ICON_EYE_OFF, "Curve controls help"))){
@@ -224,7 +223,7 @@ int main()
             visualStyleActive = GuiComboBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize}, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", visualStyleActive);
             contentRect.height += 1.5*fontSize + margin;
 
-            // Draw curves
+            // Draw curves with their controls 
             //----------------------------------------------------------------------------------
             for(int i=0; i < 5; i++){
                 // Collapsing section
@@ -313,7 +312,7 @@ int main()
                     gcvt(p->tangents.y, 6, valTextBox[i][3]);
                 }
 
-                // left tan
+                // Left tan
                 if(GuiTextBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2-margin, 1.5*fontSize}, valTextBox[i][2], 20, editValueBox[i][2])){
                     editValueBox[i][2] = !editValueBox[i][2];
                     // input ended
@@ -326,7 +325,7 @@ int main()
                         }
                     }
                 }
-                // right tan
+                // Right tan
                 if(GuiTextBox((Rectangle){contentRect.x+contentRect.width/2, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2, 1.5*fontSize}, valTextBox[i][3], 20, editValueBox[i][3])){
                     editValueBox[i][3] = !editValueBox[i][3];
                     // input ended
@@ -345,7 +344,7 @@ int main()
             contentRect.height += margin;
             EndScissorMode();
 
-            // settings panel shadow
+            // Settings panel shadow
             DrawRectangleGradientH(settingsRect.x-12, 0, 12, settingsRect.height, BLANK, (Color){0,0,0,100});
 
             // Slider
