@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   Animation curves - An Example demo for animations curves
+*   Animation curves - An example demo for animation curves
 *
 *   DEPENDENCIES:
 *       raylib 4.0  - Windowing/input management and drawing.
