@@ -354,7 +354,8 @@ EXAMPLES = \
     portable_window/portable_window \
     scroll_panel/scroll_panel \
     style_selector/style_selector \
-    custom_sliders/custom_sliders
+    custom_sliders/custom_sliders \
+    animation_curve/animation_curve
 
 CURRENT_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 
