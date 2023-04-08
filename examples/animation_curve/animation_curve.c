@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui - A cubic Hermite editor for making animation curves
+*   Animation curves - An Example demo for animations curves
 *
 *   DEPENDENCIES:
 *       raylib 4.0  - Windowing/input management and drawing.
