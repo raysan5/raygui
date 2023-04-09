@@ -7,7 +7,7 @@
 *       #include "gui_curve_edit.h"
 *
 *       INIT: GuiCurveEditState state = InitCurveEdit();
-*       EVALUATE: float y = state.start + (state.end-state.start) * EvalGuiCurve(&state, t); // 0 <= t <= 1
+*       EVALUATE: float y = EvalGuiCurve(&state, t); // 0 <= t <= 1
 *       DRAW: BeginScissorMode(bounds.x,bounds.y,bounds.width,bounds.height); 
 *               GuiCurveEdit(&state, bounds, pointSize);
 *             EndScissorMode(); 
@@ -96,7 +96,7 @@ GuiCurveEditState InitGuiCurveEdit();
 void GuiCurveEdit(GuiCurveEditState *state, Rectangle bounds);
 
 // 1D Interpolation
-// Returns the normalized y value of the curve at x = t
+// Returns the y value (in [start, end]) of the curve at x = t
 // t must be normalized [0.f, 1.f]
 float EvalGuiCurve(GuiCurveEditState *state, float t);
 
