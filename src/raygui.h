@@ -2147,22 +2147,22 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                 textWidth = GetTextWidth(text + textIndexOffset) - GetTextWidth(text + sharedCursorIndex);
             }
 
-            int codepoint = GetCharPressed();       // Get Unicode codepoint
             int textLength = (int)strlen(text);     // Get current text length
+            int codepoint = GetCharPressed();       // Get Unicode codepoint
             
             // Encode codepoint as UTF-8
             int codepointSize = 0;
-            const char *textUTF8 = CodepointToUTF8(codepoint, &codepointSize);
+            const char *charEncoded = CodepointToUTF8(codepoint, &codepointSize);
 
             // Add codepoint to text, at current cursor position
             // NOTE: Make sure we do not overflow buffer size
             if ((codepoint >= 32) && ((textLength + codepointSize) < bufferSize))
             {
                 // Move forward data from cursor position
-                for (int i = (textLength + codepointSize); i > sharedCursorIndex; i--) text[i] = text[i - 1];
+                for (int i = (textLength + codepointSize); i > sharedCursorIndex; i--) text[i] = text[i - codepointSize];
 
                 // Add new codepoint in current cursor position
-                for (int i = 0; i < codepointSize; i++) text[sharedCursorIndex + i] = textUTF8[i];
+                for (int i = 0; i < codepointSize; i++) text[sharedCursorIndex + i] = charEncoded[i];
 
                 sharedCursorIndex += codepointSize;
                 textLength += codepointSize;
@@ -2211,11 +2211,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             // Finish text editing on ENTER or mouse click outside bounds
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
             {
-                // Exiting edit mode
-                pressed = true;
-
-                // GLOBAL: Reset the shared cursor index
-                sharedCursorIndex = 0;
+                pressed = true;         // Exiting edit mode
+                sharedCursorIndex = 0;  // GLOBAL: Reset the shared cursor index
             }
         }
         else
@@ -2223,13 +2220,11 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
+
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    // Entering edit mode
-                    pressed = true;
-
-                    // GLOBAL: Place cursor index to the end of current text
-                    sharedCursorIndex = strlen(text);
+                    pressed = true;     // Entering edit mode
+                    sharedCursorIndex = strlen(text);   // GLOBAL: Place cursor index to the end of current text
                 }
             }
         }
@@ -2261,7 +2256,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 }
 
 // Text Box control with multiple lines
-bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
+bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
     GuiState state = guiState;
     bool pressed = false;
@@ -2284,62 +2279,88 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
         {
             state = STATE_PRESSED;
 
-            // We get an Unicode codepoint
-            int codepoint = GetCharPressed();
-            int textLength = (int)strlen(text);     // Length in bytes (UTF-8 string)
-            int byteSize = 0;
-            const char *textUTF8 = CodepointToUTF8(codepoint, &byteSize);
+            int textLength = (int)strlen(text);     // Get current text length
+            int codepoint = GetCharPressed();       // Get Unicode codepoint
+            if (IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
+            
+            // Encode codepoint as UTF-8
+            int codepointSize = 0;
+            const char *charEncoded = CodepointToUTF8(codepoint, &codepointSize);
 
             // Introduce characters
-            if ((textLength + byteSize) < textSize)
+            if (((codepoint == 10) || (codepoint >= 32)) && (textLength + codepointSize) < bufferSize)
             {
-                if (IsKeyPressed(KEY_ENTER))
-                {
-                    text[textLength] = '\n';
-                    textLength++;
-                }
-                else if (codepoint >= 32)
-                {
-                    // Supports Unicode inputs -> Encoded to UTF-8
-                    int charUTF8Length = 0;
-                    const char *charEncoded = CodepointToUTF8(codepoint, &charUTF8Length);
-                    memcpy(text + textLength, charEncoded, charUTF8Length);
-                    textLength += charUTF8Length;
-                }
+                // Move forward data from cursor position
+                for (int i = (textLength + codepointSize); i > sharedCursorIndex; i--) text[i] = text[i - codepointSize];
+
+                // Add new codepoint in current cursor position
+                for (int i = 0; i < codepointSize; i++) text[sharedCursorIndex + i] = charEncoded[i];
+
+                sharedCursorIndex += codepointSize;
+                textLength += codepointSize;
+
+                // Make sure text last character is EOL
+                text[textLength] = '\0';
             }
 
-            // Delete characters
-            if (textLength > 0)
+            // Delete codepoint from text, at current cursor position
+            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE))
             {
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    if ((unsigned char)text[textLength - 1] < 127)
-                    {
-                        // Remove ASCII equivalent character (1 byte)
-                        textLength--;
-                        text[textLength] = '\0';
-                    }
-                    else
-                    {
-                        // Remove latest UTF-8 unicode character introduced (n bytes)
-                        int charUTF8Length = 0;
-                        while ((charUTF8Length < textLength) && ((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
+                int prevCodepointSize = 0;
+                GetCodepointPrevious(text + sharedCursorIndex, &prevCodepointSize);
 
-                        textLength -= (charUTF8Length + 1);
-                        text[textLength] = '\0';
-                    }
-                }
+                // Move backward text from cursor position
+                for (int i = (sharedCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
+
+                sharedCursorIndex -= codepointSize;
+                textLength -= codepointSize;
+
+                // Make sure text last character is EOL
+                text[textLength] = '\0';
             }
+
+            // Move cursor position with keys
+            /*
+            if (IsKeyPressed(KEY_LEFT))
+            {
+                int prevCodepointSize = 0;
+                GetCodepointPrevious(text + sharedCursorIndex, &prevCodepointSize);
+
+                if (sharedCursorIndex >= prevCodepointSize) sharedCursorIndex -= prevCodepointSize;
+            }
+            else if (IsKeyPressed(KEY_RIGHT))
+            {
+                int nextCodepointSize = 0;
+                GetCodepointNext(text + sharedCursorIndex, &nextCodepointSize);
+
+                if ((sharedCursorIndex + nextCodepointSize) <= textLength) sharedCursorIndex += nextCodepointSize;
+            }
+            */
+
+            // TODO: Move cursor position with mouse
+
+            // TODO: Recalculate cursor position depending on sharedCursorIndex
+            //cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) - GetTextWidth(text + sharedCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
+            //cursor.y = consider line breaks
 
             // Exit edit mode
-            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                pressed = true;         // Exiting edit mode
+                sharedCursorIndex = 0;  // GLOBAL: Reset the shared cursor index
+            }
         }
         else
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
+
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    pressed = true;     // Entering edit mode
+                    sharedCursorIndex = strlen(text);   // GLOBAL: Place cursor index to the end of current text
+                }
             }
         }
     }
@@ -3940,9 +3961,9 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     Rectangle textBounds = bounds;
 
     textBounds.x = bounds.x + GuiGetStyle(control, BORDER_WIDTH);
-    textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH);
+    textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH) + GuiGetStyle(control, TEXT_PADDING);
     textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
-    textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH);
+    textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
 
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
     switch (control)
