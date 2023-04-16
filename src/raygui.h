@@ -3,20 +3,34 @@
 *   raygui v3.5-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
+*       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
+*       available as a standalone library, as long as input and drawing functions are provided.
+* 
+*   FEATURES:
+*       - Immediate-mode gui, minimal retained data
+*       - +25 controls provided (basic and advanced)
+*       - Styling system for colors, font and metrics
+*       - Icons supported, embeds a complete 1-bit icons pack
+*       - Standalone usage mode option (custom graphics backends)
+*       - Multiple tools provided for raygui development
+* 
+*   POSSIBLE IMPROVEMENTS:
+*       - Allow some controls to work in exclusive mode: GuiSlider(), GuiScrollBar()
+*       - Better standalone mode API for easy plug of custom backends
+* 
+*   LIMITATIONS:
+*       - No auto-layout mechanism provided, up to the user to define controls position and size
+*       - Standalone mode requires library modification and some user work to plug another backend.
 *
-*   raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
-*   available as a standalone library, as long as input and drawing functions are provided.
-*
-*   Controls provided:
-*
-*   # Container/separators Controls
+*   CONTROLS PROVIDED:
+*     # Container/separators Controls
 *       - WindowBox     --> StatusBar, Panel
 *       - GroupBox      --> Line
 *       - Line
 *       - Panel         --> StatusBar
 *       - ScrollPanel   --> StatusBar
 *
-*   # Basic Controls
+*     # Basic Controls
 *       - Label
 *       - Button
 *       - LabelButton   --> Label
@@ -36,78 +50,80 @@
 *       - DummyRec
 *       - Grid
 *
-*   # Advance Controls
+*     # Advance Controls
 *       - ListView
 *       - ColorPicker   --> ColorPanel, ColorBarHue
 *       - MessageBox    --> Window, Label, Button
 *       - TextInputBox  --> Window, Label, TextBox, Button
 *
-*   It also provides a set of functions for styling the controls based on its properties (size, color).
+*     It also provides a set of functions for styling the controls based on its properties (size, color).
 *
 *
 *   RAYGUI STYLE (guiStyle):
+*       raygui uses a global data array for all gui style properties (allocated on data segment by default),
+*       when a new style is loaded, it is loaded over the global style... but a default gui style could always be
+*       recovered with GuiLoadStyleDefault() function, that overwrites the current style to the default one
 *
-*   raygui uses a global data array for all gui style properties (allocated on data segment by default),
-*   when a new style is loaded, it is loaded over the global style... but a default gui style could always be
-*   recovered with GuiLoadStyleDefault() function, that overwrites the current style to the default one
+*       The global style array size is fixed and depends on the number of controls and properties:
 *
-*   The global style array size is fixed and depends on the number of controls and properties:
+*           static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)];
 *
-*       static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)];
+*       guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
 *
-*   guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
+*       Note that the first set of BASE properties (by default guiStyle[0..15]) belong to the generic style
+*       used for all controls, when any of those base values is set, it is automatically populated to all
+*       controls, so, specific control values overwriting generic style should be set after base values.
 *
-*   Note that the first set of BASE properties (by default guiStyle[0..15]) belong to the generic style
-*   used for all controls, when any of those base values is set, it is automatically populated to all
-*   controls, so, specific control values overwriting generic style should be set after base values.
+*       After the first BASE set we have the EXTENDED properties (by default guiStyle[16..23]), those
+*       properties are actually common to all controls and can not be overwritten individually (like BASE ones)
+*       Some of those properties are: TEXT_SIZE, TEXT_SPACING, LINE_COLOR, BACKGROUND_COLOR
 *
-*   After the first BASE set we have the EXTENDED properties (by default guiStyle[16..23]), those
-*   properties are actually common to all controls and can not be overwritten individually (like BASE ones)
-*   Some of those properties are: TEXT_SIZE, TEXT_SPACING, LINE_COLOR, BACKGROUND_COLOR
+*       Custom control properties can be defined using the EXTENDED properties for each independent control.
 *
-*   Custom control properties can be defined using the EXTENDED properties for each independent control.
-*
-*   TOOL: rGuiStyler is a visual tool to customize raygui style.
+*       TOOL: rGuiStyler is a visual tool to customize raygui style: github.com/raysan5/rguistyler
 *
 *
 *   RAYGUI ICONS (guiIcons):
+*       raygui could use a global array containing icons data (allocated on data segment by default),
+*       a custom icons set could be loaded over this array using GuiLoadIcons(), but loaded icons set
+*       must be same RAYGUI_ICON_SIZE and no more than RAYGUI_ICON_MAX_ICONS will be loaded
 *
-*   raygui could use a global array containing icons data (allocated on data segment by default),
-*   a custom icons set could be loaded over this array using GuiLoadIcons(), but loaded icons set
-*   must be same RAYGUI_ICON_SIZE and no more than RAYGUI_ICON_MAX_ICONS will be loaded
+*       Every icon is codified in binary form, using 1 bit per pixel, so, every 16x16 icon
+*       requires 8 integers (16*16/32) to be stored in memory.
 *
-*   Every icon is codified in binary form, using 1 bit per pixel, so, every 16x16 icon
-*   requires 8 integers (16*16/32) to be stored in memory.
+*       When the icon is draw, actually one quad per pixel is drawn if the bit for that pixel is set.
 *
-*   When the icon is draw, actually one quad per pixel is drawn if the bit for that pixel is set.
+*       The global icons array size is fixed and depends on the number of icons and size:
 *
-*   The global icons array size is fixed and depends on the number of icons and size:
+*           static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS];
 *
-*       static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS];
+*       guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
 *
-*   guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
+*       TOOL: rGuiIcons is a visual tool to customize/create raygui icons: github.com/raysan5/rguiicons
 *
-*   TOOL: rGuiIcons is a visual tool to customize raygui icons and create new ones.
+*   RAYGUI LAYOUT:
+*       raygui currently does not provide an auto-layout mechanism like other libraries,
+*       layouts must be defined manually on controls drawing, providing the right bounds Rectangle for it.
 *
-*
+*       TOOL: rGuiLayout is a visual tool to create raygui layouts: github.com/raysan5/rguilayout
+* 
 *   CONFIGURATION:
+*       #define RAYGUI_IMPLEMENTATION
+*           Generates the implementation of the library into the included file.
+*           If not defined, the library is in header only mode and can be included in other headers
+*           or source files without problems. But only ONE file should hold the implementation.
 *
-*   #define RAYGUI_IMPLEMENTATION
-*       Generates the implementation of the library into the included file.
-*       If not defined, the library is in header only mode and can be included in other headers
-*       or source files without problems. But only ONE file should hold the implementation.
+*       #define RAYGUI_STANDALONE
+*           Avoid raylib.h header inclusion in this file. Data types defined on raylib are defined
+*           internally in the library and input management and drawing functions must be provided by
+*           the user (check library implementation for further details).
 *
-*   #define RAYGUI_STANDALONE
-*       Avoid raylib.h header inclusion in this file. Data types defined on raylib are defined
-*       internally in the library and input management and drawing functions must be provided by
-*       the user (check library implementation for further details).
+*       #define RAYGUI_NO_ICONS
+*           Avoid including embedded ricons data (256 icons, 16x16 pixels, 1-bit per pixel, 2KB)
 *
-*   #define RAYGUI_NO_ICONS
-*       Avoid including embedded ricons data (256 icons, 16x16 pixels, 1-bit per pixel, 2KB)
-*
-*   #define RAYGUI_CUSTOM_ICONS
-*       Includes custom ricons.h header defining a set of custom icons,
-*       this file can be generated using rGuiIcons tool
+*       #define RAYGUI_CUSTOM_ICONS
+*           Includes custom ricons.h header defining a set of custom icons,
+*           this file can be generated using rGuiIcons tool
 *
 *
 *   VERSIONS HISTORY:
@@ -165,9 +181,13 @@
 *       0.9 (07-Mar-2016) Reviewed and tested by Albert Martos, Ian Eito, Sergio Martinez and Ramon Santamaria.
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
+*   DEPENDENCIES:
+*       raylib 4.6-dev      Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
+* 
+*       By default raygui depends on raylib mostly for the inputs and the drawing funtionality but that dependency can be disabled
+*       with the config flag RAYGUI_STANDALONE. In that case is up to the user to provide another backend to cover library needs.
 *
 *   CONTRIBUTORS:
-*
 *       Ramon Santamaria:   Supervision, review, redesign, update and maintenance
 *       Vlad Adrian:        Complete rewrite of GuiTextBox() to support extended features (2019)
 *       Sergio Martinez:    Review, testing (2015) and redesign of multiple controls (2018)
@@ -1183,6 +1203,7 @@ static unsigned int guiIconScale = 1;       // Gui icon default scale (if icons 
 static bool guiTooltip = false;             // Tooltip enabled/disabled
 static const char *guiTooltipPtr = NULL;    // Tooltip string pointer (string provided by user)
 
+static unsigned int sharedCursorIndex = 0;  // Cursor index, shared by all GuiTextBox*()
 
 //----------------------------------------------------------------------------------
 // Style data array for all gui style properties (allocated on data segment by default)
