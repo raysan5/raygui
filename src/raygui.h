@@ -521,22 +521,22 @@ extern "C" {            // Prevents name mangling of functions
 #endif
 
 // Global gui state control functions
-RAYGUIAPI void GuiEnable(void);                                         // Enable gui controls (global state)
-RAYGUIAPI void GuiDisable(void);                                        // Disable gui controls (global state)
-RAYGUIAPI void GuiLock(void);                                           // Lock gui controls (global state)
-RAYGUIAPI void GuiUnlock(void);                                         // Unlock gui controls (global state)
-RAYGUIAPI bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
-RAYGUIAPI void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
-RAYGUIAPI void GuiSetState(int state);                                  // Set gui state (global state)
-RAYGUIAPI int GuiGetState(void);                                        // Get gui state (global state)
+RAYGUIAPI void GuiEnable(void);                                 // Enable gui controls (global state)
+RAYGUIAPI void GuiDisable(void);                                // Disable gui controls (global state)
+RAYGUIAPI void GuiLock(void);                                   // Lock gui controls (global state)
+RAYGUIAPI void GuiUnlock(void);                                 // Unlock gui controls (global state)
+RAYGUIAPI bool GuiIsLocked(void);                               // Check if gui is locked (global state)
+RAYGUIAPI void GuiFade(float alpha);                            // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
+RAYGUIAPI void GuiSetState(int state);                          // Set gui state (global state)
+RAYGUIAPI int GuiGetState(void);                                // Get gui state (global state)
 
 // Font set/get functions
-RAYGUIAPI void GuiSetFont(Font font);                                   // Set gui custom font (global state)
-RAYGUIAPI Font GuiGetFont(void);                                        // Get gui custom font (global state)
+RAYGUIAPI void GuiSetFont(Font font);                           // Set gui custom font (global state)
+RAYGUIAPI Font GuiGetFont(void);                                // Get gui custom font (global state)
 
 // Style set/get functions
-RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set one style property
-RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
+RAYGUIAPI void GuiSetStyle(int control, int property, int value);   // Set one style property
+RAYGUIAPI int GuiGetStyle(int control, int property);               // Get one style property
 
 // Container/separator controls, useful for controls organization
 RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
@@ -555,22 +555,22 @@ RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int active);   
 RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 RAYGUIAPI bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
-RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
+RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
+RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
 RAYGUIAPI bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 RAYGUIAPI bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
-RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
-RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
-RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
+RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue); // Slider control, returns selected value
+RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue); // Slider Bar control, returns selected value
+RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue); // Progress Bar control, shows current progress value
 RAYGUIAPI void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
 RAYGUIAPI void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
 RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs);              // Grid control, returns mouse cell position
 
 // Advance controls set
 RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
-RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
-RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
-RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive);   // Text Input Box control, ask for text, supports secret
+RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active); // List View with extended parameters
+RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons); // Message Box control, displays a message
+RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive); // Text Input Box control, ask for text, supports secret
 RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
 RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
 RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha);                      // Color Bar Alpha control
@@ -581,18 +581,18 @@ RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style fi
 RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
 
 // Tooltips management functions
-RAYGUIAPI void GuiEnableTooltip(void);                           // Enable gui tooltips (global state)
-RAYGUIAPI void GuiDisableTooltip(void);                          // Disable gui tooltips (global state)
-RAYGUIAPI void GuiSetTooltip(const char *tooltip);               // Set tooltip string
+RAYGUIAPI void GuiEnableTooltip(void);                          // Enable gui tooltips (global state)
+RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui tooltips (global state)
+RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
 
 // Icons functionality
 RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 
 #if !defined(RAYGUI_NO_ICONS)
+RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
-RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName);  // Load raygui icons file (.rgi) into internal icons data
-RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color);
-RAYGUIAPI void GuiSetIconScale(int scale);                      // Set icon drawing size
+RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
+RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 
 #if !defined(RAYGUI_CUSTOM_ICONS)
 //----------------------------------------------------------------------------------
