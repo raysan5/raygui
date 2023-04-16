@@ -2102,20 +2102,23 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
     return pressed;
 }
 
-// Text Box control, updates input text
-// NOTE 2: Returns if KEY_ENTER pressed (useful for data validation)
-bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
+// Text Box control
+// NOTE: Returns true on ENTER pressed (useful for data validation)
+bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
     GuiState state = guiState;
-    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
-
     bool pressed = false;
-    int textWidth = GetTextWidth(text);
 
+    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
+    int textWidth = GetTextWidth(text) - GetTextWidth(text + sharedCursorIndex);
+    int textIndexOffset = 0;        // Text index offset to start drawing in the box
+
+    // Cursor rectangle
+    // NOTE: Position X value should be updated
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + textWidth + 2,
+        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + textWidth + GuiGetStyle(DEFAULT, TEXT_SPACING),
         bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
-        4,
+        2,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
     };
 
@@ -2132,39 +2135,204 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         {
             state = STATE_PRESSED;
 
-            int key = GetCharPressed();      // Returns codepoint as Unicode
-            int keyCount = (int)strlen(text);
-            int byteSize = 0;
-            const char *textUTF8 = CodepointToUTF8(key, &byteSize);
-
-            // Only allow keys in range [32..125]
-            if ((keyCount + byteSize) < textSize)
+            // If text does not fit in the textbox and current cursor position is out of bounds, 
+            // we add an index offset to text for drawing only what requires depending on cursor
+            while (textWidth >= textBounds.width)
             {
-                //float maxWidth = (bounds.width - (GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)*2));
+                int nextCodepointSize = 0;
+                GetCodepointNext(text + textIndexOffset, &nextCodepointSize);
 
-                if (key >= 32)
+                textIndexOffset += nextCodepointSize;
+
+                textWidth = GetTextWidth(text + textIndexOffset) - GetTextWidth(text + sharedCursorIndex);
+            }
+
+            int codepoint = GetCharPressed();       // Get Unicode codepoint
+            int textLength = (int)strlen(text);     // Get current text length
+            
+            // Encode codepoint as UTF-8
+            int codepointSize = 0;
+            const char *textUTF8 = CodepointToUTF8(codepoint, &codepointSize);
+
+            // Add codepoint to text, at current cursor position
+            // NOTE: Make sure we do not overflow buffer size
+            if ((codepoint >= 32) && ((textLength + codepointSize) < bufferSize))
+            {
+                // Move forward data from cursor position
+                for (int i = (textLength + codepointSize); i > sharedCursorIndex; i--) text[i] = text[i - 1];
+
+                // Add new codepoint in current cursor position
+                for (int i = 0; i < codepointSize; i++) text[sharedCursorIndex + i] = textUTF8[i];
+
+                sharedCursorIndex += codepointSize;
+                textLength += codepointSize;
+
+                // Make sure text last character is EOL
+                text[textLength] = '\0';
+            }
+
+            // Delete codepoint from text, at current cursor position
+            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE))
+            {
+                int prevCodepointSize = 0;
+                GetCodepointPrevious(text + sharedCursorIndex, &prevCodepointSize);
+
+                // Move backward text from cursor position
+                for (int i = (sharedCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
+
+                sharedCursorIndex -= codepointSize;
+                textLength -= codepointSize;
+                    
+                // Make sure text last character is EOL
+                text[textLength] = '\0';
+            }
+
+            // Move cursor position with keys
+            if (IsKeyPressed(KEY_LEFT))
+            {
+                int prevCodepointSize = 0;
+                GetCodepointPrevious(text + sharedCursorIndex, &prevCodepointSize);
+
+                if (sharedCursorIndex >= prevCodepointSize) sharedCursorIndex -= prevCodepointSize;
+            }
+            else if (IsKeyPressed(KEY_RIGHT))
+            {
+                int nextCodepointSize = 0;
+                GetCodepointNext(text + sharedCursorIndex, &nextCodepointSize);
+
+                if ((sharedCursorIndex + nextCodepointSize) <= textLength) sharedCursorIndex += nextCodepointSize;
+            }
+
+            // TODO: Move cursor position with mouse
+
+            // Recalculate cursor rectangle X position depending on sharedCursorIndex
+            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + sharedCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
+
+            // Finish text editing on ENTER or mouse click outside bounds
+            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+            {
+                // Exiting edit mode
+                pressed = true;
+
+                // GLOBAL: Reset the shared cursor index
+                sharedCursorIndex = 0;
+            }
+        }
+        else
+        {
+            if (CheckCollisionPointRec(mousePoint, bounds))
+            {
+                state = STATE_FOCUSED;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    for (int i = 0; i < byteSize; i++)
-                    {
-                        text[keyCount] = textUTF8[i];
-                        keyCount++;
-                    }
+                    // Entering edit mode
+                    pressed = true;
 
-                    text[keyCount] = '\0';
+                    // GLOBAL: Place cursor index to the end of current text
+                    sharedCursorIndex = strlen(text);
+                }
+            }
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    if (state == STATE_PRESSED)
+    {
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
+    }
+    else if (state == STATE_DISABLED)
+    {
+        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
+    }
+    else GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
+
+    // Draw text considering index offset if required
+    // NOTE: Text index offset depends on cursor position
+    GuiDrawText(text + textIndexOffset, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+
+    // Draw cursor
+    if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+    else if (state == STATE_FOCUSED) GuiTooltip(bounds);
+    //--------------------------------------------------------------------
+
+    return pressed;
+}
+
+// Text Box control with multiple lines
+bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
+{
+    GuiState state = guiState;
+    bool pressed = false;
+
+    Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
+    int textWidth = GetTextWidth(text) - GetTextWidth(text + sharedCursorIndex);
+    int textIndexOffset = 0;        // Text index offset to start drawing in the box
+
+    // Cursor rectangle
+    // NOTE: Position values [x, y] should be updated
+    Rectangle cursor = { 0, -1, 2, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (editMode)
+        {
+            state = STATE_PRESSED;
+
+            // We get an Unicode codepoint
+            int codepoint = GetCharPressed();
+            int textLength = (int)strlen(text);     // Length in bytes (UTF-8 string)
+            int byteSize = 0;
+            const char *textUTF8 = CodepointToUTF8(codepoint, &byteSize);
+
+            // Introduce characters
+            if ((textLength + byteSize) < textSize)
+            {
+                if (IsKeyPressed(KEY_ENTER))
+                {
+                    text[textLength] = '\n';
+                    textLength++;
+                }
+                else if (codepoint >= 32)
+                {
+                    // Supports Unicode inputs -> Encoded to UTF-8
+                    int charUTF8Length = 0;
+                    const char *charEncoded = CodepointToUTF8(codepoint, &charUTF8Length);
+                    memcpy(text + textLength, charEncoded, charUTF8Length);
+                    textLength += charUTF8Length;
                 }
             }
 
-            // Delete text
-            if (keyCount > 0)
+            // Delete characters
+            if (textLength > 0)
             {
                 if (IsKeyPressed(KEY_BACKSPACE))
                 {
-                    while ((keyCount > 0) && ((text[--keyCount] & 0xc0) == 0x80));
-                    text[keyCount] = '\0';
+                    if ((unsigned char)text[textLength - 1] < 127)
+                    {
+                        // Remove ASCII equivalent character (1 byte)
+                        textLength--;
+                        text[textLength] = '\0';
+                    }
+                    else
+                    {
+                        // Remove latest UTF-8 unicode character introduced (n bytes)
+                        int charUTF8Length = 0;
+                        while ((charUTF8Length < textLength) && ((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
+
+                        textLength -= (charUTF8Length + 1);
+                        text[textLength] = '\0';
+                    }
                 }
             }
 
-            if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) pressed = true;
+            // Exit edit mode
+            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
         }
         else
         {
@@ -2188,26 +2356,76 @@ bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
     }
     else GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
+    
 
-    if (editMode)
+    // Draw text logic
+    int wrapMode = 1;      // 0-No wrap, 1-Char wrap, 2-Word wrap
+    Vector2 cursorPos = { textBounds.x, textBounds.y };
+    float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;     // Character rectangle scaling factor
+
+    for (int i = 0, codepointSize = 0; (text != NULL) && (text[i] != '\0'); i += codepointSize)
     {
-        // In case we edit and text does not fit in the textbox,
-        // we move text pointer to a position it fits inside the text box
-        while ((textWidth >= textBounds.width) && (text[0] != '\0'))
+        int codepoint = GetCodepointNext(text + i, &codepointSize);
+        int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
+        Rectangle atlasRec = guiFont.recs[index];
+        GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
+
+        if ((codepointSize == 1) && (codepoint == '\n'))
         {
-            int codepointSize = 0;
-            GetCodepointNext(text, &codepointSize);
-            text += codepointSize;
-            textWidth = GetTextWidth(text);
-            cursor.x = textBounds.x + textWidth + 2;
+            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
+            cursorPos.x = textBounds.x;                 // Carriage return
+        }
+        else
+        {
+            if (wrapMode == 1)
+            {
+                int glyphWidth = 0;
+                if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
+                else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
+
+                // Jump line if the end of the text box area has been reached
+                if ((cursorPos.x + (glyphWidth*scaleFactor)) > (textBounds.x + textBounds.width))
+                {
+                    cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
+                    cursorPos.x = textBounds.x;     // Carriage return
+                }
+            }
+            else if (wrapMode == 2)
+            {
+                /*
+                if ((codepointSize == 1) && (codepoint == ' '))
+                {
+                lastSpacePos = i;
+                lastSpaceWidth = 0;
+                lastSpaceCursorPos = cursorPos.x;
+                }
+
+                // Jump line if last word reaches end of text box area
+                if ((lastSpaceCursorPos + lastSpaceWidth) > (textAreaBounds.x + textAreaBounds.width))
+                {
+                cursorPos.y += 12;               // Line feed
+                cursorPos.x = textAreaBounds.x;  // Carriage return
+                }
+                */
+            }
+
+            // Draw current character glyph
+            DrawTextCodepoint(guiFont, codepoint, cursorPos, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+
+            int glyphWidth = 0;
+            if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
+            else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
+
+            cursorPos.x += (glyphWidth*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+            //if (i > lastSpacePos) lastSpaceWidth += (atlasRec.width + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         }
     }
 
-    GuiDrawText(text, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
+    cursor.x = cursorPos.x;
+    cursor.y = cursorPos.y;
 
-    // Draw cursor
+    // Draw cursor position considering text glyphs
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) GuiTooltip(bounds);
     //--------------------------------------------------------------------
 
     return pressed;
@@ -2394,182 +2612,6 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
 
     // Draw text label if provided
     GuiDrawText(text, textBounds, (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT)? TEXT_ALIGN_LEFT : TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(LABEL, TEXT + (state*3))), guiAlpha));
-    //--------------------------------------------------------------------
-
-    return pressed;
-}
-
-// Text Box control with multiple lines
-bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode)
-{
-    GuiState state = guiState;
-    bool pressed = false;
-
-    Rectangle textAreaBounds = {
-        bounds.x + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING),
-        bounds.width - 2*(GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING)),
-        bounds.height - 2*(GuiGetStyle(TEXTBOX, BORDER_WIDTH) + GuiGetStyle(TEXTBOX, TEXT_INNER_PADDING))
-    };
-
-    // Cursor position, [x, y] values should be updated
-    Rectangle cursor = { 0, -1, 4, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
-
-    float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;     // Character rectangle scaling factor
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (editMode)
-        {
-            state = STATE_PRESSED;
-
-            // We get an Unicode codepoint
-            int codepoint = GetCharPressed();
-            int textLength = (int)strlen(text);     // Length in bytes (UTF-8 string)
-            int byteSize = 0;
-            const char *textUTF8 = CodepointToUTF8(codepoint, &byteSize);
-
-            // Introduce characters
-            if ((textLength + byteSize) < textSize)
-            {
-                if (IsKeyPressed(KEY_ENTER))
-                {
-                    text[textLength] = '\n';
-                    textLength++;
-                }
-                else if (codepoint >= 32)
-                {
-                    // Supports Unicode inputs -> Encoded to UTF-8
-                    int charUTF8Length = 0;
-                    const char *charEncoded = CodepointToUTF8(codepoint, &charUTF8Length);
-                    memcpy(text + textLength, charEncoded, charUTF8Length);
-                    textLength += charUTF8Length;
-                }
-            }
-
-            // Delete characters
-            if (textLength > 0)
-            {
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    if ((unsigned char)text[textLength - 1] < 127)
-                    {
-                        // Remove ASCII equivalent character (1 byte)
-                        textLength--;
-                        text[textLength] = '\0';
-                    }
-                    else
-                    {
-                        // Remove latest UTF-8 unicode character introduced (n bytes)
-                        int charUTF8Length = 0;
-                        while ((charUTF8Length < textLength) && ((unsigned char)text[textLength - 1 - charUTF8Length] & 0b01000000) == 0) charUTF8Length++;
-
-                        textLength -= (charUTF8Length + 1);
-                        text[textLength] = '\0';
-                    }
-                }
-            }
-
-            // Exit edit mode
-            if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
-        }
-        else
-        {
-            if (CheckCollisionPointRec(mousePoint, bounds))
-            {
-                state = STATE_FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pressed = true;
-            }
-        }
-    }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    if (state == STATE_PRESSED)
-    {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_PRESSED)), guiAlpha));
-    }
-    else if (state == STATE_DISABLED)
-    {
-        GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(TEXTBOX, BASE_COLOR_DISABLED)), guiAlpha));
-    }
-    else GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
-
-    int wrapMode = 1;      // 0-No wrap, 1-Char wrap, 2-Word wrap
-    Vector2 cursorPos = { textAreaBounds.x, textAreaBounds.y };
-
-    //int lastSpacePos = 0;
-    //int lastSpaceWidth = 0;
-    //int lastSpaceCursorPos = 0;
-
-    for (int i = 0, codepointSize = 0; (text != NULL) && (text[i] != '\0'); i += codepointSize)
-    {
-        int codepoint = GetCodepointNext(text + i, &codepointSize);
-        int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
-        Rectangle atlasRec = guiFont.recs[index];
-        GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
-
-        if ((codepointSize == 1) && (codepoint == '\n'))
-        {
-            cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
-            cursorPos.x = textAreaBounds.x;                 // Carriage return
-        }
-        else
-        {
-            if (wrapMode == 1)
-            {
-                int glyphWidth = 0;
-                if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
-                else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
-
-                // Jump line if the end of the text box area has been reached
-                if ((cursorPos.x + (glyphWidth*scaleFactor)) > (textAreaBounds.x + textAreaBounds.width))
-                {
-                    cursorPos.y += (guiFont.baseSize*scaleFactor + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING));   // Line feed
-                    cursorPos.x = textAreaBounds.x;     // Carriage return
-                }
-            }
-            else if (wrapMode == 2)
-            {
-                /*
-                if ((codepointSize == 1) && (codepoint == ' '))
-                {
-                    lastSpacePos = i;
-                    lastSpaceWidth = 0;
-                    lastSpaceCursorPos = cursorPos.x;
-                }
-
-                // Jump line if last word reaches end of text box area
-                if ((lastSpaceCursorPos + lastSpaceWidth) > (textAreaBounds.x + textAreaBounds.width))
-                {
-                    cursorPos.y += 12;               // Line feed
-                    cursorPos.x = textAreaBounds.x;  // Carriage return
-                }
-                */
-            }
-
-            // Draw current character glyph
-            DrawTextCodepoint(guiFont, codepoint, cursorPos, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
-
-            int glyphWidth = 0;
-            if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
-            else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
-
-            cursorPos.x += (glyphWidth*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-            //if (i > lastSpacePos) lastSpaceWidth += (atlasRec.width + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-        }
-    }
-
-    cursor.x = cursorPos.x;
-    cursor.y = cursorPos.y;
-
-    // Draw cursor position considering text glyphs
-    if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     //--------------------------------------------------------------------
 
     return pressed;
@@ -3911,7 +3953,6 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         {
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
             else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
-            textBounds.width -= 2 * GuiGetStyle(control, TEXT_PADDING);
         }
         break;
     }
