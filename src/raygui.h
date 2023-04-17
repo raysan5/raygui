@@ -2320,7 +2320,6 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
             }
 
             // Move cursor position with keys
-            /*
             if (IsKeyPressed(KEY_LEFT))
             {
                 int prevCodepointSize = 0;
@@ -2335,13 +2334,27 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
 
                 if ((sharedCursorIndex + nextCodepointSize) <= textLength) sharedCursorIndex += nextCodepointSize;
             }
-            */
 
             // TODO: Move cursor position with mouse
 
             // TODO: Recalculate cursor position depending on sharedCursorIndex
-            //cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) - GetTextWidth(text + sharedCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
-            //cursor.y = consider line breaks
+            char *lastTextBreak = text;
+
+            // Update cursor.y position considering line breaks
+            cursor.y = textBounds.y + (textBounds.height/2 - cursor.height/2) - lineCount/2;    // Move to centered text
+            for (int i = 0; i < sharedCursorIndex; i++)
+            {
+                if (text[i] == '\n')
+                {
+                    cursor.y += (GuiGetStyle(DEFAULT, TEXT_SIZE)/2 + GuiGetStyle(TEXTBOX, TEXT_LINES_SPACING)/2);
+                    cursor.x = textBounds.x;
+                    lastTextBreak = &text[i + 1];
+                }
+            }
+
+            cursor.x = textBounds.x + GetTextWidth(lastTextBreak) - GetTextWidth(lastTextBreak + sharedCursorIndex);
+            
+            
 
             // Exit edit mode
             if (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -2378,8 +2391,11 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     }
     else GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), guiAlpha), BLANK);
     
+    // Draw text inside bounds
+    GuiDrawText(text, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))), guiAlpha));
 
     // Draw text logic
+    /*
     int wrapMode = 1;      // 0-No wrap, 1-Char wrap, 2-Word wrap
     Vector2 cursorPos = { textBounds.x, textBounds.y };
     float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;     // Character rectangle scaling factor
@@ -2387,8 +2403,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     for (int i = 0, codepointSize = 0; (text != NULL) && (text[i] != '\0'); i += codepointSize)
     {
         int codepoint = GetCodepointNext(text + i, &codepointSize);
-        int index = GetGlyphIndex(guiFont, codepoint);      // If requested codepoint is not found, we get '?' (0x3f)
-        Rectangle atlasRec = guiFont.recs[index];
+        int index = GetGlyphIndex(guiFont, codepoint);
+        Rectangle glyphRec = guiFont.recs[index];
         GlyphInfo glyphInfo = guiFont.glyphs[index];        // Glyph measures
 
         if ((codepointSize == 1) && (codepoint == '\n'))
@@ -2402,7 +2418,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
             {
                 int glyphWidth = 0;
                 if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
-                else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
+                else glyphWidth += (int)(glyphRec.width + glyphInfo.offsetX);
 
                 // Jump line if the end of the text box area has been reached
                 if ((cursorPos.x + (glyphWidth*scaleFactor)) > (textBounds.x + textBounds.width))
@@ -2413,21 +2429,19 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
             }
             else if (wrapMode == 2)
             {
-                /*
                 if ((codepointSize == 1) && (codepoint == ' '))
                 {
-                lastSpacePos = i;
-                lastSpaceWidth = 0;
-                lastSpaceCursorPos = cursorPos.x;
+                    lastSpacePos = i;
+                    lastSpaceWidth = 0;
+                    lastSpaceCursorPos = cursorPos.x;
                 }
 
                 // Jump line if last word reaches end of text box area
                 if ((lastSpaceCursorPos + lastSpaceWidth) > (textAreaBounds.x + textAreaBounds.width))
                 {
-                cursorPos.y += 12;               // Line feed
-                cursorPos.x = textAreaBounds.x;  // Carriage return
+                    cursorPos.y += 12;               // Line feed
+                    cursorPos.x = textAreaBounds.x;  // Carriage return
                 }
-                */
             }
 
             // Draw current character glyph
@@ -2435,7 +2449,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
 
             int glyphWidth = 0;
             if (glyphInfo.advanceX != 0) glyphWidth += glyphInfo.advanceX;
-            else glyphWidth += (int)(atlasRec.width + glyphInfo.offsetX);
+            else glyphWidth += (int)(glyphRec.width + glyphInfo.offsetX);
 
             cursorPos.x += (glyphWidth*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
             //if (i > lastSpacePos) lastSpaceWidth += (atlasRec.width + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
@@ -2444,6 +2458,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
 
     cursor.x = cursorPos.x;
     cursor.y = cursorPos.y;
+    */
 
     // Draw cursor position considering text glyphs
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
@@ -3969,6 +3984,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     switch (control)
     {
         case COMBOBOX: textBounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_SPACING)); break;
+        case TEXTBOX: break;    // TODO: Consider multi-line text?
         //case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
         default:
         {
