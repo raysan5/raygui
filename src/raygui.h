@@ -3984,7 +3984,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     switch (control)
     {
         case COMBOBOX: textBounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_SPACING)); break;
-        case TEXTBOX: break;    // TODO: Consider multi-line text?
+        //case TEXTBOX: break;    // TODO: Consider multi-line text?
         //case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
         default:
         {
@@ -4170,7 +4170,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                     if ((codepoint != ' ') && (codepoint != '\t'))
                     {
                         // TODO: Draw only required text glyphs fitting the bounds.width, '...' can be appended at the end of the text
-                        if (textOffsetX < bounds.width)
+                        if (textOffsetX < (bounds.width - guiFont.recs[index].width))
                         {
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ position.x + textOffsetX, position.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), tint);
                         }
