@@ -2341,7 +2341,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
             char *lastTextBreak = text;
 
             // Update cursor.y position considering line breaks
-            cursor.y = textBounds.y + (textBounds.height/2 - cursor.height/2) - lineCount/2;    // Move to centered text
+            cursor.y = textBounds.y + (textBounds.height/2 - cursor.height/2); // -lineCount/2;    // Move to centered text
             for (int i = 0; i < sharedCursorIndex; i++)
             {
                 if (text[i] == '\n')
