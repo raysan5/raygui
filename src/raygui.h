@@ -127,13 +127,15 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.5 (xx-xxx-2022) ADDED: Multiple new icons, useful for code editing tools
-*                         ADDED: GuiTabBar(), based on GuiToggle()
+*       3.5 (20-May-2023) ADDED: GuiTabBar(), based on GuiToggle()
+*                         ADDED: Helper functions to split text in separate lines
+*                         ADDED: Multiple new icons, useful for code editing tools
 *                         REMOVED: Unneeded icon editing functions
-*                         REDESIGNED: GuiDrawText() to divide drawing by lines
 *                         REMOVED: MeasureTextEx() dependency, logic directly implemented
 *                         REMOVED: DrawTextEx() dependency, logic directly implemented
-*                         ADDED: Helper functions to split text in separate lines
+*                         REDESIGNED: GuiTextBox() to support cursor movement
+*                         REDESIGNED: GuiTextBoxMulti() to support cursor movement
+*                         REDESIGNED: GuiDrawText() to divide drawing by lines
 *       3.2 (22-May-2022) RENAMED: Some enum values, for unification, avoiding prefixes
 *                         REMOVED: GuiScrollBar(), only internal
 *                         REDESIGNED: GuiPanel() to support text parameter
@@ -479,6 +481,7 @@ typedef enum {
 typedef enum {
     TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
     TEXT_LINES_SPACING,         // TextBoxMulti lines separation
+    TEXT_ALIGNMENT_VERTICAL     // TextBoxMulti vertical alignment: 0-CENTERED, 1-UP, 2-DOWN
 } GuiTextBoxProperty;
 
 // Spinner
@@ -2261,13 +2264,15 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     GuiState state = guiState;
     bool pressed = false;
 
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);
+
     Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
     int textWidth = GetTextWidth(text) - GetTextWidth(text + sharedCursorIndex);
     int textIndexOffset = 0;        // Text index offset to start drawing in the box
 
     // Cursor rectangle
     // NOTE: Position values [x, y] should be updated
-    Rectangle cursor = { 0, -1, 2, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 2 };
+    Rectangle cursor = { 0, -1, 2, (float)GuiGetStyle(DEFAULT, TEXT_SIZE) + 4 };
 
     // Update control
     //--------------------------------------------------------------------
@@ -2341,7 +2346,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
             char *lastTextBreak = text;
 
             // Update cursor.y position considering line breaks
-            cursor.y = textBounds.y + (textBounds.height/2 - cursor.height/2); // -lineCount/2;    // Move to centered text
+            cursor.y = textBounds.y - 2; // -lineCount/2;    // Move to centered text
             for (int i = 0; i < sharedCursorIndex; i++)
             {
                 if (text[i] == '\n')
@@ -2463,6 +2468,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     // Draw cursor position considering text glyphs
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     //--------------------------------------------------------------------
+
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
 
     return pressed;
 }
@@ -4073,6 +4080,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         #define ICON_TEXT_PADDING   4
     #endif
 
+    int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
+
     // We process the text lines one by one
     if ((text != NULL) && (text[0] != '\0'))
     {
@@ -4111,21 +4120,17 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             // Check guiTextAlign global variables
             switch (alignment)
             {
-                case TEXT_ALIGN_LEFT:
-                {
-                    position.x = bounds.x;
-                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-                } break;
-                case TEXT_ALIGN_CENTER:
-                {
-                    position.x = bounds.x +  bounds.width/2 - textSizeX/2;
-                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-                } break;
-                case TEXT_ALIGN_RIGHT:
-                {
-                    position.x = bounds.x + bounds.width - textSizeX;
-                    position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height);
-                } break;
+                case TEXT_ALIGN_LEFT: position.x = bounds.x; break;
+                case TEXT_ALIGN_CENTER: position.x = bounds.x +  bounds.width/2 - textSizeX/2; break;
+                case TEXT_ALIGN_RIGHT: position.x = bounds.x + bounds.width - textSizeX; break;
+                default: break;
+            }
+
+            switch (alignmentVertical)
+            {
+                case 0: position.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // CENTERED
+                case 1: position.y = bounds.y + posOffsetY; break;  // UP
+                case 2: position.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
                 default: break;
             }
 
