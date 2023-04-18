@@ -482,7 +482,8 @@ typedef enum {
     TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
     TEXT_LINES_SPACING,         // TextBoxMulti lines separation
     TEXT_ALIGNMENT_VERTICAL,    // TextBoxMulti vertical alignment: 0-CENTERED, 1-UP, 2-DOWN
-    TEXT_MULTILINE              // TextBox supports multiple lines
+    TEXT_MULTILINE,             // TextBox supports multiple lines
+    TEXT_WRAP_MODE              // TextBox wrap mode for multiline: 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP
 } GuiTextBoxProperty;
 
 // Spinner
@@ -1208,8 +1209,7 @@ static bool guiTooltip = false;                 // Tooltip enabled/disabled
 static const char *guiTooltipPtr = NULL;        // Tooltip string pointer (string provided by user)
 
 static unsigned int textBoxCursorIndex = 0;     // Cursor index, shared by all GuiTextBox*()
-//static unsigned int textBoxFrameCounter = 0;    // Cursor blink frame counter, shared by all GuiTextBox*()
-static int blinkCursorFrameCounter = 0;         // Frame counter for cursor blinking
+//static int blinkCursorFrameCounter = 0;         // Frame counter for cursor blinking
 static int autoCursorFrameCounter = 0;          // Frame counter for automatic cursor movement on key-down
 static bool autoCursorMode = false;             // Flag to note auto-cursor activation
 
@@ -2114,7 +2114,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 // NOTE: Returns true on ENTER pressed (useful for data validation)
 bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
-    #define MAX_AUTO_CURSOR_FRAME_RATE  20      // Frames to wait for autocursor movement
+    #define MAX_AUTO_CURSOR_FRAME_RATE  40      // Frames to wait for autocursor movement
     
     GuiState state = guiState;
     bool pressed = false;
@@ -2123,14 +2123,25 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     int textWidth = GetTextWidth(text) - GetTextWidth(text + textBoxCursorIndex);
     int textIndexOffset = 0;        // Text index offset to start drawing in the box
 
+    int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
+    int multiline = GuiGetStyle(TEXTBOX, TEXT_MULTILINE);
+
     // Cursor rectangle
     // NOTE: Position X value should be updated
     Rectangle cursor = {
-        bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + textWidth + GuiGetStyle(DEFAULT, TEXT_SPACING),
-        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
+        textBounds.x + textWidth + GuiGetStyle(DEFAULT, TEXT_SPACING),
+        textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
         2,
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
     };
+
+    switch (alignmentVertical)
+    {
+        case 0: cursor.y = textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE); break;  // CENTERED
+        case 1: cursor.y = textBounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2; break;  // UP
+        case 2: cursor.y = textBounds.y + textBounds.height; break;  // DOWN
+        default: break;
+    }
 
     if (cursor.height >= bounds.height) cursor.height = bounds.height - GuiGetStyle(TEXTBOX, BORDER_WIDTH)*2;
     if (cursor.y < (bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH))) cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH);
@@ -2149,8 +2160,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     }
 
     // Blink-cursor frame counter
-    if (!autoCursorMode) blinkCursorFrameCounter++;
-    else blinkCursorFrameCounter = 0;
+    //if (!autoCursorMode) blinkCursorFrameCounter++;
+    //else blinkCursorFrameCounter = 0;
 
     // Update control
     //--------------------------------------------------------------------
@@ -2235,11 +2246,12 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             // Recalculate cursor rectangle X position depending on textBoxCursorIndex
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
 
+
             // Finish text editing on ENTER or mouse click outside bounds
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
             {
-                pressed = true;         // Exiting edit mode
-                textBoxCursorIndex = 0;  // GLOBAL: Reset the shared cursor index
+                pressed = true;             // Exiting edit mode
+                textBoxCursorIndex = 0;     // GLOBAL: Reset the shared cursor index
             }
         }
         else
@@ -2250,7 +2262,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    pressed = true;     // Entering edit mode
+                    pressed = true;         // Entering edit mode
                     textBoxCursorIndex = strlen(text);   // GLOBAL: Place cursor index to the end of current text
                 }
             }
@@ -2277,7 +2289,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     // Draw cursor
     if (editMode) 
     {
-        if (autoCursorMode || ((blinkCursorFrameCounter/20)%2 == 0)) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
+        //if (autoCursorMode || ((blinkCursorFrameCounter/40)%2 == 0)) 
+        GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
     else if (state == STATE_FOCUSED) GuiTooltip(bounds);
     //--------------------------------------------------------------------
@@ -2288,10 +2301,20 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 // Text Box control with multiple lines
 bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
-    GuiState state = guiState;
     bool pressed = false;
 
     GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);
+    GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 1);
+
+    pressed = GuiTextBox(bounds, text, bufferSize, editMode);
+
+    GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 0);
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
+
+    return pressed;
+    /*
+    GuiState state = guiState;
+    bool pressed = false;
 
     Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
     int textWidth = GetTextWidth(text) - GetTextWidth(text + textBoxCursorIndex);
@@ -2490,15 +2513,12 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
 
     cursor.x = cursorPos.x;
     cursor.y = cursorPos.y;
-    */
+
 
     // Draw cursor position considering text glyphs
     if (editMode) GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     //--------------------------------------------------------------------
-
-    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
-
-    return pressed;
+    */
 }
 
 // Spinner control, returns selected value
