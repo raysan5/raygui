@@ -225,7 +225,10 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION  "3.2"
+#define RAYGUI_VERSION_MAJOR 3
+#define RAYGUI_VERSION_MINOR 5
+#define RAYGUI_VERSION_PATCH 0
+#define RAYGUI_VERSION  "3.5-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
