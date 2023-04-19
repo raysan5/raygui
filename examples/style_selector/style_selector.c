@@ -12,7 +12,6 @@
 *       - GuiComboBox()
 *       - GuiListView()
 *       - GuiToggleGroup()
-*       - GuiTextBoxMulti()
 *       - GuiColorPicker()
 *       - GuiSlider()
 *       - GuiSliderBar()

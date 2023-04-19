@@ -94,7 +94,7 @@ static bool IsKeyPressed(int key)
     return false;
 }
 
-// USED IN: GuiTextBox(), GuiTextBoxMulti(), GuiValueBox()
+// USED IN: GuiTextBox(), GuiValueBox()
 static int GetKeyPressed(void)
 {
     // TODO: Return last key pressed (up->down) in the frame
@@ -122,18 +122,6 @@ static void DrawTriangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color)
     // TODO: Draw triangle on the screen, required for arrows
 }
 
-// USED IN: GuiImageButtonEx()
-static void DrawTextureRec(Texture2D texture, Rectangle sourceRec, Vector2 position, Color tint)
-{
-    // TODO: Draw texture (piece defined by source rectangle) on screen
-}
-
-// USED IN: GuiTextBoxMulti()
-static void DrawTextRec(Font font, const char *text, Rectangle rec, float fontSize, float spacing, bool wordWrap, Color tint)
-{
-    // TODO: Draw text limited by a rectangle. This advance function wraps the text inside the rectangle
-}
-
 //-------------------------------------------------------------------------------
 // Text required functions
 //-------------------------------------------------------------------------------
@@ -147,7 +135,7 @@ static Font GetFontDefault(void)
     return font; 
 }
 
-// USED IN: GetTextWidth(), GuiTextBoxMulti()
+// USED IN: GetTextWidth()
 static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing) 
 { 
     Vector2 size = { 0 };

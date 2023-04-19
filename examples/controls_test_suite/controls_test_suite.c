@@ -12,7 +12,6 @@
 *       - GuiComboBox()
 *       - GuiListView()
 *       - GuiToggleGroup()
-*       - GuiTextBoxMulti()
 *       - GuiColorPicker()
 *       - GuiSlider()
 *       - GuiSliderBar()
@@ -189,7 +188,7 @@ int main()
             toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
 
             // Third GUI column
-            if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 256, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
+            //if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 256, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, colorPickerValue);
 
             sliderValue = GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", (float)sliderValue), sliderValue, -50, 100);
