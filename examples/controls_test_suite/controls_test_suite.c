@@ -21,8 +21,8 @@
 *
 *
 *   DEPENDENCIES:
-*       raylib 4.0 - Windowing/input management and drawing.
-*       raygui 3.2 - Immediate-mode GUI controls.
+*       raylib 4.5          - Windowing/input management and drawing
+*       raygui 3.5          - Immediate-mode GUI controls with custom styling and icons
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
@@ -188,7 +188,7 @@ int main()
             toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
 
             // Third GUI column
-            //if (GuiTextBoxMulti((Rectangle){ 320, 25, 225, 140 }, multiTextBoxText, 256, multiTextBoxEditMode)) multiTextBoxEditMode = !multiTextBoxEditMode;
+            GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
             colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, colorPickerValue);
 
             sliderValue = GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", (float)sliderValue), sliderValue, -50, 100);
@@ -196,11 +196,9 @@ int main()
             progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, NULL, progressValue, 0, 1);
 
             // NOTE: View rectangle could be used to perform some scissor test
-            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 100, 160 }, NULL, (Rectangle){ 560, 25, 200, 400 }, &viewScroll);
+            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll);
 
-            GuiPanel((Rectangle){ 560, 25 + 180, 100, 160 }, "Panel Info");
-
-            GuiGrid((Rectangle) { 560, 25 + 180 + 180, 100, 120 }, NULL, 20, 2);
+            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 2);
 
             GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
 
