@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.5-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.5 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -20,7 +20,7 @@
 * 
 *   LIMITATIONS:
 *       - No auto-layout mechanism provided, up to the user to define controls position and size
-*       - Standalone mode requires library modification and some user work to plug another backend.
+*       - Standalone mode requires library modification and some user work to plug another backend
 *
 *   CONTROLS PROVIDED:
 *     # Container/separators Controls
@@ -126,13 +126,15 @@
 *
 *
 *   VERSIONS HISTORY:
-*       3.5 (20-May-2023) ADDED: GuiTabBar(), based on GuiToggle()
+*       3.5 (20-Apr-2023) ADDED: GuiTabBar(), based on GuiToggle()
 *                         ADDED: Helper functions to split text in separate lines
 *                         ADDED: Multiple new icons, useful for code editing tools
 *                         REMOVED: Unneeded icon editing functions
 *                         REMOVED: GuiTextBoxMulti(), very limited and broken
 *                         REMOVED: MeasureTextEx() dependency, logic directly implemented
 *                         REMOVED: DrawTextEx() dependency, logic directly implemented
+*                         REVIEWED: GuiScrollBar(), improve mouse-click behaviour
+*                         REVIEWED: Library header info, more info, better organized
 *                         REDESIGNED: GuiTextBox() to support cursor movement
 *                         REDESIGNED: GuiDrawText() to divide drawing by lines
 *       3.2 (22-May-2022) RENAMED: Some enum values, for unification, avoiding prefixes
@@ -183,9 +185,9 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   DEPENDENCIES:
-*       raylib 4.6-dev      Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
+*       raylib 4.5          Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
 * 
-*       By default raygui depends on raylib mostly for the inputs and the drawing funtionality but that dependency can be disabled
+*       By default raygui depends on raylib mostly for the inputs and the drawing functionality but that dependency can be disabled
 *       with the config flag RAYGUI_STANDALONE. In that case is up to the user to provide another backend to cover library needs.
 *
 *   CONTRIBUTORS:
@@ -227,7 +229,7 @@
 #define RAYGUI_VERSION_MAJOR 3
 #define RAYGUI_VERSION_MINOR 5
 #define RAYGUI_VERSION_PATCH 0
-#define RAYGUI_VERSION  "3.5-dev"
+#define RAYGUI_VERSION  "3.5"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -3854,7 +3856,6 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
     switch (control)
     {
-        case COMBOBOX: textBounds.width -= (GuiGetStyle(control, COMBO_BUTTON_WIDTH) + GuiGetStyle(control, COMBO_BUTTON_SPACING)); break;
         //case TEXTBOX: break;    // TODO: Consider multi-line text?
         //case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
         default:
@@ -4304,7 +4305,7 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     if (value > maxValue) value = maxValue;
     if (value < minValue) value = minValue;
 
-    const int range = maxValue - minValue;
+    const int valueRange = maxValue - minValue;
     int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
 
     // Calculate rectangles for all of the components
@@ -4317,15 +4318,27 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     {
         arrowDownRight = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + bounds.height - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
         scrollbar = RAYGUI_CLITERAL(Rectangle){ bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), arrowUpLeft.y + arrowUpLeft.height, bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING)), bounds.height - arrowUpLeft.height - arrowDownRight.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
-        sliderSize = (sliderSize >= scrollbar.height)? ((int)scrollbar.height - 2) : sliderSize;     // Make sure the slider won't get outside of the scrollbar
-        slider = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)scrollbar.y + (int)(((float)(value - minValue)/range)*(scrollbar.height - sliderSize)), (float)bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)), (float)sliderSize };
+        
+        // Make sure the slider won't get outside of the scrollbar
+        sliderSize = (sliderSize >= scrollbar.height)? ((int)scrollbar.height - 2) : sliderSize;
+        slider = RAYGUI_CLITERAL(Rectangle){ 
+            bounds.x + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), 
+            scrollbar.y + (int)(((float)(value - minValue)/valueRange)*(scrollbar.height - sliderSize)), 
+            bounds.width - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)), 
+            (float)sliderSize };
     }
     else    // horizontal
     {
         arrowDownRight = RAYGUI_CLITERAL(Rectangle){ (float)bounds.x + bounds.width - spinnerSize - GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH), (float)spinnerSize, (float)spinnerSize };
         scrollbar = RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x + arrowUpLeft.width, bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING), bounds.width - arrowUpLeft.width - arrowDownRight.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH), bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_PADDING)) };
-        sliderSize = (sliderSize >= scrollbar.width)? ((int)scrollbar.width - 2) : sliderSize;       // Make sure the slider won't get outside of the scrollbar
-        slider = RAYGUI_CLITERAL(Rectangle){ (float)scrollbar.x + (int)(((float)(value - minValue)/range)*(scrollbar.width - sliderSize)), (float)bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), (float)sliderSize, (float)bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)) };
+        
+        // Make sure the slider won't get outside of the scrollbar
+        sliderSize = (sliderSize >= scrollbar.width)? ((int)scrollbar.width - 2) : sliderSize;
+        slider = RAYGUI_CLITERAL(Rectangle){ 
+            scrollbar.x + (int)(((float)(value - minValue)/valueRange)*(scrollbar.width - sliderSize)), 
+            bounds.y + GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING), 
+            (float)sliderSize, 
+            bounds.height - 2*(GuiGetStyle(SCROLLBAR, BORDER_WIDTH) + GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_PADDING)) };
     }
 
     // Update control
@@ -4342,26 +4355,40 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             int wheel = (int)GetMouseWheelMove();
             if (wheel != 0) value += wheel;
 
+            // Handle mouse button down
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
-                if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += range/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                // Check arrows click
+                if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (!CheckCollisionPointRec(mousePoint, slider))
+                {
+                    // If click on scrollbar position but not on slider, place slider directly on that position
+                    if (isVertical) value = (int)(((float)(mousePoint.y - scrollbar.y - slider.height/2)*valueRange)/(scrollbar.height - slider.height) + minValue);
+                    else value = (int)(((float)(mousePoint.x - scrollbar.x - slider.width/2)*valueRange)/(scrollbar.width - slider.width) + minValue);
+                }
 
                 state = STATE_PRESSED;
             }
             else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
-                if (!isVertical)
-                {
-                    Rectangle scrollArea = { arrowUpLeft.x + arrowUpLeft.width, arrowUpLeft.y, scrollbar.width, bounds.height - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH) };
-                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.x - scrollArea.x - slider.width/2)*range)/(scrollArea.width - slider.width) + minValue);
-                }
-                else
-                {
-                    Rectangle scrollArea = { arrowUpLeft.x, arrowUpLeft.y+arrowUpLeft.height, bounds.width - 2*GuiGetStyle(SCROLLBAR, BORDER_WIDTH),  scrollbar.height };
-                    if (CheckCollisionPointRec(mousePoint, scrollArea)) value = (int)(((float)(mousePoint.y - scrollArea.y - slider.height/2)*range)/(scrollArea.height - slider.height) + minValue);
-                }
+                if (isVertical) value += (GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
+                else value += (GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
             }
+
+            // Keyboard control on mouse hover scrollbar
+            /*
+            if (isVertical)
+            {
+                if (IsKeyDown(KEY_DOWN)) value += 5;
+                else if (IsKeyDown(KEY_UP)) value -= 5;
+            }
+            else
+            {
+                if (IsKeyDown(KEY_RIGHT)) value += 5;
+                else if (IsKeyDown(KEY_LEFT)) value -= 5;
+            }
+            */
         }
 
         // Normalize value
