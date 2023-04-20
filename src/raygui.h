@@ -3632,9 +3632,10 @@ void GuiLoadStyleDefault(void)
         // Setup default raylib font
         guiFont = GetFontDefault();
 
-        // Setup default raylib font rectangle
-        Rectangle whiteChar = { 41, 46, 2, 8 };
-        SetShapesTexture(guiFont.texture, whiteChar);
+        // NOTE: Default raylib font character 95 is a white square
+        Rectangle whiteChar = guiFont.recs[95];
+        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
+        SetShapesTexture(guiFont.texture, (Rectangle){ whiteChar.x + 1, whiteChar.y + 1, whiteChar.width - 2, whiteChar.height - 2 });
     }
 }
 
