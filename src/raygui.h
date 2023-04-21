@@ -124,6 +124,8 @@
 *           Includes custom ricons.h header defining a set of custom icons,
 *           this file can be generated using rGuiIcons tool
 *
+*       #define RAYGUI_DEBUG_TEXT_BOUNDS
+*           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
 *       3.5 (20-Apr-2023) ADDED: GuiTabBar(), based on GuiToggle()
@@ -1211,7 +1213,7 @@ static unsigned int guiIconScale = 1;           // Gui icon default scale (if ic
 static bool guiTooltip = false;                 // Tooltip enabled/disabled
 static const char *guiTooltipPtr = NULL;        // Tooltip string pointer (string provided by user)
 
-static int textBoxCursorIndex = 0;              // Cursor index, shared by all GuiTextBox*()
+static unsigned int textBoxCursorIndex = 0;     // Cursor index, shared by all GuiTextBox*()
 //static int blinkCursorFrameCounter = 0;       // Frame counter for cursor blinking
 static int autoCursorCooldownCounter = 0;       // Cooldown frame counter for automatic cursor movement on key-down
 static int autoCursorDelayCounter = 0;          // Delay frame counter for automatic cursor movement
@@ -1773,7 +1775,7 @@ bool GuiLabelButton(Rectangle bounds, const char *text)
 
     // NOTE: We force bounds.width to be all text
     float textWidth = (float)GetTextWidth(text);
-    if (bounds.width < textWidth) bounds.width = textWidth;
+    if ((bounds.width - 2*GuiGetStyle(LABEL, BORDER_WIDTH) - 2*GuiGetStyle(LABEL, TEXT_PADDING)) < textWidth) bounds.width = textWidth + 2*GuiGetStyle(LABEL, BORDER_WIDTH) + 2*GuiGetStyle(LABEL, TEXT_PADDING);
 
     // Update control
     //--------------------------------------------------------------------
@@ -4056,6 +4058,9 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             //---------------------------------------------------------------------------------
         }
     }
+#if defined(RAYGUI_DEBUG_TEXT_BOUNDS)
+    GuiDrawRectangle(bounds, 0, WHITE, Fade(RED, 0.4f))
+#endif
 }
 
 // Gui draw rectangle using default raygui plain style with borders
