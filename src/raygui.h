@@ -1775,7 +1775,7 @@ bool GuiLabelButton(Rectangle bounds, const char *text)
 
     // NOTE: We force bounds.width to be all text
     float textWidth = (float)GetTextWidth(text);
-    if ((bounds.width - 2*GuiGetStyle(LABEL, BORDER_WIDTH) - 2*GuiGetStyle(LABEL, TEXT_PADDING)) < textWidth) bounds.width = textWidth + 2*GuiGetStyle(LABEL, BORDER_WIDTH) + 2*GuiGetStyle(LABEL, TEXT_PADDING);
+    if ((bounds.width - 2*GuiGetStyle(LABEL, BORDER_WIDTH) - 2*GuiGetStyle(LABEL, TEXT_PADDING)) < textWidth) bounds.width = textWidth + 2*GuiGetStyle(LABEL, BORDER_WIDTH) + 2*GuiGetStyle(LABEL, TEXT_PADDING) + 2;
 
     // Update control
     //--------------------------------------------------------------------
@@ -3798,7 +3798,7 @@ static int GetTextWidth(const char *text)
     {
         if (text[0] == '#')
         {
-            for (int i = 1; (text[i] != '\0') && (i < 5); i++)
+            for (int i = 1; (i < 5) && (text[i] != '\0'); i++)
             {
                 if (text[i] == '#')
                 {
