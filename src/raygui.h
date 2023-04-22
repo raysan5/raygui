@@ -2333,7 +2333,8 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);
     GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 1);
 
-    pressed = GuiTextBox(bounds, text, bufferSize, editMode);   // TODO: Implement methods to calculate cursor position properly
+    // TODO: Implement methods to calculate cursor position properly
+    pressed = GuiTextBox(bounds, text, bufferSize, editMode);
 
     GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 0);
     GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
@@ -2396,7 +2397,6 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
 
     // Draw control
     //--------------------------------------------------------------------
-    // TODO: Set Spinner properties for ValueBox
     pressed = GuiValueBox(spinner, NULL, &tempValue, minValue, maxValue, editMode);
 
     // Draw value selector custom buttons
@@ -3289,9 +3289,6 @@ Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs)
 
     // Draw control
     //--------------------------------------------------------------------
-
-    // TODO: Draw background panel?
-
     switch (state)
     {
         case STATE_NORMAL:
@@ -3605,7 +3602,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_SPACING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
     GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, 4);
+    GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f));
     GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 4);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 24);
     GuiSetStyle(SPINNER, SPIN_BUTTON_SPACING, 2);
@@ -3857,10 +3854,10 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
 
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
+    // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
+    // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
     switch (control)
     {
-        //case TEXTBOX: break;    // TODO: Consider multi-line text?
-        //case VALUEBOX: break;   // NOTE: ValueBox text value always centered, text padding applies to label
         default:
         {
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
@@ -3868,9 +3865,6 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         }
         break;
     }
-
-    // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
-    // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
 
     return textBounds;
 }
@@ -3972,7 +3966,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             //---------------------------------------------------------------------------------
             Vector2 position = { bounds.x, bounds.y };
 
-            // TODO: We get text size after icon has been processed
+            // NOTE: We get text size after icon has been processed
             // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
             int textSizeX = GetTextWidth(lines[i]);
 
@@ -4054,7 +4048,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 }
             }
 
-            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f;    // TODO: GuiGetStyle(DEFAULT, TEXT_LINE_SPACING)?
+            // TODO: Allow users to set line spacing for text: GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, x)
+            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f;
             //---------------------------------------------------------------------------------
         }
     }
@@ -4114,7 +4109,7 @@ static const char **GuiTextSplit(const char *text, char delimiter, int *count, i
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
     // NOTE: Those definitions could be externally provided if required
 
-    // WARNING: HACK: TODO: Review!
+    // TODO: HACK: GuiTextSplit() - Review how textRows are returned to user
     // textRow is an externally provided array of integers that stores row number for every splitted string
 
     #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
