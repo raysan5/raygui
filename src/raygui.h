@@ -4054,7 +4054,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         }
     }
 #if defined(RAYGUI_DEBUG_TEXT_BOUNDS)
-    GuiDrawRectangle(bounds, 0, WHITE, Fade(RED, 0.4f))
+    GuiDrawRectangle(bounds, 0, WHITE, Fade(RED, 0.4f));
 #endif
 }
 
