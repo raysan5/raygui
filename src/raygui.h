@@ -2190,6 +2190,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             int textLength = (int)strlen(text);     // Get current text length
             int codepoint = GetCharPressed();       // Get Unicode codepoint
             if (multiline && IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
+
+            if (textBoxCursorIndex > textLength) textBoxCursorIndex = textLength;
             
             // Encode codepoint as UTF-8
             int codepointSize = 0;
@@ -3199,7 +3201,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     Rectangle textBounds = { 0 };
     if (message != NULL)
     {
-        int textSize = GetTextWidth(message);
+        int textSize = GetTextWidth(message) + 2;
 
         textBounds.x = bounds.x + bounds.width/2 - textSize/2;
         textBounds.y = bounds.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + messageInputHeight/4 - (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -3230,9 +3232,9 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 
     if (secretViewActive != NULL)
     {
-        static char stars[] = "****************";
+        //static char stars[17] = "****************";
         if (GuiTextBox(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x, textBoxBounds.y, textBoxBounds.width - 4 - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.height },
-            ((*secretViewActive == 1) || textEditMode)? text : stars, textMaxSize, textEditMode)) textEditMode = !textEditMode;
+            ((*secretViewActive == 1) || textEditMode)? text : "****************", textMaxSize, textEditMode)) textEditMode = !textEditMode;
 
         *secretViewActive = GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, (*secretViewActive == 1)? "#44#" : "#45#", *secretViewActive);
     }
@@ -3249,6 +3251,8 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
         if (GuiButton(buttonBounds, buttonsText[i])) btnIndex = i + 1;
         buttonBounds.x += (buttonBounds.width + RAYGUI_MESSAGEBOX_BUTTON_PADDING);
     }
+
+    if (btnIndex >= 0) textEditMode = false;
 
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, prevBtnTextAlignment);
     //--------------------------------------------------------------------
