@@ -2120,7 +2120,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
     #define AUTO_CURSOR_COOLDOWN  40        // Frames to wait for autocursor movement
-    #define AUTO_CURSOR_DELAY      3        // Frames delay for autocursor movement
+    #define AUTO_CURSOR_DELAY      1        // Frames delay for autocursor movement
     
     GuiState state = guiState;
     bool pressed = false;
