@@ -2229,8 +2229,12 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                     // Move backward text from cursor position
                     for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
 
-                    textBoxCursorIndex -= codepointSize;
-                    textLength -= codepointSize;
+                    // Prevent textBoxCursorIndex from decrementing past 0
+                    if(textBoxCursorIndex > 0)
+                    {
+                        textBoxCursorIndex -= codepointSize;
+                        textLength -= codepointSize;
+                    }
 
                     // Make sure text last character is EOL
                     text[textLength] = '\0';
