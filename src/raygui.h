@@ -1660,7 +1660,7 @@ Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, 
 #endif
             float wheelMove = GetMouseWheelMove();
 
-            // Horizontal scroll (Shift + Mouse wheel)
+            // Horizontal scroll ((Left Control or Right Shift) + Mouse wheel)
             if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_SHIFT))) scrollPos.x += wheelMove*20;
             else scrollPos.y += wheelMove*20; // Vertical scroll
         }
