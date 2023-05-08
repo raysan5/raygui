@@ -28,12 +28,12 @@
 ### basic controls
 ```
 Label       |  Button      |  LabelButton |  Toggle       |  ToggleGroup |  CheckBox
-ComboBox    |  DropdownBox |  TextBox     |  TextBoxMulti |  ValueBox    |  Spinner
+ComboBox    |  DropdownBox |  TextBox     |  ValueBox     |  Spinner
 Slider      |  SliderBar   |  ProgressBar |  StatusBar    |  DummyRec    |  Grid
 ```
 ### container/separator controls
 ```
-WindowBox   |  GroupBox    |  Line        |  Panel        |  ScrollPanel
+WindowBox   |  GroupBox    |  Line        |  Panel        |  ScrollPanel  | TabBar
 ```
 ### advanced controls
 ```
