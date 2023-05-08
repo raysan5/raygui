@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.5 - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.6-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -128,6 +128,13 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
+*       3.6 (xx-Jun-2023) ADDED: New icon: SAND_TIMER
+*                         ADDED: GuiLoadStyleFromMemory() (binary only)
+*                         REVIEWED: GuiScrollBar() horizontal movement key
+*                         REVIEWED: GuiTextBox() crash on cursor movement
+*                         REVIEWED: GuiLabelButton(), avoid text cut
+*                         REVIEWED: GuiTextInputBox(), password input
+*                         REVIEWED: Local GetCodepointNext(), aligned with raylib
 *       3.5 (20-Apr-2023) ADDED: GuiTabBar(), based on GuiToggle()
 *                         ADDED: Helper functions to split text in separate lines
 *                         ADDED: Multiple new icons, useful for code editing tools
@@ -3445,9 +3452,9 @@ void GuiLoadStyle(const char *fileName)
             {
                 unsigned char *fileData = (unsigned char *)RL_MALLOC(fileDataSize*sizeof(unsigned char));
                 fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
-                
+
                 GuiLoadStyleFromMemory(fileData, fileDataSize);
-                
+
                 RL_FREE(fileData);
             }
 
@@ -3695,7 +3702,7 @@ void GuiSetIconScale(int scale)
 static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
-    
+
     char signature[5] = { 0 };
     short version = 0;
     short reserved = 0;

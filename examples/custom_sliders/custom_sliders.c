@@ -67,7 +67,7 @@ int main()
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); 
+            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
             if (vSliderEditMode || vSliderBarEditMode) GuiLock();
             else GuiUnlock();
@@ -106,13 +106,13 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
 
     int sliderValue = (int)(((value - minValue)/(maxValue - minValue)) * (bounds.height - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
-    Rectangle slider = { 
-        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING), 
+    Rectangle slider = {
+        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
         bounds.y + bounds.height - sliderValue,
         bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING),
         0.0f,
     };
-       
+
     if (sliderHeight > 0)        // Slider
     {
         slider.y -= sliderHeight/2;
@@ -142,7 +142,7 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
                 if (sliderHeight > 0) slider.y = mousePoint.y - slider.height / 2;  // Slider
                 else if (sliderHeight == 0)                                          // SliderBar
                 {
-                    slider.y = mousePoint.y;          
+                    slider.y = mousePoint.y;
                     slider.height = bounds.y + bounds.height - slider.y - GuiGetStyle(SLIDER, BORDER_WIDTH);
                 }
             }
@@ -162,7 +162,7 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
     }
     else if (sliderHeight == 0)  // SliderBar
     {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH))) 
+        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH)))
         {
             slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
             slider.height = bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
@@ -224,10 +224,10 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
 
     int sliderValue = (int)(((tempValue - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
-    Rectangle slider = { 
-        bounds.x, 
-        bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),       
-        0, 
+    Rectangle slider = {
+        bounds.x,
+        bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
+        0,
         bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING)
     };
 
@@ -247,7 +247,7 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
     if ((state != STATE_DISABLED) && (editMode || !guiLocked))
     {
         Vector2 mousePoint = GetMousePosition();
-        
+
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
@@ -266,7 +266,7 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
 
             if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;  // Slider
             else if (sliderWidth == 0) slider.width = (float)sliderValue;          // SliderBar
-            
+
         }
         else if (CheckCollisionPointRec(mousePoint, bounds))
         {
@@ -295,9 +295,9 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
     GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
 
     // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) 
+    if ((state == STATE_NORMAL) || (state == STATE_PRESSED))
         GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) 
+    else if (state == STATE_FOCUSED)
         GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
 
     // Draw left/right text if provided
@@ -323,7 +323,7 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
         GuiDrawText(textRight, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     }
     //--------------------------------------------------------------------
-    
+
     *value = tempValue;
     return pressed;
 }
@@ -347,13 +347,13 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
 
     int sliderValue = (int)(((tempValue - minValue)/(maxValue - minValue)) * (bounds.height - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
 
-    Rectangle slider = { 
-        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING), 
+    Rectangle slider = {
+        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
         bounds.y + bounds.height - sliderValue,
         bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING),
         0.0f,
     };
-       
+
     if (sliderHeight > 0)        // Slider
     {
         slider.y -= sliderHeight/2;
@@ -369,7 +369,7 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
     if ((state != STATE_DISABLED) && (editMode || !guiLocked))
     {
         Vector2 mousePoint = GetMousePosition();
-        
+
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
@@ -387,11 +387,11 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
 
             float normalizedValue = (bounds.y + bounds.height - mousePoint.y - (float)(sliderHeight / 2)) / (bounds.height - (float)sliderHeight);
             tempValue = (maxValue - minValue) * normalizedValue + minValue;
-            
+
             if (sliderHeight > 0) slider.y = mousePoint.y - slider.height / 2;  // Slider
             else if (sliderHeight == 0)                                          // SliderBar
             {
-                slider.y = mousePoint.y;          
+                slider.y = mousePoint.y;
                 slider.height = bounds.y + bounds.height - slider.y - GuiGetStyle(SLIDER, BORDER_WIDTH);
             }
         }
@@ -413,7 +413,7 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
     }
     else if (sliderHeight == 0)  // SliderBar
     {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH))) 
+        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH)))
         {
             slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
             slider.height = bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
@@ -426,9 +426,9 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
     GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
 
     // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) 
+    if ((state == STATE_NORMAL) || (state == STATE_PRESSED))
         GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) 
+    else if (state == STATE_FOCUSED)
         GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
 
     // Draw top/bottom text if provided
@@ -454,7 +454,7 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
         GuiDrawText(textBottom, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
     }
     //--------------------------------------------------------------------
-    
+
     *value = tempValue;
     return pressed;
 }

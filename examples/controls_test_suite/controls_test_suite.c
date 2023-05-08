@@ -144,7 +144,7 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
-            if (dropDown000EditMode || 
+            if (dropDown000EditMode ||
                 dropDown001EditMode) GuiLock();
 
             // First GUI column
