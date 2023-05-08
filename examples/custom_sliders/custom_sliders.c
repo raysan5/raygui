@@ -29,11 +29,11 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
 
 bool GuiSliderOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode);
 bool GuiSliderBarOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode);
-float GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode);
+bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode);
 
 bool GuiVerticalSliderOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode);
 bool GuiVerticalSliderBarOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode);
-float GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode);
+bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -215,7 +215,7 @@ float GuiVerticalSliderBar(Rectangle bounds, const char *textTop, const char *te
     return GuiVerticalSliderPro(bounds, textTop, textBottom, value, minValue, maxValue, 0);
 }
 
-float GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode)
+bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode)
 {
     GuiState state = (GuiState)GuiGetState();
 
@@ -338,7 +338,7 @@ bool GuiSliderBarOwning(Rectangle bounds, const char *textLeft, const char *text
     return GuiSliderProOwning(bounds, textLeft, textRight, value, minValue, maxValue, 0, editMode);
 }
 
-float GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode)
+bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode)
 {
     GuiState state = (GuiState)GuiGetState();
 
