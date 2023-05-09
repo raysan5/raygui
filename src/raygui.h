@@ -236,9 +236,9 @@
 #define RAYGUI_H
 
 #define RAYGUI_VERSION_MAJOR 3
-#define RAYGUI_VERSION_MINOR 5
+#define RAYGUI_VERSION_MINOR 6
 #define RAYGUI_VERSION_PATCH 0
-#define RAYGUI_VERSION  "3.5"
+#define RAYGUI_VERSION  "3.6-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
@@ -2268,8 +2268,8 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                     // Move backward text from cursor position
                     for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
 
-                    // Prevent textBoxCursorIndex from decrementing past 0
-                    if(textBoxCursorIndex > 0)
+                    // Prevent cursor index from decrementing past 0
+                    if (textBoxCursorIndex > 0)
                     {
                         textBoxCursorIndex -= codepointSize;
                         textLength -= codepointSize;
