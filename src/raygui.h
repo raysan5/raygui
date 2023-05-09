@@ -2163,7 +2163,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     // Auto-cursor movement logic
     // NOTE: Cursor moves automatically when key down after some time
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_BACKSPACE)) autoCursorCooldownCounter++;
+    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_BACKSPACE) || IsKeyDown(KEY_DELETE)) autoCursorCooldownCounter++;
     else
     {
         autoCursorCooldownCounter = 0;      // GLOBAL: Cursor cooldown counter
@@ -2223,7 +2223,39 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                 text[textLength] = '\0';
             }
 
-            // Delete codepoint from text, at current cursor position
+            // Move cursor to start
+            if ((textLength > 0) && IsKeyPressed(KEY_HOME))
+            {
+                textBoxCursorIndex = 0;
+            }
+
+            // Move cursor to end
+            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_END))
+            {
+                textBoxCursorIndex = textLength;
+            }
+
+            // Delete codepoint from text, after current cursor position
+            if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (autoCursorCooldownCounter >= AUTO_CURSOR_COOLDOWN))))
+            {
+                autoCursorDelayCounter++;
+
+                if (IsKeyPressed(KEY_DELETE) || (autoCursorDelayCounter%AUTO_CURSOR_DELAY) == 0)      // Delay every movement some frames
+                {
+                    int nextCodepointSize = 0;
+                    GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
+
+                    // Move backward text from cursor position
+                    for (int i = textBoxCursorIndex; i < textLength; i++) text[i] = text[i + nextCodepointSize];
+
+                    textLength -= codepointSize;
+
+                    // Make sure text last character is EOL
+                    text[textLength] = '\0';
+                }
+            }
+            
+            // Delete codepoint from text, before current cursor position
             if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
