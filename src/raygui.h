@@ -903,6 +903,10 @@ typedef enum {
     #define RAYGUI_CLITERAL(name) (name)
 #endif
 
+#ifndef RECTANGLE_IS_EQUAL
+    #define RECTANGLE_IS_EQUAL(src,dst) ((src.x == dst.x) && (src.y == dst.y) && (src.width == dst.width) && (src.height == dst.height))
+#endif
+
 #if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
 
 // Embedded icons, no external file provided
@@ -1213,6 +1217,8 @@ static GuiState guiState = STATE_NORMAL;        // Gui global state, if !STATE_N
 
 static Font guiFont = { 0 };                    // Gui current font (WARNING: highly coupled to raylib)
 static bool guiLocked = false;                  // Gui lock state (no inputs processed)
+static bool guiSliderDragging = false;          // Gui slider drag state (no inputs processed except dragged slider)
+static Rectangle guiActiveSlider = { 0 };       // Stores dragged slider's bounding rectangle as an unique identifier
 static float guiAlpha = 1.0f;                   // Gui element transpacency on drawing
 
 static unsigned int guiIconScale = 1;           // Gui icon default scale (if icons enabled)
@@ -1750,7 +1756,7 @@ bool GuiButton(Rectangle bounds, const char *text)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1788,7 +1794,7 @@ bool GuiLabelButton(Rectangle bounds, const char *text)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1818,7 +1824,7 @@ bool GuiToggle(Rectangle bounds, const char *text, bool active)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1907,7 +1913,7 @@ bool GuiCheckBox(Rectangle bounds, const char *text, bool checked)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -1967,7 +1973,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int active)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked && (itemCount > 1))
+    if ((state != STATE_DISABLED) && !guiLocked && (itemCount > 1) && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2029,7 +2035,7 @@ bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMo
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && (editMode || !guiLocked) && (itemCount > 1))
+    if ((state != STATE_DISABLED) && (editMode || !guiLocked) && (itemCount > 1) && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2176,7 +2182,7 @@ bool GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2415,7 +2421,7 @@ bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, in
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2490,7 +2496,7 @@ bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, i
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2603,11 +2609,29 @@ float GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight
     {
         Vector2 mousePoint = GetMousePosition();
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (guiSliderDragging) // Keep dragging outside of bounds
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (RECTANGLE_IS_EQUAL(bounds, guiActiveSlider))
+                {
+                    // Get equivalent value and slider position from mousePoint.x
+                    value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
+                }
+            }
+            else
+            {
+                guiSliderDragging = false;
+                guiActiveSlider = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
+            }
+        }
+        else if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 state = STATE_PRESSED;
+                guiSliderDragging = true;
+                guiActiveSlider = bounds; // Store bounds as an identifier when dragging starts
 
                 // Get equivalent value and slider position from mousePoint.x
                 value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
@@ -2752,7 +2776,7 @@ void GuiDummyRec(Rectangle bounds, const char *text)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2812,7 +2836,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2950,7 +2974,7 @@ Color GuiColorPanel(Rectangle bounds, const char *text, Color color)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -3023,12 +3047,30 @@ float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha)
     {
         Vector2 mousePoint = GetMousePosition();
 
-        if (CheckCollisionPointRec(mousePoint, bounds) ||
-            CheckCollisionPointRec(mousePoint, selector))
+        if (guiSliderDragging) // Keep dragging outside of bounds
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (RECTANGLE_IS_EQUAL(bounds, guiActiveSlider))
+                {
+                    alpha = (mousePoint.x - bounds.x)/bounds.width;
+                    if (alpha <= 0.0f) alpha = 0.0f;
+                    if (alpha >= 1.0f) alpha = 1.0f;
+                }
+            }
+            else
+            {
+                guiSliderDragging = false;
+                guiActiveSlider = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
+            }
+        }
+        else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 state = STATE_PRESSED;
+                guiSliderDragging = true;
+                guiActiveSlider = bounds; // Store bounds as an identifier when dragging starts
 
                 alpha = (mousePoint.x - bounds.x)/bounds.width;
                 if (alpha <= 0.0f) alpha = 0.0f;
@@ -3088,12 +3130,30 @@ float GuiColorBarHue(Rectangle bounds, const char *text, float hue)
     {
         Vector2 mousePoint = GetMousePosition();
 
-        if (CheckCollisionPointRec(mousePoint, bounds) ||
-            CheckCollisionPointRec(mousePoint, selector))
+        if (guiSliderDragging) // Keep dragging outside of bounds
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (RECTANGLE_IS_EQUAL(bounds, guiActiveSlider))
+                {
+                    hue = (mousePoint.y - bounds.y)*360/bounds.height;
+                    if (hue <= 0.0f) hue = 0.0f;
+                    if (hue >= 359.0f) hue = 359.0f;
+                }
+            }
+            else
+            {
+                guiSliderDragging = false;
+                guiActiveSlider = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
+            }
+        }
+        else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 state = STATE_PRESSED;
+                guiSliderDragging = true;
+                guiActiveSlider = bounds; // Store bounds as an identifier when dragging starts
 
                 hue = (mousePoint.y - bounds.y)*360/bounds.height;
                 if (hue <= 0.0f) hue = 0.0f;
@@ -3325,7 +3385,7 @@ Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
     {
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
@@ -4167,7 +4227,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 // Draw tooltip using control bounds
 static void GuiTooltip(Rectangle controlRec)
 {
-    if (!guiLocked && guiTooltip && (guiTooltipPtr != NULL))
+    if (!guiLocked && guiTooltip && (guiTooltipPtr != NULL) && !guiSliderDragging)
     {
         Vector2 textSize = MeasureTextEx(GuiGetFont(), guiTooltipPtr, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
 
@@ -4435,9 +4495,27 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     {
         Vector2 mousePoint = GetMousePosition();
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (guiSliderDragging) // Keep dragging outside of bounds
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (RECTANGLE_IS_EQUAL(bounds, guiActiveSlider))
+                {
+                    if (isVertical) value += (GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
+                    else value += (GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
+                }
+            }
+            else
+            {
+                guiSliderDragging = false;
+                guiActiveSlider = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
+            }
+        }
+        else if (CheckCollisionPointRec(mousePoint, bounds))
         {
             state = STATE_FOCUSED;
+            guiSliderDragging = true;
+            guiActiveSlider = bounds; // Store bounds as an identifier when dragging starts
 
             // Handle mouse wheel
             int wheel = (int)GetMouseWheelMove();
