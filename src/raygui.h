@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.6-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v3.6 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -15,10 +15,12 @@
 *       - Multiple tools provided for raygui development
 *
 *   POSSIBLE IMPROVEMENTS:
-*       - Allow some controls to work in exclusive mode: GuiSlider(), GuiScrollBar()
+*       - Redesign functions that require a value as parameter to be returned, pass by reference
 *       - Better standalone mode API for easy plug of custom backends
+*       - Externalize required inputs in some way, allow user customization
 *
 *   LIMITATIONS:
+*       - No multi-line word-wraped text box support
 *       - No auto-layout mechanism provided, up to the user to define controls position and size
 *       - Standalone mode requires library modification and some user work to plug another backend
 *
@@ -128,13 +130,16 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       3.6 (xx-Jun-2023) ADDED: New icon: SAND_TIMER
+*       3.6 (10-May-2023) ADDED: New icon: SAND_TIMER
 *                         ADDED: GuiLoadStyleFromMemory() (binary only)
 *                         REVIEWED: GuiScrollBar() horizontal movement key
 *                         REVIEWED: GuiTextBox() crash on cursor movement
+*                         REVIEWED: GuiTextBox(), additional inputs support
 *                         REVIEWED: GuiLabelButton(), avoid text cut
 *                         REVIEWED: GuiTextInputBox(), password input
 *                         REVIEWED: Local GetCodepointNext(), aligned with raylib
+*                         REDESIGNED: GuiSlider*()/GuiScrollBar() to support out-of-bounds
+*
 *       3.5 (20-Apr-2023) ADDED: GuiTabBar(), based on GuiToggle()
 *                         ADDED: Helper functions to split text in separate lines
 *                         ADDED: Multiple new icons, useful for code editing tools
@@ -146,6 +151,7 @@
 *                         REVIEWED: Library header info, more info, better organized
 *                         REDESIGNED: GuiTextBox() to support cursor movement
 *                         REDESIGNED: GuiDrawText() to divide drawing by lines
+*
 *       3.2 (22-May-2022) RENAMED: Some enum values, for unification, avoiding prefixes
 *                         REMOVED: GuiScrollBar(), only internal
 *                         REDESIGNED: GuiPanel() to support text parameter
@@ -155,6 +161,7 @@
 *                         REDESIGNED: GuiColorBarAlpha() to support text parameter
 *                         REDESIGNED: GuiColorBarHue() to support text parameter
 *                         REDESIGNED: GuiTextInputBox() to support password
+*
 *       3.1 (12-Jan-2022) REVIEWED: Default style for consistency (aligned with rGuiLayout v2.5 tool)
 *                         REVIEWED: GuiLoadStyle() to support compressed font atlas image data and unload previous textures
 *                         REVIEWED: External icons usage logic
@@ -162,10 +169,12 @@
 *                         RENAMED: Multiple controls properties definitions to prepend RAYGUI_
 *                         RENAMED: RICON_ references to RAYGUI_ICON_ for library consistency
 *                         Projects updated and multiple tweaks
+*
 *       3.0 (04-Nov-2021) Integrated ricons data to avoid external file
 *                         REDESIGNED: GuiTextBoxMulti()
 *                         REMOVED: GuiImageButton*()
 *                         Multiple minor tweaks and bugs corrected
+*
 *       2.9 (17-Mar-2021) REMOVED: Tooltip API
 *       2.8 (03-May-2020) Centralized rectangles drawing to GuiDrawRectangle()
 *       2.7 (20-Feb-2020) ADDED: Possible tooltips API
@@ -175,6 +184,7 @@
 *                         Replaced property INNER_PADDING by TEXT_PADDING, renamed some properties
 *                         ADDED: 8 new custom styles ready to use
 *                         Multiple minor tweaks and bugs corrected
+*
 *       2.5 (28-May-2019) Implemented extended GuiTextBox(), GuiValueBox(), GuiSpinner()
 *       2.3 (29-Apr-2019) ADDED: rIcons auxiliar library and support for it, multiple controls reviewed
 *                         Refactor all controls drawing mechanism to use control state
@@ -238,7 +248,7 @@
 #define RAYGUI_VERSION_MAJOR 3
 #define RAYGUI_VERSION_MINOR 6
 #define RAYGUI_VERSION_PATCH 0
-#define RAYGUI_VERSION  "3.6-dev"
+#define RAYGUI_VERSION  "3.6"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
