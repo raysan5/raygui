@@ -310,7 +310,8 @@ void GuiFileDialog(GuiFileDialogState *state)
 # if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
         state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 8, state->position.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, fileInfo, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
 # else
-        state->filesListActive = GuiListViewEx((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, (const char**)dirFilesIcon, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
+        GuiListViewEx((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, 
+                      (const char**)dirFilesIcon, state->dirFiles.count, &state->filesListScrollIndex, &state->filesListActive, &state->itemFocused);
 # endif
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
@@ -372,7 +373,7 @@ void GuiFileDialog(GuiFileDialogState *state)
         }
 
         GuiLabel((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + state->windowBounds.height - 24 - 12, 68, 24 }, "File filter:");
-        state->fileTypeActive = GuiComboBox((Rectangle){ state->windowBounds.x + 72, state->windowBounds.y + state->windowBounds.height - 24 - 12, state->windowBounds.width - 184, 24 }, "All files", state->fileTypeActive);
+        GuiComboBox((Rectangle){ state->windowBounds.x + 72, state->windowBounds.y + state->windowBounds.height - 24 - 12, state->windowBounds.width - 184, 24 }, "All files", &state->fileTypeActive);
 
         state->SelectFilePressed = GuiButton((Rectangle){ state->windowBounds.x + state->windowBounds.width - 96 - 8, state->windowBounds.y + state->windowBounds.height - 68, 96, 24 }, "Select");
 
@@ -462,11 +463,12 @@ static void ReloadDirectoryFiles(GuiFileDialogState *state)
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
 // List View control for files info with extended parameters
-static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int active)
+static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int *active)
 {
+    int result = 0;
     GuiState state = guiState;
     int itemFocused = (focus == NULL)? -1 : *focus;
-    int itemSelected = active;
+    int itemSelected = *active;
 
     // Check if we need a scroll bar
     bool useScrollBar = false;
@@ -610,7 +612,8 @@ static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *f
     if (focus != NULL) *focus = itemFocused;
     if (scrollIndex != NULL) *scrollIndex = startIndex;
 
-    return itemSelected;
+    *active = itemSelected;
+    return result;
 }
 #endif // USE_CUSTOM_LISTVIEW_FILEINFO
 

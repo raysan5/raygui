@@ -61,6 +61,8 @@ int main()
     // Tweak the default raygui style a bit
     GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
     GuiSetStyle(LISTVIEW, SCROLLBAR_WIDTH, 12);
+
+    Vector2 gridMouseCell = { 0 };
     
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -74,7 +76,7 @@ int main()
         
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
         
-            GuiGrid((Rectangle){0, 0, screenWidth, screenHeight}, "Property List", 20.0f, 2); // Draw a fancy grid
+            GuiGrid((Rectangle){0, 0, screenWidth, screenHeight}, "Property List", 20.0f, 2, &gridMouseCell); // Draw a fancy grid
             
             GuiDMPropertyList((Rectangle){(screenWidth - 180)/2, (screenHeight - 280)/2, 180, 280}, prop, SIZEOF(prop), &focus, &scroll);
         

@@ -84,8 +84,8 @@ int main()
     bool multiTextBoxEditMode = false;
     Color colorPickerValue = RED;
 
-    int sliderValue = 50;
-    int sliderBarValue = 60;
+    float sliderValue = 50.0f;
+    float sliderBarValue = 60;
     float progressValue = 0.4f;
 
     bool forceSquaredChecked = false;
@@ -149,7 +149,7 @@ int main()
 
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            forceSquaredChecked = GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "FORCE CHECK!", forceSquaredChecked);
+            GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "FORCE CHECK!", &forceSquaredChecked);
 
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
             //GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
@@ -171,7 +171,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            comboBoxActive = GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", comboBoxActive);
+            GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", &comboBoxActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             GuiUnlock();
@@ -182,27 +182,30 @@ int main()
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
 
             // Second GUI column
-            listViewActive = GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, listViewActive);
-            listViewExActive = GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, &listViewExFocus, &listViewExScrollIndex, listViewExActive);
+            GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
+            GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
 
-            toggleGroupActive = GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", toggleGroupActive);
+            //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
+            GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
 
             // Third GUI column
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
-            colorPickerValue = GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, colorPickerValue);
+            GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, &colorPickerValue);
 
-            sliderValue = GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", (float)sliderValue), sliderValue, -50, 100);
-            sliderBarValue = GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), sliderBarValue, 0, 100);
-            progressValue = GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, NULL, progressValue, 0, 1);
+            GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
+            GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
+            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, NULL, &progressValue, 0, 1);
 
             // NOTE: View rectangle could be used to perform some scissor test
-            Rectangle view = GuiScrollPanel((Rectangle){ 560, 25, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll);
+            Rectangle view = { 0 };
+            GuiScrollPanel((Rectangle){ 560, 25, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll, &view);
 
-            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 2);
+            Vector2 mouseCell = { 0 };
+            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 2, &mouseCell);
 
             GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
 
-            alphaValue = GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, alphaValue);
+            GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
 
             if (showMessageBox)
             {

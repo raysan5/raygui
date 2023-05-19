@@ -543,7 +543,7 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
                         // draw property value
                         const bool locked = guiLocked;
                         GuiLock(); // lock the checkbox since we changed the value manually
-                        GuiCheckBox((Rectangle){propBounds.x+propBounds.width/2, propBounds.y + height/4, height/2, height/2}, props[p].value.vbool ? "Yes" : "No", props[p].value.vbool);
+                        GuiCheckBox((Rectangle){propBounds.x+propBounds.width/2, propBounds.y + height/4, height/2, height/2}, props[p].value.vbool? "Yes" : "No", &props[p].value.vbool);
                         if(!locked) GuiUnlock(); // only unlock when needed
                     } break;
                     
@@ -584,8 +584,8 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
                         // draw property name
                         GuiDrawText(props[p].name, (Rectangle){propBounds.x + PROPERTY_PADDING, propBounds.y, propBounds.width/2-PROPERTY_PADDING, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)}, TEXT_ALIGN_LEFT, textColor);
                         // draw property value
-                        props[p].value.vselect.active = GuiComboBox((Rectangle){propBounds.x+propBounds.width/2, propBounds.y + 1, propBounds.width/2, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) - 2}, 
-                                props[p].value.vselect.val, props[p].value.vselect.active);
+                        GuiComboBox((Rectangle){propBounds.x+propBounds.width/2, propBounds.y + 1, propBounds.width/2, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) - 2}, 
+                                props[p].value.vselect.val, &props[p].value.vselect.active);
                     } break;
                     
                     case GUI_PROP_VECTOR2: case GUI_PROP_VECTOR3: case GUI_PROP_VECTOR4: {
