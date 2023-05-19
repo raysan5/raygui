@@ -4513,8 +4513,8 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
-                    if (isVertical) value += (GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
-                    else value += (GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
+                    if (isVertical) value += (int)(GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
+                    else value += (int)(GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
                 }
             }
             else
@@ -4550,8 +4550,8 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             }
             else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
-                if (isVertical) value += (GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
-                else value += (GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
+                if (isVertical) value += (int)(GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
+                else value += (int)(GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
             }
 
             // Keyboard control on mouse hover scrollbar
