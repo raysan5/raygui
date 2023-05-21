@@ -59,26 +59,26 @@
 //----------------------------------------------------------------------------------
 
 typedef struct {
-    Vector2 position = (Vector2) {0,0}; // In normalized space [0.f, 1.f]
-    Vector2 tangents = (Vector2) {0,0}; // The derivatives (left/right) of the 1D curve
+    Vector2 position; // In normalized space [0.f, 1.f]
+    Vector2 tangents; // The derivatives (left/right) of the 1D curve
     // Let the curve editor calculate tangents to linearize part of the curve
-    bool leftLinear = false;
-    bool rightLinear = false;
+    bool leftLinear;
+    bool rightLinear;
 } GuiCurveEditPoint;
 
 typedef struct {
-    float start = 0; // Value at y = 0
-    float end = 1; // Value at y = 1
-    // Always valid (unless you manualy change state's point array)
-    int selectedIndex = -1; // -1 before Init
+    float start; // Value at y = 0
+    float end; // Value at y = 1
+    // Always valid (unless you manualy change state's point array). Make sure to set it to -1 before init
+    int selectedIndex;
     // Unsorted array with at least one point (constant curve)
     GuiCurveEditPoint points[GUI_CURVE_EDIT_MAX_POINTS];
-    int numPoints = 0;
+    int numPoints;
 
     // private part
-    bool editLeftTangent = false;
-    bool editRightTangent = false;
-    Vector2 mouseOffset = (Vector2) {0,0};
+    bool editLeftTangent;
+    bool editRightTangent;
+    Vector2 mouseOffset;
 } GuiCurveEditState;
 
 
@@ -284,7 +284,7 @@ void GuiCurveEdit(GuiCurveEditState *state, Rectangle bounds){
         }
     } 
     // Select a point
-    else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hoveredPointIndex != -1 CheckCollisionPointRec(mouse, bounds)){
+    else if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hoveredPointIndex != -1 && CheckCollisionPointRec(mouse, bounds)){
         state->selectedIndex = hoveredPointIndex;
         const GuiCurveEditPoint* p = &state->points[state->selectedIndex];
         const Vector2 screenPos = (Vector2){p->position.x*innerBounds.width+innerBounds.x, innerBounds.y+innerBounds.height-p->position.y*innerBounds.height};
