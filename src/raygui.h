@@ -139,8 +139,13 @@
 *                         REDESIGNED: GuiProgressBar(), get parameters by reference and return result value
 *                         REDESIGNED: GuiListView(), get parameters by reference and return result value
 *                         REDESIGNED: GuiColorPicker(), get parameters by reference and return result value
+*                         REDESIGNED: GuiColorPanel(), get parameters by reference and return result value
+*                         REDESIGNED: GuiColorBarAlpha(), get parameters by reference and return result value
+*                         REDESIGNED: GuiColorBarHue(), get parameters by reference and return result value
 *                         REDESIGNED: GuiGrid(), get parameters by reference and return result value
 *                         REDESIGNED: GuiGrid(), added extra parameter
+*                         REDESIGNED: GuiListViewEx(), change parameters order
+*                         REDESIGNED: All controls return result as int value
 *
 *       3.6 (10-May-2023) ADDED: New icon: SAND_TIMER
 *                         ADDED: GuiLoadStyleFromMemory() (binary only)
