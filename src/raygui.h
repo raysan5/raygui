@@ -2880,7 +2880,7 @@ int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int *activ
 
     if (text != NULL) items = GuiTextSplit(text, ';', &itemCount, NULL);
 
-    result = GuiListViewEx(bounds, items, itemCount, NULL, scrollIndex, active);
+    result = GuiListViewEx(bounds, items, itemCount, scrollIndex, active, NULL);
 
     return result;
 }
