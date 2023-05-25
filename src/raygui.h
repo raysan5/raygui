@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v3.6 - A simple and easy-to-use immediate-mode gui library
+*   raygui v4.0-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -130,6 +130,18 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
+*       4.0 (xx-Jun-2023) REDESIGNED: GuiScrollPanel(), get parameters by reference and return result value
+*                         REDESIGNED: GuiToggleGroup(), get parameters by reference and return result value
+*                         REDESIGNED: GuiComboBox(), get parameters by reference and return result value
+*                         REDESIGNED: GuiCheckBox(), get parameters by reference and return result value
+*                         REDESIGNED: GuiSlider(), get parameters by reference and return result value
+*                         REDESIGNED: GuiSliderBar(), get parameters by reference and return result value
+*                         REDESIGNED: GuiProgressBar(), get parameters by reference and return result value
+*                         REDESIGNED: GuiListView(), get parameters by reference and return result value
+*                         REDESIGNED: GuiColorPicker(), get parameters by reference and return result value
+*                         REDESIGNED: GuiGrid(), get parameters by reference and return result value
+*                         REDESIGNED: GuiGrid(), added extra parameter
+*
 *       3.6 (10-May-2023) ADDED: New icon: SAND_TIMER
 *                         ADDED: GuiLoadStyleFromMemory() (binary only)
 *                         REVIEWED: GuiScrollBar() horizontal movement key
@@ -245,10 +257,10 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION_MAJOR 3
-#define RAYGUI_VERSION_MINOR 6
+#define RAYGUI_VERSION_MAJOR 4
+#define RAYGUI_VERSION_MINOR 0
 #define RAYGUI_VERSION_PATCH 0
-#define RAYGUI_VERSION  "3.6"
+#define RAYGUI_VERSION  "4.0-dev"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
