@@ -1607,6 +1607,8 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
     offsetX = (*active + 2)*RAYGUI_TABBAR_ITEM_WIDTH - GetScreenWidth();
     if (offsetX < 0) offsetX = 0;
 
+    bool toggle = false;    // Required for individual toggles
+
     // Draw control
     //--------------------------------------------------------------------
     for (int i = 0; i < count; i++)
@@ -1620,8 +1622,19 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
             int textPadding = GuiGetStyle(TOGGLE, TEXT_PADDING);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-            if (i == *active) GuiToggle(tabBounds, GuiIconText(12, text[i]), true);
-            else if (GuiToggle(tabBounds, GuiIconText(12, text[i]), false) == true) *active = i;
+
+            if (i == (*active))
+            {
+                toggle = true;
+                GuiToggle(tabBounds, GuiIconText(12, text[i]), &toggle);
+            }
+            else
+            {
+                toggle = false;
+                GuiToggle(tabBounds, GuiIconText(12, text[i]), &toggle);
+                if (toggle) *active = i;
+            }
+
             GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
 
