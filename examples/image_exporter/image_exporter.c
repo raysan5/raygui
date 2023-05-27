@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     float imageScale = 1.0f;
     Rectangle imageRec = { 0 };
     
-    bool btnExport = false;
+    bool btnExportPressed = false;
 
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             UnloadDroppedFiles(droppedFiles);
         }
     
-        if (btnExport)
+        if (btnExportPressed)
         {
             if (imageLoaded)
             {
@@ -163,17 +163,17 @@ int main(int argc, char *argv[])
                 windowBoxActive = !GuiWindowBox((Rectangle){ windowBoxRec.x, windowBoxRec.y, 220, 190 }, "Image Export Options");
             
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 35, 60, 25 }, "File format:");
-                fileFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 }, TextJoin(fileFormatTextList, 3, ";"), fileFormatActive); 
+                GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 35, 130, 25 }, TextJoin(fileFormatTextList, 3, ";"), &fileFormatActive); 
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 70, 63, 25 }, "Pixel format:");
-                pixelFormatActive = GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 70, 130, 25 }, TextJoin(pixelFormatTextList, 7, ";"), pixelFormatActive); 
+                GuiComboBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 70, 130, 25 }, TextJoin(pixelFormatTextList, 7, ";"), &pixelFormatActive); 
                 GuiLabel((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 105, 50, 25 }, "File name:");
                 if (GuiTextBox((Rectangle){ windowBoxRec.x + 80, windowBoxRec.y + 105, 130, 25 }, fileName, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
 
-                btnExport = GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 145, 200, 30 }, "Export Image");
+                btnExportPressed = GuiButton((Rectangle){ windowBoxRec.x + 10, windowBoxRec.y + 145, 200, 30 }, "Export Image");
             }
-            else btnExport = false;
+            else btnExportPressed = false;
             
-            if (btnExport) DrawText("Image exported!", 20, screenHeight - 20, 20, RED);
+            if (btnExportPressed) DrawText("Image exported!", 20, screenHeight - 20, 20, RED);
             //-----------------------------------------------------------------------------
 
         EndDrawing();
