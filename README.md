@@ -10,9 +10,7 @@
 
 <br>
 
-**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch.**
-
-**Make sure to use the appropiate versions.**
+**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch. Make sure to use the appropiate versions.**
 
 ## features
 
