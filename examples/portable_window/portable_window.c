@@ -55,17 +55,17 @@ int main()
         
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !dragWindow)
         {
-            if (CheckCollisionPointRec(mousePosition, (Rectangle){ 0, 0, screenWidth, 20 }))
+            if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){ 0, 0, screenWidth, 20 }))
             {
                 dragWindow = true;
-                panOffset = mousePosition;
+                panOffset = GetMousePosition();
             }
         }
 
         if (dragWindow)
         {            
-            windowPosition.x += (mousePosition.x - panOffset.x);
-            windowPosition.y += (mousePosition.y - panOffset.y);
+            windowPosition.x += (GetMousePosition().x - panOffset.x);
+            windowPosition.y += (GetMousePosition().y - panOffset.y);
 
             SetWindowPosition((int)windowPosition.x, (int)windowPosition.y);
             
