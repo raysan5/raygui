@@ -67,7 +67,7 @@ int main()
             windowPosition.x += (mousePosition.x - panOffset.x);
             windowPosition.y += (mousePosition.y - panOffset.y);
 
-            SetWindowPosition(windowPosition.x, windowPosition.y);
+            SetWindowPosition((int)windowPosition.x, (int)windowPosition.y);
             
             if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) dragWindow = false;
         }
