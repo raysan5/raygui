@@ -2394,7 +2394,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
                 if (IsKeyPressed(KEY_LEFT) || (autoCursorDelayCounter%RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY) == 0)      // Delay every movement some frames
                 {
-                    unsigned int prevCodepointSize = 0;
+                    int prevCodepointSize = 0;
                     GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
 
                     if (textBoxCursorIndex >= prevCodepointSize) textBoxCursorIndex -= prevCodepointSize;
