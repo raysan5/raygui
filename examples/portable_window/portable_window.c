@@ -64,8 +64,8 @@ int main()
 
         if (dragWindow)
         {            
-            windowPosition.x = (GetWindowPosition().x + mousePosition.x - panOffset.x);
-            windowPosition.y = (GetWindowPosition().y + mousePosition.y - panOffset.y);
+            windowPosition.x += (mousePosition.x - panOffset.x);
+            windowPosition.y += (mousePosition.y - panOffset.y);
 
             SetWindowPosition((int)windowPosition.x, (int)windowPosition.y);
             
