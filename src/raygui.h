@@ -1318,7 +1318,6 @@ static int GetCharPressed(void);         // -- GuiTextBox(), GuiValueBox()
 // Drawing required functions
 //-------------------------------------------------------------------------------
 static void DrawRectangle(int x, int y, int width, int height, Color color);        // -- GuiDrawRectangle(), GuiDrawIcon()
-
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4); // -- GuiColorPicker()
 //-------------------------------------------------------------------------------
 
