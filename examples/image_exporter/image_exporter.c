@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     const char *pixelFormatTextList[7] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
 
     bool textBoxEditMode = false;
-    char fileName[32] = "untitled";
+    char fileName[64] = "untitled";
     //--------------------------------------------------------------------------------------
     
     Image image = { 0 };
