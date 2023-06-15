@@ -456,7 +456,7 @@ typedef enum {
 } GuiControlProperty;
 
 // Gui extended properties depend on control
-// NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
+// NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
 //----------------------------------------------------------------------------------
 
 // DEFAULT extended properties
@@ -466,6 +466,7 @@ typedef enum {
     TEXT_SPACING,               // Text spacing between glyphs
     LINE_COLOR,                 // Line control color
     BACKGROUND_COLOR,           // Background color
+    TEXT_LINE_SPACING           // Text spacing between lines
 } GuiDefaultProperty;
 
 // Label
@@ -1417,6 +1418,7 @@ void GuiSetFont(Font font)
 
         guiFont = font;
         GuiSetStyle(DEFAULT, TEXT_SIZE, font.baseSize);
+        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, (int)(1.5f*font.baseSize));
     }
 }
 
@@ -3740,6 +3742,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
     GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 16);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
@@ -4334,8 +4337,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 }
             }
 
-            // TODO: Allow users to set line spacing for text: GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, x)
-            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f;
+            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
             //---------------------------------------------------------------------------------
         }
     }
