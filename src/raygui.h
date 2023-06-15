@@ -2718,6 +2718,8 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
+                    state = STATE_PRESSED;
+
                     // Get equivalent value and slider position from mousePoint.x
                     *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
                 }
@@ -2766,8 +2768,9 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
 
     // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
+    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
     else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
+    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_PRESSED)), guiAlpha));
 
     // Draw left/right text if provided
     if (textLeft != NULL)
@@ -3174,6 +3177,8 @@ int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
+                    state = STATE_PRESSED;
+
                     *alpha = (mousePoint.x - bounds.x)/bounds.width;
                     if (*alpha <= 0.0f) *alpha = 0.0f;
                     if (*alpha >= 1.0f) *alpha = 1.0f;
@@ -3258,6 +3263,8 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
+                    state = STATE_PRESSED;
+
                     *hue = (mousePoint.y - bounds.y)*360/bounds.height;
                     if (*hue <= 0.0f) *hue = 0.0f;
                     if (*hue >= 359.0f) *hue = 359.0f;
@@ -4633,6 +4640,8 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
+                    state = STATE_PRESSED;
+
                     if (isVertical) value += (int)(GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
                     else value += (int)(GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
                 }
@@ -4646,8 +4655,6 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
         else if (CheckCollisionPointRec(mousePoint, bounds))
         {
             state = STATE_FOCUSED;
-            guiSliderDragging = true;
-            guiSliderActive = bounds; // Store bounds as an identifier when dragging starts
 
             // Handle mouse wheel
             int wheel = (int)GetMouseWheelMove();
@@ -4656,6 +4663,9 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             // Handle mouse button down
             if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
+                guiSliderDragging = true;
+                guiSliderActive = bounds; // Store bounds as an identifier when dragging starts
+
                 // Check arrows click
                 if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
                 else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
