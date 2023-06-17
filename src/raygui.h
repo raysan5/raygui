@@ -2361,7 +2361,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                     text[textLength] = '\0';
                 }
             }
-            
+
             // Delete codepoint from text, before current cursor position
             if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
@@ -3349,9 +3349,9 @@ int GuiColorPicker(Rectangle bounds, const char *text, Color *color)
     //Rectangle boundsAlpha = { bounds.x, bounds.y + bounds.height + GuiGetStyle(COLORPICKER, BARS_PADDING), bounds.width, GuiGetStyle(COLORPICKER, BARS_THICK) };
 
     Vector3 hsv = ConvertRGBtoHSV(RAYGUI_CLITERAL(Vector3){ (*color).r/255.0f, (*color).g/255.0f, (*color).b/255.0f });
-    
+
     GuiColorBarHue(boundsHue, NULL, &hsv.x);
-    
+
     //color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB(hsv);
 
