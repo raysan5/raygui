@@ -37,8 +37,7 @@
 //------------------------------------------------------------------------------------
 // Helper function
 //------------------------------------------------------------------------------------
-
-void LoadDefaults(GuiCurveEditState curves[]);
+void LoadCurveDefaults(GuiCurveEditState curves[]);
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -50,7 +49,7 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 540;
 
-    InitWindow(screenWidth, screenHeight, "Animation curves");
+    InitWindow(screenWidth, screenHeight, "raygui - animation curves");
     SetTargetFPS(60);
 
     // Gui style
@@ -62,18 +61,18 @@ int main()
     const float margin = 8;
 
     // Gui states
-    Vector2 scrollOffset = (Vector2) {0,0};
-    Rectangle contentRect = (Rectangle) {0,0,0,0};
+    Vector2 scrollOffset = (Vector2){ 0, 0 };
+    Rectangle contentRect = (Rectangle){ 0, 0, 0, 0 };
     bool moveSlider = false;
-    bool sectionActive[5] = {false};
+    bool sectionActive[5] = { 0 };
     sectionActive[0] = true;
-    const char* sectionNames[5] = {"X Position", "Y Position", "Width", "Height", "Rotation"};
-    bool editValueBox[5][4] = {false};
-    char* valTextBox[5][4][20];
+    const char *sectionNames[5] = { "X Position", "Y Position", "Width", "Height", "Rotation" };
+    bool editValueBox[5][4] = { 0 };
+    char *valTextBox[5][4][20] = { 0 };
     bool playAnimation = true;
     bool showHelp = true;
 
-    Rectangle settingsRect = (Rectangle) {screenWidth-screenWidth/3, 0, screenWidth/3, screenHeight};
+    Rectangle settingsRect = (Rectangle){ screenWidth - screenWidth/3, 0, screenWidth/3, screenHeight };
     
     // Animation curves
     // 0 -> Ball X position
@@ -81,13 +80,14 @@ int main()
     // 2 -> Ball Width
     // 3 -> Ball Height
     // 4 -> Ball rotation
-    GuiCurveEditState curves[5];
-    LoadDefaults(curves);
+    GuiCurveEditState curves[5] = { 0 };
+    LoadCurveDefaults(curves);
     
     // Animation time
-    float time = 0.f;
-    float animationTime = 4.f;
+    float time = 0.0f;
+    float animationTime = 4.0f;
 
+    //SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -95,22 +95,20 @@ int main()
     {
         // Update
         //----------------------------------------------------------------------------------
-
-        if(playAnimation)
-            time += GetFrameTime();
+        if (playAnimation) time += GetFrameTime();
 
         // Reset timer
-        if(time > animationTime)
-            time = 0;
+        if (time > animationTime) time = 0;
 
         // Ball animation
-        const float t = time / animationTime;
-        Vector2 ballPos = (Vector2) {EvalGuiCurve(&curves[0], t), EvalGuiCurve(&curves[1], t)};
-        Vector2 ballSize = (Vector2) {EvalGuiCurve(&curves[2], t), EvalGuiCurve(&curves[3], t)};
+        const float t = time/animationTime;
+        Vector2 ballPos = (Vector2){ EvalGuiCurve(&curves[0], t), EvalGuiCurve(&curves[1], t) };
+        Vector2 ballSize = (Vector2){ EvalGuiCurve(&curves[2], t), EvalGuiCurve(&curves[3], t) };
         float ballRotation = EvalGuiCurve(&curves[4], t);
 
         // Update style
-        if(visualStyleActive != prevVisualStyleActive){
+        if (visualStyleActive != prevVisualStyleActive)
+        {
             switch (visualStyleActive)
             {
                 case 0: GuiLoadStyleDefault(); break;
@@ -122,26 +120,25 @@ int main()
                 case 6: GuiLoadStyleTerminal(); break;
                 default: break;
             }
+
             fontSize = GuiGetStyle(DEFAULT, TEXT_SIZE);
             prevVisualStyleActive = visualStyleActive;
         }
 
         // Update settings panel rect
-        Rectangle sliderRect = (Rectangle) {settingsRect.x-4, settingsRect.y, 4, settingsRect.height};
-        if(CheckCollisionPointRec(GetMousePosition(), sliderRect) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-            moveSlider = true;
-        } 
-        if(IsMouseButtonUp(MOUSE_BUTTON_LEFT)){
-            moveSlider = false;
-        }
-        if(moveSlider){
+        Rectangle sliderRect = (Rectangle){ settingsRect.x - 4, settingsRect.y, 4, settingsRect.height };
+        if (CheckCollisionPointRec(GetMousePosition(), sliderRect) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) moveSlider = true;
+        if (IsMouseButtonUp(MOUSE_BUTTON_LEFT)) moveSlider = false;
+
+        if (moveSlider)
+        {
             settingsRect.x = GetMouseX();
+
             // Minimum-Maximum size
-            if(settingsRect.x > screenWidth-4)
-                settingsRect.x = screenWidth-4;
-            else if(settingsRect.x < 4) // width of the slider
-                settingsRect.x = 4;
-            settingsRect.width = screenWidth-settingsRect.x;
+            if (settingsRect.x > (screenWidth - 4)) settingsRect.x = screenWidth - 4;
+            else if (settingsRect.x < 4) settingsRect.x = 4;
+
+            settingsRect.width = screenWidth - settingsRect.x;
         }
 
 
@@ -154,33 +151,30 @@ int main()
 
             // Scene
             //----------------------------------------------------------------------------------
+            DrawRectangle(curves[0].start, curves[1].end, curves[0].end-curves[0].start, curves[1].start-curves[1].end, BLUE);  // Sky
 
-            // sky
-            DrawRectangle(curves[0].start, curves[1].end, curves[0].end-curves[0].start, curves[1].start-curves[1].end, BLUE);
-
-            // ground
-            DrawRectangle(curves[0].start, curves[1].start, curves[0].end-curves[0].start, 32, DARKGREEN);
+            DrawRectangle(curves[0].start, curves[1].start, curves[0].end-curves[0].start, 32, DARKGREEN);  // Ground
 
             BeginScissorMode(curves[0].start, curves[1].end, curves[0].end-curves[0].start, curves[1].start-curves[1].end+32);
-                // Draw ball
-                DrawRectanglePro((Rectangle){ballPos.x, ballPos.y, ballSize.x, ballSize.y}, (Vector2){ballSize.x/2.f,ballSize.y/2.f}, ballRotation, PINK);
-                // Local origin
+
+                DrawRectanglePro((Rectangle){ballPos.x, ballPos.y, ballSize.x, ballSize.y}, (Vector2){ballSize.x/2.f,ballSize.y/2.f}, ballRotation, PINK);  // Ball
+
                 DrawLine(ballPos.x, ballPos.y, ballPos.x + cosf(ballRotation*DEG2RAD)*ballSize.x, ballPos.y +sinf(ballRotation*DEG2RAD)*ballSize.y, RED);
                 DrawLine(ballPos.x, ballPos.y, ballPos.x + cosf((ballRotation+90)*DEG2RAD)*ballSize.x, ballPos.y +sinf((ballRotation+90)*DEG2RAD)*ballSize.y, GREEN);
+
             EndScissorMode();
 
             // Bounds
             DrawRectangleLines(curves[0].start, curves[1].end, curves[0].end-curves[0].start, curves[1].start-curves[1].end+32, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL)));
-
+            //---------------------------------------------------------------------------------- 
+            
             // GUI
             //----------------------------------------------------------------------------------
-            
-			// Help window
-			if(showHelp){
-                if(GuiWindowBox((Rectangle) {margin, margin, settingsRect.x-2*margin, curves[1].end-2*margin}, "help")){
-                    showHelp = false;
-                }
-                Rectangle helpTextRect = (Rectangle) {2*margin, 2*margin+RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.x-4-4*margin, 0};
+			if (showHelp)
+            {
+                if (GuiWindowBox((Rectangle) {margin, margin, settingsRect.x-2*margin, curves[1].end-2*margin}, "help")) showHelp = false;
+
+                Rectangle helpTextRect = (Rectangle) { 2*margin, 2*margin+RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.x - 4 - 4*margin, 0 };
                 GuiLabel((Rectangle) {helpTextRect.x, helpTextRect.y+helpTextRect.height, helpTextRect.width, fontSize}, "Curve widget controls:");
                 helpTextRect.height += fontSize+margin;
                 GuiLabel((Rectangle) {helpTextRect.x, helpTextRect.y+helpTextRect.height, helpTextRect.width, fontSize}, "- Left click to move/add point or move tangents");
@@ -189,189 +183,194 @@ int main()
                 helpTextRect.height += fontSize+margin/2;
                 GuiLabel((Rectangle) {helpTextRect.x, helpTextRect.y+helpTextRect.height, helpTextRect.width, fontSize}, "- Right click to remove a point");
                 helpTextRect.height += fontSize+margin/2;
-                DrawRectangleGradientV(margin, margin+curves[1].end-2*margin, settingsRect.x-2*margin, 12, (Color){0,0,0,100}, BLANK);
+                DrawRectangleGradientV(margin, margin+curves[1].end - 2*margin, settingsRect.x - 2*margin, 12, (Color){ 0,0,0,100 }, BLANK);
             } 
 
             // Settings panel
-            GuiScrollPanel(settingsRect, "Settings", contentRect, &scrollOffset);
-            // Clip rendering
+            GuiScrollPanel(settingsRect, "Settings", contentRect, &scrollOffset, NULL);
+
             BeginScissorMode(settingsRect.x, settingsRect.y+RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.width, settingsRect.height);
+
             // Rebuild the content Rect
-            contentRect = (Rectangle) {settingsRect.x+margin, RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT+margin, settingsRect.width-2*margin-GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), 0};
+            contentRect = (Rectangle){ settingsRect.x + margin, RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT+margin, settingsRect.width - 2*margin - GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH), 0 };
 
             // Help button
-            if(GuiButton((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize}, GuiIconText(showHelp ? ICON_EYE_ON : ICON_EYE_OFF, "Curve controls help"))){
-                showHelp = !showHelp;
-            }
+            if (GuiButton((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, 1.5*fontSize }, GuiIconText(showHelp? ICON_EYE_ON : ICON_EYE_OFF, "Curve controls help"))) showHelp = !showHelp;
+
             contentRect.height += 1.5*fontSize + margin;
 
             // Animation Time slider
-            animationTime = GuiSlider((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2, fontSize}, NULL, TextFormat("Animation Time: %.2fs", animationTime), animationTime, 1, 8);
+            GuiSlider((Rectangle){ contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2, fontSize }, NULL, TextFormat("Animation Time: %.2fs", animationTime), &animationTime, 1, 8);
             contentRect.height += fontSize + margin;
 
             // Load default curves
-            if(GuiButton((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize}, "Load default")){
-                LoadDefaults(curves);
-                animationTime = 4.f;
-                time = 0.f;
+            if (GuiButton((Rectangle){ contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize }, "Load default"))
+            {
+                LoadCurveDefaults(curves);
+                animationTime = 4.0f;
+                time = 0.0f;
             }
-            contentRect.height += 1.5*fontSize + margin;
+            contentRect.height += 1.5f*fontSize + margin;
 
             // Styles
-            GuiLabel((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, fontSize}, "Style:");
+            GuiLabel((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, fontSize }, "Style:");
             contentRect.height += fontSize;
-            visualStyleActive = GuiComboBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize}, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", visualStyleActive);
-            contentRect.height += 1.5*fontSize + margin;
+            GuiComboBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", &visualStyleActive);
+            contentRect.height += 1.5f*fontSize + margin;
 
             // Draw curves with their controls 
             //----------------------------------------------------------------------------------
-            for(int i=0; i < 5; i++){
+            for (int i = 0; i < 5; i++)
+            {
                 // Collapsing section
-                Rectangle headerRect = (Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, 1.5*fontSize};
+                Rectangle headerRect = (Rectangle){ contentRect.x, contentRect.y + contentRect.height+scrollOffset.y, contentRect.width, 1.5f*fontSize };
                 GuiStatusBar(headerRect, NULL);
-                if(GuiLabelButton(headerRect, GuiIconText(sectionActive[i] ? ICON_ARROW_DOWN_FILL : ICON_ARROW_RIGHT_FILL, sectionNames[i]))){
-                    sectionActive[i] = !sectionActive[i];
-                }
-                contentRect.height += 1.5*fontSize + margin;
+
+                if (GuiLabelButton(headerRect, GuiIconText(sectionActive[i] ? ICON_ARROW_DOWN_FILL : ICON_ARROW_RIGHT_FILL, sectionNames[i]))) sectionActive[i] = !sectionActive[i];
+
+                contentRect.height += 1.5f*fontSize + margin;
                 
                 // Skip this section
-                if(!sectionActive[i])
-                    continue;
+                if (!sectionActive[i]) continue;
 
                 // Draw curve control
-                Rectangle curveRect = (Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, fontSize*12};
+                Rectangle curveRect = (Rectangle){ contentRect.x, contentRect.y+contentRect.height + scrollOffset.y, contentRect.width, fontSize*12 };
                 EndScissorMode(); // Stop clipping from setting rect
+
                 // Curves can leaks from control boundary... scissor it !
                 BeginScissorMode(curveRect.x, curveRect.y, curveRect.width, curveRect.height);
                     GuiCurveEdit(&curves[i],curveRect);
                 EndScissorMode();
+
                 // Resume clipping from setting rect
-                BeginScissorMode(settingsRect.x, settingsRect.y+RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.width, settingsRect.height);
+                BeginScissorMode(settingsRect.x, settingsRect.y + RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT, settingsRect.width, settingsRect.height);
                 contentRect.height += fontSize*12 + margin;
                 
                 // Draw selected point controls
-                GuiCurveEditPoint* p = &(curves[i].points[curves[i].selectedIndex]);
-                p->leftLinear =  GuiCheckBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, 1.5*fontSize, 1.5*fontSize}, "Left Linear", p->leftLinear);
-                p->rightLinear =  GuiCheckBox((Rectangle){contentRect.x+contentRect.width/2, contentRect.y+contentRect.height+scrollOffset.y, 1.5*fontSize, 1.5*fontSize}, "Right Linear", p->rightLinear);
-                contentRect.height += 1.5*fontSize + margin;
+                GuiCurveEditPoint *p = &(curves[i].points[curves[i].selectedIndex]);
+                GuiCheckBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, 1.5f*fontSize, 1.5f*fontSize }, "Left Linear", &p->leftLinear);
+                GuiCheckBox((Rectangle){ contentRect.x+contentRect.width/2, contentRect.y + contentRect.height + scrollOffset.y, 1.5f*fontSize, 1.5f*fontSize }, "Right Linear", &p->rightLinear);
+                contentRect.height += 1.5f*fontSize + margin;
 
                 // Positions
-                GuiLabel((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, fontSize}, "Position");
+                GuiLabel((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, fontSize }, "Position");
                 contentRect.height += fontSize;
 
-                if(!editValueBox[i][0]){
-                    // transform x position to string
-                    gcvt(p->position.x, 6, valTextBox[i][0]);
-                }
-                if(!editValueBox[i][1]){
-                    // transform y position to string
-                    gcvt(curves[i].start + (curves[i].end-curves[i].start) * p->position.y, 6, valTextBox[i][1]);
-                }
+                if (!editValueBox[i][0]) gcvt(p->position.x, 6, valTextBox[i][0]);  // Transform x position to string
+                    
+                if (!editValueBox[i][1]) gcvt(curves[i].start + (curves[i].end-curves[i].start)*p->position.y, 6, valTextBox[i][1]); // Transform y position to string
 
                 // X pos
-                if(GuiTextBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2-margin, 1.5*fontSize}, valTextBox[i][0], 20, editValueBox[i][0])){
+                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2-margin, 1.5f*fontSize }, valTextBox[i][0], 20, editValueBox[i][0]))
+                {
                     editValueBox[i][0] = !editValueBox[i][0];
-                    // input ended
-                    if(!editValueBox[i][0]){
+
+                    // Input ended
+                    if (!editValueBox[i][0])
+                    {
                         // Try to convert text to float and assign it to the point
-                        char * endPtr;
-                        double value = strtod( (char *) valTextBox[i][0], &endPtr); 
-                        if ( endPtr != (char *) valTextBox[i][0] ) {
-                            p->position.x = value < 0 ? 0 : value > 1 ? 1 : value;
-                        }
+                        char *endPtr = NULL;
+                        double value = strtod((char *)valTextBox[i][0], &endPtr);
+
+                        if (endPtr != (char *)valTextBox[i][0]) p->position.x = (value < 0)? 0 : (value > 1)? 1 : value;
                     }
                 }
+
                 // Y pos
-                if(GuiTextBox((Rectangle){contentRect.x+contentRect.width/2, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2, 1.5*fontSize}, valTextBox[i][1], 20, editValueBox[i][1])){
+                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, valTextBox[i][1], 20, editValueBox[i][1]))
+                {
                     editValueBox[i][1] = !editValueBox[i][1];
 
-                    // input ended
-                    if(!editValueBox[i][1]){
+                    // Input ended
+                    if (!editValueBox[i][1])
+                    {
                         // Try to convert text to float and assign it to the point
-                        char * endPtr;
-                        double value = strtod( (char *)valTextBox[i][1], &endPtr); 
-                        if ( endPtr != (char *) valTextBox[i][1] ) {
-                            float normalizedVal = (value-curves[i].start) / (curves[i].end-curves[i].start);
-                            p->position.y = normalizedVal < 0 ? 0 : normalizedVal > 1 ? 1 : normalizedVal;
+                        char *endPtr = NULL;
+                        double value = strtod((char *)valTextBox[i][1], &endPtr); 
+
+                        if (endPtr != (char *)valTextBox[i][1])
+                        {
+                            float normalizedVal = (value - curves[i].start)/(curves[i].end - curves[i].start);
+                            p->position.y = (normalizedVal < 0)? 0 : (normalizedVal > 1)? 1 : normalizedVal;
                         } 
                     }
                     
                 }
-                contentRect.height += 1.5*fontSize + margin;
+
+                contentRect.height += 1.5f*fontSize + margin;
 
                 // Tangents
-                GuiLabel((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width, fontSize}, "Tangents");
+                GuiLabel((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, fontSize }, "Tangents");
                 contentRect.height += fontSize;
 
-                if(!editValueBox[i][2]){
-                    // transform left tangent to string
-                    gcvt(p->tangents.x, 6, valTextBox[i][2]);
-                }
-                if(!editValueBox[i][3]){
-                    // transform right tangent to string
-                    gcvt(p->tangents.y, 6, valTextBox[i][3]);
-                }
+                if (!editValueBox[i][2]) gcvt(p->tangents.x, 6, valTextBox[i][2]); // Transform left tangent to string
+
+                if (!editValueBox[i][3]) gcvt(p->tangents.y, 6, valTextBox[i][3]);   // Transform right tangent to string
 
                 // Left tan
-                if(GuiTextBox((Rectangle){contentRect.x, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2-margin, 1.5*fontSize}, valTextBox[i][2], 20, editValueBox[i][2])){
+                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2 - margin, 1.5f*fontSize }, valTextBox[i][2], 20, editValueBox[i][2]))
+                {
                     editValueBox[i][2] = !editValueBox[i][2];
-                    // input ended
-                    if(!editValueBox[i][2]){
+                    
+                    // Input ended
+                    if (!editValueBox[i][2])
+                    {
                         // Try to convert text to float and assign it to the point
-                        char * endPtr;
-                        double value = strtod( (char *) valTextBox[i][2], &endPtr); 
-                        if ( endPtr != (char *) valTextBox[i][2] ) {
-                            p->tangents.x = value;
-                        }
+                        char *endPtr = NULL;
+                        double value = strtod((char *)valTextBox[i][2], &endPtr); 
+                        if (endPtr != (char *)valTextBox[i][2]) p->tangents.x = value;
                     }
                 }
-                // Right tan
-                if(GuiTextBox((Rectangle){contentRect.x+contentRect.width/2, contentRect.y+contentRect.height+scrollOffset.y, contentRect.width/2, 1.5*fontSize}, valTextBox[i][3], 20, editValueBox[i][3])){
-                    editValueBox[i][3] = !editValueBox[i][3];
-                    // input ended
-                    if(!editValueBox[i][3]){
-                        // Try to convert text to float and assign it to the point
-                        char * endPtr;
-                        double value = strtod( (char *) valTextBox[i][3], &endPtr); 
-                        if ( endPtr != (char *) valTextBox[i][3] ) {
-                            p->tangents.y = value;
-                        }
-                    }
-                }
-                contentRect.height += 1.5*fontSize + margin;
 
+                // Right tan
+                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2.0f, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, valTextBox[i][3], 20, editValueBox[i][3]))
+                {
+                    editValueBox[i][3] = !editValueBox[i][3];
+
+                    // Input ended
+                    if (!editValueBox[i][3])
+                    {
+                        // Try to convert text to float and assign it to the point
+                        char *endPtr = NULL;
+                        double value = strtod((char *)valTextBox[i][3], &endPtr); 
+                        if (endPtr != (char *)valTextBox[i][3]) p->tangents.y = value;
+                    }
+                }
+
+                contentRect.height += 1.5*fontSize + margin;
             }
+
             contentRect.height += margin;
+            
             EndScissorMode();
 
             // Settings panel shadow
-            DrawRectangleGradientH(settingsRect.x-12, 0, 12, settingsRect.height, BLANK, (Color){0,0,0,100});
+            DrawRectangleGradientH(settingsRect.x - 12, 0, 12, settingsRect.height, BLANK, (Color){ 0, 0, 0, 100 });
 
             // Slider
-            if(moveSlider){
-                DrawRectangle(sliderRect.x, sliderRect.y, sliderRect.width, sliderRect.height, GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_PRESSED)));
-            }else if(CheckCollisionPointRec(GetMousePosition(), sliderRect)){
-                DrawRectangle(sliderRect.x, sliderRect.y, sliderRect.width, sliderRect.height, GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_FOCUSED)));
-            }
+            if (moveSlider) DrawRectangle(sliderRect.x, sliderRect.y, sliderRect.width, sliderRect.height, GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_PRESSED)));
+            else if(CheckCollisionPointRec(GetMousePosition(), sliderRect)) DrawRectangle(sliderRect.x, sliderRect.y, sliderRect.width, sliderRect.height, GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_FOCUSED)));
 
             // Draw Time controls
             //----------------------------------------------------------------------------------
-            Rectangle timeLineRect = (Rectangle) {0, screenHeight-4*fontSize, settingsRect.x, 4*fontSize};
-            GuiPanel((Rectangle) { timeLineRect.x, timeLineRect.y, timeLineRect.width, 2*fontSize}, NULL);
-            GuiLabel((Rectangle) { timeLineRect.x, timeLineRect.y, timeLineRect.width, 2*fontSize}, TextFormat("Normalized Time: %.3f", time / animationTime));
-            if(GuiButton((Rectangle) { timeLineRect.x+timeLineRect.width/2-2*fontSize-margin/4, timeLineRect.y, 2*fontSize, 2*fontSize}, GuiIconText(playAnimation ? ICON_PLAYER_PAUSE : ICON_PLAYER_PLAY, ""))){
-                playAnimation = !playAnimation;
-            }
-            if(GuiButton((Rectangle) { timeLineRect.x+timeLineRect.width/2+margin/4, timeLineRect.y, 2*fontSize, 2*fontSize}, GuiIconText(ICON_PLAYER_STOP, ""))){
+            Rectangle timeLineRect = (Rectangle){ 0, screenHeight-4*fontSize, settingsRect.x, 4*fontSize };
+            GuiPanel((Rectangle){ timeLineRect.x, timeLineRect.y, timeLineRect.width, 2*fontSize }, NULL);
+            GuiLabel((Rectangle){ timeLineRect.x, timeLineRect.y, timeLineRect.width, 2*fontSize }, TextFormat("Normalized Time: %.3f", time/animationTime));
+            if (GuiButton((Rectangle){ timeLineRect.x+timeLineRect.width/2 - 2*fontSize - margin/4, timeLineRect.y, 2*fontSize, 2*fontSize }, GuiIconText((playAnimation? ICON_PLAYER_PAUSE : ICON_PLAYER_PLAY), ""))) playAnimation = !playAnimation;
+
+            if (GuiButton((Rectangle){ timeLineRect.x+timeLineRect.width/2 + margin/4, timeLineRect.y, 2*fontSize, 2*fontSize }, GuiIconText(ICON_PLAYER_STOP, "")))
+            {
                 playAnimation = false;
                 time = 0;
             }
-            time = animationTime * GuiSlider((Rectangle){timeLineRect.x, timeLineRect.y+2*fontSize, timeLineRect.width, timeLineRect.height-2*fontSize}, NULL, NULL, time / animationTime, 0, 1);
+
+            float animTime = time/animationTime;
+            GuiSlider((Rectangle){timeLineRect.x, timeLineRect.y + 2*fontSize, timeLineRect.width, timeLineRect.height - 2*fontSize }, NULL, NULL, &animTime, 0, 1);
+            time = animationTime*animTime;
 
             // Time panel shadow
-            DrawRectangleGradientV(timeLineRect.x, timeLineRect.y-12, timeLineRect.width, 12, BLANK, (Color){0,0,0,100});
+            DrawRectangleGradientV(timeLineRect.x, timeLineRect.y - 12, timeLineRect.width, 12, BLANK, (Color){ 0, 0, 0, 100 });
 
-            
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
@@ -382,7 +381,8 @@ int main()
     return 0;
 }
 
-void LoadDefaults(GuiCurveEditState curves[]){
+void LoadCurveDefaults(GuiCurveEditState curves[])
+{
     // X pos
     curves[0].start = 28;
     curves[0].end = 506;
@@ -459,7 +459,6 @@ void LoadDefaults(GuiCurveEditState curves[]){
     curves[3].points[15].position = (Vector2) {0.950000, 0.507937};curves[3].points[15].tangents = (Vector2) {0,0};curves[3].points[15].leftLinear = 0;curves[3].points[15].rightLinear = 0;
 
     // Rotation
-
     curves[4].start = -360;
     curves[4].end = 360;
     curves[4].numPoints = 9;
@@ -476,5 +475,3 @@ void LoadDefaults(GuiCurveEditState curves[]){
     curves[4].points[7].position =  (Vector2) {0.302752, 0.527778};curves[4].points[7].tangents =  (Vector2) {0,0};curves[4].points[7].leftLinear =  0;curves[4].points[7].rightLinear =  0;
     curves[4].points[8].position =  (Vector2) {0.577982, 0.472222};curves[4].points[8].tangents =  (Vector2) {0,0};curves[4].points[8].leftLinear =  0;curves[4].points[8].rightLinear =  0;
 }
-
-

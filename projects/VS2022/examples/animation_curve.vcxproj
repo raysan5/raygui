@@ -35,10 +35,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B740AD57-ABF2-4421-96C0-FE220130A873}</ProjectGuid>
+    <ProjectGuid>{50A98C3D-C898-4830-A00B-3F78DC2E742B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>textbox_selection</RootNamespace>
-    <ProjectName>textbox_selection</ProjectName>
+    <RootNamespace>style_selector</RootNamespace>
+    <ProjectName>animation_curve</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -349,7 +349,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\examples\textbox_selection\textbox_selection.c" />
+    <ClCompile Include="..\..\..\examples\animation_curve\animation_curve.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
