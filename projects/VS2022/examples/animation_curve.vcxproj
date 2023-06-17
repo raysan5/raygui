@@ -351,6 +351,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\examples\animation_curve\animation_curve.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\examples\animation_curve\gui_curve_editor.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

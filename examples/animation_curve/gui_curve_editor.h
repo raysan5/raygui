@@ -3,7 +3,7 @@
 *   CurveEdit v1.0 - A cubic Hermite editor for making animation curves
 *
 *   MODULE USAGE:
-*       #define GUI_CURVE_EDIT_IMPLEMENTATION
+*       #define GUI_CURVE_EDITOR_IMPLEMENTATION
 *       #include "gui_curve_edit.h"
 *
 *       INIT: GuiCurveEditState state = InitCurveEdit();
@@ -46,12 +46,12 @@
 
 #include "raylib.h"
 
-#ifndef GUI_CURVE_EDIT_H
-#define GUI_CURVE_EDIT_H
+#ifndef GUI_CURVE_EDITOR_H
+#define GUI_CURVE_EDITOR_H
 
 
-#ifndef GUI_CURVE_EDIT_MAX_POINTS
-    #define GUI_CURVE_EDIT_MAX_POINTS 30
+#ifndef GUI_CURVE_EDITOR_MAX_POINTS
+    #define GUI_CURVE_EDITOR_MAX_POINTS 30
 #endif
 
 //----------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ typedef struct {
     int selectedIndex;
 
     // Unsorted array with at least one point (constant curve)
-    GuiCurveEditorPoint points[GUI_CURVE_EDIT_MAX_POINTS];
+    GuiCurveEditorPoint points[GUI_CURVE_EDITOR_MAX_POINTS];
     int numPoints;
 
     // Private variables
@@ -92,9 +92,7 @@ extern "C" {            // Prevents name mangling of functions
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-
-
-GuiCurveEditorState GuiInitCurveEditor();     // Initialize curve editor state
+GuiCurveEditorState InitGuiCurveEditor();     // Initialize curve editor state
 void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds);  // Draw and update curve control
 
 // 1D Interpolation
@@ -106,14 +104,14 @@ float GuiCurveEval(GuiCurveEditorState *state, float t);
 }
 #endif
 
-#endif // GUI_CURVE_EDIT_H
+#endif // GUI_CURVE_EDITOR_H
 
 /***********************************************************************************
 *
-*   GUI_CURVE_EDIT IMPLEMENTATION
+*   GUI_CURVE_EDITOR IMPLEMENTATION
 *
 ************************************************************************************/
-#if defined(GUI_CURVE_EDIT_IMPLEMENTATION)
+#if defined(GUI_CURVE_EDITOR_IMPLEMENTATION)
 
 #include "../../src/raygui.h" // Change this to fit your project
 
@@ -122,8 +120,7 @@ float GuiCurveEval(GuiCurveEditorState *state, float t);
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
-
-GuiCurveEditorState GuiInitCurveEditor()
+GuiCurveEditorState InitGuiCurveEditor()
 {
     GuiCurveEditorState state = { 0 };
 
@@ -155,7 +152,7 @@ static int CompareGuiCurveEditPointPtr(const void *a, const void *b)
 float GuiCurveEval(GuiCurveEditorState *state, float t)
 {
     // Sort points
-    GuiCurveEditorPoint* sortedPoints[GUI_CURVE_EDIT_MAX_POINTS];
+    GuiCurveEditorPoint* sortedPoints[GUI_CURVE_EDITOR_MAX_POINTS];
 
     for (int i=0; i < state->numPoints; i++) sortedPoints[i] = &state->points[i];
 
@@ -313,7 +310,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         for (int i = hoveredPointIndex; i < state->numPoints; i++) state->points[i] = state->points[i+1];
     }
     // Add a point (check against innerBounds)
-    else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, innerBounds) && (state->numPoints < GUI_CURVE_EDIT_MAX_POINTS))
+    else if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, innerBounds) && (state->numPoints < GUI_CURVE_EDITOR_MAX_POINTS))
     {
         state->editLeftTangent = false;
         state->editRightTangent = false;
@@ -347,7 +344,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     }
 
     // Sort points
-    GuiCurveEditorPoint *sortedPoints[GUI_CURVE_EDIT_MAX_POINTS] = { 0 };
+    GuiCurveEditorPoint *sortedPoints[GUI_CURVE_EDITOR_MAX_POINTS] = { 0 };
     for (int i = 0; i < state->numPoints; i++) sortedPoints[i] = &state->points[i];
     qsort(sortedPoints, state->numPoints, sizeof(GuiCurveEditorPoint*), CompareGuiCurveEditPointPtr);
 
@@ -553,5 +550,5 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     }
 }
 
-#endif // GUI_CURVE_EDIT_IMPLEMENTATION
+#endif // GUI_CURVE_EDITOR_IMPLEMENTATION
 

@@ -31,8 +31,8 @@
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
-#define GUI_CURVE_EDIT_IMPLEMENTATION
-#include "gui_curve_edit.h"
+#define GUI_CURVE_EDITOR_IMPLEMENTATION
+#include "gui_curve_editor.h"
 
 //------------------------------------------------------------------------------------
 // Helper function
