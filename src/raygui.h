@@ -3548,14 +3548,14 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
                 for (int i = 0; i < linesV; i++)
                 {
                     Rectangle lineV = { bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height };
-                    GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
+                    GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
                 }
 
                 // Draw horizontal grid lines
                 for (int i = 0; i < linesH; i++)
                 {
                     Rectangle lineH = { bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 };
-                    GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0) ? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
+                    GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0)? Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : Fade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
                 }
             }
         } break;
