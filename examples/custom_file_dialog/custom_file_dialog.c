@@ -21,8 +21,8 @@
 #include "../../src/raygui.h"
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
-#define GUI_FILE_DIALOG_IMPLEMENTATION
-#include "gui_file_dialog.h"
+#define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
+#include "gui_window_file_dialog.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -38,7 +38,7 @@ int main()
     SetExitKey(0);
 
     // Custom file dialog
-    GuiFileDialogState fileDialogState = InitGuiFileDialog(GetWorkingDirectory());
+    GuiWindowFileDialogState fileDialogState = InitGuiWindowFileDialog(GetWorkingDirectory());
 
     bool exitWindow = false;
 
@@ -91,7 +91,7 @@ int main()
 
             // GUI: Dialog Window
             //--------------------------------------------------------------------------------
-            GuiFileDialog(&fileDialogState);
+            GuiWindowFileDialog(&fileDialogState);
             //--------------------------------------------------------------------------------
 
             //----------------------------------------------------------------------------------

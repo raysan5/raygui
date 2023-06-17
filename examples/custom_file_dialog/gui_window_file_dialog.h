@@ -1,13 +1,13 @@
 /*******************************************************************************************
 *
-*   FileDialog v1.2 - Modal file dialog to open/save files
+*   Window File Dialog v1.2 - Modal file dialog to open/save files
 *
 *   MODULE USAGE:
-*       #define GUI_FILE_DIALOG_IMPLEMENTATION
-*       #include "gui_file_dialog.h"
+*       #define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
+*       #include "gui_window_file_dialog.h"
 *
-*       INIT: GuiFileDialogState state = InitGuiFileDialog();
-*       DRAW: GuiFileDialog(&state);
+*       INIT: GuiWindowFileDialogState state = GuiInitWindowFileDialog();
+*       DRAW: GuiWindowFileDialog(&state);
 *
 *   NOTE: This module depends on some raylib file system functions:
 *       - LoadDirectoryFiles()
@@ -18,7 +18,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2022 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2023 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -39,8 +39,8 @@
 
 #include "raylib.h"
 
-#ifndef GUI_FILE_DIALOG_H
-#define GUI_FILE_DIALOG_H
+#ifndef GUI_WINDOW_FILE_DIALOG_H
+#define GUI_WINDOW_FILE_DIALOG_H
 
 // Gui file dialog context data
 typedef struct {
@@ -77,7 +77,7 @@ typedef struct {
 
     bool saveFileMode;
 
-} GuiFileDialogState;
+} GuiWindowFileDialogState;
 
 #ifdef __cplusplus
 extern "C" {            // Prevents name mangling of functions
@@ -101,21 +101,21 @@ extern "C" {            // Prevents name mangling of functions
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
-GuiFileDialogState InitGuiFileDialog(const char *initPath);
-void GuiFileDialog(GuiFileDialogState *state);
+GuiWindowFileDialogState InitGuiWindowFileDialog(const char *initPath);
+void GuiWindowFileDialog(GuiWindowFileDialogState *state);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GUI_FILE_DIALOG_H
+#endif // GUI_WINDOW_FILE_DIALOG_H
 
 /***********************************************************************************
 *
-*   GUI_FILE_DIALOG IMPLEMENTATION
+*   GUI_WINDOW_FILE_DIALOG IMPLEMENTATION
 *
 ************************************************************************************/
-#if defined(GUI_FILE_DIALOG_IMPLEMENTATION)
+#if defined(GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION)
 
 #include "../../src/raygui.h"
 
@@ -153,7 +153,7 @@ FileInfo *dirFilesIcon = NULL;      // Path string + icon (for fancy drawing)
 // Internal Module Functions Definition
 //----------------------------------------------------------------------------------
 // Read files in new path
-static void ReloadDirectoryFiles(GuiFileDialogState *state);
+static void ReloadDirectoryFiles(GuiWindowFileDialogState *state);
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
 // List View control for files info with extended parameters
@@ -163,9 +163,9 @@ static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *f
 //----------------------------------------------------------------------------------
 // Module Functions Definition
 //----------------------------------------------------------------------------------
-GuiFileDialogState InitGuiFileDialog(const char *initPath)
+GuiWindowFileDialogState InitGuiWindowFileDialog(const char *initPath)
 {
-    GuiFileDialogState state = { 0 };
+    GuiWindowFileDialogState state = { 0 };
 
     // Init window data
     state.windowBounds = (Rectangle){ GetScreenWidth()/2 - 440/2, GetScreenHeight()/2 - 310/2, 440, 310 };
@@ -214,7 +214,7 @@ GuiFileDialogState InitGuiFileDialog(const char *initPath)
 }
 
 // Update and draw file dialog
-void GuiFileDialog(GuiFileDialogState *state)
+void GuiWindowFileDialog(GuiWindowFileDialogState *state)
 {
     if (state->windowActive)
     {
@@ -419,7 +419,7 @@ static inline int FileCompare(const char *d1, const char *d2, const char *dir)
 }
 
 // Read files in new path
-static void ReloadDirectoryFiles(GuiFileDialogState *state)
+static void ReloadDirectoryFiles(GuiWindowFileDialogState *state)
 {
     UnloadDirectoryFiles(state->dirFiles);
 
