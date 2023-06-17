@@ -239,7 +239,7 @@ int main()
 
                 // Curves can leaks from control boundary... scissor it !
                 BeginScissorMode(curveRect.x, curveRect.y, curveRect.width, curveRect.height);
-                    GuiCurveEditor(&curves[i],curveRect);
+                    GuiCurveEditor(&curves[i], curveRect);
                 EndScissorMode();
 
                 // Resume clipping from setting rect
