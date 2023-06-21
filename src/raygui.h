@@ -643,6 +643,8 @@ RAYGUIAPI int GuiColorPicker(Rectangle bounds, const char *text, Color *color); 
 RAYGUIAPI int GuiColorPanel(Rectangle bounds, const char *text, Color *color);                         // Color Panel control
 RAYGUIAPI int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha);                      // Color Bar Alpha control
 RAYGUIAPI int GuiColorBarHue(Rectangle bounds, const char *text, float *value);                        // Color Bar Hue control
+RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
+RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that returns HSV color value, used by GuiColorPickerHSV()
 //----------------------------------------------------------------------------------------------------------
 
 
@@ -3356,6 +3358,103 @@ int GuiColorPicker(Rectangle bounds, const char *text, Color *color)
     Vector3 rgb = ConvertHSVtoRGB(hsv);
 
     *color = RAYGUI_CLITERAL(Color){ (unsigned char)roundf(rgb.x*255.0f), (unsigned char)roundf(rgb.y*255.0f), (unsigned char)roundf(rgb.z*255.0f), (*color).a };
+
+    return result;
+}
+
+// Color Picker control that avoids conversion to RGB and back to HSV on each call, thus avoiding jittering.
+// The user can call ConvertHSVtoRGB() to convert *colorHsv value to RGB.
+// NOTE: It's divided in multiple controls:
+//      int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
+//      int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
+//      float GuiColorBarHue(Rectangle bounds, float value)
+// NOTE: bounds define GuiColorPanelHSV() size
+int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
+{
+    int result = 0;
+
+    if (colorHsv == NULL)
+    {
+        const Vector3 tempColor = { 200.0f/255.0f, 0.0f, 0.0f };
+        Vector3 tempHsv = ConvertRGBtoHSV(tempColor);
+        colorHsv = &tempHsv;
+    }
+
+    GuiColorPanelHSV(bounds, NULL, colorHsv);
+
+    const Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle(COLORPICKER, HUEBAR_PADDING), (float)bounds.y, (float)GuiGetStyle(COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
+
+    GuiColorBarHue(boundsHue, NULL, &colorHsv->x);
+
+    return result;
+}
+
+// Color Panel control, returns HSV color value in *colorHsv.
+// Used by GuiColorPickerHSV()
+int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
+{
+    int result = 0;
+    GuiState state = guiState;
+    Vector2 pickerSelector = { 0 };
+
+    const Color colWhite = { 255, 255, 255, 255 };
+    const Color colBlack = { 0, 0, 0, 255 };
+
+    pickerSelector.x = bounds.x + (float)colorHsv->y*bounds.width;            // HSV: Saturation
+    pickerSelector.y = bounds.y + (1.0f - (float)colorHsv->z)*bounds.height;  // HSV: Value
+
+    float hue = -1.0f;
+    Vector3 maxHue = { hue >= 0.0f ? hue : colorHsv->x, 1.0f, 1.0f };
+    Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
+    Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
+                      (unsigned char)(255.0f*rgbHue.y),
+                      (unsigned char)(255.0f*rgbHue.z), 255 };
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                state = STATE_PRESSED;
+                pickerSelector = mousePoint;
+
+                // Calculate color from picker
+                Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y };
+
+                colorPick.x /= (float)bounds.width;     // Get normalized value on x
+                colorPick.y /= (float)bounds.height;    // Get normalized value on y
+
+                colorHsv->y = colorPick.x;
+                colorHsv->z = 1.0f - colorPick.y;
+            }
+            else state = STATE_FOCUSED;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    if (state != STATE_DISABLED)
+    {
+        DrawRectangleGradientEx(bounds, Fade(colWhite, guiAlpha), Fade(colWhite, guiAlpha), Fade(maxHueCol, guiAlpha), Fade(maxHueCol, guiAlpha));
+        DrawRectangleGradientEx(bounds, Fade(colBlack, 0), Fade(colBlack, guiAlpha), Fade(colBlack, guiAlpha), Fade(colBlack, 0));
+
+        // Draw color picker: selector
+        Rectangle selector = { pickerSelector.x - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, pickerSelector.y - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE), (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE) };
+        GuiDrawRectangle(selector, 0, BLANK, Fade(colWhite, guiAlpha));
+    }
+    else
+    {
+        DrawRectangleGradientEx(bounds, Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), 0.6f), guiAlpha));
+    }
+
+    GuiDrawRectangle(bounds, GuiGetStyle(COLORPICKER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), guiAlpha), BLANK);
+    //--------------------------------------------------------------------
 
     return result;
 }
