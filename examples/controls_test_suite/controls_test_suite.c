@@ -40,7 +40,14 @@
 //#include "gui_icons.h"          // External icons data provided, it can be generated with rGuiIcons tool
 #include "../../src/raygui.h"
 
-#include <string.h>             // Required for: strcpy()
+// raygui embedded styles
+#include "../styles/style_cyber.h"             // raygui style: cyber
+#include "../styles/style_jungle.h"            // raygui style: jungle
+#include "../styles/style_lavanda.h"           // raygui style: lavanda
+#include "../styles/style_dark.h"              // raygui style: dark
+#include "../styles/style_bluish.h"            // raygui style: bluish
+#include "../styles/style_terminal.h"          // raygui style: terminal
+
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -92,7 +99,9 @@ int main()
 
     float alphaValue = 0.5f;
 
-    int comboBoxActive = 1;
+    //int comboBoxActive = 1;
+    int visualStyleActive = 0;
+    int prevVisualStyleActive = 0;
 
     int toggleGroupActive = 0;
 
@@ -133,6 +142,31 @@ int main()
 
             UnloadDroppedFiles(droppedFiles);    // Clear internal buffers
         }
+
+        progressValue += 0.002f;
+        //if (progressValue >= 1.0f) progressValue = 0.0f;
+        if (IsKeyPressed(KEY_SPACE)) progressValue = 0.2f;
+
+        if (visualStyleActive != prevVisualStyleActive)
+        {
+            GuiLoadStyleDefault();
+
+            switch (visualStyleActive)
+            {
+            case 0: break;      // Default style
+            case 1: GuiLoadStyleJungle(); break;
+            case 2: GuiLoadStyleLavanda(); break;
+            case 3: GuiLoadStyleDark(); break;
+            case 4: GuiLoadStyleBluish(); break;
+            case 5: GuiLoadStyleCyber(); break;
+            case 6: GuiLoadStyleTerminal(); break;
+            default: break;
+            }
+
+            GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+
+            prevVisualStyleActive = visualStyleActive;
+        }
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -171,7 +205,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "ONE;TWO;THREE;FOUR", &comboBoxActive);
+            GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             GuiUnlock();
@@ -192,9 +226,12 @@ int main()
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
             GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, &colorPickerValue);
 
+            //GuiDisable();
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
             GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
-            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, NULL, &progressValue, 0, 1);
+            
+            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat(" %i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
+            GuiEnable();
 
             // NOTE: View rectangle could be used to perform some scissor test
             Rectangle view = { 0 };
@@ -225,13 +262,13 @@ int main()
                 {
                     // TODO: Validate textInput value and save
 
-                    strcpy(textInputFileName, textInput);
+                    TextCopy(textInputFileName, textInput);
                 }
 
                 if ((result == 0) || (result == 1) || (result == 2))
                 {
                     showTextInputBox = false;
-                    strcpy(textInput, "\0");
+                    TextCopy(textInput, "\0");
                 }
             }
             //----------------------------------------------------------------------------------
