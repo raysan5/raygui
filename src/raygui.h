@@ -2824,6 +2824,7 @@ int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight
     float temp = (maxValue - minValue)/2.0f;
     if (value == NULL) value = &temp;
 
+    // Progress bar
     Rectangle progress = { bounds.x + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH),
                            bounds.y + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) + GuiGetStyle(PROGRESSBAR, PROGRESS_PADDING), 0,
                            bounds.height - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) - 2*GuiGetStyle(PROGRESSBAR, PROGRESS_PADDING) };
@@ -2832,16 +2833,27 @@ int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight
     //--------------------------------------------------------------------
     if (*value > maxValue) *value = maxValue;
 
-    if (state != STATE_DISABLED) progress.width = ((float)(*value/(maxValue - minValue))*(float)(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH)));
+    if (state != STATE_DISABLED) progress.width = ((float)(*value/(maxValue - minValue))*bounds.width) - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH);
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER + (state*3))), guiAlpha), BLANK);
+    //GuiDrawRectangle(bounds, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER + (state*3))), guiAlpha), BLANK);  // Normal border
+
+    // Border color aligned with progress bar, more visual
+    GuiDrawRectangle((Rectangle){ bounds.x, bounds.y, progress.width + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_FOCUSED)), guiAlpha));
+    GuiDrawRectangle((Rectangle){ bounds.x, bounds.y + 1, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), bounds.height - 2 }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_FOCUSED)), guiAlpha));
+    GuiDrawRectangle((Rectangle){ bounds.x, bounds.y + bounds.height - 1, progress.width + GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_FOCUSED)), guiAlpha));
+    if (*value == maxValue) GuiDrawRectangle((Rectangle){ bounds.x + progress.width + 1, bounds.y, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), bounds.height }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_FOCUSED)), guiAlpha));
+    else
+    {
+        GuiDrawRectangle((Rectangle){ bounds.x + progress.width + 1, bounds.y, bounds.width - progress.width, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_NORMAL)), guiAlpha));
+        GuiDrawRectangle((Rectangle){ bounds.x + progress.width + 1, bounds.y + bounds.height - 1, bounds.width - progress.width, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH) }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_NORMAL)), guiAlpha));
+        GuiDrawRectangle((Rectangle){ bounds.x + bounds.width - 1, bounds.y + 1, GuiGetStyle(PROGRESSBAR, BORDER_WIDTH), bounds.height - 2 }, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BORDER_COLOR_NORMAL)), guiAlpha));
+    }
 
     // Draw slider internal progress bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, TEXT_COLOR_FOCUSED)), guiAlpha));
+    GuiDrawRectangle(progress, 0, BLANK, Fade(GetColor(GuiGetStyle(PROGRESSBAR, BASE_COLOR_PRESSED)), guiAlpha));
 
     // Draw left/right text if provided
     if (textLeft != NULL)
