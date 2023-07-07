@@ -4048,7 +4048,8 @@ void GuiSetIconScale(int scale)
 // Module specific Functions Definition
 //----------------------------------------------------------------------------------
 
-// Load style from memory (binary only)
+// Load style from memory
+// WARNING: Binary files only
 static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
@@ -4103,7 +4104,6 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
         {
             Font font = { 0 };
             int fontType = 0;   // 0-Normal, 1-SDF
-            Rectangle fontWhiteRec = { 0 };
 
             memcpy(&font.baseSize, fileDataPtr, sizeof(int));
             memcpy(&font.glyphCount, fileDataPtr + 4, sizeof(int));
@@ -4111,6 +4111,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
             fileDataPtr += 12;
 
             // Load font white rectangle
+            Rectangle fontWhiteRec = { 0 };
             memcpy(&fontWhiteRec, fileDataPtr, sizeof(Rectangle));
             fileDataPtr += 16;
 
@@ -4180,8 +4181,10 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 
             // Set font texture source rectangle to be used as white texture to draw shapes
             // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
-            if ((fontWhiteRec.x > 0) && (fontWhiteRec.y > 0) && 
-                (fontWhiteRec.width > 0) && (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
+            if ((fontWhiteRec.x > 0) && 
+                (fontWhiteRec.y > 0) && 
+                (fontWhiteRec.width > 0) && 
+                (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
         }
 #endif
     }
