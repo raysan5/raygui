@@ -3799,12 +3799,12 @@ void GuiLoadStyle(const char *fileName)
 
             if (fileDataSize > 0)
             {
-                unsigned char *fileData = (unsigned char *)RL_MALLOC(fileDataSize*sizeof(unsigned char));
+                unsigned char *fileData = (unsigned char *)RAYGUI_MALLOC(fileDataSize*sizeof(unsigned char));
                 fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
 
                 GuiLoadStyleFromMemory(fileData, fileDataSize);
 
-                RL_FREE(fileData);
+                RAYGUI_FREE(fileData);
             }
 
             fclose(rgsFile);
@@ -3899,6 +3899,7 @@ void GuiLoadStyleDefault(void)
 
         // NOTE: Default raylib font character 95 is a white square
         Rectangle whiteChar = guiFont.recs[95];
+
         // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
         SetShapesTexture(guiFont.texture, RAYGUI_CLITERAL(Rectangle){ whiteChar.x + 1, whiteChar.y + 1, whiteChar.width - 2, whiteChar.height - 2 });
     }
@@ -4154,9 +4155,9 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 
             if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
             font.texture = LoadTextureFromImage(imFont);
-            
+
             RAYGUI_FREE(imFont.data);
-            
+
             // Validate font atlas texture was loaded correctly
             if (font.texture.id != 0)
             {
@@ -4169,12 +4170,12 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                     memcpy(&recsDataCompressedSize, fileDataPtr, sizeof(int));
                     fileDataPtr += sizeof(int);
                 }
-                
+
                 if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
                 {
                     // Recs data is compressed, uncompress it
                     unsigned char *recsDataCompressed = RAYGUI_MALLOC(recsDataCompressedSize);
-                    
+
                     memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
                     fileDataPtr += recsDataCompressedSize;
 
@@ -4206,15 +4207,15 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                     memcpy(&glyphsDataCompressedSize, fileDataPtr, sizeof(int));
                     fileDataPtr += sizeof(int);
                 }
-                
+
                 // Allocate required glyphs space to fill with data
                 font.glyphs = (GlyphInfo *)RAYGUI_CALLOC(font.glyphCount, sizeof(GlyphInfo));
-                
+
                 if ((glyphsDataCompressedSize > 0) && (glyphsDataCompressedSize != glyphsDataSize))
                 {
                     // Glyphs data is compressed, uncompress it
                     unsigned char *glypsDataCompressed = RAYGUI_MALLOC(glyphsDataCompressedSize);
-                    
+
                     memcpy(glypsDataCompressed, fileDataPtr, glyphsDataCompressedSize);
                     fileDataPtr += glyphsDataCompressedSize;
 
@@ -4223,9 +4224,9 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 
                     // Security check, data uncompressed size must match the expected original data size
                     if (glyphsDataUncompSize != glyphsDataSize) RAYGUI_LOG("WARNING: Uncompressed font glyphs data could be corrupted");
-                    
+
                     unsigned char *glyphsDataUncompPtr = glyphsDataUncomp;
-                    
+
                     for (int i = 0; i < font.glyphCount; i++)
                     {
                         memcpy(&font.glyphs[i].value, glyphsDataUncompPtr, sizeof(int));
@@ -4234,7 +4235,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                         memcpy(&font.glyphs[i].advanceX, glyphsDataUncompPtr + 12, sizeof(int));
                         glyphsDataUncompPtr += 16;
                     }
-                    
+
                     RAYGUI_FREE(glypsDataCompressed);
                     RAYGUI_FREE(glyphsDataUncomp);
                 }
@@ -4250,13 +4251,13 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                         fileDataPtr += 16;
                     }
                 }
-                
-                
+
+
                 // Set font texture source rectangle to be used as white texture to draw shapes
                 // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
-                if ((fontWhiteRec.x > 0) && 
-                    (fontWhiteRec.y > 0) && 
-                    (fontWhiteRec.width > 0) && 
+                if ((fontWhiteRec.x > 0) &&
+                    (fontWhiteRec.y > 0) &&
+                    (fontWhiteRec.width > 0) &&
                     (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
             }
             else font = GetFontDefault();   // Fallback in case of errors loading font atlas texture
