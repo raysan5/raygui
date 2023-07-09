@@ -4163,9 +4163,9 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 // Load font recs data
                 int recsDataSize = font.glyphCount*sizeof(Rectangle);
                 int recsDataCompressedSize = 0;
-                if (version >= 500)
+                if (version >= 400)
                 {
-                    // RGS files version 500 support compressed recs data
+                    // RGS files version 400 support compressed recs data
                     memcpy(&recsDataCompressedSize, fileDataPtr, sizeof(int));
                     fileDataPtr += sizeof(int);
                 }
@@ -4200,9 +4200,9 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 // Load font glyphs info data
                 int glyphsDataSize = font.glyphCount*16;    // 16 bytes data per glyph
                 int glyphsDataCompressedSize = 0;
-                if (version >= 500)
+                if (version >= 400)
                 {
-                    // RGS files version 500 support compressed glyphs data
+                    // RGS files version 400 support compressed glyphs data
                     memcpy(&glyphsDataCompressedSize, fileDataPtr, sizeof(int));
                     fileDataPtr += sizeof(int);
                 }
