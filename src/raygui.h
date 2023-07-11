@@ -575,6 +575,8 @@ RAYGUIAPI bool GuiIsLocked(void);                               // Check if gui 
 RAYGUIAPI void GuiFade(float alpha);                            // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
 RAYGUIAPI void GuiSetState(int state);                          // Set gui state (global state)
 RAYGUIAPI int GuiGetState(void);                                // Get gui state (global state)
+RAYGUIAPI float GuiGetFade(void);                               // Get gui fade (global state)
+RAYGUIAPI bool GuiSliderIsDragging(void);                       // Get gui slider drag (global state)
 
 // Font set/get functions
 RAYGUIAPI void GuiSetFont(Font font);                           // Set gui custom font (global state)
@@ -647,6 +649,24 @@ RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *col
 RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that returns HSV color value, used by GuiColorPickerHSV()
 //----------------------------------------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------------
+// Module specific Functions Declaration
+//----------------------------------------------------------------------------------
+RAYGUIAPI void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
+
+RAYGUIAPI int GetTextWidth(const char *text);                      // Gui get text width using gui font and style
+RAYGUIAPI Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
+RAYGUIAPI const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
+
+RAYGUIAPI void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
+RAYGUIAPI void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
+
+RAYGUIAPI const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
+RAYGUIAPI Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
+RAYGUIAPI Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
+
+RAYGUIAPI int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
+RAYGUIAPI void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
 
 #if !defined(RAYGUI_NO_ICONS)
 
@@ -1353,26 +1373,6 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 #endif      // RAYGUI_STANDALONE
 
 //----------------------------------------------------------------------------------
-// Module specific Functions Declaration
-//----------------------------------------------------------------------------------
-static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
-
-static int GetTextWidth(const char *text);                      // Gui get text width using gui font and style
-static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
-static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
-
-static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
-
-static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
-static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
-static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
-
-static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
-static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
-
-
-//----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
 //----------------------------------------------------------------------------------
 // Enable gui global state
@@ -1400,6 +1400,12 @@ void GuiFade(float alpha)
 
     guiAlpha = alpha;
 }
+
+// Get gui controls alpha global state
+float GuiGetFade(void) { return guiAlpha; }
+
+// Get gui slider drag state (no inputs processed except dragged slider)
+bool GuiSliderIsDragging(void) { return guiSliderDragging; }
 
 // Set gui state (global state)
 void GuiSetState(int state) { guiState = (GuiState)state; }
@@ -4051,7 +4057,7 @@ void GuiSetIconScale(int scale)
 
 // Load style from memory
 // WARNING: Binary files only
-static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
+void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
 
@@ -4174,7 +4180,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
                 {
                     // Recs data is compressed, uncompress it
-                    unsigned char *recsDataCompressed = RAYGUI_MALLOC(recsDataCompressedSize);
+                    unsigned char *recsDataCompressed = (unsigned char *)RAYGUI_MALLOC(recsDataCompressedSize);
 
                     memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
                     fileDataPtr += recsDataCompressedSize;
@@ -4214,7 +4220,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 if ((glyphsDataCompressedSize > 0) && (glyphsDataCompressedSize != glyphsDataSize))
                 {
                     // Glyphs data is compressed, uncompress it
-                    unsigned char *glypsDataCompressed = RAYGUI_MALLOC(glyphsDataCompressedSize);
+                    unsigned char *glypsDataCompressed = (unsigned char *)RAYGUI_MALLOC(glyphsDataCompressedSize);
 
                     memcpy(glypsDataCompressed, fileDataPtr, glyphsDataCompressedSize);
                     fileDataPtr += glyphsDataCompressedSize;
@@ -4269,7 +4275,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
 }
 
 // Gui get text width considering icon
-static int GetTextWidth(const char *text)
+int GetTextWidth(const char *text)
 {
     #if !defined(ICON_TEXT_PADDING)
         #define ICON_TEXT_PADDING   4
@@ -4331,7 +4337,7 @@ static int GetTextWidth(const char *text)
 }
 
 // Get text bounds considering control bounds
-static Rectangle GetTextBounds(int control, Rectangle bounds)
+Rectangle GetTextBounds(int control, Rectangle bounds)
 {
     Rectangle textBounds = bounds;
 
@@ -4358,7 +4364,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 
 // Get text icon if provided and move text cursor
 // NOTE: We support up to 999 values for iconId
-static const char *GetTextIcon(const char *text, int *iconId)
+const char *GetTextIcon(const char *text, int *iconId)
 {
 #if !defined(RAYGUI_NO_ICONS)
     *iconId = -1;
@@ -4421,7 +4427,7 @@ const char **GetTextLines(const char *text, int *count)
 }
 
 // Gui draw text using default font
-static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
+void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
     #define TEXT_VALIGN_PIXEL_OFFSET(h)  ((int)h%2)     // Vertical alignment for pixel perfect
 
@@ -4545,7 +4551,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 }
 
 // Gui draw rectangle using default raygui plain style with borders
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
+void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
 {
     if (color.a > 0)
     {
@@ -4564,7 +4570,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 }
 
 // Draw tooltip using control bounds
-static void GuiTooltip(Rectangle controlRec)
+void GuiTooltip(Rectangle controlRec)
 {
     if (!guiLocked && guiTooltip && (guiTooltipPtr != NULL) && !guiSliderDragging)
     {
@@ -4586,7 +4592,7 @@ static void GuiTooltip(Rectangle controlRec)
 
 // Split controls text into multiple strings
 // Also check for multiple columns (required by GuiToggleGroup())
-static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow)
+const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow)
 {
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
@@ -4643,7 +4649,7 @@ static const char **GuiTextSplit(const char *text, char delimiter, int *count, i
 
 // Convert color data from RGB to HSV
 // NOTE: Color data should be passed normalized
-static Vector3 ConvertRGBtoHSV(Vector3 rgb)
+Vector3 ConvertRGBtoHSV(Vector3 rgb)
 {
     Vector3 hsv = { 0 };
     float min = 0.0f;
@@ -4696,7 +4702,7 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb)
 
 // Convert color data from HSV to RGB
 // NOTE: Color data should be passed normalized
-static Vector3 ConvertHSVtoRGB(Vector3 hsv)
+Vector3 ConvertHSVtoRGB(Vector3 hsv)
 {
     Vector3 rgb = { 0 };
     float hh = 0.0f, p = 0.0f, q = 0.0f, t = 0.0f, ff = 0.0f;
@@ -4766,7 +4772,7 @@ static Vector3 ConvertHSVtoRGB(Vector3 hsv)
 }
 
 // Scroll bar control (used by GuiScrollPanel())
-static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
+int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 {
     GuiState state = guiState;
 
