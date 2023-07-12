@@ -1491,7 +1491,7 @@ int GuiWindowBox(Rectangle bounds, const char *title)
     GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 #if defined(RAYGUI_NO_ICONS)
-    clicked = GuiButton(closeButtonRec, "x");
+    result = GuiButton(closeButtonRec, "x");
 #else
     result = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
 #endif
