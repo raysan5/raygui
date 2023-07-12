@@ -4174,7 +4174,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
                 {
                     // Recs data is compressed, uncompress it
-                    unsigned char *recsDataCompressed = RAYGUI_MALLOC(recsDataCompressedSize);
+                    unsigned char *recsDataCompressed = (unsigned char*)RAYGUI_MALLOC(recsDataCompressedSize);
 
                     memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
                     fileDataPtr += recsDataCompressedSize;
