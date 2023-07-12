@@ -75,7 +75,7 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             GuiGroupBox((Rectangle){ 66, 24, 276, 312 }, "STANDARD");
-            value = GuiSlider((Rectangle){ 96, 48, 216, 16 }, TextFormat("%0.2f", value), NULL, &value, 0.0f, 1.0f);
+            GuiSlider((Rectangle){ 96, 48, 216, 16 }, TextFormat("%0.2f", value), NULL, &value, 0.0f, 1.0f);
             value = GuiVerticalSlider((Rectangle){ 120, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
             value = GuiVerticalSliderBar((Rectangle){ 264, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
 
