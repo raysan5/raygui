@@ -12,6 +12,7 @@
 *
 **********************************************************************************************/
 
+// You must import raygui after this define
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_STANDALONE
 #include "../../src/raygui.h"

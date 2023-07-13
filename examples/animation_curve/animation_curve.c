@@ -18,6 +18,8 @@
 #include "raylib.h"
 
 #define RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT 24
+
+// You must import raygui after this define
 #define RAYGUI_IMPLEMENTATION
 #include "../../src/raygui.h"
 

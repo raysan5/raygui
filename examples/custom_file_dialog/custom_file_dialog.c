@@ -17,6 +17,7 @@
 
 #include "raylib.h"
 
+// You must import raygui after this define
 #define RAYGUI_IMPLEMENTATION
 #include "../../src/raygui.h"
 
