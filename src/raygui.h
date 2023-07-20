@@ -2858,21 +2858,18 @@ int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRi
             }
             else state = STATE_FOCUSED;
         }
+        else if (*value) state = STATE_PRESSED;
     }
 
     // Bar limits check
-    if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
+    if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + 1;
     else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
     //--------------------------------------------------------------------
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
-
-    // Draw slider internal bar (depends on state)
-    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
-    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_PRESSED)), guiAlpha));
+    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, (*value || state == STATE_FOCUSED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
+    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
 
     // Draw text in slider
     if (text != NULL)
@@ -2883,7 +2880,7 @@ int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRi
         textBounds.x = slider.x + slider.width/2 - textBounds.width/2;
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
-        GuiDrawText(text, textBounds, TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(text, textBounds, TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     }
 
     // Draw left/right text if provided
@@ -2895,7 +2892,7 @@ int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRi
         textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
-        GuiDrawText(textLeft, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(textLeft, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     }
 
     if (textRight != NULL)
@@ -2906,7 +2903,7 @@ int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRi
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
-        GuiDrawText(textRight, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(textRight, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     }
     //--------------------------------------------------------------------
 
