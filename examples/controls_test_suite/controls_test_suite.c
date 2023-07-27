@@ -121,6 +121,8 @@ int main()
 
     char textInputFileName[256] = { 0 };
 
+    float alpha = 1.0f;
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -144,9 +146,17 @@ int main()
             UnloadDroppedFiles(droppedFiles);    // Clear internal buffers
         }
 
-        progressValue += 0.002f;
-        //if (progressValue >= 1.0f) progressValue = 0.0f;
-        if (IsKeyPressed(KEY_SPACE)) progressValue = 0.2f;
+        //alpha -= 0.002f;
+        if (alpha < 0.0f) alpha = 0.0f;
+        if (IsKeyPressed(KEY_SPACE)) alpha = 1.0f;
+
+        GuiSetAlpha(alpha);
+
+        //progressValue += 0.002f;
+        if (IsKeyPressed(KEY_LEFT)) progressValue -= 0.1f;
+        else if (IsKeyPressed(KEY_RIGHT)) progressValue += 0.1f;
+        if (progressValue > 1.0f) progressValue = 1.0f;
+        else if (progressValue < 0.0f) progressValue = 0.0f;
 
         if (visualStyleActive != prevVisualStyleActive)
         {
