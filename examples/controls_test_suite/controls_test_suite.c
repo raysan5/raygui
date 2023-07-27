@@ -231,8 +231,7 @@ int main()
             GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
 
             //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
-            if (IsKeyDown(KEY_SPACE)) GuiToggleSliderGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
-            else GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
+            GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
             //GuiDisable();
             GuiToggleSlider((Rectangle){ 165, 510, 140, 25 }, (toggleSlider)? "ON" : "OFF", &toggleSlider);
 

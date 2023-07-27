@@ -629,8 +629,6 @@ RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int *active);  
 RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked);                          // Check Box control, returns true when active
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);                            // Combo Box control, returns selected item index
 RAYGUIAPI int GuiToggleSlider(Rectangle bounds, const char *text, bool *active);                       // Toggle Slider control, returns true when clicked
-RAYGUIAPI int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRight, const char *text, bool *active); // Toggle Slider control extended, returns true when clicked
-RAYGUIAPI int GuiToggleSliderGroup(Rectangle bounds, const char *text, int *active);                   // Toggle Slider Group control, returns active toggle index
 
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
@@ -2812,55 +2810,6 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     return result;
 }
 
-// Toggle Slider Group control, returns toggled button codepointIndex
-int GuiToggleSliderGroup(Rectangle bounds, const char *text, int *active)
-{
-    #if !defined(RAYGUI_TOGGLEGROUP_MAX_ITEMS)
-        #define RAYGUI_TOGGLEGROUP_MAX_ITEMS    32
-    #endif
-
-    int result = 0;
-    float initBoundsX = bounds.x;
-
-    int temp = 0;
-    if (active == NULL) active = &temp;
-
-    bool toggle = false;    // Required for individual toggles
-
-    // Get substrings items from text (items pointers)
-    int rows[RAYGUI_TOGGLEGROUP_MAX_ITEMS] = { 0 };
-    int itemCount = 0;
-    const char **items = GuiTextSplit(text, ';', &itemCount, rows);
-
-    int prevRow = rows[0];
-
-    for (int i = 0; i < itemCount; i++)
-    {
-        if (prevRow != rows[i])
-        {
-            bounds.x = initBoundsX;
-            bounds.y += (bounds.height + GuiGetStyle(TOGGLE, GROUP_PADDING));
-            prevRow = rows[i];
-        }
-
-        if (i == (*active))
-        {
-            toggle = true;
-            GuiToggleSlider(bounds, items[i], &toggle);
-        }
-        else
-        {
-            toggle = false;
-            GuiToggleSlider(bounds, items[i], &toggle);
-            if (toggle) *active = i;
-        }
-
-        bounds.x += (bounds.width + GuiGetStyle(TOGGLE, GROUP_PADDING));
-    }
-
-    return result;
-}
-
 // Slider control extended, returns selected value and has text
 int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
 {
@@ -2873,13 +2822,8 @@ int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, 
     return GuiSliderPro(bounds, textLeft, textRight, value, minValue, maxValue, 0);
 }
 
-// Toggle Slider control, returns true when clicked
-int GuiToggleSlider(Rectangle bounds, const char *text, bool *value) {
-    return GuiToggleSliderEx(bounds, NULL, NULL, text, value);
-}
-
 // Toggle Slider control extended, returns true when clicked
-int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRight, const char *text, bool *value)
+int GuiToggleSlider(Rectangle bounds, const char *text, bool *value)
 {
     int result = 0;
     GuiState state = guiState;
@@ -2936,30 +2880,7 @@ int GuiToggleSliderEx(Rectangle bounds, const char *textLeft, const char *textRi
         textBounds.x = slider.x + slider.width/2 - textBounds.width/2;
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
 
-        GuiDrawText(text, textBounds, TEXT_ALIGN_CENTER, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
-    }
-
-    // Draw left/right text if provided
-    if (textLeft != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textLeft);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-
-        GuiDrawText(textLeft, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
-    }
-
-    if (textRight != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textRight);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-
-        GuiDrawText(textRight, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+        GuiDrawText(text, textBounds, GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
     }
     //--------------------------------------------------------------------
 
