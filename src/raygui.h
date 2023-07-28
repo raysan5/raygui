@@ -4878,14 +4878,16 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 
         if (guiSliderDragging) // Keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) &&
+                !CheckCollisionPointRec(mousePoint, arrowUpLeft) &&
+                !CheckCollisionPointRec(mousePoint, arrowDownRight))
             {
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
                     state = STATE_PRESSED;
 
-                    if (isVertical) value += (int)(GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
-                    else value += (int)(GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
+                    if (isVertical) value = (int)(((float)(mousePoint.y - scrollbar.y - slider.height/2)*valueRange)/(scrollbar.height - slider.height) + minValue);
+                    else value = (int)(((float)(mousePoint.x - scrollbar.x - slider.width/2)*valueRange)/(scrollbar.width - slider.width) + minValue);
                 }
             }
             else
@@ -4919,11 +4921,6 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
                 }
 
                 state = STATE_PRESSED;
-            }
-            else if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-            {
-                if (isVertical) value += (int)(GetMouseDelta().y/(scrollbar.height - slider.height)*valueRange);
-                else value += (int)(GetMouseDelta().x/(scrollbar.width - slider.width)*valueRange);
             }
 
             // Keyboard control on mouse hover scrollbar
