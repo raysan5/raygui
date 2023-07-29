@@ -24,6 +24,12 @@
 #define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
 #include "gui_window_file_dialog.h"
 
+#ifdef _WIN32
+#define PATH_SEPERATOR "\\"
+#else
+#define PATH_SEPERATOR "/"
+#endif
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -61,7 +67,7 @@ int main()
             // Load image file (if supported extension)
             if (IsFileExtension(fileDialogState.fileNameText, ".png"))
             {
-                strcpy(fileNameToLoad, TextFormat("%s/%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
+                strcpy(fileNameToLoad, TextFormat("%s" PATH_SEPERATOR "%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
                 UnloadTexture(texture);
                 texture = LoadTexture(fileNameToLoad);
             }
