@@ -348,6 +348,7 @@ endif
 EXAMPLES = \
     controls_test_suite/controls_test_suite \
     custom_file_dialog/custom_file_dialog \
+    custom_input_box/custom_input_box\
     image_exporter/image_exporter \
     image_importer_raw/image_importer_raw \
     property_list/property_list \
