@@ -24,12 +24,6 @@
 #define GUI_WINDOW_FILE_DIALOG_IMPLEMENTATION
 #include "gui_window_file_dialog.h"
 
-#ifdef _WIN32
-#define PATH_SEPERATOR "\\"
-#else
-#define PATH_SEPERATOR "/"
-#endif
-
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
