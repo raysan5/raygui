@@ -126,6 +126,11 @@ void GuiWindowFileDialog(GuiWindowFileDialogState *state);
 //----------------------------------------------------------------------------------
 #define MAX_DIRECTORY_FILES    2048
 #define MAX_ICON_PATH_LENGTH    512
+#ifdef _WIN32
+#define PATH_SEPERATOR "\\"
+#else
+#define PATH_SEPERATOR "/"
+#endif
 
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
