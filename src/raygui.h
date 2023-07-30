@@ -4482,7 +4482,9 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 textSizeX += RAYGUI_ICON_SIZE*guiIconScale;
 
                 // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
+#if !defined(RAYGUI_NO_ICONS)
                 if ((lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX += ICON_TEXT_PADDING;
+#endif
             }
 
             // Check guiTextAlign global variables
