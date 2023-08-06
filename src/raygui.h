@@ -4685,7 +4685,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                             if ((boundsPos.x + textOffsetX + glyphWidth) > (bounds.x + bounds.width))
                             {
                                 textOffsetX = 0.0f;
-                                textOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                                textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
 
                                 DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                             }
