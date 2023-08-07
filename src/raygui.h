@@ -628,6 +628,7 @@ RAYGUIAPI int GuiToggle(Rectangle bounds, const char *text, bool *active);      
 RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int *active);                         // Toggle Group control, returns active toggle index
 RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked);                          // Check Box control, returns true when active
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);                            // Combo Box control, returns selected item index
+RAYGUIAPI int GuiToggleSlider(Rectangle bounds, const char *text, bool *active);                       // Toggle Slider control, returns true when clicked
 
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
@@ -2821,6 +2822,71 @@ int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, 
     return GuiSliderPro(bounds, textLeft, textRight, value, minValue, maxValue, 0);
 }
 
+// Toggle Slider control extended, returns true when clicked
+int GuiToggleSlider(Rectangle bounds, const char *text, bool *value)
+{
+    int result = 0;
+    GuiState state = guiState;
+
+    Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
+                         0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
+
+    if (*value)
+    {
+        slider.x += bounds.width/2;
+        slider.width = bounds.width/2 - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
+    }
+    else
+    {
+        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
+        slider.width = bounds.width/2 - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
+    }
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                state = STATE_PRESSED;
+                *value = !(*value);
+                result = 1;
+            }
+            else state = STATE_FOCUSED;
+        }
+        else if (*value) state = STATE_PRESSED;
+    }
+
+    // Bar limits check
+    if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + 1;
+    else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, (*value || state == STATE_FOCUSED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
+    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
+
+    // Draw text in slider
+    if (text != NULL)
+    {
+        Rectangle textBounds = { 0 };
+        textBounds.width = (float)GetTextWidth(text);
+        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = slider.x + slider.width/2 - textBounds.width/2;
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+
+        GuiDrawText(text, textBounds, GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+    }
+    //--------------------------------------------------------------------
+
+    return result;
+}
+
 // Progress Bar control extended, shows current progress value
 int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
 {
@@ -4685,7 +4751,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                             if ((boundsPos.x + textOffsetX + glyphWidth) > (bounds.x + bounds.width))
                             {
                                 textOffsetX = 0.0f;
-                                textOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                                textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
 
                                 DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                             }
