@@ -104,7 +104,7 @@ int main()
     int prevVisualStyleActive = 0;
 
     int toggleGroupActive = 0;
-    bool toggleSlider = false;
+    int toggleSliderActive = 0;
 
     Vector2 viewScroll = { 0, 0 };
     //----------------------------------------------------------------------------------
@@ -233,7 +233,7 @@ int main()
             //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
             GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
             //GuiDisable();
-            GuiToggleSlider((Rectangle){ 165, 510, 140, 25 }, (toggleSlider)? "ON" : "OFF", &toggleSlider);
+            GuiToggleSlider((Rectangle){ 165, 510, 140, 25 }, "ON;OFF", &toggleSliderActive);
 
             // Third GUI column
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");

@@ -136,7 +136,9 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       4.0 (xx-Jun-2023) REDESIGNED: GuiScrollPanel(), get parameters by reference and return result value
+*       4.0 (xx-Jun-2023) ADDED: GuiToggleSlider()
+*                         REDESIGNED: Global alpha consideration moved to GuiDrawRectangle() and GuiDrawText() 
+*                         REDESIGNED: GuiScrollPanel(), get parameters by reference and return result value
 *                         REDESIGNED: GuiToggleGroup(), get parameters by reference and return result value
 *                         REDESIGNED: GuiComboBox(), get parameters by reference and return result value
 *                         REDESIGNED: GuiCheckBox(), get parameters by reference and return result value
@@ -626,9 +628,9 @@ RAYGUIAPI int GuiButton(Rectangle bounds, const char *text);                    
 RAYGUIAPI int GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
 RAYGUIAPI int GuiToggle(Rectangle bounds, const char *text, bool *active);                             // Toggle Button control, returns true when active
 RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int *active);                         // Toggle Group control, returns active toggle index
+RAYGUIAPI int GuiToggleSlider(Rectangle bounds, const char *text, int *active);                        // Toggle Slider control, returns true when clicked
 RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked);                          // Check Box control, returns true when active
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);                            // Combo Box control, returns selected item index
-RAYGUIAPI int GuiToggleSlider(Rectangle bounds, const char *text, bool *active);                       // Toggle Slider control, returns true when clicked
 
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
@@ -1992,6 +1994,77 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
     return result;
 }
 
+// Toggle Slider control extended, returns true when clicked
+int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
+{
+    int result = 0;
+    GuiState state = guiState;
+
+    int temp = 0;
+    if (active == NULL) active = &temp;
+
+    bool toggle = false;    // Required for individual toggles
+
+    // Get substrings items from text (items pointers)
+    int itemCount = 0;
+    const char **items = GuiTextSplit(text, ';', &itemCount, NULL);
+
+    Rectangle slider = { 
+        0,      // Calculated later depending on the active toggle
+        bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
+        (bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - (itemCount + 1)*GuiGetStyle(SLIDER, SLIDER_PADDING))/itemCount, 
+        bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                state = STATE_PRESSED;
+                (*active)++;
+                result = 1;
+            }
+            else state = STATE_FOCUSED;
+        }
+        else if (*active) state = STATE_PRESSED;
+    }
+
+    if (*active >= itemCount) *active = 0;
+    slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + (*active + 1)*GuiGetStyle(SLIDER, SLIDER_PADDING) + (*active)*slider.width;
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), GetColor(GuiGetStyle(TOGGLE, BORDER + (state*3))), 
+        GetColor(GuiGetStyle(TOGGLE, BASE_COLOR_NORMAL)));
+    
+    // Draw internal slider
+    if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
+    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_FOCUSED)));
+    else if (state == STATE_PRESSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
+
+    // Draw text in slider
+    if (text != NULL)
+    {
+        Rectangle textBounds = { 0 };
+        textBounds.width = (float)GetTextWidth(text);
+        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = slider.x + slider.width/2 - textBounds.width/2;
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
+
+        GuiDrawText(items[*active], textBounds, GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(TOGGLE, TEXT + (state*3))), guiAlpha));
+    }
+    //--------------------------------------------------------------------
+
+    return result;
+}
+
 // Check Box control, returns true when active
 int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
 {
@@ -2820,71 +2893,6 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
 int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
 {
     return GuiSliderPro(bounds, textLeft, textRight, value, minValue, maxValue, 0);
-}
-
-// Toggle Slider control extended, returns true when clicked
-int GuiToggleSlider(Rectangle bounds, const char *text, bool *value)
-{
-    int result = 0;
-    GuiState state = guiState;
-
-    Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-                         0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
-
-    if (*value)
-    {
-        slider.x += bounds.width/2;
-        slider.width = bounds.width/2 - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-    else
-    {
-        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.width = bounds.width/2 - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
-            {
-                state = STATE_PRESSED;
-                *value = !(*value);
-                result = 1;
-            }
-            else state = STATE_FOCUSED;
-        }
-        else if (*value) state = STATE_PRESSED;
-    }
-
-    // Bar limits check
-    if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + 1;
-    else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, (*value || state == STATE_FOCUSED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
-    GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
-
-    // Draw text in slider
-    if (text != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(text);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = slider.x + slider.width/2 - textBounds.width/2;
-        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-
-        GuiDrawText(text, textBounds, GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
-    }
-    //--------------------------------------------------------------------
-
-    return result;
 }
 
 // Progress Bar control extended, shows current progress value
