@@ -93,7 +93,7 @@ int main()
 
     float sliderValue = 50.0f;
     float sliderBarValue = 60;
-    float progressValue = 0.4f;
+    float progressValue = 0.1f;
 
     bool forceSquaredChecked = false;
 
@@ -164,14 +164,14 @@ int main()
 
             switch (visualStyleActive)
             {
-            case 0: break;      // Default style
-            case 1: GuiLoadStyleJungle(); break;
-            case 2: GuiLoadStyleLavanda(); break;
-            case 3: GuiLoadStyleDark(); break;
-            case 4: GuiLoadStyleBluish(); break;
-            case 5: GuiLoadStyleCyber(); break;
-            case 6: GuiLoadStyleTerminal(); break;
-            default: break;
+                case 0: break;      // Default style
+                case 1: GuiLoadStyleJungle(); break;
+                case 2: GuiLoadStyleLavanda(); break;
+                case 3: GuiLoadStyleDark(); break;
+                case 4: GuiLoadStyleBluish(); break;
+                case 5: GuiLoadStyleCyber(); break;
+                case 6: GuiLoadStyleTerminal(); break;
+                default: break;
             }
 
             GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
@@ -216,7 +216,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 470, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", &visualStyleActive);
+            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             GuiUnlock();
@@ -227,13 +227,13 @@ int main()
             if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
 
             // Second GUI column
-            GuiListView((Rectangle){ 165, 25, 140, 140 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
-            GuiListViewEx((Rectangle){ 165, 180, 140, 200 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
+            GuiListView((Rectangle){ 165, 25, 140, 124 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
+            GuiListViewEx((Rectangle){ 165, 162, 140, 184 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
 
             //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
-            GuiToggleGroup((Rectangle){ 165, 400, 140, 25 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
+            GuiToggleGroup((Rectangle){ 165, 360, 140, 24 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
             //GuiDisable();
-            GuiToggleSlider((Rectangle){ 165, 510, 140, 25 }, "ON;OFF", &toggleSliderActive);
+            GuiToggleSlider((Rectangle){ 165, 480, 140, 30 }, "ON;OFF", &toggleSliderActive);
 
             // Third GUI column
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
