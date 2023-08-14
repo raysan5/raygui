@@ -137,7 +137,7 @@
 *
 *   VERSIONS HISTORY:
 *       4.0 (xx-Jun-2023) ADDED: GuiToggleSlider()
-*                         REDESIGNED: Global alpha consideration moved to GuiDrawRectangle() and GuiDrawText() 
+*                         REDESIGNED: Global alpha consideration moved to GuiDrawRectangle() and GuiDrawText()
 *                         REDESIGNED: GuiScrollPanel(), get parameters by reference and return result value
 *                         REDESIGNED: GuiToggleGroup(), get parameters by reference and return result value
 *                         REDESIGNED: GuiComboBox(), get parameters by reference and return result value
@@ -1588,7 +1588,7 @@ int GuiPanel(Rectangle bounds, const char *text)
     {
         // Move panel bounds after the header bar
         bounds.y += (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1;
-        bounds.height -= (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + 1;
+        bounds.height -= (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1;
     }
 
     // Draw control
@@ -2009,10 +2009,10 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     int itemCount = 0;
     const char **items = GuiTextSplit(text, ';', &itemCount, NULL);
 
-    Rectangle slider = { 
+    Rectangle slider = {
         0,      // Calculated later depending on the active toggle
         bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-        (bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - (itemCount + 1)*GuiGetStyle(SLIDER, SLIDER_PADDING))/itemCount, 
+        (bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - (itemCount + 1)*GuiGetStyle(SLIDER, SLIDER_PADDING))/itemCount,
         bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
 
     // Update control
@@ -2041,9 +2041,9 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
 
     // Draw control
     //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), GetColor(GuiGetStyle(TOGGLE, BORDER + (state*3))), 
+    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), GetColor(GuiGetStyle(TOGGLE, BORDER + (state*3))),
         GetColor(GuiGetStyle(TOGGLE, BASE_COLOR_NORMAL)));
-    
+
     // Draw internal slider
     if (state == STATE_NORMAL) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)));
     else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, GetColor(GuiGetStyle(SLIDER, BASE_COLOR_FOCUSED)));
@@ -3039,7 +3039,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     GuiState state = guiState;
 
     int itemFocused = (focus == NULL)? -1 : *focus;
-    int itemSelected = *active;
+    int itemSelected = (active == NULL)? -1 : *active;
 
     // Check if we need a scroll bar
     bool useScrollBar = false;
@@ -3124,13 +3124,13 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
         }
         else
         {
-            if ((startIndex + i) == itemSelected)
+            if (((startIndex + i) == itemSelected) && (active != NULL))
             {
                 // Draw item selected
                 GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)));
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_PRESSED)));
             }
-            else if ((startIndex + i) == itemFocused)
+            else if (((startIndex + i) == itemFocused) && (focus != NULL))
             {
                 // Draw item focused
                 GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)));
@@ -3171,10 +3171,10 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     }
     //--------------------------------------------------------------------
 
+    if (active != NULL) *active = itemSelected;
     if (focus != NULL) *focus = itemFocused;
     if (scrollIndex != NULL) *scrollIndex = startIndex;
 
-    *active = itemSelected;
     return result;
 }
 
