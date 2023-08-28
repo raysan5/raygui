@@ -4417,10 +4417,10 @@ static int GetTextWidth(const char *text)
                 int codepoint = GetCodepointNext(&text[i], &codepointSize);
                 int codepointIndex = GetGlyphIndex(guiFont, codepoint);
 
-                if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-                else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor + GuiGetStyle(DEFAULT, TEXT_SPACING));
+                if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor);
+                else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor);
 
-                textSize.x += glyphWidth;
+                textSize.x += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
             }
         }
 
@@ -4646,6 +4646,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         int textOffsetY = 0;
         float textOffsetX = 0.0f;
+        float glyphWidth = 0;
         for (int c = 0, codepointSize = 0; c < lineSize; c += codepointSize)
         {
             int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
@@ -4660,7 +4661,6 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             if (wrapMode == 1)
             {
                 // Get glyph width to check if it goes out of bounds
-                float glyphWidth = 0;
                 if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
                 else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
 
@@ -4696,7 +4696,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                     if (wrapMode == 0)          // 0-NO_WRAP
                     {
                         // Draw only required text glyphs fitting the bounds.width
-                        if (textOffsetX < (bounds.width - guiFont.recs[index].width))
+                        if (textOffsetX <= (bounds.width - glyphWidth))
                         {
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
