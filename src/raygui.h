@@ -4524,7 +4524,7 @@ const char **GetTextLines(const char *text, int *count)
 }
 
 // Get text width to next space for provided string
-static int GetNextSpaceWidth(const char *text, int nextSpaceIndex)
+static int GetNextSpaceWidth(const char *text, int* nextSpaceIndex)
 {
     int width = 0;
     int codepointByteCount = 0;
@@ -4544,7 +4544,7 @@ static int GetNextSpaceWidth(const char *text, int nextSpaceIndex)
         }
         else
         {
-            nextSpaceIndex = i;
+            *nextSpaceIndex = i;
             break;
         }
     }
