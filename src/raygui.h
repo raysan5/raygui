@@ -1280,7 +1280,7 @@ static const char *guiTooltipPtr = NULL;        // Tooltip string pointer (strin
 static bool guiSliderDragging = false;          // Gui slider drag state (no inputs processed except dragged slider)
 static Rectangle guiSliderActive = { 0 };       // Gui slider active bounds rectangle, used as an unique identifier
 
-static unsigned int textBoxCursorIndex = 0;     // Cursor index, shared by all GuiTextBox*()
+static int textBoxCursorIndex = 0;     // Cursor index, shared by all GuiTextBox*()
 //static int blinkCursorFrameCounter = 0;       // Frame counter for cursor blinking
 static int autoCursorCooldownCounter = 0;       // Cooldown frame counter for automatic cursor movement on key-down
 static int autoCursorDelayCounter = 0;          // Delay frame counter for automatic cursor movement
@@ -2391,7 +2391,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                 textWidth = GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex);
             }
 
-            unsigned int textLength = (unsigned int)strlen(text);     // Get current text length
+            int textLength = (int)strlen(text);     // Get current text length
             int codepoint = GetCharPressed();       // Get Unicode codepoint
             if (multiline && IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
 
@@ -4444,10 +4444,13 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
 
     // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
-    // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
-    // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
     switch (control)
     {
+        case COMBOBOX:
+        case DROPDOWNBOX:
+        case LISTVIEW:
+            // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
+            // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
         default:
         {
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
