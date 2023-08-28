@@ -35,6 +35,9 @@
 
 #include "raylib.h"
 
+//#define RAYGUI_DEBUG_RECS_BOUNDS
+//#define RAYGUI_DEBUG_TEXT_BOUNDS
+
 #define RAYGUI_IMPLEMENTATION
 //#define RAYGUI_CUSTOM_ICONS     // It requires providing gui_icons.h in the same directory
 //#include "gui_icons.h"          // External icons data provided, it can be generated with rGuiIcons tool
@@ -56,7 +59,7 @@ int main()
 {
     // Initialization
     //---------------------------------------------------------------------------------------
-    const int screenWidth = 690;
+    const int screenWidth = 960;
     const int screenHeight = 560;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
@@ -78,6 +81,9 @@ int main()
 
     char textBoxText[64] = "Text box";
     bool textBoxEditMode = false;
+
+    char textBoxMultiText[1024] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    bool textBoxMultiEditMode = false;
 
     int listViewScrollIndex = 0;
     int listViewActive = -1;
@@ -243,7 +249,7 @@ int main()
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
             GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
             
-            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat(" %i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
+            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
             GuiEnable();
 
             // NOTE: View rectangle could be used to perform some scissor test
@@ -251,11 +257,19 @@ int main()
             GuiScrollPanel((Rectangle){ 560, 25, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll, &view);
 
             Vector2 mouseCell = { 0 };
-            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 2, &mouseCell);
+            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 3, &mouseCell);
 
-            GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
+            //GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
 
             GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
+
+            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);   // 0-CENTERED, 1-TOP, 2-BOTTOM (does not work as expected in case of vertical alignment)
+            GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 1);            // 0-OFF (single line), 1-OFF (multiple text lines supported)
+            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, 2);            // 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP (if wrap mode enabled, text editing is not supported)
+            if (GuiTextBox((Rectangle){ 678, 25, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
+            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, 0);
+            GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 0);
+            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
 
             if (showMessageBox)
             {
@@ -269,7 +283,7 @@ int main()
             if (showTextInputBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, "Save", GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Ok;Cancel", textInput, 255, NULL);
+                int result = GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", "Ok;Cancel", textInput, 255, NULL);
 
                 if (result == 1)
                 {

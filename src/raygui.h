@@ -132,6 +132,9 @@
 *           Includes custom ricons.h header defining a set of custom icons,
 *           this file can be generated using rGuiIcons tool
 *
+*       #define RAYGUI_DEBUG_RECS_BOUNDS
+*           Draw control bounds rectangles for debug
+* 
 *       #define RAYGUI_DEBUG_TEXT_BOUNDS
 *           Draw text bounds rectangles for debug
 *
@@ -1380,7 +1383,7 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color
 static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
 static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
 
-static Color GuiFade(Color color, float alpha);
+static Color GuiFade(Color color, float alpha);         // Fade color by an alpha factor
 
 //----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
@@ -2330,6 +2333,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
     int multiline = GuiGetStyle(TEXTBOX, TEXT_MULTILINE);
+    int wrapMode = GuiGetStyle(TEXTBOX, TEXT_WRAP_MODE);
 
     // Cursor rectangle
     // NOTE: Position X value should be updated
@@ -2366,7 +2370,8 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging && (GuiGetStyle(TEXTBOX, TEXT_READONLY) == 0))
+    // WARNING: If wrapMode is enabled, text editing is not supported
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging && (GuiGetStyle(TEXTBOX, TEXT_READONLY) == 0) && (wrapMode == 0))
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -3725,8 +3730,9 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
     Vector2 mousePoint = GetMousePosition();
     Vector2 currentMouseCell = { 0 };
 
-    int linesV = ((int)(bounds.width/spacing))*subdivs + subdivs;
-    int linesH = ((int)(bounds.height/spacing))*subdivs + subdivs;
+    float spaceWidth = spacing/(float)subdivs;
+    int linesV = (int)(bounds.width/spaceWidth) + 1;
+    int linesH = (int)(bounds.height/spaceWidth) + 1;
 
     // Update control
     //--------------------------------------------------------------------
@@ -3930,6 +3936,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
     GuiSetStyle(BUTTON, BORDER_WIDTH, 2);
     GuiSetStyle(SLIDER, TEXT_PADDING, 4);
+    GuiSetStyle(PROGRESSBAR, TEXT_PADDING, 4);
     GuiSetStyle(CHECKBOX, TEXT_PADDING, 4);
     GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_RIGHT);
     GuiSetStyle(TEXTBOX, TEXT_PADDING, 4);
@@ -4513,6 +4520,35 @@ const char **GetTextLines(const char *text, int *count)
     return lines;
 }
 
+// Get text width to next space for provided string
+static int GetNextSpaceWidth(const char *text, int nextSpaceIndex)
+{
+    int width = 0;
+    int codepointByteCount = 0;
+    int codepoint = 0;
+    int index = 0;
+    float glyphWidth = 0;
+    float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
+
+    for (int i = 0; text[i] != '\0'; i++)
+    {
+        if (text[i] != ' ')
+        {
+            codepoint = GetCodepoint(&text[i], &codepointByteCount);
+            index = GetGlyphIndex(guiFont, codepoint);
+            glyphWidth = (guiFont.glyphs[index].advanceX == 0)? guiFont.recs[index].width*scaleFactor : guiFont.glyphs[index].advanceX*scaleFactor;
+            width += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        }
+        else
+        {
+            nextSpaceIndex = i;
+            break;
+        }
+    }
+
+    return width;
+}
+
 // Gui draw text using default font
 static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
 {
@@ -4522,267 +4558,171 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         #define ICON_TEXT_PADDING   4
     #endif
 
-    int wrapMode = GuiGetStyle(TEXTBOX, TEXT_WRAP_MODE);
+    if ((text == NULL) || (text[0] == '\0')) return;    // Security check
+
+    // PROCEDURE:
+    //   - Text is processed line per line
+    //   - For every line, horizontal alignment is defined
+    //   - For all text, vertical alignment is defined (multiline text only)
+    //   - For every line, wordwrap mode is checked (useful for GuitextBox(), read-only)
+
+    // Get text lines (using '\n' as delimiter) to be processed individually
+    // WARNING: We can't use GuiTextSplit() function because it can be already used
+    // before the GuiDrawText() call and its buffer is static, it would be overriden :(
+    int lineCount = 0;
+    const char **lines = GetTextLines(text, &lineCount);
+
+    // TextBox specific variables
+    int wrapMode = GuiGetStyle(TEXTBOX, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
     int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
 
-    // We process the text lines one by one
-    if ((text != NULL) && (text[0] != '\0'))
+    // TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
+    float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
+    float posOffsetY = 0.0f;
+
+    for (int i = 0; i < lineCount; i++)
     {
-        // Get text lines ('\n' delimiter) to process lines individually
-        // NOTE: We can't use GuiTextSplit() because it can be already used before calling
-        // GuiDrawText() and static buffer would be overriden :(
-        int lineCount = 0;
-        const char **lines = GetTextLines(text, &lineCount);
+        int iconId = 0;
+        lines[i] = GetTextIcon(lines[i], &iconId);      // Check text for icon and move cursor
 
-        //Rectangle textBounds = GetTextBounds(LABEL, bounds);
-        float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
-        float posOffsetY = 0;
+        // Get text position depending on alignment and iconId
+        //---------------------------------------------------------------------------------
+        Vector2 boundsPos = { bounds.x, bounds.y };
 
-        for (int i = 0; i < lineCount; i++)
+        // NOTE: We get text size after icon has been processed
+        // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
+        int textSizeX = GetTextWidth(lines[i]);
+
+        // If text requires an icon, add size to measure
+        if (iconId >= 0)
         {
-            int iconId = 0;
-            lines[i] = GetTextIcon(lines[i], &iconId);      // Check text for icon and move cursor
+            textSizeX += RAYGUI_ICON_SIZE*guiIconScale;
 
-            // Get text position depending on alignment and iconId
-            //---------------------------------------------------------------------------------
-            Vector2 boundsPos = { bounds.x, bounds.y };
-
-            // NOTE: We get text size after icon has been processed
-            // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
-            int textSizeX = GetTextWidth(lines[i]);
-
-            // If text requires an icon, add size to measure
-            if (iconId >= 0)
-            {
-                textSizeX += RAYGUI_ICON_SIZE*guiIconScale;
-
-                // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
+            // WARNING: If only icon provided, text could be pointing to EOF character: '\0'
 #if !defined(RAYGUI_NO_ICONS)
-                if ((lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX += ICON_TEXT_PADDING;
+            if ((lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX += ICON_TEXT_PADDING;
 #endif
-            }
-
-            // Check guiTextAlign global variables
-            switch (alignment)
-            {
-                case TEXT_ALIGN_LEFT: boundsPos.x = bounds.x; break;
-                case TEXT_ALIGN_CENTER: boundsPos.x = bounds.x +  bounds.width/2 - textSizeX/2; break;
-                case TEXT_ALIGN_RIGHT: boundsPos.x = bounds.x + bounds.width - textSizeX; break;
-                default: break;
-            }
-
-            switch (alignmentVertical)
-            {
-                case 0: boundsPos.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // CENTERED
-                case 1: boundsPos.y = bounds.y + posOffsetY; break;  // UP
-                case 2: boundsPos.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
-                default: break;
-            }
-
-            // NOTE: Make sure we get pixel-perfect coordinates,
-            // In case of decimals we got weird text positioning
-            boundsPos.x = (float)((int)boundsPos.x);
-            boundsPos.y = (float)((int)boundsPos.y);
-            //---------------------------------------------------------------------------------
-
-            // Draw text (with icon if available)
-            //---------------------------------------------------------------------------------
-#if !defined(RAYGUI_NO_ICONS)
-            if (iconId >= 0)
-            {
-                // NOTE: We consider icon height, probably different than text size
-                GuiDrawIcon(iconId, (int)boundsPos.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
-                boundsPos.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
-            }
-#endif
-            // Get size in bytes of text,
-            // considering end of line and line break
-            int lineSize = 0;
-            for (int c = 0; (lines[i][c] != '\0') && (lines[i][c] != '\n'); c++, lineSize++){ }
-            float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
-
-            /*
-            // TODO: WARNING: For wordwrap, text must be measured from space to space before being drawn!
-            int wrapModeState = 0;  // 0-TEXT_MEASURING, 1-TEXT_DRAWING
-
-            float textOffsetY = 0.0f;   // Offset between wordwrap lines
-            float textOffsetX = 0.0f;   // Offset X to next character to draw
-
-            int startLine = -1;         // Index where to begin drawing (where a line begins)
-            int endLine = -1;           // Index where to stop drawing (where a line ends)
-            int lastk = -1;             // Holds last value of the character position
-
-            for (int i = 0, k = 0; i < lineSize; i++, k++)
-            {
-                // Get next codepoint from byte string and glyph index in font
-                int codepointByteCount = 0;
-                int codepoint = GetCodepoint(&text[i], &codepointByteCount);
-                int index = GetGlyphIndex(guiFont, codepoint);
-
-                // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-                // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-                if (codepoint == 0x3f) codepointByteCount = 1;
-                i += (codepointByteCount - 1);
-
-                float glyphWidth = 0;
-                if (codepoint != '\n')
-                {
-                    glyphWidth = (guiFont.glyphs[index].advanceX == 0)? guiFont.recs[index].width*scaleFactor : guiFont.glyphs[index].advanceX*scaleFactor;
-
-                    if (i + 1 < lineSize) glyphWidth = glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING);
-                }
-
-                // NOTE: When wordWrap is ON we first measure how much of the text we can draw before going outside of the rec container
-                // We store this info in startLine and endLine, then we change states, draw the text between those two variables
-                // and change states again and again recursively until the end of the text (or until we get outside of the container).
-                // When wordWrap is OFF we don't need the measure state so we go to the drawing state immediately
-                // and begin drawing on the next line before we can get outside the container.
-                if (wrapModeState == 0)     // TEXT_MEASURING
-                {
-                    // TODO: There are multiple types of spaces in UNICODE, maybe it's a good idea to add support for more
-                    // Ref: http://jkorpela.fi/chars/spaces.html
-                    if ((codepoint == ' ') || (codepoint == '\t') || (codepoint == '\n')) endLine = i;
-
-                    if ((textOffsetX + glyphWidth) > bounds.width)
-                    {
-                        endLine = (endLine < 1)? i : endLine;
-                        if (i == endLine) endLine -= codepointByteCount;
-                        if ((startLine + codepointByteCount) == endLine) endLine = (i - codepointByteCount);
-
-                        wrapModeState = !wrapModeState;
-                    }
-                    else if ((i + 1) == lineSize)
-                    {
-                        endLine = i;
-                        wrapModeState = !wrapModeState;
-                    }
-                    //else if (codepoint == '\n') state = !state;
-
-                    if (wrapModeState == 1)     // TEXT_DRAWING
-                    {
-                        textOffsetX = 0;
-                        i = startLine;
-                        glyphWidth = 0;
-
-                        // Save character position when we switch states
-                        int tmp = lastk;
-                        lastk = k - 1;
-                        k = tmp;
-                    }
-                }
-                else
-                {
-                    if (codepoint == '\n')
-                    {
-                        if (wrapMode != 2)      // WORD_WRAP
-                        {
-                            textOffsetY += (guiFont.baseSize + guiFont.baseSize/2)*scaleFactor;
-                            textOffsetX = 0;
-                        }
-                    }
-                    else
-                    {
-                        if ((wrapMode == 1) && ((textOffsetX + glyphWidth) > bounds.width))     // CHAR_WRAP
-                        {
-                            textOffsetY += (guiFont.baseSize + guiFont.baseSize/2)*scaleFactor;
-                            textOffsetX = 0;
-                        }
-
-                        // When text overflows rectangle height limit, just stop drawing
-                        if ((textOffsetY + guiFont.baseSize*scaleFactor) > bounds.height) break;
-
-                        // Draw text selected background
-                        //bool isGlyphSelected = false;
-                        //if ((selectStart >= 0) && (k >= selectStart) && (k < (selectStart + selectLength)))
-                        //{
-                        //    DrawRectangleRec((Rectangle){ rec.x + textOffsetX - 1, rec.y + textOffsetY, glyphWidth, (float)font.baseSize*scaleFactor }, selectBackTint);
-                        //    isGlyphSelected = true;
-                        //}
-
-                        // Draw current character glyph
-                        if ((codepoint != ' ') && (codepoint != '\t'))
-                        {
-                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), tint);  // isGlyphSelected? selectTint : tint);
-                        }
-                    }
-
-                    if ((wrapMode == 2) && (i == endLine))      // WORD_WRAP
-                    {
-                        textOffsetY += (guiFont.baseSize + guiFont.baseSize/2)*scaleFactor;
-                        textOffsetX = 0;
-                        startLine = endLine;
-                        endLine = -1;
-                        glyphWidth = 0;
-                        //selectStart += lastk - k;
-                        k = lastk;
-
-                        wrapModeState = !wrapModeState;
-                    }
-                }
-
-                if ((textOffsetX != 0) || (codepoint != ' ')) textOffsetX += glyphWidth;  // Avoid leading spaces
-            }
-            */
-
-            int lastSpacePos = 0;
-            int textOffsetY = 0;
-            float textOffsetX = 0.0f;
-            for (int c = 0, codepointSize = 0; c < lineSize; c += codepointSize)
-            {
-                int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
-                int index = GetGlyphIndex(guiFont, codepoint);
-
-                // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-                // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-                if (codepoint == 0x3f) codepointSize = 1;
-
-                if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
-                else
-                {
-                    if ((codepoint != ' ') && (codepoint != '\t'))
-                    {
-                        if (wrapMode == 0)          // 0-NO_WRAP
-                        {
-                            // Draw only required text glyphs fitting the bounds.width
-                            if (textOffsetX < (bounds.width - guiFont.recs[index].width))
-                            {
-                                DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
-                            }
-                        }
-                        else if (wrapMode == 1)     // 1-CHAR_WRAP
-                        {
-                            // Get glyph width to check if it goes out of bounds
-                            float glyphWidth = 0;
-                            if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
-                            else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
-
-                            // Jump to next line if current character reach end of the box limits
-                            if ((boundsPos.x + textOffsetX + glyphWidth) > (bounds.x + bounds.width))
-                            {
-                                textOffsetX = 0.0f;
-                                textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
-
-                                DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
-                            }
-                        }
-                        else if (wrapMode == 2)     // 2-WORD_WRAP
-                        {
-                            // TODO: Word wrap mode requires previously measured text to last space!
-                        }
-                    }
-                    else lastSpacePos = c;
-
-                    if (guiFont.glyphs[index].advanceX == 0) textOffsetX += ((float)guiFont.recs[index].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-                    else textOffsetX += ((float)guiFont.glyphs[index].advanceX*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-                }
-            }
-
-            posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
-            //---------------------------------------------------------------------------------
         }
+
+        // Check guiTextAlign global variables
+        switch (alignment)
+        {
+            case TEXT_ALIGN_LEFT: boundsPos.x = bounds.x; break;
+            case TEXT_ALIGN_CENTER: boundsPos.x = bounds.x +  bounds.width/2 - textSizeX/2; break;
+            case TEXT_ALIGN_RIGHT: boundsPos.x = bounds.x + bounds.width - textSizeX; break;
+            default: break;
+        }
+
+        switch (alignmentVertical)
+        {
+            // Only valid in case of wordWrap = 0;
+            case 0: boundsPos.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // CENTERED
+            case 1: boundsPos.y = bounds.y + posOffsetY; break;  // UP
+            case 2: boundsPos.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
+            default: break;
+        }
+
+        // NOTE: Make sure we get pixel-perfect coordinates,
+        // In case of decimals we got weird text positioning
+        boundsPos.x = (float)((int)boundsPos.x);
+        boundsPos.y = (float)((int)boundsPos.y);
+        //---------------------------------------------------------------------------------
+
+        // Draw text (with icon if available)
+        //---------------------------------------------------------------------------------
+#if !defined(RAYGUI_NO_ICONS)
+        if (iconId >= 0)
+        {
+            // NOTE: We consider icon height, probably different than text size
+            GuiDrawIcon(iconId, (int)boundsPos.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
+            boundsPos.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
+        }
+#endif
+        // Get size in bytes of text,
+        // considering end of line and line break
+        int lineSize = 0;
+        for (int c = 0; (lines[i][c] != '\0') && (lines[i][c] != '\n') && (lines[i][c] != '\r'); c++, lineSize++){ }
+        float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
+
+        int textOffsetY = 0;
+        float textOffsetX = 0.0f;
+        for (int c = 0, codepointSize = 0; c < lineSize; c += codepointSize)
+        {
+            int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
+            int index = GetGlyphIndex(guiFont, codepoint);
+
+            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
+            // but we need to draw all of the bad bytes using the '?' symbol moving one byte
+            if (codepoint == 0x3f) codepointSize = 1;       // TODO: Review not recognized codepoints size
+
+            // Wrap mode text measuring to space to validate if it can be drawn or
+            // a new line is required
+            if (wrapMode == 1)
+            {
+                // Get glyph width to check if it goes out of bounds
+                float glyphWidth = 0;
+                if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
+                else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
+
+                // Jump to next line if current character reach end of the box limits
+                if ((textOffsetX + glyphWidth) > bounds.width)
+                {
+                    textOffsetX = 0.0f;
+                    textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                }
+            }
+            else if (wrapMode == 2)     // 2-WORD_WRAP
+            {
+                // Get width to next space in line
+                int nextSpaceIndex = 0;
+                int nextSpaceWidth = GetNextSpaceWidth(lines[i] + c, &nextSpaceIndex);
+
+                if ((textOffsetX + nextSpaceWidth) > bounds.width)
+                {
+                    textOffsetX = 0.0f;
+                    textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                }
+
+                // TODO: Consider case: (nextSpaceWidth >= bounds.width)
+            }
+
+            if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
+            else
+            {
+                // TODO: There are multiple types of spaces in Unicode, 
+                // maybe it's a good idea to add support for more: http://jkorpela.fi/chars/spaces.html
+                if ((codepoint != ' ') && (codepoint != '\t'))      // Do not draw codepoints with no glyph
+                {
+                    if (wrapMode == 0)          // 0-NO_WRAP
+                    {
+                        // Draw only required text glyphs fitting the bounds.width
+                        if (textOffsetX < (bounds.width - guiFont.recs[index].width))
+                        {
+                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                        }
+                    }
+                    else if (wrapMode >= 1)     // 2-WORD_WRAP
+                    {
+                        // Draw only glyphs inside the bounds
+                        if ((boundsPos.y + textOffsetY) <= (bounds.y + bounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                        {
+                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                        }
+                    }
+                }
+
+                if (guiFont.glyphs[index].advanceX == 0) textOffsetX += ((float)guiFont.recs[index].width*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+                else textOffsetX += ((float)guiFont.glyphs[index].advanceX*scaleFactor + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+            }
+        }
+
+        if (wrapMode == 0) posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+        else if (wrapMode >= 1) posOffsetY += (textOffsetY + (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
+        //---------------------------------------------------------------------------------
     }
+
 #if defined(RAYGUI_DEBUG_TEXT_BOUNDS)
-    GuiDrawRectangle(bounds, 0, WHITE, Fade(RED, 0.4f));
+    GuiDrawRectangle(bounds, 0, WHITE, Fade(BLUE, 0.4f));
 #endif
 }
 
@@ -4803,6 +4743,10 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(borderColor, guiAlpha));
         DrawRectangle((int)rec.x, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width, borderWidth, GuiFade(borderColor, guiAlpha));
     }
+
+#if defined(RAYGUI_DEBUG_RECS_BOUNDS)
+    DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, Fade(RED, 0.4f));
+#endif
 }
 
 // Draw tooltip using control bounds
