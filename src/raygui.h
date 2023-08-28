@@ -2827,11 +2827,14 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
                 guiSliderDragging = true;
                 guiSliderActive = bounds; // Store bounds as an identifier when dragging starts
 
-                // Get equivalent value and slider position from mousePoint.x
-                *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
+                if (!CheckCollisionPointRec(mousePoint, slider))
+                {
+                    // Get equivalent value and slider position from mousePoint.x
+                    *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
 
-                if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;  // Slider
-                else if (sliderWidth == 0) slider.width = (float)sliderValue;          // SliderBar
+                    if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;      // Slider
+                    else if (sliderWidth == 0) slider.width = (float)sliderValue;       // SliderBar
+                }
             }
             else state = STATE_FOCUSED;
         }
