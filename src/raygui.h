@@ -1417,7 +1417,7 @@ static int GetTextWidth(const char *text);                      // Gui get text 
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
-static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint);         // Gui draw text using default font
+static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint);     // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
 
 static const char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
@@ -4511,16 +4511,20 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
     textBounds.x = bounds.x + GuiGetStyle(control, BORDER_WIDTH);
     textBounds.y = bounds.y + GuiGetStyle(control, BORDER_WIDTH) + GuiGetStyle(control, TEXT_PADDING);
     textBounds.width = bounds.width - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
-    textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);
+    textBounds.height = bounds.height - 2*GuiGetStyle(control, BORDER_WIDTH) - 2*GuiGetStyle(control, TEXT_PADDING);    // NOTE: Text is processed line per line!
 
-    // Consider TEXT_PADDING properly, depends on control type and TEXT_ALIGNMENT
+    // Depending on control, TEXT_PADDING and TEXT_ALIGNMENT properties could affect the text-bounds
     switch (control)
     {
         case COMBOBOX:
         case DROPDOWNBOX:
         case LISTVIEW:
             // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW
-            // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
+        case SLIDER:
+        case CHECKBOX:
+        case VALUEBOX:
+        case SPINNER:
+            // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
         {
             // TODO: WARNING: TEXT_ALIGNMENT is already considered in GuiDrawText()
@@ -4627,7 +4631,7 @@ static int GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
 }
 
 // Gui draw text using default font
-static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color tint)
+static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint)
 {
     #define TEXT_VALIGN_PIXEL_OFFSET(h)  ((int)h%2)     // Vertical alignment for pixel perfect
 
@@ -4665,7 +4669,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
         // Get text position depending on alignment and iconId
         //---------------------------------------------------------------------------------
-        Vector2 boundsPos = { bounds.x, bounds.y };
+        Vector2 textBoundsPosition = { textBounds.x, textBounds.y };
 
         // NOTE: We get text size after icon has been processed
         // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
@@ -4685,25 +4689,25 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         // Check guiTextAlign global variables
         switch (alignment)
         {
-            case TEXT_ALIGN_LEFT: boundsPos.x = bounds.x; break;
-            case TEXT_ALIGN_CENTER: boundsPos.x = bounds.x +  bounds.width/2 - textSizeX/2; break;
-            case TEXT_ALIGN_RIGHT: boundsPos.x = bounds.x + bounds.width - textSizeX; break;
+            case TEXT_ALIGN_LEFT: textBoundsPosition.x = textBounds.x; break;
+            case TEXT_ALIGN_CENTER: textBoundsPosition.x = textBounds.x +  textBounds.width/2 - textSizeX/2; break;
+            case TEXT_ALIGN_RIGHT: textBoundsPosition.x = textBounds.x + textBounds.width - textSizeX; break;
             default: break;
         }
 
         switch (alignmentVertical)
         {
             // Only valid in case of wordWrap = 0;
-            case TEXT_ALIGN_TOP: boundsPos.y = bounds.y + posOffsetY; break;  // UP
-            case TEXT_ALIGN_MIDDLE: boundsPos.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;
-            case TEXT_ALIGN_BOTTOM: boundsPos.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
+            case TEXT_ALIGN_TOP: textBoundsPosition.y = textBounds.y + posOffsetY; break;
+            case TEXT_ALIGN_MIDDLE: textBoundsPosition.y = textBounds.y + posOffsetY + textBounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(textBounds.height); break;
+            case TEXT_ALIGN_BOTTOM: textBoundsPosition.y = textBounds.y + posOffsetY + textBounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(textBounds.height); break;
             default: break;
         }
 
         // NOTE: Make sure we get pixel-perfect coordinates,
         // In case of decimals we got weird text positioning
-        boundsPos.x = (float)((int)boundsPos.x);
-        boundsPos.y = (float)((int)boundsPos.y);
+        textBoundsPosition.x = (float)((int)textBoundsPosition.x);
+        textBoundsPosition.y = (float)((int)textBoundsPosition.y);
         //---------------------------------------------------------------------------------
 
         // Draw text (with icon if available)
@@ -4712,8 +4716,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         if (iconId >= 0)
         {
             // NOTE: We consider icon height, probably different than text size
-            GuiDrawIcon(iconId, (int)boundsPos.x, (int)(bounds.y + bounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height)), guiIconScale, tint);
-            boundsPos.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
+            GuiDrawIcon(iconId, (int)textBoundsPosition.x, (int)(textBounds.y + textBounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(textBounds.height)), guiIconScale, tint);
+            textBoundsPosition.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
         }
 #endif
         // Get size in bytes of text,
@@ -4743,7 +4747,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
 
                 // Jump to next line if current character reach end of the box limits
-                if ((textOffsetX + glyphWidth) > bounds.width)
+                if ((textOffsetX + glyphWidth) > textBounds.width)
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
@@ -4755,13 +4759,13 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 int nextSpaceIndex = 0;
                 int nextSpaceWidth = GetNextSpaceWidth(lines[i] + c, &nextSpaceIndex);
 
-                if ((textOffsetX + nextSpaceWidth) > bounds.width)
+                if ((textOffsetX + nextSpaceWidth) > textBounds.width)
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
                 }
 
-                // TODO: Consider case: (nextSpaceWidth >= bounds.width)
+                // TODO: Consider case: (nextSpaceWidth >= textBounds.width)
             }
 
             if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
@@ -4773,18 +4777,18 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 {
                     if (wrapMode == TEXT_WRAP_NONE)
                     {
-                        // Draw only required text glyphs fitting the bounds.width
-                        if (textOffsetX <= (bounds.width - glyphWidth))
+                        // Draw only required text glyphs fitting the textBounds.width
+                        if (textOffsetX <= (textBounds.width - glyphWidth))
                         {
-                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
                     }
                     else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) 
                     {
                         // Draw only glyphs inside the bounds
-                        if ((boundsPos.y + textOffsetY) <= (bounds.y + bounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
+                        if ((textBoundsPosition.y + textOffsetY) <= (textBounds.y + textBounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
                         {
-                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                            DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
                     }
                 }
