@@ -264,11 +264,9 @@ int main()
             GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
 
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);   // 0-CENTERED, 1-TOP, 2-BOTTOM (does not work as expected in case of vertical alignment)
-            GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 1);            // 0-OFF (single line), 1-OFF (multiple text lines supported)
-            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, 2);            // 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP (if wrap mode enabled, text editing is not supported)
+            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, TEXT_WRAP_WORD);            // 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP (if wrap mode enabled, text editing is not supported)
             if (GuiTextBox((Rectangle){ 678, 25, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
-            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, 0);
-            GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 0);
+            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
 
             if (showMessageBox)
