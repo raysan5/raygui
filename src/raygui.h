@@ -562,6 +562,19 @@ typedef enum {
     HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
 } GuiColorPickerProperty;
 
+// Blink settings
+typedef struct BlinkSettings {
+    bool blinkEnabled;          // true/false if its enabled or not
+    Color blinkColor;           // color of the drawn cursor
+    float width;                // width of the drawn cursor
+    float height;               // height of the drawn cursor
+    int framesShown;            // number of frames cursor will be shown
+    int framesHidden;           // number of frames cursor will be hidden. used to control blink speed
+} BlinkSettings;
+
+static BlinkSettings disabledBlink = { false, { 0x00, 0x00, 0x00, 0xff }, 0.0f, 0.0f, 0, 0 };
+static BlinkSettings defaultBlink = { true, { 0x04, 0x92, 0xc7, 0xff }, 2.0f, 18.0f, 25, 15 };
+
 #define SCROLLBAR_LEFT_SIDE     0
 #define SCROLLBAR_RIGHT_SIDE    1
 
@@ -638,6 +651,7 @@ RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);     
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
 RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
+RAYGUIAPI int GuiTextBoxWithBlink(Rectangle bounds, char *text, int textSize, bool editMode, BlinkSettings blinkSettings = defaultBlink);  // Text Box control, updates input text. with blink
 RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 
 RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control, returns selected value
@@ -1281,7 +1295,7 @@ static bool guiSliderDragging = false;          // Gui slider drag state (no inp
 static Rectangle guiSliderActive = { 0 };       // Gui slider active bounds rectangle, used as an unique identifier
 
 static int textBoxCursorIndex = 0;     // Cursor index, shared by all GuiTextBox*()
-//static int blinkCursorFrameCounter = 0;       // Frame counter for cursor blinking
+static int blinkCursorFrameCounter = 0;         // Frame counter for cursor blinking
 static int autoCursorCooldownCounter = 0;       // Cooldown frame counter for automatic cursor movement on key-down
 static int autoCursorDelayCounter = 0;          // Delay frame counter for automatic cursor movement
 
@@ -2315,7 +2329,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
 
 // Text Box control
 // NOTE: Returns true on ENTER pressed (useful for data validation)
-int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
+int GuiTextBoxWithBlink(Rectangle bounds, char *text, int bufferSize, bool editMode, BlinkSettings blinkSettings = defaultBlink)
 {
     #if !defined(RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)
         #define RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN  40        // Frames to wait for autocursor movement
@@ -2367,6 +2381,13 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     // Blink-cursor frame counter
     //if (!autoCursorMode) blinkCursorFrameCounter++;
     //else blinkCursorFrameCounter = 0;
+    if (blinkSettings.blinkEnabled) {
+        if (blinkCursorFrameCounter < (blinkSettings.framesShown + blinkSettings.framesHidden)) {
+            blinkCursorFrameCounter++;
+        } else {
+            blinkCursorFrameCounter = 0;
+        }
+    }
 
     // Update control
     //--------------------------------------------------------------------
@@ -2480,6 +2501,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
             {
                 autoCursorDelayCounter++;
+                blinkCursorFrameCounter = 0;
 
                 if (IsKeyPressed(KEY_LEFT) || (autoCursorDelayCounter%RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY) == 0)      // Delay every movement some frames
                 {
@@ -2492,6 +2514,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             else if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
             {
                 autoCursorDelayCounter++;
+                blinkCursorFrameCounter = 0;
 
                 if (IsKeyPressed(KEY_RIGHT) || (autoCursorDelayCounter%RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY) == 0)      // Delay every movement some frames
                 {
@@ -2555,13 +2578,20 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     // Draw cursor
     if (editMode && (GuiGetStyle(TEXTBOX, TEXT_READONLY) == 0))
     {
-        //if (autoCursorMode || ((blinkCursorFrameCounter/40)%2 == 0))
-        GuiDrawRectangle(cursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));
+        if (blinkSettings.blinkEnabled && blinkCursorFrameCounter < blinkSettings.framesShown) {
+          GuiDrawRectangle({ cursor.x, cursor.y, blinkSettings.width, blinkSettings.height }, 0, BLANK, blinkSettings.blinkColor);
+        } else if (!blinkSettings.blinkEnabled) {
+          GuiDrawRectangle(cursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));  
+        }
     }
     else if (state == STATE_FOCUSED) GuiTooltip(bounds);
     //--------------------------------------------------------------------
 
     return result;      // Mouse button pressed: result = 1
+}
+
+int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode) {
+  return GuiTextBoxWithBlink(bounds, text, bufferSize, editMode, disabledBlink);
 }
 
 /*
