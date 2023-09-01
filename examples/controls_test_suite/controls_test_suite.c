@@ -263,11 +263,11 @@ int main()
 
             GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
 
-            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
-            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, TEXT_WRAP_WORD);            // WARNING: If wrap mode enabled, text editing is not supported
+            GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
+            GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);            // WARNING: If wrap mode enabled, text editing is not supported
             if (GuiTextBox((Rectangle){ 678, 25, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
-            GuiSetStyle(TEXTBOX, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
-            GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+            GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
+            GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
 
             if (showMessageBox)
             {

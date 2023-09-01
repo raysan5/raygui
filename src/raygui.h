@@ -401,32 +401,64 @@
     } Font;
 #endif
 
+
 // Style property
+// NOTE: Used when exporting style as code for convenience
 typedef struct GuiStyleProp {
-    unsigned short controlId;
-    unsigned short propertyId;
-    unsigned int propertyValue;
+    unsigned short controlId;   // Control identifier
+    unsigned short propertyId;  // Property identifier
+    int propertyValue;          // Property value
 } GuiStyleProp;
+
+/*
+// Controls text style -NOT USED-
+// NOTE: Text style is defined by control
+typedef struct GuiTextStyle {
+    unsigned int size;
+    int charSpacing;
+    int lineSpacing;
+    int alignmentH;
+    int alignmentV;
+    int padding;
+} GuiTextStyle;
+*/
 
 // Gui control state
 typedef enum {
     STATE_NORMAL = 0,
     STATE_FOCUSED,
     STATE_PRESSED,
-    STATE_DISABLED,
+    STATE_DISABLED
 } GuiState;
 
 // Gui control text alignment
 typedef enum {
     TEXT_ALIGN_LEFT = 0,
     TEXT_ALIGN_CENTER,
-    TEXT_ALIGN_RIGHT,
+    TEXT_ALIGN_RIGHT
 } GuiTextAlignment;
+
+// Gui control text alignment vertical
+// NOTE: Text vertical position inside the text bounds
+typedef enum {
+    TEXT_ALIGN_TOP = 0,
+    TEXT_ALIGN_MIDDLE,
+    TEXT_ALIGN_BOTTOM
+} GuiTextAlignmentVertical;
+
+// Gui control text wrap mode
+// NOTE: Useful for multiline text
+typedef enum {
+    TEXT_WRAP_NONE = 0,
+    TEXT_WRAP_CHAR,
+    TEXT_WRAP_WORD
+} GuiTextWrapMode;
 
 // Gui controls
 typedef enum {
     // Default -> populates to all controls when set
     DEFAULT = 0,
+    
     // Basic controls
     LABEL,          // Used also for: LABELBUTTON
     BUTTON,
@@ -448,23 +480,32 @@ typedef enum {
 // Gui base properties for every control
 // NOTE: RAYGUI_MAX_PROPS_BASE properties (by default 16 properties)
 typedef enum {
-    BORDER_COLOR_NORMAL = 0,
-    BASE_COLOR_NORMAL,
-    TEXT_COLOR_NORMAL,
-    BORDER_COLOR_FOCUSED,
-    BASE_COLOR_FOCUSED,
-    TEXT_COLOR_FOCUSED,
-    BORDER_COLOR_PRESSED,
-    BASE_COLOR_PRESSED,
-    TEXT_COLOR_PRESSED,
-    BORDER_COLOR_DISABLED,
-    BASE_COLOR_DISABLED,
-    TEXT_COLOR_DISABLED,
-    BORDER_WIDTH,
-    TEXT_PADDING,
-    TEXT_ALIGNMENT,
-    RESERVED
+    BORDER_COLOR_NORMAL = 0,    // Control border color in STATE_NORMAL
+    BASE_COLOR_NORMAL,          // Control base color in STATE_NORMAL
+    TEXT_COLOR_NORMAL,          // Control text color in STATE_NORMAL
+    BORDER_COLOR_FOCUSED,       // Control border color in STATE_FOCUSED
+    BASE_COLOR_FOCUSED,         // Control base color in STATE_FOCUSED
+    TEXT_COLOR_FOCUSED,         // Control text color in STATE_FOCUSED
+    BORDER_COLOR_PRESSED,       // Control border color in STATE_PRESSED
+    BASE_COLOR_PRESSED,         // Control base color in STATE_PRESSED
+    TEXT_COLOR_PRESSED,         // Control text color in STATE_PRESSED
+    BORDER_COLOR_DISABLED,      // Control border color in STATE_DISABLED
+    BASE_COLOR_DISABLED,        // Control base color in STATE_DISABLED
+    TEXT_COLOR_DISABLED,        // Control text color in STATE_DISABLED
+    BORDER_WIDTH,               // Control border size, 0 for no border
+    //TEXT_SIZE,                  // Control text size (glyphs max height) -> GLOBAL for all controls
+    //TEXT_SPACING,               // Control text spacing between glyphs -> GLOBAL for all controls
+    //TEXT_LINE_SPACING           // Control text spacing between lines
+    TEXT_PADDING,               // Control text padding, not considering border
+    TEXT_ALIGNMENT,             // Control text horizontal alignment inside control text bound (after border and padding)
+    //TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds -> TextBox specific
 } GuiControlProperty;
+
+// TODO: Which text styling properties should be global or per-control?
+// At this moment TEXT_PADDING and TEXT_ALIGNMENT is configured and saved per control while
+// TEXT_SIZE, TEXT_SPACING, TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE are global and
+// should be configured by used as needed while defining the UI layout
+// I'm considering unifying all text-styling options as global or per-control but not sure if that's the best approach
 
 // Gui extended properties depend on control
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
@@ -477,7 +518,9 @@ typedef enum {
     TEXT_SPACING,               // Text spacing between glyphs
     LINE_COLOR,                 // Line control color
     BACKGROUND_COLOR,           // Background color
-    TEXT_LINE_SPACING           // Text spacing between lines
+    TEXT_LINE_SPACING,          // Text spacing between lines
+    TEXT_ALIGNMENT_VERTICAL,    // Text vertical alignment inside text bounds (after border and padding)
+    TEXT_WRAP_MODE              // Text wrap-mode inside text bounds
 } GuiDefaultProperty;
 
 // Label
@@ -531,12 +574,7 @@ typedef enum {
 
 // TextBox/TextBoxMulti/ValueBox/Spinner
 typedef enum {
-    TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
-    TEXT_LINES_SPACING,         // TextBoxMulti lines separation
-    TEXT_ALIGNMENT_VERTICAL,    // TextBoxMulti vertical alignment: 0-CENTERED, 1-UP, 2-DOWN
-    TEXT_MULTILINE,             // TextBox supports multiple lines
-    TEXT_WRAP_MODE,             // TextBox wrap mode for multiline: 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP
-    TEXT_READONLY               // TextBox is readonly, no editable
+    TEXT_READONLY = 16,         // TextBox in read-only mode: 0-text editable, 1-text no-editable
 } GuiTextBoxProperty;
 
 // Spinner
@@ -1253,8 +1291,10 @@ static unsigned int *guiIconsPtr = guiIcons;
     #define RAYGUI_ICON_SIZE             0
 #endif
 
-#define RAYGUI_MAX_CONTROLS             16      // Maximum number of standard controls
-#define RAYGUI_MAX_PROPS_BASE           16      // Maximum number of standard properties
+// WARNING: Those values define the total size of the style data array,
+// if changed, previous saved styles could become incompatible
+#define RAYGUI_MAX_CONTROLS             16      // Maximum number of controls
+#define RAYGUI_MAX_PROPS_BASE           16      // Maximum number of base properties
 #define RAYGUI_MAX_PROPS_EXTENDED        8      // Maximum number of extended properties
 
 //----------------------------------------------------------------------------------
@@ -2329,11 +2369,11 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
     int textWidth = GetTextWidth(text) - GetTextWidth(text + textBoxCursorIndex);
-    int textIndexOffset = 0;        // Text index offset to start drawing in the box
+    int textIndexOffset = 0;    // Text index offset to start drawing in the box
 
-    int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
-    int multiline = GuiGetStyle(TEXTBOX, TEXT_MULTILINE);
-    int wrapMode = GuiGetStyle(TEXTBOX, TEXT_WRAP_MODE);
+    int alignmentVertical = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL);
+    int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);
+    bool multiline = false;     // TODO: Multiline text editing, not supported at the momnet
 
     // Cursor rectangle
     // NOTE: Position X value should be updated
@@ -2370,8 +2410,12 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
     // Update control
     //--------------------------------------------------------------------
-    // WARNING: If wrapMode is enabled, text editing is not supported
-    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging && (GuiGetStyle(TEXTBOX, TEXT_READONLY) == 0) && (wrapMode == 0))
+    // WARNING: Text editing is only supported under certain conditions:
+    if ((state != STATE_DISABLED) &&                // Control not disabled
+        !GuiGetStyle(TEXTBOX, TEXT_READONLY) &&     // TextBox not on read-only mode
+        !guiLocked &&                               // Gui not locked
+        !guiSliderDragging &&                       // No gui slider on dragging
+        (wrapMode == TEXT_WRAP_NONE))               // No wrap mode
     {
         Vector2 mousePoint = GetMousePosition();
 
@@ -2512,7 +2556,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
             //if (multiline) cursor.y = GetTextLines()
 
-            // Finish text editing on ENTER (if not multiline mode) or mouse click outside bounds
+            // Finish text editing on ENTER or mouse click outside bounds
             if ((!multiline && IsKeyPressed(KEY_ENTER)) ||
                 (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
             {
@@ -2553,7 +2597,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     GuiDrawText(text + textIndexOffset, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))));
 
     // Draw cursor
-    if (editMode && (GuiGetStyle(TEXTBOX, TEXT_READONLY) == 0))
+    if (editMode && !GuiGetStyle(TEXTBOX, TEXT_READONLY))
     {
         //if (autoCursorMode || ((blinkCursorFrameCounter/40)%2 == 0))
         GuiDrawRectangle(cursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));
@@ -2565,22 +2609,23 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 }
 
 /*
-// Text Box control with multiple lines
-// NOTE: It's a regular GuiTextBox() but enabling multiline support,
-// unfortunately cursor placement is not working properly so the function is removed
+// Text Box control with multiple lines and word-wrap
+// NOTE: This text-box is readonly, no editing supported by default
 bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode)
 {
     bool pressed = false;
 
-    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 1);
-    GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 1);
+    GuiSetStyle(TEXTBOX, TEXT_READONLY, 1);
+    GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);   // WARNING: If wrap mode enabled, text editing is not supported
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);
 
     // TODO: Implement methods to calculate cursor position properly
     pressed = GuiTextBox(bounds, text, bufferSize, editMode);
 
-    GuiSetStyle(TEXTBOX, TEXT_MULTILINE, 0);
-    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL, 0);
-
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+    GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
+    GuiSetStyle(TEXTBOX, TEXT_READONLY, 0);
+    
     return pressed;
 }
 */
@@ -3918,6 +3963,8 @@ void GuiLoadStyleDefault(void)
     guiStyleLoaded = true;
 
     // Initialize default LIGHT style property values
+    // WARNING: Default value are applied to all controls on set but
+    // they can be overwritten later on for every custom control
     GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL, 0x838383ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL, 0xc9c9c9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, 0x686868ff);
@@ -3930,9 +3977,10 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_COLOR_DISABLED, 0xb5c1c2ff);
     GuiSetStyle(DEFAULT, BASE_COLOR_DISABLED, 0xe6e9e9ff);
     GuiSetStyle(DEFAULT, TEXT_COLOR_DISABLED, 0xaeb7b8ff);
-    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);                       // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);                       // WARNING: Some controls use other values
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER); // WARNING: Some controls use other values
+    GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
+    GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
 
     // Initialize control-specific property values
     // NOTE: Those properties are in default list but require specific values by control type
@@ -3957,7 +4005,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
     GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 16);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
@@ -3967,8 +4015,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_SPACING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
     GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_LINES_SPACING, (int)((float)GuiGetStyle(DEFAULT, TEXT_SIZE)*1.5f));
-    GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 4);
+    GuiSetStyle(TEXTBOX, TEXT_PADDING, 4);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 24);
     GuiSetStyle(SPINNER, SPIN_BUTTON_SPACING, 2);
     GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
@@ -4453,6 +4500,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
             // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
         default:
         {
+            // TODO: WARNING: TEXT_ALIGNMENT is already considered in GuiDrawText()
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
             else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
         }
@@ -4578,9 +4626,10 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
     int lineCount = 0;
     const char **lines = GetTextLines(text, &lineCount);
 
-    // TextBox specific variables
-    int wrapMode = GuiGetStyle(TEXTBOX, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
-    int alignmentVertical = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT_VERTICAL);
+    // Text style variables
+    //int alignment = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT);
+    int alignmentVertical = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL);
+    int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
 
     // TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
     float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
@@ -4622,9 +4671,9 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
         switch (alignmentVertical)
         {
             // Only valid in case of wordWrap = 0;
-            case 0: boundsPos.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // CENTERED
-            case 1: boundsPos.y = bounds.y + posOffsetY; break;  // UP
-            case 2: boundsPos.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
+            case TEXT_ALIGN_TOP: boundsPos.y = bounds.y + posOffsetY; break;  // UP
+            case TEXT_ALIGN_MIDDLE: boundsPos.y = bounds.y + posOffsetY + bounds.height/2 - totalHeight/2 + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;
+            case TEXT_ALIGN_BOTTOM: boundsPos.y = bounds.y + posOffsetY + bounds.height - totalHeight + TEXT_VALIGN_PIXEL_OFFSET(bounds.height); break;  // DOWN
             default: break;
         }
 
@@ -4664,7 +4713,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
 
             // Wrap mode text measuring to space to validate if it can be drawn or
             // a new line is required
-            if (wrapMode == 1)
+            if (wrapMode == TEXT_WRAP_CHAR)
             {
                 // Get glyph width to check if it goes out of bounds
                 if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
@@ -4677,7 +4726,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
                 }
             }
-            else if (wrapMode == 2)     // 2-WORD_WRAP
+            else if (wrapMode == TEXT_WRAP_WORD)
             {
                 // Get width to next space in line
                 int nextSpaceIndex = 0;
@@ -4699,7 +4748,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                 // maybe it's a good idea to add support for more: http://jkorpela.fi/chars/spaces.html
                 if ((codepoint != ' ') && (codepoint != '\t'))      // Do not draw codepoints with no glyph
                 {
-                    if (wrapMode == 0)          // 0-NO_WRAP
+                    if (wrapMode == TEXT_WRAP_NONE)
                     {
                         // Draw only required text glyphs fitting the bounds.width
                         if (textOffsetX <= (bounds.width - glyphWidth))
@@ -4707,7 +4756,7 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ boundsPos.x + textOffsetX, boundsPos.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
                     }
-                    else if (wrapMode >= 1)     // 2-WORD_WRAP
+                    else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) 
                     {
                         // Draw only glyphs inside the bounds
                         if ((boundsPos.y + textOffsetY) <= (bounds.y + bounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
@@ -4722,8 +4771,8 @@ static void GuiDrawText(const char *text, Rectangle bounds, int alignment, Color
             }
         }
 
-        if (wrapMode == 0) posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
-        else if (wrapMode >= 1) posOffsetY += (textOffsetY + (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
+        if (wrapMode == TEXT_WRAP_NONE) posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+        else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) posOffsetY += (textOffsetY + (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
         //---------------------------------------------------------------------------------
     }
 
