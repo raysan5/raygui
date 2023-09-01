@@ -87,7 +87,7 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
 ## building
 
-`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebase but some users could require a shared/dynamic version of the library, for example, to create bindings:
+`raygui` is intended to be used as a portable single-file header-only library, to be directly integrated into any C/C++ codebase (requiring the preprocessor macro `RAYGUI_IMPLEMENTATION`) but some users could require a shared/dynamic version of the library, for example, to create bindings:
 
  - **Windows (MinGW, GCC)**
 ```
