@@ -507,10 +507,14 @@ typedef enum {
 // should be configured by used as needed while defining the UI layout
 // I'm considering unifying all text-styling options as global or per-control but not sure if that's the best approach
 
+// Other possible text properties:
+// TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
+// TEXT_DECORATION              // None, Underline, Overline, Line-through
+// TEXT_INDENT	                // Text indentation -> Now using TEXT_PADDING
+
 // Gui extended properties depend on control
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
 //----------------------------------------------------------------------------------
-
 // DEFAULT extended properties
 // NOTE: Those properties are common to all controls or global
 typedef enum {
@@ -3997,7 +4001,15 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+    
+    // Initialize default extended property values
+    // NOTE: By default, extended property values are initialized to 0
+    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
+    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
+    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
+    GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
     // Initialize control-specific property values
     // NOTE: Those properties are in default list but require specific values by control type
@@ -4018,11 +4030,6 @@ void GuiLoadStyleDefault(void)
 
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
-    GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
-    GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
-    GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 16);
     GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
@@ -4032,7 +4039,6 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_SPACING, 2);
     GuiSetStyle(DROPDOWNBOX, ARROW_PADDING, 16);
     GuiSetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING, 2);
-    GuiSetStyle(TEXTBOX, TEXT_PADDING, 4);
     GuiSetStyle(SPINNER, SPIN_BUTTON_WIDTH, 24);
     GuiSetStyle(SPINNER, SPIN_BUTTON_SPACING, 2);
     GuiSetStyle(SCROLLBAR, BORDER_WIDTH, 0);
@@ -4513,7 +4519,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case COMBOBOX:
         case DROPDOWNBOX:
         case LISTVIEW:
-            // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW (scrollbar?)
+            // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW
             // More special cases (label on side): CHECKBOX, SLIDER, VALUEBOX, SPINNER
         default:
         {
