@@ -14,6 +14,8 @@
 
 **WARNING: Master branch now contains raygui 4.0-dev, it is an API-BREAKING redesign from previous versions (3.x), now all functions are more consistent and coherent, you can read the details about this breaking change in issue [283](https://github.com/raysan5/raygui/issues/283)**
 
+*NOTE: raygui is a single-file header-only library (despite its internal dependency on raylib), so, functions definition AND implementation reside in the same file `raygui.h`, when including `raygui.h` in a module, `RAYGUI_IMPLEMENTATION` must be previously defined to include the implementation part of `raygui.h` BUT only in one compilation unit, other modules could also include `raygui.h` but `RAYGUI_IMPLEMENTATION` must not be defined again.*
+
 ## features
 
  - **Immediate-mode gui, no retained data**
