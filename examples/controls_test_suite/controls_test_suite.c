@@ -129,6 +129,10 @@ int main()
 
     float alpha = 1.0f;
 
+    // DEBUG: Testing how those two properties affect all controls!
+    //GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
+    //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -259,8 +263,6 @@ int main()
             Vector2 mouseCell = { 0 };
             GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 3, &mouseCell);
 
-            //GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
-
             GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
 
             GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
@@ -268,6 +270,11 @@ int main()
             if (GuiTextBox((Rectangle){ 678, 25, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
             GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
             GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
+
+            GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+            GuiStatusBar((Rectangle){ 0, (float)GetScreenHeight() - 20, (float)GetScreenWidth(), 20 }, "This is a status bar");
+            GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+            //GuiSetStyle(STATUSBAR, TEXT_INDENTATION, 20);
 
             if (showMessageBox)
             {

@@ -1699,7 +1699,7 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
 
             // Draw tab close button
-            // NOTE: Only draw close button for curren tab: if (CheckCollisionPointRec(mousePoint, tabBounds))
+            // NOTE: Only draw close button for current tab: if (CheckCollisionPointRec(mousePosition, tabBounds))
             int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
             int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
             GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
@@ -2388,13 +2388,12 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     int result = 0;
     GuiState state = guiState;
 
+    bool multiline = false;     // TODO: Consider multiline text input
+    int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);
+
     Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
     int textWidth = GetTextWidth(text) - GetTextWidth(text + textBoxCursorIndex);
     int textIndexOffset = 0;    // Text index offset to start drawing in the box
-
-    int alignmentVertical = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL);
-    int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);
-    bool multiline = false;     // TODO: Multiline text editing, not supported at the momnet
 
     // Cursor rectangle
     // NOTE: Position X value should be updated
@@ -2405,16 +2404,14 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
         (float)GuiGetStyle(DEFAULT, TEXT_SIZE)*2
     };
 
-    switch (alignmentVertical)
-    {
-        case 0: cursor.y = textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE); break;  // CENTERED
-        case 1: cursor.y = textBounds.y - GuiGetStyle(DEFAULT, TEXT_SIZE)/2; break;  // UP
-        case 2: cursor.y = textBounds.y + textBounds.height; break;  // DOWN
-        default: break;
-    }
-
     if (cursor.height >= bounds.height) cursor.height = bounds.height - GuiGetStyle(TEXTBOX, BORDER_WIDTH)*2;
     if (cursor.y < (bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH))) cursor.y = bounds.y + GuiGetStyle(TEXTBOX, BORDER_WIDTH);
+
+    // Mouse cursor rectangle
+    // NOTE: Initialized outside of screen
+    Rectangle mouseCursor = cursor;
+    mouseCursor.x = -1;
+    mouseCursor.width = 1;
 
     // Auto-cursor movement logic
     // NOTE: Cursor moves automatically when key down after some time
@@ -2438,7 +2435,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
         !guiSliderDragging &&                       // No gui slider on dragging
         (wrapMode == TEXT_WRAP_NONE))               // No wrap mode
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePosition = GetMousePosition();
 
         if (editMode)
         {
@@ -2484,16 +2481,10 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             }
 
             // Move cursor to start
-            if ((textLength > 0) && IsKeyPressed(KEY_HOME))
-            {
-                textBoxCursorIndex = 0;
-            }
+            if ((textLength > 0) && IsKeyPressed(KEY_HOME)) textBoxCursorIndex = 0;
 
             // Move cursor to end
-            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_END))
-            {
-                textBoxCursorIndex = textLength;
-            }
+            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_END)) textBoxCursorIndex = textLength;
 
             // Delete codepoint from text, after current cursor position
             if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
@@ -2541,7 +2532,6 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             }
 
             // Move cursor position with keys
-            //if (IsKeyDown(KEY_LEFT) && autoCursorMode)
             if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
             {
                 autoCursorDelayCounter++;
@@ -2567,11 +2557,51 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                 }
             }
 
-            // TODO: Get cursor rectangle from mouse position
-            //cursor = GetCursorFromMousePosition(bounds, text, mouse); // Gui style considered internally, including wrapMode
+            // Move cursor position with mouse
+            if (CheckCollisionPointRec(mousePosition, textBounds))     // Mouse hover text
+            {
+                float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;
+                int codepoint = 0;
+                int codepointSize = 0;
+                int codepointIndex = 0;
+                float glyphWidth = 0.0f;
+                int widthToMouseX = 0;
+                int mouseCursorIndex = 0;
 
-            // TODO: Get cursor rectangle from buffer index
-            //cursor = GetCursorFromIndex(bounds, text, index);         // Gui style considered internally, including wrapMode
+                for (int i = textIndexOffset; i < textLength; i++)
+                {
+                    codepoint = GetCodepointNext(&text[i], &codepointSize);
+                    codepointIndex = GetGlyphIndex(guiFont, codepoint);
+
+                    if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor);
+                    else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor);
+
+                    if (mousePosition.x <= (textBounds.x + (widthToMouseX + glyphWidth/2)))
+                    {
+                        mouseCursor.x = textBounds.x + widthToMouseX;
+                        mouseCursorIndex = i;
+                        break;
+                    }
+                    
+                    widthToMouseX += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+                }
+
+                // Check if mouse cursor is at the last position
+                int textEndWidth = GetTextWidth(text + textIndexOffset);
+                if (GetMousePosition().x >= (textBounds.x + textEndWidth - glyphWidth/2))
+                {
+                    mouseCursor.x = textBounds.x + textEndWidth;
+                    mouseCursorIndex = strlen(text);
+                }
+
+                // Place cursor at required index on mouse click
+                if ((mouseCursor.x >= 0) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    cursor.x = mouseCursor.x;
+                    textBoxCursorIndex = mouseCursorIndex;
+                }
+            }
+            else mouseCursor.x = -1;
 
             // Recalculate cursor position.y depending on textBoxCursorIndex
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
@@ -2579,7 +2609,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
 
             // Finish text editing on ENTER or mouse click outside bounds
             if ((!multiline && IsKeyPressed(KEY_ENTER)) ||
-                (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+                (!CheckCollisionPointRec(mousePosition, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
             {
                 textBoxCursorIndex = 0;     // GLOBAL: Reset the shared cursor index
                 result = 1;
@@ -2587,7 +2617,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
         }
         else
         {
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckCollisionPointRec(mousePosition, bounds))
             {
                 state = STATE_FOCUSED;
 
@@ -2622,6 +2652,9 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
     {
         //if (autoCursorMode || ((blinkCursorFrameCounter/40)%2 == 0))
         GuiDrawRectangle(cursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));
+
+        // Draw mouse position cursor (if required)
+        if (mouseCursor.x >= 0) GuiDrawRectangle(mouseCursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));
     }
     else if (state == STATE_FOCUSED) GuiTooltip(bounds);
     //--------------------------------------------------------------------
@@ -2875,7 +2908,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
                 {
                     state = STATE_PRESSED;
 
-                    // Get equivalent value and slider position from mousePoint.x
+                    // Get equivalent value and slider position from mousePosition.x
                     *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
                 }
             }
@@ -2895,7 +2928,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
 
                 if (!CheckCollisionPointRec(mousePoint, slider))
                 {
-                    // Get equivalent value and slider position from mousePoint.x
+                    // Get equivalent value and slider position from mousePosition.x
                     *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
 
                     if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;      // Slider
