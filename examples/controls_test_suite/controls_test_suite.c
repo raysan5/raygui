@@ -123,9 +123,8 @@ int main()
     bool showMessageBox = false;
 
     char textInput[256] = { 0 };
-    bool showTextInputBox = false;
-
     char textInputFileName[256] = { 0 };
+    bool showTextInputBox = false;
 
     float alpha = 1.0f;
 
@@ -199,8 +198,7 @@ int main()
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
-            if (dropDown000EditMode ||
-                dropDown001EditMode) GuiLock();
+            if (dropDown000EditMode || dropDown001EditMode) GuiLock();
 
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
