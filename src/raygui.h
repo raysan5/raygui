@@ -2575,7 +2575,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                 int codepointSize = 0;
                 int codepointIndex = 0;
                 float glyphWidth = 0.0f;
-                int widthToMouseX = 0;
+                float widthToMouseX = 0;
                 int mouseCursorIndex = 0;
 
                 for (int i = textIndexOffset; i < textLength; i++)
@@ -4647,7 +4647,7 @@ const char **GetTextLines(const char *text, int *count)
 // Get text width to next space for provided string
 static int GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
 {
-    int width = 0;
+    float width = 0;
     int codepointByteCount = 0;
     int codepoint = 0;
     int index = 0;
@@ -4670,7 +4670,7 @@ static int GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
         }
     }
 
-    return width;
+    return (int)width;
 }
 
 // Gui draw text using default font
