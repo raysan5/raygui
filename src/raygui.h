@@ -4645,7 +4645,7 @@ const char **GetTextLines(const char *text, int *count)
 }
 
 // Get text width to next space for provided string
-static int GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
+static float GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
 {
     float width = 0;
     int codepointByteCount = 0;
@@ -4670,7 +4670,7 @@ static int GetNextSpaceWidth(const char *text, int *nextSpaceIndex)
         }
     }
 
-    return (int)width;
+    return width;
 }
 
 // Gui draw text using default font
@@ -4800,7 +4800,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             {
                 // Get width to next space in line
                 int nextSpaceIndex = 0;
-                int nextSpaceWidth = GetNextSpaceWidth(lines[i] + c, &nextSpaceIndex);
+                float nextSpaceWidth = GetNextSpaceWidth(lines[i] + c, &nextSpaceIndex);
 
                 if ((textOffsetX + nextSpaceWidth) > textBounds.width)
                 {
