@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v4.0-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v4.0 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -141,7 +141,7 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       4.0 (xx-Sep-2023) ADDED: GuiToggleSlider()
+*       4.0 (10-Sep-2023) ADDED: GuiToggleSlider()
 *                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
 *                         ADDED: Multiple new icons, mostly compiler related
 *                         ADDED: New DEFAULT properties: TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE
@@ -247,11 +247,11 @@
 *   DEPENDENCIES:
 *       raylib 4.6-dev      Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
 *
-*   ADDITIONAL NOTES:
+*   STANDALONE MODE:
 *       By default raygui depends on raylib mostly for the inputs and the drawing functionality but that dependency can be disabled
 *       with the config flag RAYGUI_STANDALONE. In that case is up to the user to provide another backend to cover library needs.
 *
-*       The following 16 functions should be redefined for a custom backend:
+*       The following functions should be redefined for a custom backend:
 *
 *           - Vector2 GetMousePosition(void);
 *           - float GetMouseWheelMove(void);
@@ -312,7 +312,7 @@
 #define RAYGUI_VERSION_MAJOR 4
 #define RAYGUI_VERSION_MINOR 0
 #define RAYGUI_VERSION_PATCH 0
-#define RAYGUI_VERSION  "4.0-dev"
+#define RAYGUI_VERSION  "4.0"
 
 #if !defined(RAYGUI_STANDALONE)
     #include "raylib.h"
