@@ -10,17 +10,17 @@
 *       - Immediate-mode gui, minimal retained data
 *       - +25 controls provided (basic and advanced)
 *       - Styling system for colors, font and metrics
-*       - Icons supported, embeds a complete 1-bit icons pack
-*       - Standalone usage mode option (custom graphics backends)
-*       - Multiple tools provided for raygui development
+*       - Icons supported, embedded as a 1-bit icons pack
+*       - Standalone mode option (custom input/graphics backend)
+*       - Multiple support tools provided for raygui development
 *
 *   POSSIBLE IMPROVEMENTS:
 *       - Better standalone mode API for easy plug of custom backends
-*       - Externalize required inputs, allow user customization
+*       - Externalize required inputs, allow user easier customization
 *
 *   LIMITATIONS:
-*       - No multi-line word-wraped text box support
-*       - No auto-layout mechanism provided, up to the user to define controls position and size
+*       - No editable multi-line word-wraped text box supported
+*       - No auto-layout mechanism, up to the user to define controls position and size
 *       - Standalone mode requires library modification and some user work to plug another backend
 *
 *   NOTES:
@@ -37,13 +37,15 @@
 *       - Line
 *       - Panel         --> StatusBar
 *       - ScrollPanel   --> StatusBar
+*       - TabBar        --> Button
 *
 *     # Basic Controls
 *       - Label
-*       - Button
 *       - LabelButton   --> Label
+*       - Button
 *       - Toggle
 *       - ToggleGroup   --> Toggle
+*       - ToggleSlider
 *       - CheckBox
 *       - ComboBox
 *       - DropdownBox
@@ -139,7 +141,14 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       4.0 (xx-Jun-2023) ADDED: GuiToggleSlider()
+*       4.0 (xx-Sep-2023) ADDED: GuiToggleSlider()
+*                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
+*                         ADDED: Multiple new icons, mostly compiler related
+*                         ADDED: New DEFAULT properties: TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE
+*                         ADDED: New enum values: GuiTextAlignment, GuiTextAlignmentVertical, GuiTextWrapMode
+*                         REDESIGNED: GuiTextBox(), support mouse cursor positioning
+*                         REDESIGNED: GuiDrawText(), support multiline and word-wrap modes (read only)
+*                         REDESIGNED: GuiProgressBar() to be more visual, progress affects border color
 *                         REDESIGNED: Global alpha consideration moved to GuiDrawRectangle() and GuiDrawText()
 *                         REDESIGNED: GuiScrollPanel(), get parameters by reference and return result value
 *                         REDESIGNED: GuiToggleGroup(), get parameters by reference and return result value
@@ -157,6 +166,10 @@
 *                         REDESIGNED: GuiGrid(), added extra parameter
 *                         REDESIGNED: GuiListViewEx(), change parameters order
 *                         REDESIGNED: All controls return result as int value
+*                         REVIEWED: GuiScrollPanel() to avoid smallish scroll-bars
+*                         REVIEWED: All examples and specially controls_test_suite
+*                         RENAMED: gui_file_dialog module to gui_window_file_dialog
+*                         UPDATED: All styles to include ISO-8859-15 charset (as much as possible)
 *
 *       3.6 (10-May-2023) ADDED: New icon: SAND_TIMER
 *                         ADDED: GuiLoadStyleFromMemory() (binary only)
@@ -232,17 +245,40 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   DEPENDENCIES:
-*       raylib 4.5          Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
+*       raylib 4.6-dev      Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
 *
+*   ADDITIONAL NOTES:
 *       By default raygui depends on raylib mostly for the inputs and the drawing functionality but that dependency can be disabled
 *       with the config flag RAYGUI_STANDALONE. In that case is up to the user to provide another backend to cover library needs.
+*
+*       The following 16 functions should be redefined for a custom backend:
+*
+*           - Vector2 GetMousePosition(void);
+*           - float GetMouseWheelMove(void);
+*           - bool IsMouseButtonDown(int button);
+*           - bool IsMouseButtonPressed(int button);
+*           - bool IsMouseButtonReleased(int button);
+*           - bool IsKeyDown(int key);
+*           - bool IsKeyPressed(int key);
+*           - int GetCharPressed(void);         // -- GuiTextBox(), GuiValueBox()
+*
+*           - void DrawRectangle(int x, int y, int width, int height, Color color); // -- GuiDrawRectangle()
+*           - void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4); // -- GuiColorPicker()
+*
+*           - Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount); // -- GuiLoadStyle()
+*           - Font GetFontDefault(void);                           // -- GuiLoadStyleDefault()
+*           - Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
+*           - void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
+*           - char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
+*           - const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
+*
 *
 *   CONTRIBUTORS:
 *       Ramon Santamaria:   Supervision, review, redesign, update and maintenance
 *       Vlad Adrian:        Complete rewrite of GuiTextBox() to support extended features (2019)
 *       Sergio Martinez:    Review, testing (2015) and redesign of multiple controls (2018)
-*       Adria Arranz:       Testing and Implementation of additional controls (2018)
-*       Jordi Jorba:        Testing and Implementation of additional controls (2018)
+*       Adria Arranz:       Testing and implementation of additional controls (2018)
+*       Jordi Jorba:        Testing and implementation of additional controls (2018)
 *       Albert Martos:      Review and testing of the library (2015)
 *       Ian Eito:           Review and testing of the library (2015)
 *       Kevin Gato:         Initial implementation of basic components (2014)
@@ -495,28 +531,24 @@ typedef enum {
     BORDER_WIDTH,               // Control border size, 0 for no border
     //TEXT_SIZE,                  // Control text size (glyphs max height) -> GLOBAL for all controls
     //TEXT_SPACING,               // Control text spacing between glyphs -> GLOBAL for all controls
-    //TEXT_LINE_SPACING           // Control text spacing between lines
+    //TEXT_LINE_SPACING           // Control text spacing between lines -> GLOBAL for all controls
     TEXT_PADDING,               // Control text padding, not considering border
     TEXT_ALIGNMENT,             // Control text horizontal alignment inside control text bound (after border and padding)
-    //TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds -> TextBox specific
+    //TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds -> GLOBAL for all controls
 } GuiControlProperty;
 
 // TODO: Which text styling properties should be global or per-control?
 // At this moment TEXT_PADDING and TEXT_ALIGNMENT is configured and saved per control while
 // TEXT_SIZE, TEXT_SPACING, TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE are global and
-// should be configured by used as needed while defining the UI layout
-// I'm considering unifying all text-styling options as global or per-control but not sure if that's the best approach
+// should be configured by user as needed while defining the UI layout
 
-// Other possible text properties:
-// TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
-// TEXT_DECORATION              // None, Underline, Overline, Line-through
-// TEXT_INDENT	                // Text indentation -> Now using TEXT_PADDING
 
 // Gui extended properties depend on control
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
 //----------------------------------------------------------------------------------
 // DEFAULT extended properties
 // NOTE: Those properties are common to all controls or global
+// WARNING: We only have 8 slots for those properties by default!!! -> New global control: TEXT?
 typedef enum {
     TEXT_SIZE = 16,             // Text size (glyphs max height)
     TEXT_SPACING,               // Text spacing between glyphs
@@ -525,7 +557,13 @@ typedef enum {
     TEXT_LINE_SPACING,          // Text spacing between lines
     TEXT_ALIGNMENT_VERTICAL,    // Text vertical alignment inside text bounds (after border and padding)
     TEXT_WRAP_MODE              // Text wrap-mode inside text bounds
+    //TEXT_DECORATION             // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
+    //TEXT_DECORATION_THICK       // Text decoration line thikness
 } GuiDefaultProperty;
+
+// Other possible text properties:
+// TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
+// TEXT_INDENT	                // Text indentation -> Now using TEXT_PADDING...
 
 // Label
 //typedef enum { } GuiLabelProperty;
@@ -551,12 +589,12 @@ typedef enum {
 
 // ScrollBar
 typedef enum {
-    ARROWS_SIZE = 16,
-    ARROWS_VISIBLE,
-    SCROLL_SLIDER_PADDING,      // (SLIDERBAR, SLIDER_PADDING)
-    SCROLL_SLIDER_SIZE,
-    SCROLL_PADDING,
-    SCROLL_SPEED,
+    ARROWS_SIZE = 16,           // ScrollBar arrows size
+    ARROWS_VISIBLE,             // ScrollBar arrows visible
+    SCROLL_SLIDER_PADDING,      // ScrollBar slider internal padding
+    SCROLL_SLIDER_SIZE,         // ScrollBar slider size
+    SCROLL_PADDING,             // ScrollBar scroll padding from arrows
+    SCROLL_SPEED,               // ScrollBar scrolling speed
 } GuiScrollBarProperty;
 
 // CheckBox
@@ -592,7 +630,7 @@ typedef enum {
     LIST_ITEMS_HEIGHT = 16,     // ListView items height
     LIST_ITEMS_SPACING,         // ListView items separation
     SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
-    SCROLLBAR_SIDE,             // ListView scrollbar side (0-left, 1-right)
+    SCROLLBAR_SIDE,             // ListView scrollbar side (0-SCROLLBAR_LEFT_SIDE, 1-SCROLLBAR_RIGHT_SIDE)
 } GuiListViewProperty;
 
 // ColorPicker
