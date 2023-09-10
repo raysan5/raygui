@@ -1514,8 +1514,6 @@ void GuiSetFont(Font font)
         if (!guiStyleLoaded) GuiLoadStyleDefault();
 
         guiFont = font;
-        GuiSetStyle(DEFAULT, TEXT_SIZE, font.baseSize);
-        GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, (int)(1.5f*font.baseSize));
     }
 }
 
@@ -4505,18 +4503,17 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                         fileDataPtr += 16;
                     }
                 }
-
-
-                // Set font texture source rectangle to be used as white texture to draw shapes
-                // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
-                if ((fontWhiteRec.x > 0) &&
-                    (fontWhiteRec.y > 0) &&
-                    (fontWhiteRec.width > 0) &&
-                    (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
             }
             else font = GetFontDefault();   // Fallback in case of errors loading font atlas texture
 
             GuiSetFont(font);
+
+            // Set font texture source rectangle to be used as white texture to draw shapes
+            // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
+            if ((fontWhiteRec.x > 0) &&
+                (fontWhiteRec.y > 0) &&
+                (fontWhiteRec.width > 0) &&
+                (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
         }
 #endif
     }
