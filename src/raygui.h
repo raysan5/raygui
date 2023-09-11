@@ -2142,7 +2142,8 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
             }
             else state = STATE_FOCUSED;
         }
-        else if (*active) state = STATE_PRESSED;
+        
+        if ((*active) && (state != STATE_FOCUSED)) state = STATE_PRESSED;
     }
 
     if (*active >= itemCount) *active = 0;
