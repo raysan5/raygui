@@ -275,7 +275,7 @@
 *           - const char *GetDirectoryPath(const char *filePath);   // -- GuiLoadStyle(), required to find charset/font file from text .rgs
 *           - int *LoadCodepoints(const char *text, int *count);    // -- GuiLoadStyle(), required to load required font codepoints list
 *           - void UnloadCodepoints(int *codepoints);               // -- GuiLoadStyle(), required to unload codepoints list
-*
+*           - unsigned char *DecompressData(const unsigned char *compData, int compDataSize, int *dataSize); // -- GuiLoadStyle()
 *
 *   CONTRIBUTORS:
 *       Ramon Santamaria:   Supervision, review, redesign, update and maintenance
@@ -1427,13 +1427,19 @@ static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color
 //-------------------------------------------------------------------------------
 static Font GetFontDefault(void);                            // -- GuiLoadStyleDefault()
 static Font LoadFontEx(const char *fileName, int fontSize, int *codepoints, int codepointCount); // -- GuiLoadStyle(), load font
+
 static Texture2D LoadTextureFromImage(Image image);          // -- GuiLoadStyle(), required to load texture from embedded font atlas image
 static void SetShapesTexture(Texture2D tex, Rectangle rec);  // -- GuiLoadStyle(), required to set shapes rec to font white rec (optimization)
+
 static char *LoadFileText(const char *fileName);             // -- GuiLoadStyle(), required to load charset data
 static void UnloadFileText(char *text);                      // -- GuiLoadStyle(), required to unload charset data
+
 static const char *GetDirectoryPath(const char *filePath);   // -- GuiLoadStyle(), required to find charset/font file from text .rgs
+
 static int *LoadCodepoints(const char *text, int *count);    // -- GuiLoadStyle(), required to load required font codepoints list
 static void UnloadCodepoints(int *codepoints);               // -- GuiLoadStyle(), required to unload codepoints list
+
+static unsigned char *DecompressData(const unsigned char *compData, int compDataSize, int *dataSize); // -- GuiLoadStyle()
 //-------------------------------------------------------------------------------
 
 // raylib functions already implemented in raygui
