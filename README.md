@@ -47,7 +47,7 @@ ListView    |  ColorPicker |  MessageBox  |  TextInputBox
 
 `raygui` comes with a [default](styles/default) style automatically loaded at runtime:
 
-![raygui default style](styles/default/style_table.png)
+![raygui default style](styles/default/style_default.png)
 
 Some additional styles are also provided for convenience, just check [styles directory](styles) for details:
 
