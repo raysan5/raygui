@@ -503,7 +503,7 @@ typedef enum {
     LABEL,          // Used also for: LABELBUTTON
     BUTTON,
     TOGGLE,         // Used also for: TOGGLEGROUP
-    SLIDER,         // Used also for: SLIDERBAR
+    SLIDER,         // Used also for: SLIDERBAR, TOGGLESLIDER
     PROGRESSBAR,
     CHECKBOX,
     COMBOBOX,
