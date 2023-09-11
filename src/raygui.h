@@ -265,12 +265,15 @@
 *           - void DrawRectangle(int x, int y, int width, int height, Color color); // -- GuiDrawRectangle()
 *           - void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4); // -- GuiColorPicker()
 *
-*           - Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount); // -- GuiLoadStyle()
-*           - Font GetFontDefault(void);                           // -- GuiLoadStyleDefault()
-*           - Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
-*           - void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
-*           - char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
-*           - const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
+*           - Font GetFontDefault(void);                            // -- GuiLoadStyleDefault()
+*           - Font LoadFontEx(const char *fileName, int fontSize, int *codepoints, int codepointCount); // -- GuiLoadStyle()
+*           - Texture2D LoadTextureFromImage(Image image);          // -- GuiLoadStyle(), required to load texture from embedded font atlas image
+*           - void SetShapesTexture(Texture2D tex, Rectangle rec);  // -- GuiLoadStyle(), required to set shapes rec to font white rec (optimization)
+*           - char *LoadFileText(const char *fileName);             // -- GuiLoadStyle(), required to load charset data
+*           - void UnloadFileText(char *text);                      // -- GuiLoadStyle(), required to unload charset data
+*           - const char *GetDirectoryPath(const char *filePath);   // -- GuiLoadStyle(), required to find charset/font file from text .rgs
+*           - int *LoadCodepoints(const char *text, int *count);    // -- GuiLoadStyle(), required to load required font codepoints list
+*           - void UnloadCodepoints(int *codepoints);               // -- GuiLoadStyle(), required to unload codepoints list
 *
 *
 *   CONTRIBUTORS:
@@ -1421,12 +1424,15 @@ static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color
 
 // Text required functions
 //-------------------------------------------------------------------------------
-static Font LoadFontEx(const char *fileName, int fontSize, int *fontChars, int glyphCount); // -- GuiLoadStyle()
-static Font GetFontDefault(void);                           // -- GuiLoadStyleDefault()
-static Texture2D LoadTextureFromImage(Image image);         // -- GuiLoadStyle()
-static void SetShapesTexture(Texture2D tex, Rectangle rec); // -- GuiLoadStyle()
-static char *LoadFileText(const char *fileName);            // -- GuiLoadStyle()
-static const char *GetDirectoryPath(const char *filePath);  // -- GuiLoadStyle()
+static Font GetFontDefault(void);                            // -- GuiLoadStyleDefault()
+static Font LoadFontEx(const char *fileName, int fontSize, int *codepoints, int codepointCount); // -- GuiLoadStyle(), load font
+static Texture2D LoadTextureFromImage(Image image);          // -- GuiLoadStyle(), required to load texture from embedded font atlas image
+static void SetShapesTexture(Texture2D tex, Rectangle rec);  // -- GuiLoadStyle(), required to set shapes rec to font white rec (optimization)
+static char *LoadFileText(const char *fileName);             // -- GuiLoadStyle(), required to load charset data
+static void UnloadFileText(char *text);                      // -- GuiLoadStyle(), required to unload charset data
+static const char *GetDirectoryPath(const char *filePath);   // -- GuiLoadStyle(), required to find charset/font file from text .rgs
+static int *LoadCodepoints(const char *text, int *count);    // -- GuiLoadStyle(), required to load required font codepoints list
+static void UnloadCodepoints(int *codepoints);               // -- GuiLoadStyle(), required to unload codepoints list
 //-------------------------------------------------------------------------------
 
 // raylib functions already implemented in raygui
@@ -3989,33 +3995,36 @@ void GuiLoadStyle(const char *fileName)
                         sscanf(buffer, "f %d %s %[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
                         Font font = { 0 };
+                        int *codepoints = NULL;
+                        int codepointCount = 0;
 
                         if (charmapFileName[0] != '0')
                         {
-                            // Load characters from charmap file,
-                            // expected '\n' separated list of integer values
-                            char *charValues = LoadFileText(charmapFileName);
-                            if (charValues != NULL)
-                            {
-                                int glyphCount = 0;
-                                const char **chars = TextSplit(charValues, '\n', &glyphCount);
-
-                                int *values = (int *)RAYGUI_MALLOC(glyphCount*sizeof(int));
-                                for (int i = 0; i < glyphCount; i++) values[i] = TextToInteger(chars[i]);
-
-                                if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
-                                font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, values, glyphCount);
-                                if (font.texture.id == 0) font = GetFontDefault();
-
-                                RAYGUI_FREE(values);
-                            }
+                            // Load text data from file
+                            // NOTE: Expected an UTF-8 array of codepoints, no separation
+                            char *textData = LoadFileText(TextFormat("%s/%s", GetDirectoryPath(fileName), charmapFileName));
+                            codepoints = LoadCodepoints(textData, &codepointCount);
+                            UnloadFileText(textData);
                         }
-                        else
+
+                        if (fontFileName[0] != '\0')
                         {
+                            // In case a font is already loaded and it is not default internal font, unload it
                             if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
-                            font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);
-                            if (font.texture.id == 0) font = GetFontDefault();
+
+                            if (codepointCount > 0) font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, codepoints, codepointCount);
+                            else font = LoadFontEx(TextFormat("%s/%s", GetDirectoryPath(fileName), fontFileName), fontSize, NULL, 0);   // Default to 95 standard codepoints
                         }
+
+                        // If font texture not properly loaded, revert to default font and size/spacing
+                        if (font.texture.id == 0)
+                        {
+                            font = GetFontDefault();
+                            GuiSetStyle(DEFAULT, TEXT_SIZE, 10);
+                            GuiSetStyle(DEFAULT, TEXT_SPACING, 1);
+                        }
+
+                        UnloadCodepoints(codepoints);
 
                         if ((font.texture.id > 0) && (font.glyphCount > 0)) GuiSetFont(font);
 
