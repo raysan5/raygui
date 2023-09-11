@@ -1,0 +1,27 @@
+#
+# rgs style text file (v4.0) - raygui style file generated using rGuiStyler
+#
+# Provided info:
+#    f fontGenSize charsetFileName fontFileName
+#    p <controlId> <propertyId> <propertyValue>  Property description
+#
+# WARNING: This style uses a custom font, must be provided with style file
+#
+f 16 charset.txt GenericMobileSystemNuevo.ttf
+p 00 00 0x1980d5ff    DEFAULT_BORDER_COLOR_NORMAL 
+p 00 01 0x4df3ebff    DEFAULT_BASE_COLOR_NORMAL 
+p 00 02 0x103e60ff    DEFAULT_TEXT_COLOR_NORMAL 
+p 00 03 0xe7e2f7ff    DEFAULT_BORDER_COLOR_FOCUSED 
+p 00 04 0x23d4ddff    DEFAULT_BASE_COLOR_FOCUSED 
+p 00 05 0xf1f1f1ff    DEFAULT_TEXT_COLOR_FOCUSED 
+p 00 06 0x6413a6ff    DEFAULT_BORDER_COLOR_PRESSED 
+p 00 07 0xea66d9ff    DEFAULT_BASE_COLOR_PRESSED 
+p 00 08 0x9f00bbff    DEFAULT_TEXT_COLOR_PRESSED 
+p 00 09 0x4b909eff    DEFAULT_BORDER_COLOR_DISABLED 
+p 00 10 0x73c7d0ff    DEFAULT_BASE_COLOR_DISABLED 
+p 00 11 0x448894ff    DEFAULT_TEXT_COLOR_DISABLED 
+p 00 16 0x00000010    TEXT_SIZE 
+p 00 17 0x00000000    TEXT_SPACING 
+p 00 18 0x1d3f6cff    LINE_COLOR 
+p 00 19 0x29c9e5ff    BACKGROUND_COLOR 
+p 00 20 0x00000018    TEXT_LINE_SPACING 

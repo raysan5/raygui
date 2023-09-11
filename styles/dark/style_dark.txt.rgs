@@ -1,0 +1,33 @@
+#
+# rgs style text file (v4.0) - raygui style file generated using rGuiStyler
+#
+# Provided info:
+#    f fontGenSize charsetFileName fontFileName
+#    p <controlId> <propertyId> <propertyValue>  Property description
+#
+# WARNING: This style uses a custom font, must be provided with style file
+#
+f 16 charset.txt PixelOperator.ttf
+p 00 00 0x878787ff    DEFAULT_BORDER_COLOR_NORMAL 
+p 00 01 0x2c2c2cff    DEFAULT_BASE_COLOR_NORMAL 
+p 00 02 0xc3c3c3ff    DEFAULT_TEXT_COLOR_NORMAL 
+p 00 03 0xe1e1e1ff    DEFAULT_BORDER_COLOR_FOCUSED 
+p 00 04 0x848484ff    DEFAULT_BASE_COLOR_FOCUSED 
+p 00 05 0x181818ff    DEFAULT_TEXT_COLOR_FOCUSED 
+p 00 06 0x000000ff    DEFAULT_BORDER_COLOR_PRESSED 
+p 00 07 0xefefefff    DEFAULT_BASE_COLOR_PRESSED 
+p 00 08 0x202020ff    DEFAULT_TEXT_COLOR_PRESSED 
+p 00 09 0x6a6a6aff    DEFAULT_BORDER_COLOR_DISABLED 
+p 00 10 0x818181ff    DEFAULT_BASE_COLOR_DISABLED 
+p 00 11 0x606060ff    DEFAULT_TEXT_COLOR_DISABLED 
+p 00 16 0x00000010    TEXT_SIZE 
+p 00 17 0x00000000    TEXT_SPACING 
+p 00 18 0x9d9d9dff    LINE_COLOR 
+p 00 19 0x3c3c3cff    BACKGROUND_COLOR 
+p 00 20 0x00000018    TEXT_LINE_SPACING 
+p 01 05 0xf7f7f7ff    LABEL_TEXT_COLOR_FOCUSED 
+p 01 08 0x898989ff    LABEL_TEXT_COLOR_PRESSED 
+p 04 05 0xb0b0b0ff    SLIDER_TEXT_COLOR_FOCUSED 
+p 05 05 0x848484ff    PROGRESSBAR_TEXT_COLOR_FOCUSED 
+p 09 05 0xf5f5f5ff    TEXTBOX_TEXT_COLOR_FOCUSED 
+p 10 05 0xf6f6f6ff    VALUEBOX_TEXT_COLOR_FOCUSED 

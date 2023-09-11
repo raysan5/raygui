@@ -1,0 +1,27 @@
+#
+# rgs style text file (v4.0) - raygui style file generated using rGuiStyler
+#
+# Provided info:
+#    f fontGenSize charsetFileName fontFileName
+#    p <controlId> <propertyId> <propertyValue>  Property description
+#
+# WARNING: This style uses a custom font, must be provided with style file
+#
+f 16 charset.txt Mecha.ttf
+p 00 00 0x1c8d00ff    DEFAULT_BORDER_COLOR_NORMAL 
+p 00 01 0x161313ff    DEFAULT_BASE_COLOR_NORMAL 
+p 00 02 0x38f620ff    DEFAULT_TEXT_COLOR_NORMAL 
+p 00 03 0xc3fbc6ff    DEFAULT_BORDER_COLOR_FOCUSED 
+p 00 04 0x43bf2eff    DEFAULT_BASE_COLOR_FOCUSED 
+p 00 05 0xdcfadcff    DEFAULT_TEXT_COLOR_FOCUSED 
+p 00 06 0x1f5b19ff    DEFAULT_BORDER_COLOR_PRESSED 
+p 00 07 0x43ff28ff    DEFAULT_BASE_COLOR_PRESSED 
+p 00 08 0x1e6f15ff    DEFAULT_TEXT_COLOR_PRESSED 
+p 00 09 0x223b22ff    DEFAULT_BORDER_COLOR_DISABLED 
+p 00 10 0x182c18ff    DEFAULT_BASE_COLOR_DISABLED 
+p 00 11 0x244125ff    DEFAULT_TEXT_COLOR_DISABLED 
+p 00 16 0x00000010    TEXT_SIZE 
+p 00 17 0x00000000    TEXT_SPACING 
+p 00 18 0xe6fce3ff    LINE_COLOR 
+p 00 19 0x0c1505ff    BACKGROUND_COLOR 
+p 00 20 0x00000018    TEXT_LINE_SPACING 
