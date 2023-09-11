@@ -243,7 +243,9 @@ int main()
             //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
             GuiToggleGroup((Rectangle){ 165, 360, 140, 24 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
             //GuiDisable();
+            GuiSetStyle(SLIDER, SLIDER_PADDING, 2);
             GuiToggleSlider((Rectangle){ 165, 480, 140, 30 }, "ON;OFF", &toggleSliderActive);
+            GuiSetStyle(SLIDER, SLIDER_PADDING, 0);
 
             // Third GUI column
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
