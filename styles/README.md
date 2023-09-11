@@ -11,40 +11,40 @@ Styles can also be embedded in the code if desired, `.h` files are provided with
 Here it is a quick overview of those styles, you can navigate to each directory for additional information.
 
 #### 1. style: [default](default)
-![default style](default/style_table.png)
+![default style](default/style_default.png)
 
 #### 2. style: [dark](dark)
-![dark style](dark/style_table.png)
+![dark style](dark/style_dark.png)
 
 #### 3. style: [bluish](bluish)
-![bluish style](bluish/style_table.png)
+![bluish style](bluish/style_bluish.png)
 
 #### 4. style: [candy](candy)
-![candy style](candy/style_table.png)
+![candy style](candy/style_candy.png)
 
 #### 5. style: [cherry](cherry)
-![cherry style](cherry/style_table.png)
+![cherry style](cherry/style_cherry.png)
 
 #### 6. style: [cyber](cyber)
-![cyber style](cyber/style_table.png)
+![cyber style](cyber/style_cyber.png)
 
 #### 7. style: [jungle](jungle)
-![jungle style](jungle/style_table.png)
+![jungle style](jungle/style_jungle.png)
 
 #### 8. style: [lavanda](lavanda)
-![lavanda style](lavanda/style_table.png)
+![lavanda style](lavanda/style_lavanda.png)
 
 #### 9. style: [terminal](terminal)
-![terminal style](terminal/style_table.png)
+![terminal style](terminal/style_terminal.png)
 
 #### 10. style: [sunny](sunny)
-![sunny style](sunny/style_table.png)
+![sunny style](sunny/style_sunny.png)
 
 #### 11. style: [ashes](ashes)
-![ashes style](ashes/style_table.png)
+![ashes style](ashes/style_ashes.png)
 
 #### 12. enefete: [enefete](enefete)
-![enefete style](enefete/style_table.png)
+![enefete style](enefete/style_enefete.png)
 
 
-*NOTE: Those styles require raylib 4.0 and raygui 3.1.*
+*NOTE: Those styles require raylib 4.5+ and raygui 4.0*
