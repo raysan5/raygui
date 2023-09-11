@@ -351,6 +351,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\examples\image_importer_raw\image_importer_raw.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\examples\raygui.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

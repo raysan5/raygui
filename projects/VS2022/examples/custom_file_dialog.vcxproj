@@ -354,6 +354,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\examples\custom_file_dialog\gui_window_file_dialog.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\examples\raygui.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
