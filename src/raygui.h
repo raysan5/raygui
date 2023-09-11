@@ -141,11 +141,12 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       4.0 (10-Sep-2023) ADDED: GuiToggleSlider()
+*       4.0 (12-Sep-2023) ADDED: GuiToggleSlider()
 *                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
 *                         ADDED: Multiple new icons, mostly compiler related
 *                         ADDED: New DEFAULT properties: TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE
 *                         ADDED: New enum values: GuiTextAlignment, GuiTextAlignmentVertical, GuiTextWrapMode
+*                         ADDED: Support loading styles with custom font charset from external file
 *                         REDESIGNED: GuiTextBox(), support mouse cursor positioning
 *                         REDESIGNED: GuiDrawText(), support multiline and word-wrap modes (read only)
 *                         REDESIGNED: GuiProgressBar() to be more visual, progress affects border color
