@@ -2189,7 +2189,7 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     return result;
 }
 
-// Check Box control, returns true when active
+// Check Box control, returns 1 when state changed
 int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
 {
     int result = 0;
@@ -2228,7 +2228,11 @@ int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
 
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) *checked = !(*checked);
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            {
+                *checked = !(*checked);
+                result = 1;
+            }
         }
     }
     //--------------------------------------------------------------------
