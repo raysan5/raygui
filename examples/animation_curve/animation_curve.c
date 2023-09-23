@@ -22,12 +22,12 @@
 #include "../../src/raygui.h"
 
 // raygui embedded styles
-#include "../../styles/cyber/cyber.h"       // raygui style: cyber
-#include "../../styles/jungle/jungle.h"     // raygui style: jungle
-#include "../../styles/lavanda/lavanda.h"   // raygui style: lavanda
-#include "../../styles/dark/dark.h"         // raygui style: dark
-#include "../../styles/bluish/bluish.h"     // raygui style: bluish
-#include "../../styles/terminal/terminal.h" // raygui style: terminal
+#include "../../styles/cyber/style_cyber.h"       // raygui style: cyber
+#include "../../styles/jungle/style_jungle.h"     // raygui style: jungle
+#include "../../styles/lavanda/style_lavanda.h"   // raygui style: lavanda
+#include "../../styles/dark/style_dark.h"         // raygui style: dark
+#include "../../styles/bluish/style_bluish.h"     // raygui style: bluish
+#include "../../styles/terminal/style_terminal.h" // raygui style: terminal
 
 #undef RAYGUI_IMPLEMENTATION            // Avoid including raygui implementation again
 
