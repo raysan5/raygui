@@ -31,6 +31,7 @@ if(${BUILD_RAYGUI_EXAMPLES})
 
     # Get the sources together
     set(example_dirs
+        animation_curve
         controls_test_suite
         custom_file_dialog
         custom_sliders
