@@ -136,7 +136,7 @@
 *
 *       #define RAYGUI_DEBUG_RECS_BOUNDS
 *           Draw control bounds rectangles for debug
-* 
+*
 *       #define RAYGUI_DEBUG_TEXT_BOUNDS
 *           Draw text bounds rectangles for debug
 *
@@ -498,7 +498,7 @@ typedef enum {
 typedef enum {
     // Default -> populates to all controls when set
     DEFAULT = 0,
-    
+
     // Basic controls
     LABEL,          // Used also for: LABELBUTTON
     BUTTON,
@@ -1775,7 +1775,7 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
 {
     #define RAYGUI_MIN_SCROLLBAR_WIDTH     40
     #define RAYGUI_MIN_SCROLLBAR_HEIGHT    40
-    
+
     int result = 0;
     GuiState state = guiState;
     float mouseWheelSpeed = 20.0f;      // Default movement speed with mouse wheel
@@ -1806,27 +1806,27 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
 
     int horizontalScrollBarWidth = hasHorizontalScrollBar? GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) : 0;
     int verticalScrollBarWidth =  hasVerticalScrollBar? GuiGetStyle(LISTVIEW, SCROLLBAR_WIDTH) : 0;
-    Rectangle horizontalScrollBar = { 
-        (float)((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)bounds.x + verticalScrollBarWidth : (float)bounds.x) + GuiGetStyle(DEFAULT, BORDER_WIDTH), 
-        (float)bounds.y + bounds.height - horizontalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH), 
-        (float)bounds.width - verticalScrollBarWidth - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH), 
-        (float)horizontalScrollBarWidth 
+    Rectangle horizontalScrollBar = {
+        (float)((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)bounds.x + verticalScrollBarWidth : (float)bounds.x) + GuiGetStyle(DEFAULT, BORDER_WIDTH),
+        (float)bounds.y + bounds.height - horizontalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH),
+        (float)bounds.width - verticalScrollBarWidth - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH),
+        (float)horizontalScrollBarWidth
     };
-    Rectangle verticalScrollBar = { 
-        (float)((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)bounds.x + bounds.width - verticalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH)), 
-        (float)bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH), 
-        (float)verticalScrollBarWidth, 
-        (float)bounds.height - horizontalScrollBarWidth - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH) 
+    Rectangle verticalScrollBar = {
+        (float)((GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)? (float)bounds.x + GuiGetStyle(DEFAULT, BORDER_WIDTH) : (float)bounds.x + bounds.width - verticalScrollBarWidth - GuiGetStyle(DEFAULT, BORDER_WIDTH)),
+        (float)bounds.y + GuiGetStyle(DEFAULT, BORDER_WIDTH),
+        (float)verticalScrollBarWidth,
+        (float)bounds.height - horizontalScrollBarWidth - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH)
     };
 
     // Make sure scroll bars have a minimum width/height
     // NOTE: If content >>> bounds, size could be very small or even 0
-    if (horizontalScrollBar.width < RAYGUI_MIN_SCROLLBAR_WIDTH) 
+    if (horizontalScrollBar.width < RAYGUI_MIN_SCROLLBAR_WIDTH)
     {
         horizontalScrollBar.width = RAYGUI_MIN_SCROLLBAR_WIDTH;
         mouseWheelSpeed = 30.0f;    // TODO: Calculate speed increment based on content.height vs bounds.height
     }
-    if (verticalScrollBar.height < RAYGUI_MIN_SCROLLBAR_HEIGHT) 
+    if (verticalScrollBar.height < RAYGUI_MIN_SCROLLBAR_HEIGHT)
     {
         verticalScrollBar.height = RAYGUI_MIN_SCROLLBAR_HEIGHT;
         mouseWheelSpeed = 30.0f;    // TODO: Calculate speed increment based on content.width vs bounds.width
@@ -2155,7 +2155,7 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
             }
             else state = STATE_FOCUSED;
         }
-        
+
         if ((*active) && (state != STATE_FOCUSED)) state = STATE_PRESSED;
     }
 
@@ -2646,7 +2646,7 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
                         mouseCursorIndex = i;
                         break;
                     }
-                    
+
                     widthToMouseX += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
                 }
 
@@ -2743,7 +2743,7 @@ bool GuiTextBoxMulti(Rectangle bounds, char *text, int bufferSize, bool editMode
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
     GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
     GuiSetStyle(TEXTBOX, TEXT_READONLY, 0);
-    
+
     return pressed;
 }
 */
@@ -4101,7 +4101,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 1);
     GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-    
+
     // Initialize default extended property values
     // NOTE: By default, extended property values are initialized to 0
     GuiSetStyle(DEFAULT, TEXT_SIZE, 10);                // DEFAULT, shared by all controls
@@ -4876,7 +4876,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
             else
             {
-                // TODO: There are multiple types of spaces in Unicode, 
+                // TODO: There are multiple types of spaces in Unicode,
                 // maybe it's a good idea to add support for more: http://jkorpela.fi/chars/spaces.html
                 if ((codepoint != ' ') && (codepoint != '\t'))      // Do not draw codepoints with no glyph
                 {
@@ -4888,7 +4888,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
                     }
-                    else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) 
+                    else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD))
                     {
                         // Draw only glyphs inside the bounds
                         if ((textBoundsPosition.y + textOffsetY) <= (textBounds.y + textBounds.height - GuiGetStyle(DEFAULT, TEXT_SIZE)))
