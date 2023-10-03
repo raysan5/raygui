@@ -3894,11 +3894,13 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
     GuiState state = guiState;
 
     Vector2 mousePoint = GetMousePosition();
-    Vector2 currentMouseCell = { 0 };
+    Vector2 currentMouseCell = { -1, -1 };
 
     float spaceWidth = spacing/(float)subdivs;
     int linesV = (int)(bounds.width/spaceWidth) + 1;
     int linesH = (int)(bounds.height/spaceWidth) + 1;
+
+    int color = GuiGetStyle(DEFAULT, LINE_COLOR);
 
     // Update control
     //--------------------------------------------------------------------
@@ -3915,28 +3917,23 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
 
     // Draw control
     //--------------------------------------------------------------------
-    switch (state)
-    {
-        case STATE_NORMAL:
-        {
-            if (subdivs > 0)
-            {
-                // Draw vertical grid lines
-                for (int i = 0; i < linesV; i++)
-                {
-                    Rectangle lineV = { bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height };
-                    GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
-                }
+    if (state == STATE_DISABLED) color = GuiGetStyle(DEFAULT, BORDER_COLOR_DISABLED);
 
-                // Draw horizontal grid lines
-                for (int i = 0; i < linesH; i++)
-                {
-                    Rectangle lineH = { bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 };
-                    GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(GuiGetStyle(DEFAULT, LINE_COLOR)), RAYGUI_GRID_ALPHA));
-                }
-            }
-        } break;
-        default: break;
+    if (subdivs > 0)
+    {
+        // Draw vertical grid lines
+        for (int i = 0; i < linesV; i++)
+        {
+            Rectangle lineV = { bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height };
+            GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(color), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(color), RAYGUI_GRID_ALPHA));
+        }
+
+        // Draw horizontal grid lines
+        for (int i = 0; i < linesH; i++)
+        {
+            Rectangle lineH = { bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 };
+            GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(color), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(color), RAYGUI_GRID_ALPHA));
+        }
     }
 
     if (mouseCell != NULL) *mouseCell = currentMouseCell;
