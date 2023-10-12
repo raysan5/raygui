@@ -2937,6 +2937,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth)
 {
     int result = 0;
+    float oldValue = *value;
     GuiState state = guiState;
 
     float temp = (maxValue - minValue)/2.0f;
@@ -3005,6 +3006,10 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
         if (*value > maxValue) *value = maxValue;
         else if (*value < minValue) *value = minValue;
     }
+
+    // Control value change check
+    if(oldValue == *value) result = 0;
+    else result = 1;
 
     // Bar limits check
     if (sliderWidth > 0)        // Slider
