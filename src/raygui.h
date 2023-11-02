@@ -246,7 +246,7 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria.
 *
 *   DEPENDENCIES:
-*       raylib 4.6-dev      Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
+*       raylib 5.0  - Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
 *
 *   STANDALONE MODE:
 *       By default raygui depends on raylib mostly for the inputs and the drawing functionality but that dependency can be disabled
@@ -2625,8 +2625,6 @@ int GuiTextBox(Rectangle bounds, char *text, int bufferSize, bool editMode)
             if (CheckCollisionPointRec(mousePosition, textBounds))     // Mouse hover text
             {
                 float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;
-                int codepoint = 0;
-                int codepointSize = 0;
                 int codepointIndex = 0;
                 float glyphWidth = 0.0f;
                 float widthToMouseX = 0;
@@ -3371,8 +3369,7 @@ int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
     pickerSelector.x = bounds.x + (float)hsv.y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)hsv.z)*bounds.height;  // HSV: Value
 
-    float hue = -1.0f;
-    Vector3 maxHue = { (hue >= 0.0f)? hue : hsv.x, 1.0f, 1.0f };
+    Vector3 maxHue = { hsv.x, 1.0f, 1.0f };
     Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
     Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
                       (unsigned char)(255.0f*rgbHue.y),
@@ -3685,8 +3682,7 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
     pickerSelector.x = bounds.x + (float)colorHsv->y*bounds.width;            // HSV: Saturation
     pickerSelector.y = bounds.y + (1.0f - (float)colorHsv->z)*bounds.height;  // HSV: Value
 
-    float hue = -1.0f;
-    Vector3 maxHue = { (hue >= 0.0f)? hue : colorHsv->x, 1.0f, 1.0f };
+    Vector3 maxHue = { colorHsv->x, 1.0f, 1.0f };
     Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
     Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
                       (unsigned char)(255.0f*rgbHue.y),
@@ -4191,7 +4187,7 @@ const char *GuiIconText(int iconId, const char *text)
     return NULL;
 #else
     static char buffer[1024] = { 0 };
-    static char iconBuffer[6] = { 0 };
+    static char iconBuffer[16] = { 0 };
 
     if (text != NULL)
     {
@@ -4208,7 +4204,7 @@ const char *GuiIconText(int iconId, const char *text)
     }
     else
     {
-        sprintf(iconBuffer, "#%03i#", iconId & 0x1ff);
+        sprintf(iconBuffer, "#%03i#", iconId);
 
         return iconBuffer;
     }
