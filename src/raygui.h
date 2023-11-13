@@ -4829,6 +4829,9 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         for (int c = 0; (lines[i][c] != '\0') && (lines[i][c] != '\n') && (lines[i][c] != '\r'); c++, lineSize++){ }
         float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
 
+        int lastSpaceIndex = 0;
+        bool tempWrapCharMode = false;
+
         int textOffsetY = 0;
         float textOffsetX = 0.0f;
         float glyphWidth = 0;
@@ -4839,7 +4842,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 
             // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
-            if (codepoint == 0x3f) codepointSize = 1;       // TODO: Review not recognized codepoints size
+            if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
             // Wrap mode text measuring to space to validate if it can be drawn or
             // a new line is required
@@ -4854,21 +4857,36 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+
+                    if (tempWrapCharMode)   // Wrap at char level when too long words
+                    {
+                        wrapMode = TEXT_WRAP_WORD;
+                        tempWrapCharMode = false;
+                    }
                 }
             }
             else if (wrapMode == TEXT_WRAP_WORD)
             {
+                if (codepoint == 32) lastSpaceIndex = c;
+
                 // Get width to next space in line
                 int nextSpaceIndex = 0;
                 float nextSpaceWidth = GetNextSpaceWidth(lines[i] + c, &nextSpaceIndex);
 
-                if ((textOffsetX + nextSpaceWidth) > textBounds.width)
+                int nextSpaceIndex2 = 0;
+                float nextWordSize = GetNextSpaceWidth(lines[i] + lastSpaceIndex + 1, &nextSpaceIndex2);
+
+                if (nextWordSize > textBounds.width)
+                {
+                    // Considering the case the next word is longer than boudns
+                    tempWrapCharMode = true;
+                    wrapMode = TEXT_WRAP_CHAR;
+                }
+                else if ((textOffsetX + nextSpaceWidth) > textBounds.width)
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
                 }
-
-                // TODO: Consider case: (nextSpaceWidth >= textBounds.width)
             }
 
             if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
