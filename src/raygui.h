@@ -4844,8 +4844,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
             if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
-            // Wrap mode text measuring to space to validate if it can be drawn or
-            // a new line is required
+            // Wrap mode text measuring, to validate if 
+            // it can be drawn or a new line is required
             if (wrapMode == TEXT_WRAP_CHAR)
             {
                 // Get glyph width to check if it goes out of bounds
@@ -4878,7 +4878,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 
                 if (nextWordSize > textBounds.width)
                 {
-                    // Considering the case the next word is longer than boudns
+                    // Considering the case the next word is longer than bounds
                     tempWrapCharMode = true;
                     wrapMode = TEXT_WRAP_CHAR;
                 }
