@@ -532,20 +532,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
             {
                 DrawLine(screenPos2.x, screenPos2.y, innerBounds.x+innerBounds.width, screenPos2.y, curveColor);
             }
-
-            // Draw cubic Hermite curve
-            const float scale = (p2->position.x - p1->position.x)/3.0f;
-            const Vector2 offset1 = (Vector2){ scale, scale*p1->tangents.y };
-            // negative endTangent => top part => need to invert value to calculate offset
-            const Vector2 offset2 = (Vector2){ -scale, -scale*p2->tangents.x };
-
-            const Vector2 c1 = (Vector2){ p1->position.x + offset1.x, p1->position.y + offset1.y };
-            const Vector2 c2 = (Vector2){ p2->position.x + offset2.x, p2->position.y + offset2.y };
-
-            const Vector2 screenC1 = (Vector2){ c1.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c1.y*innerBounds.height };
-            const Vector2 screenC2 = (Vector2){ c2.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c2.y*innerBounds.height };
-
-            DrawLineBezierCubic(screenPos1, screenPos2, screenC1, screenC2, 1, curveColor);
+            DrawLineBezier(screenPos1, screenPos2, 1, curveColor);
         }
     }
 }
