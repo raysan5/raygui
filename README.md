@@ -99,7 +99,7 @@ gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTY
 
  - **Windows (MSVC)**
 ```
-copy src\raylib.h src\raylib.c
+copy src\raygui.h src\raygui.c
 cl /O2 /I../raylib/src/ /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH ../raylib/build/raylib/Release/raylib.lib /subsystem:windows /machine:x64
 ```
 
