@@ -510,7 +510,6 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
-    VALUEBOXF,
     SPINNER,        // Uses: BUTTON, VALUEBOX
     LISTVIEW,
     COLORPICKER,
@@ -4736,7 +4735,6 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case SLIDER:
         case CHECKBOX:
         case VALUEBOX:
-        case VALUEBOXF:
         case SPINNER:
             // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
