@@ -510,6 +510,7 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
+    VALUEBOXF,
     SPINNER,        // Uses: BUTTON, VALUEBOX
     LISTVIEW,
     COLORPICKER,
@@ -722,6 +723,7 @@ RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);     
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
 RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
+RAYGUIAPI int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, float minValue, float maxValue, bool editMode); // Value Box control, updates input val_str with numbers
 RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 
 RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control, returns selected value
@@ -1450,6 +1452,7 @@ static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if 
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
 static const char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
+static int TextToFloat(const char *text);         // Get float value from text
 
 static int GetCodepointNext(const char *text, int *codepointSize);  // Get next codepoint in a UTF-8 encoded text
 static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
@@ -2925,6 +2928,116 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 
     // Draw text label if provided
     GuiDrawText(text, textBounds, (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT)? TEXT_ALIGN_LEFT : TEXT_ALIGN_RIGHT, GetColor(GuiGetStyle(LABEL, TEXT + (state*3))));
+    //--------------------------------------------------------------------
+
+    return result;
+}
+
+// Floating point Value Box control, updates input val_str with numbers
+// NOTE: Requires static variables: frameCounter
+int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, float minValue, float maxValue, bool editMode) {
+#if !defined(RAYGUI_VALUEBOX_MAX_CHARS)
+#define RAYGUI_VALUEBOX_MAX_CHARS  32
+#endif
+
+    int result = 0;
+    GuiState state = guiState;
+
+    *value = TextToFloat(val_str);
+
+    Rectangle textBounds = {0};
+    if (text != NULL) {
+        textBounds.width = (float) GetTextWidth(text) + 2;
+        textBounds.height = (float) GuiGetStyle(DEFAULT, TEXT_SIZE);
+        textBounds.x = bounds.x + bounds.width + GuiGetStyle(VALUEBOXF, TEXT_PADDING);
+        textBounds.y = bounds.y + bounds.height / 2 - GuiGetStyle(DEFAULT, TEXT_SIZE) / 2;
+        if (GuiGetStyle(VALUEBOXF, TEXT_ALIGNMENT) == TEXT_ALIGN_LEFT)
+            textBounds.x = bounds.x - textBounds.width - GuiGetStyle(VALUEBOXF, TEXT_PADDING);
+    }
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging) {
+        Vector2 mousePoint = GetMousePosition();
+
+        bool valueHasChanged = false;
+
+        if (editMode) {
+            state = STATE_PRESSED;
+
+            int keyCount = (int) strlen(val_str);
+
+            // Only allow keys in range [48..57]
+            if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS) {
+                if (GetTextWidth(val_str) < bounds.width) {
+                    int key = GetCharPressed();
+                    if (
+                            ((key >= 48) && (key <= 57))
+                            ||key=='.'
+                            ||(!keyCount && key=='+')
+                            ||(!keyCount && key=='-')
+                    ) {
+                        val_str[keyCount] = (char) key;
+                        keyCount++;
+                        valueHasChanged = true;
+                    }
+                }
+            }
+
+            // Delete val_str
+            if (keyCount > 0) {
+                if (IsKeyPressed(KEY_BACKSPACE)) {
+                    keyCount--;
+                    val_str[keyCount] = '\0';
+                    valueHasChanged = true;
+                }
+            }
+
+            if (valueHasChanged) *value = TextToFloat(val_str);
+
+            // NOTE: We are not clamp values until user input finishes
+            //if (*value > maxValue) *value = maxValue;
+            //else if (*value < minValue) *value = minValue;
+
+            if (IsKeyPressed(KEY_ENTER) ||
+                (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+                result = 1;
+        } else {
+            if (*value > maxValue) *value = maxValue;
+            else if (*value < minValue) *value = minValue;
+
+            if (CheckCollisionPointRec(mousePoint, bounds)) {
+                state = STATE_FOCUSED;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) result = 1;
+            }
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    Color baseColor = BLANK;
+    if (state == STATE_PRESSED) baseColor = GetColor(GuiGetStyle(VALUEBOXF, BASE_COLOR_PRESSED));
+    else if (state == STATE_DISABLED) baseColor = GetColor(GuiGetStyle(VALUEBOXF, BASE_COLOR_DISABLED));
+
+    GuiDrawRectangle(bounds, GuiGetStyle(VALUEBOXF, BORDER_WIDTH), GetColor(GuiGetStyle(VALUEBOXF, BORDER + (state * 3))),
+                     baseColor);
+    GuiDrawText(val_str, GetTextBounds(VALUEBOXF, bounds), TEXT_ALIGN_CENTER,
+                GetColor(GuiGetStyle(VALUEBOXF, TEXT + (state * 3))));
+
+    // Draw cursor
+    if (editMode) {
+        // NOTE: ValueBox internal text is always centered
+        Rectangle cursor = {bounds.x + GetTextWidth(val_str) / 2 + bounds.width / 2 + 1,
+                            bounds.y + 2 * GuiGetStyle(VALUEBOXF, BORDER_WIDTH), 4,
+                            bounds.height - 4 * GuiGetStyle(VALUEBOXF, BORDER_WIDTH)};
+        GuiDrawRectangle(cursor, 0, BLANK, GetColor(GuiGetStyle(VALUEBOXF, BORDER_COLOR_PRESSED)));
+    }
+
+    // Draw text label if provided
+    GuiDrawText(text, textBounds,
+                (GuiGetStyle(VALUEBOXF, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) ? TEXT_ALIGN_LEFT : TEXT_ALIGN_RIGHT,
+                GetColor(GuiGetStyle(LABEL, TEXT + (state * 3))));
     //--------------------------------------------------------------------
 
     return result;
@@ -4626,6 +4739,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case SLIDER:
         case CHECKBOX:
         case VALUEBOX:
+        case VALUEBOXF:
         case SPINNER:
             // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
@@ -5453,6 +5567,26 @@ static int TextToInteger(const char *text)
     for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value*10 + (int)(text[i] - '0');
 
     return value*sign;
+}
+
+static float TextToFloat(const char *text) {
+    float value = 0;
+    float sign = 1;
+
+    if ((text[0] == '+') || (text[0] == '-')) {
+        if (text[0] == '-') sign = -1;
+        text++;
+    }
+    int i;
+    for (i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value * 10 + (float) (text[i] - '0');
+    if (text[i++] == '.') {
+        float divisor = 10;
+        for (; ((text[i] >= '0') && (text[i] <= '9')); ++i) {
+            value += (float) (text[i] - '0') / divisor;
+            divisor *= 10;
+        }
+    }
+    return value * sign;
 }
 
 // Encode codepoint into UTF-8 text (char array size returned as parameter)
