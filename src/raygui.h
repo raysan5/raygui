@@ -722,7 +722,7 @@ RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);     
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
 RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
-RAYGUIAPI int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, bool editMode); // Value Box control, updates input val_str with numbers
+RAYGUIAPI int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, bool editMode); // Floating point Value box control, val_str is buffer where string representation is stored
 RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 
 RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control, returns selected value
@@ -2934,7 +2934,8 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 
 // Floating point Value Box control, updates input val_str with numbers
 // NOTE: Requires static variables: frameCounter
-int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, bool editMode) {
+int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value, bool editMode)
+{
 #if !defined(RAYGUI_VALUEBOX_MAX_CHARS)
 #define RAYGUI_VALUEBOX_MAX_CHARS  32
 #endif
@@ -2942,40 +2943,44 @@ int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value,
     int result = 0;
     GuiState state = guiState;
 
-    *value = TextToFloat(val_str);
-
     Rectangle textBounds = {0};
-    if (text != NULL) {
-        textBounds.width = (float) GetTextWidth(text) + 2;
-        textBounds.height = (float) GuiGetStyle(DEFAULT, TEXT_SIZE);
+    if (text != NULL)
+    {
+        textBounds.width = (float)GetTextWidth(text) + 2;
+        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(VALUEBOX, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height / 2 - GuiGetStyle(DEFAULT, TEXT_SIZE) / 2;
+        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
         if (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_LEFT)
             textBounds.x = bounds.x - textBounds.width - GuiGetStyle(VALUEBOX, TEXT_PADDING);
     }
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging) {
+    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
+    {
         Vector2 mousePoint = GetMousePosition();
 
         bool valueHasChanged = false;
 
-        if (editMode) {
+        if (editMode)
+        {
             state = STATE_PRESSED;
 
-            int keyCount = (int) strlen(val_str);
+            int keyCount = (int)strlen(val_str);
 
             // Only allow keys in range [48..57]
-            if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS) {
-                if (GetTextWidth(val_str) < bounds.width) {
+            if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
+            {
+                if (GetTextWidth(val_str) < bounds.width)
+                {
                     int key = GetCharPressed();
                     if (
                             ((key >= 48) && (key <= 57))
                             ||key=='.'
-                            ||(!keyCount && key=='+')
+                            ||(!keyCount && key=='+') //sign can only be in first position
                             ||(!keyCount && key=='-')
-                    ) {
+                    )
+                    {
                         val_str[keyCount] = (char) key;
                         keyCount++;
                         valueHasChanged = true;
@@ -2983,28 +2988,30 @@ int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value,
                 }
             }
 
-            // Delete val_str
-            if (keyCount > 0) {
-                if (IsKeyPressed(KEY_BACKSPACE)) {
+            // Pressed backspace
+            if (IsKeyPressed(KEY_BACKSPACE))
+            {
+                if (keyCount > 0)
+                {
                     keyCount--;
                     val_str[keyCount] = '\0';
                     valueHasChanged = true;
                 }
             }
 
-            if (valueHasChanged) *value = TextToFloat(val_str);
-
-            // NOTE: We are not clamp values until user input finishes
-            //if (*value > maxValue) *value = maxValue;
-            //else if (*value < minValue) *value = minValue;
+            if (valueHasChanged)
+                *value = TextToFloat(val_str);
 
             if (IsKeyPressed(KEY_ENTER) ||
                 (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
                 result = 1;
-        } else {
-            if (CheckCollisionPointRec(mousePoint, bounds)) {
+        } else
+        {
+            if (CheckCollisionPointRec(mousePoint, bounds))
+            {
                 state = STATE_FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) result = 1;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                    result = 1;
             }
         }
     }
@@ -3022,7 +3029,8 @@ int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value,
                 GetColor(GuiGetStyle(VALUEBOX, TEXT + (state * 3))));
 
     // Draw cursor
-    if (editMode) {
+    if (editMode)
+    {
         // NOTE: ValueBox internal text is always centered
         Rectangle cursor = {bounds.x + GetTextWidth(val_str) / 2 + bounds.width / 2 + 1,
                             bounds.y + 2 * GuiGetStyle(VALUEBOX, BORDER_WIDTH), 4,
