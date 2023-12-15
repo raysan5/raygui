@@ -567,7 +567,7 @@ typedef enum {
 
 // Other possible text properties:
 // TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
-// TEXT_INDENT	                // Text indentation -> Now using TEXT_PADDING...
+// TEXT_INDENT                  // Text indentation -> Now using TEXT_PADDING...
 
 // Label
 //typedef enum { } GuiLabelProperty;
