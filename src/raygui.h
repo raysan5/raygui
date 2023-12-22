@@ -4844,7 +4844,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
             if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
-            // Wrap mode text measuring, to validate if 
+            // Wrap mode text measuring, to validate if
             // it can be drawn or a new line is required
             if (wrapMode == TEXT_WRAP_CHAR)
             {
@@ -4932,19 +4932,52 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 // Gui draw rectangle using default raygui plain style with borders
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color)
 {
+    int unit = borderWidth;
+    int dnit = borderWidth * 2;
+
     if (color.a > 0)
     {
         // Draw rectangle filled with color
-        DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, GuiFade(color, guiAlpha));
+        if (borderWidth > 0)
+        {
+            DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - unit, (int)rec.height - unit, GuiFade(color, guiAlpha));
+        }
+        else
+        {
+            DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, GuiFade(color, guiAlpha));
+        }
     }
 
     if (borderWidth > 0)
     {
+        Color myBorderColor = GetColor(0x121212FF);
         // Draw rectangle border lines with color
-        DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, borderWidth, GuiFade(borderColor, guiAlpha));
-        DrawRectangle((int)rec.x, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(borderColor, guiAlpha));
-        DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(borderColor, guiAlpha));
-        DrawRectangle((int)rec.x, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width, borderWidth, GuiFade(borderColor, guiAlpha));
+        // top
+        DrawRectangle((int)rec.x + unit, (int)rec.y, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
+        // left
+        DrawRectangle((int)rec.x, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(myBorderColor, guiAlpha));
+        // right
+        DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(myBorderColor, guiAlpha));
+        // bottom
+        DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width - dnit, borderWidth, GuiFade(myBorderColor, guiAlpha));
+
+        // Draw shadow
+        Color darkBrown = GetColor(0x412c35FF);
+        // right
+        DrawRectangle((int)rec.x + (int)rec.width - borderWidth - unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(darkBrown, guiAlpha));
+        // bottom
+        DrawRectangle((int)rec.x + unit, (int)rec.y + (int)rec.height - borderWidth - unit, (int)rec.width - dnit, borderWidth, GuiFade(darkBrown, guiAlpha));
+
+        // Draw shadow
+        Color white = GetColor(4271157);
+        // top
+        DrawRectangle((int)rec.x + unit, (int)rec.y + unit, (int)rec.width - dnit, borderWidth, GuiFade(white, guiAlpha));
+        // left
+        DrawRectangle((int)rec.x + unit, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(white, guiAlpha));
+
+        /* Color myColor = darkBrown; */
+        /* printf("Color: R=%u, G=%u, B=%u, A=%u\n", */
+        /*    myColor.r, myColor.g, myColor.b, myColor.a); */
     }
 
 #if defined(RAYGUI_DEBUG_RECS_BOUNDS)
