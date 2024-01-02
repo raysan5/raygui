@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v4.0 - A simple and easy-to-use immediate-mode gui library
+*   raygui v4.1-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -141,6 +141,8 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
+*       4.1-dev (2024)    Current dev version...
+*
 *       4.0 (12-Sep-2023) ADDED: GuiToggleSlider()
 *                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
 *                         ADDED: Multiple new icons, mostly compiler related
@@ -291,7 +293,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2014-2023 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2014-2024 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
