@@ -447,7 +447,7 @@
 typedef struct GuiStyleProp {
     unsigned short controlId;   // Control identifier
     unsigned short propertyId;  // Property identifier
-    int propertyValue;          // Property value
+    unsigned int propertyValue; // Property value
 } GuiStyleProp;
 
 /*
@@ -4844,7 +4844,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
             if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
-            // Wrap mode text measuring, to validate if 
+            // Wrap mode text measuring, to validate if
             // it can be drawn or a new line is required
             if (wrapMode == TEXT_WRAP_CHAR)
             {
