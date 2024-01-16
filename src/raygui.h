@@ -4775,6 +4775,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         // Get text position depending on alignment and iconId
         //---------------------------------------------------------------------------------
         Vector2 textBoundsPosition = { textBounds.x, textBounds.y };
+        float textBoundsWidthOffset = 0.0f;
 
         // NOTE: We get text size after icon has been processed
         // WARNING: GetTextWidth() also processes text icon to get width! -> Really needed?
@@ -4823,6 +4824,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             // NOTE: We consider icon height, probably different than text size
             GuiDrawIcon(iconId, (int)textBoundsPosition.x, (int)(textBounds.y + textBounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(textBounds.height)), guiIconScale, tint);
             textBoundsPosition.x += (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
+            textBoundsWidthOffset = (RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
         }
 #endif
         // Get size in bytes of text,
@@ -4855,7 +4857,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
 
                 // Jump to next line if current character reach end of the box limits
-                if ((textOffsetX + glyphWidth) > textBounds.width)
+                if ((textOffsetX + glyphWidth) > textBounds.width - textBoundsWidthOffset)
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
@@ -4878,13 +4880,13 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 int nextSpaceIndex2 = 0;
                 float nextWordSize = GetNextSpaceWidth(lines[i] + lastSpaceIndex + 1, &nextSpaceIndex2);
 
-                if (nextWordSize > textBounds.width)
+                if (nextWordSize > textBounds.width - textBoundsWidthOffset)
                 {
                     // Considering the case the next word is longer than bounds
                     tempWrapCharMode = true;
                     wrapMode = TEXT_WRAP_CHAR;
                 }
-                else if ((textOffsetX + nextSpaceWidth) > textBounds.width)
+                else if ((textOffsetX + nextSpaceWidth) > textBounds.width - textBoundsWidthOffset)
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
@@ -4901,7 +4903,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                     if (wrapMode == TEXT_WRAP_NONE)
                     {
                         // Draw only required text glyphs fitting the textBounds.width
-                        if (textOffsetX <= (textBounds.width - glyphWidth))
+                        if (textOffsetX <= (textBounds.width - glyphWidth - textBoundsWidthOffset))
                         {
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
