@@ -4792,6 +4792,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 #endif
         }
 
+        if (textSizeX > textBounds.width && (lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX = textBounds.width;
+
         // Check guiTextAlign global variables
         switch (alignment)
         {
