@@ -4848,14 +4848,14 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             // but we need to draw all of the bad bytes using the '?' symbol moving one byte
             if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
+            // Get glyph width to check if it goes out of bounds
+            if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
+            else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
+
             // Wrap mode text measuring, to validate if 
             // it can be drawn or a new line is required
             if (wrapMode == TEXT_WRAP_CHAR)
             {
-                // Get glyph width to check if it goes out of bounds
-                if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
-                else glyphWidth = (float)guiFont.glyphs[index].advanceX*scaleFactor;
-
                 // Jump to next line if current character reach end of the box limits
                 if ((textOffsetX + glyphWidth) > textBounds.width - textBoundsWidthOffset)
                 {
