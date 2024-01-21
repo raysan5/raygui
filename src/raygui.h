@@ -4792,8 +4792,6 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 #endif
         }
 
-        if (textSizeX > textBounds.width && (lines[i] != NULL) && (lines[i][0] != '\0')) textSizeX = textBounds.width;
-
         // Check guiTextAlign global variables
         switch (alignment)
         {
@@ -4802,6 +4800,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             case TEXT_ALIGN_RIGHT: textBoundsPosition.x = textBounds.x + textBounds.width - textSizeX; break;
             default: break;
         }
+
+        if (textSizeX > textBounds.width && (lines[i] != NULL) && (lines[i][0] != '\0')) textBoundsPosition.x = textBounds.x;
 
         switch (alignmentVertical)
         {
@@ -4841,6 +4841,9 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         int textOffsetY = 0;
         float textOffsetX = 0.0f;
         float glyphWidth = 0;
+
+        float ellipsisWidth = GetTextWidth("...");
+        bool overflowReached = false;
         for (int c = 0, codepointSize = 0; c < lineSize; c += codepointSize)
         {
             int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
@@ -4905,7 +4908,21 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                     if (wrapMode == TEXT_WRAP_NONE)
                     {
                         // Draw only required text glyphs fitting the textBounds.width
-                        if (textOffsetX <= (textBounds.width - glyphWidth - textBoundsWidthOffset))
+                        if (textSizeX > textBounds.width)
+                        {
+                            if (textOffsetX <= (textBounds.width - glyphWidth - textBoundsWidthOffset - ellipsisWidth))
+                            {
+                                DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                            }
+                            else if (!overflowReached)
+                            {
+                                overflowReached = true;
+                                for (int j = 0; j < ellipsisWidth; j += ellipsisWidth/3) {
+                                    DrawTextCodepoint(guiFont, '.', RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX + j, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
+                                }
+                            }
+                        }
+                        else
                         {
                             DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                         }
