@@ -2989,7 +2989,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
         if (*value > maxValue) *value = maxValue;
         else if (*value < minValue) *value = minValue;
     }
-    //
+    
     // Control value change check
     if(oldValue == *value) result = 0;
     else result = 1;
