@@ -3355,7 +3355,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     return result;
 }
 
-// Color Panel control
+// Color Panel control - Color (RGBA) variant.
 int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
 {
     int result = 0;
@@ -3709,8 +3709,7 @@ int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
     return result;
 }
 
-// Color Panel control, returns HSV color value in *colorHsv.
-// Used by GuiColorPickerHSV()
+// Color Panel control - HSV variant.
 int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 {
     int result = 0;
@@ -3731,15 +3730,47 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
+    if ((state != STATE_DISABLED) && !guiLocked)
     {
         Vector2 mousePoint = GetMousePosition();
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (guiSliderDragging)
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            {
+                if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
+                {
+                    pickerSelector = mousePoint;
+
+                    if (pickerSelector.x < bounds.x) pickerSelector.x = bounds.x;
+                    if (pickerSelector.x > bounds.x + bounds.width) pickerSelector.x = bounds.x + bounds.width;
+                    if (pickerSelector.y < bounds.y) pickerSelector.y = bounds.y;
+                    if (pickerSelector.y > bounds.y + bounds.height) pickerSelector.y = bounds.y + bounds.height;
+
+                    // Calculate color from picker
+                    Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y };
+
+                    colorPick.x /= (float)bounds.width;     // Get normalized value on x
+                    colorPick.y /= (float)bounds.height;    // Get normalized value on y
+
+                    colorHsv->y = colorPick.x;
+                    colorHsv->z = 1.0f - colorPick.y;
+
+                }
+            }
+            else
+            {
+                guiSliderDragging = false;
+                guiSliderActive = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
+            }
+        }
+        else if (CheckCollisionPointRec(mousePoint, bounds))
         {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 state = STATE_PRESSED;
+                guiSliderDragging = true;
+                guiSliderActive = bounds;
                 pickerSelector = mousePoint;
 
                 // Calculate color from picker
@@ -3777,6 +3808,7 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 
     return result;
 }
+
 
 // Message Box control
 int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons)
