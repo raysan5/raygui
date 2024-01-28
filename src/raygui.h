@@ -3362,7 +3362,7 @@ int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
 
     Vector3 vcolor = { (float)color->r/255.0f, (float)color->g/255.0f, (float)color->b/255.0f };
     Vector3 hsv = ConvertRGBtoHSV(vcolor);
-    Vector3 prev_hsv = hsv; // workaround to see if GuiColorPanelHSV modifies the hsv.
+    Vector3 prevHsv = hsv; // workaround to see if GuiColorPanelHSV modifies the hsv.
 
     GuiColorPanelHSV(bounds, text, &hsv);
 
@@ -3371,7 +3371,7 @@ int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
     // Thus the assignment from HSV to Color should only be made, if the HSV has a new user-entered value.
     // Otherwise GuiColorPanel would often modify it's color without user input.
     // TODO: GuiColorPanelHSV could return 1 if the slider was dragged, to simplify this check.
-    if (hsv.x != prev_hsv.x || hsv.y != prev_hsv.y || hsv.z != prev_hsv.z)
+    if (hsv.x != prevHsv.x || hsv.y != prevHsv.y || hsv.z != prevHsv.z)
     {
         Vector3 rgb = ConvertHSVtoRGB(hsv);
 
