@@ -2943,21 +2943,8 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     float temp = (maxValue - minValue)/2.0f;
     if (value == NULL) value = &temp;
 
-    int sliderValue = (int)(((*value - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
-
     Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
                          0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
-
-    if (sliderWidth > 0)        // Slider
-    {
-        slider.x += (sliderValue - sliderWidth/2);
-        slider.width = (float)sliderWidth;
-    }
-    else if (sliderWidth == 0)  // SliderBar
-    {
-        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.width = (float)sliderValue;
-    }
 
     // Update control
     //--------------------------------------------------------------------
@@ -2972,9 +2959,8 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
                 if (CHECK_BOUNDS_ID(bounds, guiSliderActive))
                 {
                     state = STATE_PRESSED;
-
-                    // Get equivalent value and slider position from mousePosition.x
-                    *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
+                    // Translate Mouse X to Slider Label Value
+                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width-sliderWidth)) + minValue;
                 }
             }
             else
@@ -2993,11 +2979,8 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
 
                 if (!CheckCollisionPointRec(mousePoint, slider))
                 {
-                    // Get equivalent value and slider position from mousePosition.x
-                    *value = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
-
-                    if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;      // Slider
-                    else if (sliderWidth == 0) slider.width = (float)sliderValue;       // SliderBar
+                    // Translate Mouse X to Slider Label Value
+                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width-sliderWidth)) + minValue;
                 }
             }
             else state = STATE_FOCUSED;
@@ -3006,21 +2989,26 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
         if (*value > maxValue) *value = maxValue;
         else if (*value < minValue) *value = minValue;
     }
-
+    
     // Control value change check
     if(oldValue == *value) result = 0;
     else result = 1;
 
-    // Bar limits check
+    int sliderValue = (int)(((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth - GuiGetStyle(SLIDER, BORDER_WIDTH)));
     if (sliderWidth > 0)        // Slider
     {
+        slider.x += sliderValue;
+        slider.width = (float)sliderWidth;
         if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
         else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
     }
     else if (sliderWidth == 0)  // SliderBar
     {
+        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
+        slider.width = (float)sliderValue;
         if (slider.width > bounds.width) slider.width = bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
     }
+
     //--------------------------------------------------------------------
 
     // Draw control
