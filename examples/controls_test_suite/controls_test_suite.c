@@ -95,7 +95,7 @@ int main()
 
     char multiTextBoxText[256] = "Multi text box";
     bool multiTextBoxEditMode = false;
-    Color colorPickerValue = RED;
+    Vector3 colorPickerValue = ColorToHSV(RED); // storing the color as HSV leads to more stable behaviour in GuiColorPicker
 
     float sliderValue = 50.0f;
     float sliderBarValue = 60;
@@ -249,7 +249,7 @@ int main()
 
             // Third GUI column
             GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
-            GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, &colorPickerValue);
+            GuiColorPickerHSV((Rectangle){ 320, 185, 196, 192 }, NULL, &colorPickerValue);
 
             //GuiDisable();
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
