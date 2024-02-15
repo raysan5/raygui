@@ -28,13 +28,6 @@
 *.x86_64
 *.hex
 
-# Executables in examples (for Linux and OSX)
-# ignore all files in specific example directories
-examples/*/*
-# except for sub-directories and filenames containing a '.'
-!examples/*/*/
-!examples/*/*.*
-
 # Debug files
 *.dSYM/
 *.su
