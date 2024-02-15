@@ -142,6 +142,7 @@
 *
 *   VERSIONS HISTORY:
 *       4.1-dev (2024)    Current dev version...
+*                         ADDED: guiControlExclusiveMode and guiControlExclusiveRec for exclusive modes
 *
 *       4.0 (12-Sep-2023) ADDED: GuiToggleSlider()
 *                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
