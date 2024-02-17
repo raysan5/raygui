@@ -11,7 +11,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2016-2023 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2024 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 

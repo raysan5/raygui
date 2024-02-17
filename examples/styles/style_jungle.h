@@ -2,12 +2,12 @@
 //                                                                              //
 // StyleAsCode exporter v2.0 - Style data exported as a values array            //
 //                                                                              //
-// USAGE: On init call: GuiLoadStyleJungle();                             //
+// USAGE: On init call: GuiLoadStyleJungle();                                   //
 //                                                                              //
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
 //                                                                              //
-// Copyright (c) 2020-2023 raylib technologies (@raylibtech)                    //
+// Copyright (c) 2020-2024 raylib technologies (@raylibtech)                    //
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
