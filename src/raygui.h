@@ -444,7 +444,6 @@
     } Font;
 #endif
 
-
 // Style property
 // NOTE: Used when exporting style as code for convenience
 typedef struct GuiStyleProp {
@@ -548,7 +547,6 @@ typedef enum {
 // At this moment TEXT_PADDING and TEXT_ALIGNMENT is configured and saved per control while
 // TEXT_SIZE, TEXT_SPACING, TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE are global and
 // should be configured by user as needed while defining the UI layout
-
 
 // Gui extended properties depend on control
 // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
@@ -701,7 +699,6 @@ RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 #endif
 
-
 // Controls
 //----------------------------------------------------------------------------------------------------------
 // Container/separator controls, useful for controls organization
@@ -746,7 +743,6 @@ RAYGUIAPI int GuiColorBarHue(Rectangle bounds, const char *text, float *value); 
 RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
 RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that updates Hue-Saturation-Value color value, used by GuiColorPickerHSV()
 //----------------------------------------------------------------------------------------------------------
-
 
 #if !defined(RAYGUI_NO_ICONS)
 
@@ -3716,7 +3712,6 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
     return result;
 }
 
-
 // Message Box control
 int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons)
 {
@@ -3933,7 +3928,6 @@ void GuiDisableTooltip(void) { guiTooltip = false; }
 
 // Set tooltip string
 void GuiSetTooltip(const char *tooltip) { guiTooltipPtr = tooltip; }
-
 
 //----------------------------------------------------------------------------------
 // Styles loading functions
@@ -5533,7 +5527,6 @@ static int GetCodepointNext(const char *text, int *codepointSize)
         codepoint = ptr[0];
         *codepointSize = 1;
     }
-
 
     return codepoint;
 }
