@@ -256,7 +256,6 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         // editRightTangent == true implies selectedIndex != -1
         GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height-p->position.y*innerBounds.height };
         const Vector2 dir = (Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y};
 
         // Calculate right tangent slope
@@ -275,7 +274,6 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         // editLeftTangent == true implies selectedIndex != -1
         GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height-p->position.y*innerBounds.height };
         const Vector2 dir = (Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y };
 
         // Calculate left tangent slope
@@ -294,7 +292,6 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         state->selectedIndex = hoveredPointIndex;
         const GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height };
         state->mouseOffset = (Vector2){ p->position.x - mouseLocal.x, p->position.y - mouseLocal.y };
     }
     // Remove a point (check against bounds)
@@ -430,22 +427,18 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
                 const Rectangle controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
                 Color controlColor = { 0 };
-                Color controlBorderColor = { 0 };
 
                 if (state->editLeftTangent)
                 {
                     controlColor = GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_PRESSED));
-                    controlBorderColor =  GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL));
                 }
                 else if (CheckCollisionPointRec(mouse, controlRect))
                 {
                     controlColor = GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_FOCUSED));
-                    controlBorderColor = GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL));
                 }
                 else
                 {
                     controlColor = GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL));
-                    controlBorderColor = GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_NORMAL));
                 }
 
                 DrawLine(screenPos.x,screenPos.y, control.x, control.y, controlColor);
@@ -463,22 +456,18 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
                 const Rectangle controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
                 Color controlColor = { 0 };
-                Color controlBorderColor = { 0 };
 
                 if (state->editRightTangent)
                 {
                     controlColor = GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_PRESSED));
-                    controlBorderColor =  GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL));
                 }
                 else if (CheckCollisionPointRec(mouse, controlRect))
                 {
                     controlColor = GetColor(GuiGetStyle(DEFAULT, BASE_COLOR_FOCUSED));
-                    controlBorderColor = GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_NORMAL));
                 }
                 else
                 {
                     controlColor = GetColor(GuiGetStyle(BUTTON, BASE_COLOR_NORMAL));
-                    controlBorderColor = GetColor(GuiGetStyle(BUTTON, BORDER_COLOR_NORMAL));
                 }
 
                 DrawLine(screenPos.x,screenPos.y, control.x, control.y, controlColor);
