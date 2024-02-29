@@ -59,11 +59,6 @@ int main()
     bool exitWindow = false;
     bool showMessageBox = false;
 
-    char textInput[256] = { 0 };
-    bool showTextInputBox = false;
-
-    char textInputFileName[256] = { 0 };
-
     // Load default style
     GuiLoadStyleBluish();
     int visualStyleActive = 4;
@@ -80,8 +75,6 @@ int main()
         exitWindow = WindowShouldClose();
 
         if (IsKeyPressed(KEY_ESCAPE)) showMessageBox = !showMessageBox;
-
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) showTextInputBox = true;
 
         if (IsFileDropped())
         {

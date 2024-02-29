@@ -93,8 +93,6 @@ int main()
     int listViewExFocus = -1;
     const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
 
-    char multiTextBoxText[256] = "Multi text box";
-    bool multiTextBoxEditMode = false;
     Color colorPickerValue = RED;
 
     float sliderValue = 50.0f;
