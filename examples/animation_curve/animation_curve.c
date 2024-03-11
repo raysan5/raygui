@@ -256,12 +256,12 @@ int main()
                 GuiLabel((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, fontSize }, "Position");
                 contentRect.height += fontSize;
 
-                if (!editValueBox[i][0]) gcvt(p->position.x, 6, valTextBox[i][0]);  // Transform x position to string
+                if (!editValueBox[i][0]) gcvt(p->position.x, 6, (char *)valTextBox[i][0]);  // Transform x position to string
 
-                if (!editValueBox[i][1]) gcvt(curves[i].start + (curves[i].end-curves[i].start)*p->position.y, 6, valTextBox[i][1]); // Transform y position to string
+                if (!editValueBox[i][1]) gcvt(curves[i].start + (curves[i].end-curves[i].start)*p->position.y, 6, (char *)valTextBox[i][1]); // Transform y position to string
 
                 // X pos
-                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2-margin, 1.5f*fontSize }, valTextBox[i][0], 20, editValueBox[i][0]))
+                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2-margin, 1.5f*fontSize }, (char *)valTextBox[i][0], 20, editValueBox[i][0]))
                 {
                     editValueBox[i][0] = !editValueBox[i][0];
 
@@ -277,7 +277,7 @@ int main()
                 }
 
                 // Y pos
-                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, valTextBox[i][1], 20, editValueBox[i][1]))
+                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, (char *)valTextBox[i][1], 20, editValueBox[i][1]))
                 {
                     editValueBox[i][1] = !editValueBox[i][1];
 
@@ -303,12 +303,12 @@ int main()
                 GuiLabel((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width, fontSize }, "Tangents");
                 contentRect.height += fontSize;
 
-                if (!editValueBox[i][2]) gcvt(p->tangents.x, 6, valTextBox[i][2]); // Transform left tangent to string
+                if (!editValueBox[i][2]) gcvt(p->tangents.x, 6, (char *)valTextBox[i][2]); // Transform left tangent to string
 
-                if (!editValueBox[i][3]) gcvt(p->tangents.y, 6, valTextBox[i][3]);   // Transform right tangent to string
+                if (!editValueBox[i][3]) gcvt(p->tangents.y, 6, (char *)valTextBox[i][3]);   // Transform right tangent to string
 
                 // Left tan
-                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2 - margin, 1.5f*fontSize }, valTextBox[i][2], 20, editValueBox[i][2]))
+                if (GuiTextBox((Rectangle){ contentRect.x, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2 - margin, 1.5f*fontSize }, (char *)valTextBox[i][2], 20, editValueBox[i][2]))
                 {
                     editValueBox[i][2] = !editValueBox[i][2];
 
@@ -323,7 +323,7 @@ int main()
                 }
 
                 // Right tan
-                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2.0f, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, valTextBox[i][3], 20, editValueBox[i][3]))
+                if (GuiTextBox((Rectangle){ contentRect.x + contentRect.width/2.0f, contentRect.y + contentRect.height + scrollOffset.y, contentRect.width/2.0f, 1.5f*fontSize }, (char *)valTextBox[i][3], 20, editValueBox[i][3]))
                 {
                     editValueBox[i][3] = !editValueBox[i][3];
 
