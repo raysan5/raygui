@@ -2961,7 +2961,7 @@ int GuiValueBoxF(Rectangle bounds,const char* text, char *val_str, float *value,
 
     // Update control
     //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked && !guiSliderDragging)
+    if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
         Vector2 mousePoint = GetMousePosition();
 
