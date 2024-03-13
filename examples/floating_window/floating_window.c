@@ -31,7 +31,7 @@ void GuiWindowFloating(Vector2 *position, Vector2 *size, bool *minimized, bool *
     int close_title_size_delta_half = (RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - RAYGUI_WINDOW_CLOSEBUTTON_SIZE) / 2;
 
     // window movement and resize input and collision check
-    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !*moving && !(*resizing)) {
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && !*moving && !*resizing) {
         Vector2 mouse_position = GetMousePosition();
 
         Rectangle title_collision_rect = { position->x, position->y, size->x - (RAYGUI_WINDOW_CLOSEBUTTON_SIZE + close_title_size_delta_half), RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT };
@@ -39,7 +39,7 @@ void GuiWindowFloating(Vector2 *position, Vector2 *size, bool *minimized, bool *
 
         if(CheckCollisionPointRec(mouse_position, title_collision_rect)) {
             *moving = true;
-        } else if(!(*minimized) && CheckCollisionPointRec(mouse_position, resize_collision_rect)) {
+        } else if(!*minimized && CheckCollisionPointRec(mouse_position, resize_collision_rect)) {
             *resizing = true;
         }
     }
