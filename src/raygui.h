@@ -563,7 +563,7 @@ typedef enum {
     TEXT_ALIGNMENT_VERTICAL,    // Text vertical alignment inside text bounds (after border and padding)
     TEXT_WRAP_MODE              // Text wrap-mode inside text bounds
     //TEXT_DECORATION             // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
-    //TEXT_DECORATION_THICK       // Text decoration line thikness
+    //TEXT_DECORATION_THICK       // Text decoration line thickness
 } GuiDefaultProperty;
 
 // Other possible text properties:
