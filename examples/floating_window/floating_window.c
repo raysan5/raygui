@@ -1,7 +1,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "../../raygui.h"
+#include "../../src/raygui.h"
 
 #include "../../styles/dark/style_dark.h"
 
@@ -61,9 +61,11 @@ void GuiWindowFloating(Vector2 *position, Vector2 *size, bool *minimized, bool *
         }
 
     } else if(*resizing) {
-        Vector2 mouse_delta = GetMouseDelta();
-        size->x += mouse_delta.x;
-        size->y += mouse_delta.y;
+        Vector2 mouse = GetMousePosition();
+        if (mouse.x > position->x)
+            size->x = mouse.x - position->x;
+        if (mouse.y > position->y)
+            size->y = mouse.y - position->y;
 
         // clamp window size to an arbitrary minimum value and the window size as the maximum
         if(size->x < 100) size->x = 100;
