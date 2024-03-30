@@ -1774,10 +1774,10 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
 {
     #define RAYGUI_MIN_SCROLLBAR_WIDTH     40
     #define RAYGUI_MIN_SCROLLBAR_HEIGHT    40
+    #define RAYGUI_MIN_MOUSE_WHEEL_SPEED   20
 
     int result = 0;
     GuiState state = guiState;
-    float mouseWheelSpeed = 20.0f;      // Default movement speed with mouse wheel
 
     Rectangle temp = { 0 };
     if (view == NULL) view = &temp;
@@ -1819,17 +1819,8 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
     };
 
     // Make sure scroll bars have a minimum width/height
-    // NOTE: If content >>> bounds, size could be very small or even 0
-    if (horizontalScrollBar.width < RAYGUI_MIN_SCROLLBAR_WIDTH)
-    {
-        horizontalScrollBar.width = RAYGUI_MIN_SCROLLBAR_WIDTH;
-        mouseWheelSpeed = 30.0f;    // TODO: Calculate speed increment based on content.height vs bounds.height
-    }
-    if (verticalScrollBar.height < RAYGUI_MIN_SCROLLBAR_HEIGHT)
-    {
-        verticalScrollBar.height = RAYGUI_MIN_SCROLLBAR_HEIGHT;
-        mouseWheelSpeed = 30.0f;    // TODO: Calculate speed increment based on content.width vs bounds.width
-    }
+    if (horizontalScrollBar.width < RAYGUI_MIN_SCROLLBAR_WIDTH) horizontalScrollBar.width = RAYGUI_MIN_SCROLLBAR_WIDTH;
+    if (verticalScrollBar.height < RAYGUI_MIN_SCROLLBAR_HEIGHT) verticalScrollBar.height = RAYGUI_MIN_SCROLLBAR_HEIGHT;
 
     // Calculate view area (area without the scrollbars)
     *view = (GuiGetStyle(LISTVIEW, SCROLLBAR_SIDE) == SCROLLBAR_LEFT_SIDE)?
@@ -1872,9 +1863,14 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
 #endif
             float wheelMove = GetMouseWheelMove();
 
+            // Set scrolling speed with mouse wheel based on ratio between bounds and content
+            Vector2 mouseWheelSpeed = { content.width / bounds.width, content.height / bounds.height };
+            if (mouseWheelSpeed.x < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.x = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
+            if (mouseWheelSpeed.y < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.y = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
+
             // Horizontal and vertical scrolling with mouse wheel
-            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT))) scrollPos.x += wheelMove*mouseWheelSpeed;
-            else scrollPos.y += wheelMove*mouseWheelSpeed; // Vertical scroll
+            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT))) scrollPos.x += wheelMove*mouseWheelSpeed.x;
+            else scrollPos.y += wheelMove*mouseWheelSpeed.y; // Vertical scroll
         }
     }
 
@@ -5178,6 +5174,7 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
 
     const int valueRange = maxValue - minValue;
     int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
+    if (sliderSize < 1) sliderSize = 1;
 
     // Calculate rectangles for all of the components
     arrowUpLeft = RAYGUI_CLITERAL(Rectangle){
