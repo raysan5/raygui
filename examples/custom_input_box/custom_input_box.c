@@ -14,7 +14,7 @@
 #include "raylib.h"
 
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
+#include "../../src/raygui.h"
 
 int guiFloatingPointIndex = 0;      // Global variable shared by all GuiFloatBox()
 
@@ -100,7 +100,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
         textBounds.width = (float)GetTextWidth(text) + 2;
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(VALUEBOX, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height / 2 - GuiGetStyle(DEFAULT, TEXT_SIZE) / 2;
+        textBounds.y = bounds.y + bounds.height / 2.0f - GuiGetStyle(DEFAULT, TEXT_SIZE) / 2.0f;
         if (GuiGetStyle(VALUEBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_LEFT) textBounds.x = bounds.x - textBounds.width - GuiGetStyle(VALUEBOX, TEXT_PADDING);
     }
 
@@ -168,7 +168,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
 
             if (valueHasChanged)
             {
-                *value = TextToFloat(textValue);
+                *value = atof(textValue);
             }
 
             if (IsKeyPressed(KEY_ENTER) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
@@ -211,7 +211,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
     if (editMode)
     {
         // NOTE: ValueBox internal text is always centered
-        Rectangle cursor = { bounds.x + GetTextWidth(textValue) / 2 + bounds.width / 2 + 1, bounds.y + 2 * GuiGetStyle(VALUEBOX, BORDER_WIDTH), 4, bounds.height - 4 * GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
+        Rectangle cursor = { bounds.x + GetTextWidth(textValue) / 2.0f + bounds.width / 2.0f + 1, bounds.y + 2.0f * GuiGetStyle(VALUEBOX, BORDER_WIDTH), 4, bounds.height - 4 * GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
         GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
 
