@@ -5173,7 +5173,9 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     if (value > maxValue) value = maxValue;
     if (value < minValue) value = minValue;
 
-    const int valueRange = maxValue - minValue;
+    int valueRange = maxValue - minValue;
+    if (valueRange <= 0) valueRange = 1;
+
     int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
     if (sliderSize < 1) sliderSize = 1;  // TODO: Consider a minimum slider size
 
