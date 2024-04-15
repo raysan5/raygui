@@ -12,7 +12,6 @@ Several options are provided to add the style to a `raygui` application, choose 
 | :-------- | :---------- |
 | `style_amber.rgs` | Binary style file (raygui 4.0), font data compressed (recs, glyphs) |
 | `style_amber.txt.rgs` | Text style file, no font data, requires external font provided |
-| `style_amber.old.rgs` | Binary style file (raygui 3.x), font data uncompressed (recs, glyphs) |
 | `style_amber.h` | Embeddable style as code file, self-contained, includes font data |
 | `style_amber.png` | Style table image, contains `rGSf` chunk with binary `rgs` file data |
 
