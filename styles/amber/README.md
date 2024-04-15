@@ -1,7 +1,7 @@
 ## style: amber
 
 Amber accenture and charcoal tones. I can't write sexy descriptions like @raysan5, so just give it a try :)
-(The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it. -Sarper Şoher)
+(The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it. -@ssoher)
 
 ![amber style table](style_amber.png)
 
