@@ -1,7 +1,6 @@
 ## style: amber
 
-Amber accenture and charcoal tones. I can't write sexy descriptions like Raysan, so just give it a try :)
-(The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it. -Sarper Şoher)
+Amber accenture and charcoal tones. I can't write sexy descriptions like Raysan, so just give it a try 😀
 
 ![amber style table](style_amber.png)
 
@@ -26,3 +25,5 @@ Several options are provided to add the style to a `raygui` application, choose 
 These fonts are licensed under the Open Font License.
 You can use them in your products & projects – print or digital, commercial or otherwise.
 [Inter](https://fonts.google.com/specimen/Inter/about)
+
+<sub>(The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it. -Sarper Şoher)</sub>
