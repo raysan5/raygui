@@ -2997,7 +2997,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     else result = 1;
 
     // Slider bar limits check
-    int sliderValue = (int)(((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth - GuiGetStyle(SLIDER, BORDER_WIDTH)));
+    float sliderValue = (((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
     if (sliderWidth > 0)        // Slider
     {
         slider.x += sliderValue;
@@ -3008,7 +3008,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     else if (sliderWidth == 0)  // SliderBar
     {
         slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.width = (float)sliderValue;
+        slider.width = sliderValue;
         if (slider.width > bounds.width) slider.width = bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
     }
     //--------------------------------------------------------------------
@@ -3899,14 +3899,14 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
         // Draw vertical grid lines
         for (int i = 0; i < linesV; i++)
         {
-            Rectangle lineV = { bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height };
+            Rectangle lineV = { bounds.x + spacing*i/subdivs, bounds.y, 1, bounds.height + 1 };
             GuiDrawRectangle(lineV, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(color), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(color), RAYGUI_GRID_ALPHA));
         }
 
         // Draw horizontal grid lines
         for (int i = 0; i < linesH; i++)
         {
-            Rectangle lineH = { bounds.x, bounds.y + spacing*i/subdivs, bounds.width, 1 };
+            Rectangle lineH = { bounds.x, bounds.y + spacing*i/subdivs, bounds.width + 1, 1 };
             GuiDrawRectangle(lineH, 0, BLANK, ((i%subdivs) == 0)? GuiFade(GetColor(color), RAYGUI_GRID_ALPHA*4) : GuiFade(GetColor(color), RAYGUI_GRID_ALPHA));
         }
     }
