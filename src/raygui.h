@@ -619,6 +619,11 @@ typedef enum {
     DROPDOWN_ITEMS_SPACING      // DropdownBox items separation
 } GuiDropdownBoxProperty;
 
+typedef enum {
+    DROPDOWN_DOWN,
+    DROPDOWN_UP
+} GuiDropdownBoxDirection;
+
 // TextBox/TextBoxMulti/ValueBox/Spinner
 typedef enum {
     TEXT_READONLY = 16,         // TextBox in read-only mode: 0-text editable, 1-text no-editable
@@ -720,6 +725,8 @@ RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked);   
 RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);                            // Combo Box control
 
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control
+RAYGUIAPI int GuiRollupBox(Rectangle bounds, const char *text, int *active, bool editMode);            // Rollup Box control
+RAYGUIAPI int GuiDropdownBoxEx(Rectangle bounds, const char* text, int* active, bool editMode, GuiDropdownBoxDirection direction); // Dropbown Box with extended parameters
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control
 RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
 RAYGUIAPI int GuiValueBoxFloat(Rectangle bounds, const char* text, char *textValue, float *value, bool editMode);       // Value box control for float values
@@ -2322,8 +2329,21 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
 
 // Dropdown Box control
 // NOTE: Returns mouse click
-int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode)
+int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode) {
+    return GuiDropdownBoxEx(bounds, text, active, editMode, DROPDOWN_DOWN);
+}
+
+// Rollup Box control
+// NOTE: Returns mouse click
+int GuiRollupBox(Rectangle bounds, const char *text, int *active, bool editMode) {
+    return GuiDropdownBoxEx(bounds, text, active, editMode, DROPDOWN_UP);
+}
+
+// Dropdown box with extended parameters
+int GuiDropdownBoxEx(Rectangle bounds, const char *text, int *active, bool editMode, GuiDropdownBoxDirection direction)
 {
+    int directionMultiplier = direction == DROPDOWN_DOWN ? 1 : -1;
+
     int result = 0;
     GuiState state = guiState;
 
@@ -2336,6 +2356,9 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
 
     Rectangle boundsOpen = bounds;
     boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+    if (direction == DROPDOWN_UP) {
+        boundsOpen.y -= itemCount * (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING)) + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING);
+    }
 
     Rectangle itemBounds = bounds;
 
@@ -2362,7 +2385,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
             for (int i = 0; i < itemCount; i++)
             {
                 // Update item rectangle y position for next item
-                itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+                itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING)) * directionMultiplier;
 
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
@@ -2406,7 +2429,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         for (int i = 0; i < itemCount; i++)
         {
             // Update item rectangle y position for next item
-            itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+            itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING)) * directionMultiplier;
 
             if (i == itemSelected)
             {
@@ -2427,7 +2450,8 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
                 TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
 #else
-    GuiDrawText("#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
+    const char* icon = direction == DROPDOWN_DOWN ? "#120#" : "#121#";
+    GuiDrawText(icon, RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
                 TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));   // ICON_ARROW_DOWN_FILL
 #endif
     //--------------------------------------------------------------------
