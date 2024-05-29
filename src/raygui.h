@@ -616,7 +616,8 @@ typedef enum {
 // DropdownBox
 typedef enum {
     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
-    DROPDOWN_ITEMS_SPACING      // DropdownBox items separation
+    DROPDOWN_ITEMS_SPACING,     // DropdownBox items separation
+    DROPDOWN_ARROW_HIDDEN       // DropdownBox arrow hidden
 } GuiDropdownBoxProperty;
 
 // TextBox/TextBoxMulti/ValueBox/Spinner
@@ -636,6 +637,7 @@ typedef enum {
     LIST_ITEMS_SPACING,         // ListView items separation
     SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
     SCROLLBAR_SIDE,             // ListView scrollbar side (0-SCROLLBAR_LEFT_SIDE, 1-SCROLLBAR_RIGHT_SIDE)
+    LIST_ITEMS_BORDER_WIDTH     // ListView items border width
 } GuiListViewProperty;
 
 // ColorPicker
@@ -1293,11 +1295,11 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
     0x01800000, 0x02400240, 0x05a00420, 0x09900990, 0x11881188, 0x21842004, 0x40024182, 0x00003ffc,      // ICON_WARNING
     0x7ffe0000, 0x4ff24002, 0x4c324ff2, 0x4f824c02, 0x41824f82, 0x41824002, 0x40024182, 0x00007ffe,      // ICON_HELP_BOX
     0x7ffe0000, 0x41824002, 0x40024182, 0x41824182, 0x41824182, 0x41824182, 0x40024182, 0x00007ffe,      // ICON_INFO_BOX
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_223
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_224
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_225
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_226
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_227
+    0x01800000, 0x04200240, 0x10080810, 0x7bde2004, 0x0a500a50, 0x08500bd0, 0x08100850, 0x00000ff0,      // ICON_PRIORITY
+    0x01800000, 0x18180660, 0x80016006, 0x98196006, 0x99996666, 0x19986666, 0x01800660, 0x00000000,      // ICON_LAYERS_ISO
+    0x07fe0000, 0x1c020402, 0x74021402, 0x54025402, 0x54025402, 0x500857fe, 0x40205ff8, 0x00007fe0,      // ICON_LAYERS2
+    0x0ffe0000, 0x3ffa0802, 0x7fea200a, 0x402a402a, 0x422a422a, 0x422e422a, 0x40384e28, 0x00007fe0,      // ICON_MLAYERS
+    0x0ffe0000, 0x3ffa0802, 0x7fea200a, 0x402a402a, 0x5b2a512a, 0x512e552a, 0x40385128, 0x00007fe0,      // ICON_MAPS
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_228
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_229
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_230
@@ -2327,6 +2329,9 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     int result = 0;
     GuiState state = guiState;
 
+    int temp = 0;
+    if (active == NULL) active = &temp;
+
     int itemSelected = *active;
     int itemFocused = -1;
 
@@ -2422,14 +2427,17 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         }
     }
 
-    // Draw arrows (using icon if available)
+    if (!GuiGetStyle(DROPDOWNBOX, DROPDOWN_ARROW_HIDDEN))
+    {
+        // Draw arrows (using icon if available)
 #if defined(RAYGUI_NO_ICONS)
-    GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
-                TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
+        GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
+            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
 #else
-    GuiDrawText("#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
-                TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));   // ICON_ARROW_DOWN_FILL
+        GuiDrawText("#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
+            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));   // ICON_ARROW_DOWN_FILL
 #endif
+    }
     //--------------------------------------------------------------------
 
     *active = itemSelected;
@@ -3398,6 +3406,8 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     // Draw visible items
     for (int i = 0; ((i < visibleItems) && (text != NULL)); i++)
     {
+        GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_NORMAL)), BLANK);
+
         if (state == STATE_DISABLED)
         {
             if ((startIndex + i) == itemSelected) GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_DISABLED)));
