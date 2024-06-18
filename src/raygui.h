@@ -4943,7 +4943,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         float glyphWidth = 0;
 
         int ellipsisWidth = GetTextWidth("...");
-        bool overflowReached = false;
+        bool textOverflow = false;
         for (int c = 0, codepointSize = 0; c < lineSize; c += codepointSize)
         {
             int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
@@ -5014,9 +5014,9 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                             {
                                 DrawTextCodepoint(guiFont, codepoint, RAYGUI_CLITERAL(Vector2){ textBoundsPosition.x + textOffsetX, textBoundsPosition.y + textOffsetY }, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), GuiFade(tint, guiAlpha));
                             }
-                            else if (!overflowReached)
+                            else if (!textOverflow)
                             {
-                                overflowReached = true;
+                                textOverflow = true;
 
                                 for (int j = 0; j < ellipsisWidth; j += ellipsisWidth/3)
                                 {
