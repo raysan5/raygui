@@ -724,7 +724,7 @@ RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);     
 RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control
 RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control
 RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
-RAYGUIAPI int GuiValueBoxFloat(Rectangle bounds, const char* text, char *textValue, float *value, bool editMode);       // Value box control for float values
+RAYGUIAPI int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float *value, bool editMode); // Value box control for float values
 RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 
 RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control
@@ -1871,7 +1871,7 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
             float wheelMove = GetMouseWheelMove();
 
             // Set scrolling speed with mouse wheel based on ratio between bounds and content
-            Vector2 mouseWheelSpeed = { content.width / bounds.width, content.height / bounds.height };
+            Vector2 mouseWheelSpeed = { content.width/bounds.width, content.height/bounds.height };
             if (mouseWheelSpeed.x < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.x = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
             if (mouseWheelSpeed.y < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.y = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
 
@@ -2593,9 +2593,9 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                     // Move backward text from cursor position
                     for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
-                    
+
                     // TODO Check: >= cursor+codepointsize and <= length-codepointsize
-                    
+
                     // Prevent cursor index from decrementing past 0
                     if (textBoxCursorIndex > 0)
                     {
@@ -2959,7 +2959,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
 
     int result = 0;
     GuiState state = guiState;
-    
+
     //char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
     //sprintf(textValue, "%2.2f", *value);
 
@@ -2993,14 +2993,14 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
                 if (GetTextWidth(textValue) < bounds.width)
                 {
                     int key = GetCharPressed();
-                    if (((key >= 48) && (key <= 57)) || 
-                        (key == '.') || 
+                    if (((key >= 48) && (key <= 57)) ||
+                        (key == '.') ||
                         ((keyCount == 0) && (key == '+')) ||  // NOTE: Sign can only be in first position
                         ((keyCount == 0) && (key == '-')))
                     {
                         textValue[keyCount] = (char)key;
                         keyCount++;
-                        
+
                         valueHasChanged = true;
                     }
                 }
@@ -5610,7 +5610,7 @@ static float TextToFloat(const char *text)
             divisor = divisor*10.0f;
         }
     }
-    
+
     return value;
 }
 
