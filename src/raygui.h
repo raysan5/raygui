@@ -617,7 +617,8 @@ typedef enum {
 typedef enum {
     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
     DROPDOWN_ITEMS_SPACING,     // DropdownBox items separation
-    DROPDOWN_ARROW_HIDDEN       // DropdownBox arrow hidden
+    DROPDOWN_ARROW_HIDDEN,      // DropdownBox arrow hidden
+    DROPDOWN_ROLL_UP            // DropdownBox roll up flag (default rolls down)
 } GuiDropdownBoxProperty;
 
 // TextBox/TextBoxMulti/ValueBox/Spinner
@@ -2335,12 +2336,16 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     int itemSelected = *active;
     int itemFocused = -1;
 
+    int direction = 0; // Dropdown box open direction: down (default)
+    if (GuiGetStyle(DROPDOWNBOX, DROPDOWN_ROLL_UP) == 1) direction = 1; // Up
+
     // Get substrings items from text (items pointers, lengths and count)
     int itemCount = 0;
     const char **items = GuiTextSplit(text, ';', &itemCount, NULL);
 
     Rectangle boundsOpen = bounds;
     boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+    if (direction == 1) boundsOpen.y -= itemCount*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING)) + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING);
 
     Rectangle itemBounds = bounds;
 
@@ -2367,7 +2372,8 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
             for (int i = 0; i < itemCount; i++)
             {
                 // Update item rectangle y position for next item
-                itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+                if (direction == 0) itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+                else itemBounds.y -= (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
@@ -2411,7 +2417,8 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         for (int i = 0; i < itemCount; i++)
         {
             // Update item rectangle y position for next item
-            itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+            if (direction == 0) itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
+            else itemBounds.y -= (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
             if (i == itemSelected)
             {
@@ -2434,7 +2441,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
             TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
 #else
-        GuiDrawText("#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
+        GuiDrawText(direction? "#121#" : "#120#", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
             TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));   // ICON_ARROW_DOWN_FILL
 #endif
     }
