@@ -1,6 +1,6 @@
 ## style: amber
 
-Amber accenture and charcoal tones. I can't write sexy descriptions like Raysan, so just give it a try 😀
+Amber accenture and charcoal tones with a light font for nice visuals.
 
 ![amber style table](style_amber.png)
 
@@ -20,10 +20,14 @@ Several options are provided to add the style to a `raygui` application, choose 
 
 ## about font
 
-"Inter" font by Rasmus Andersson.
+"Hello World" font by Anthony Gross
+```
+CATEGORY: Monospace
+LANGUAGE SUPPORT: Latin Extended
+FORMAT: TTF
+LICENSE: Free for personal and commercial use, SIL Open Font License
+``` 
 
-These fonts are licensed under the Open Font License.
-You can use them in your products & projects – print or digital, commercial or otherwise.
-[Inter](https://fonts.google.com/specimen/Inter/about)
+This font is licensed under the Open Font License. More info: https://www.dafont.com/es/hello-world.font
 
-<sub>(The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it. -Sarper Şoher)</sub>
+_The style font is optimized to look best at 16px, if you require different sizing please open the style in rGuiStyler and edit it._
