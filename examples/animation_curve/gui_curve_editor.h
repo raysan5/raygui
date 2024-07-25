@@ -129,12 +129,12 @@ GuiCurveEditorState InitGuiCurveEditor()
     state.selectedIndex = 0;
     state.editLeftTangent = false;
     state.editRightTangent = false;
-    state.mouseOffset = (Vector2){ 0.0f, 0.0f };
+    state.mouseOffset = RAYGUI_CLITERAL(Vector2){ 0.0f, 0.0f };
 
     // At least one point (AVG by default)
     state.numPoints = 1;
-    state.points[0].position = (Vector2){ 0.5f, 0.5f };
-    state.points[0].tangents = (Vector2){ 0.0f, 0.0f };
+    state.points[0].position = RAYGUI_CLITERAL(Vector2){ 0.5f, 0.5f };
+    state.points[0].tangents = RAYGUI_CLITERAL(Vector2){ 0.0f, 0.0f };
     state.points[0].leftLinear = false;
     state.points[0].rightLinear = false;
 
@@ -195,9 +195,9 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     const float handleLength = pointSize*2.5f;
     const float handleSize = pointSize/1.5f;
 
-    const Rectangle innerBounds = (Rectangle){ bounds.x + fontSize, bounds.y + fontSize, bounds.width - 2*fontSize, bounds.height - 2*fontSize };
+    const Rectangle innerBounds = RAYGUI_CLITERAL(Rectangle){ bounds.x + fontSize, bounds.y + fontSize, bounds.width - 2*fontSize, bounds.height - 2*fontSize };
     const Vector2 mouse = GetMousePosition();
-    const Vector2 mouseLocal = (Vector2){ (mouse.x - innerBounds.x)/innerBounds.width, (innerBounds.y + innerBounds.height-mouse.y)/innerBounds.height};
+    const Vector2 mouseLocal = RAYGUI_CLITERAL(Vector2){ (mouse.x - innerBounds.x)/innerBounds.width, (innerBounds.y + innerBounds.height-mouse.y)/innerBounds.height};
     //----------------------------------------------------------------------------------
 
     // UPDATE STATE
@@ -207,8 +207,8 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     for (int i = 0; i < state->numPoints; i++)
     {
         const GuiCurveEditorPoint *p = &state->points[i];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height-p->position.y*innerBounds.height };
-        const Rectangle pointRect = (Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize };
+        const Vector2 screenPos = RAYGUI_CLITERAL(Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height-p->position.y*innerBounds.height };
+        const Rectangle pointRect = RAYGUI_CLITERAL(Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize };
 
         if (CheckCollisionPointRec(mouse, pointRect))
         {
@@ -228,24 +228,24 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && (state->selectedIndex != -1) && CheckCollisionPointRec(mouse, bounds))
     {
         const GuiCurveEditorPoint* p = &state->points[state->selectedIndex];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width+innerBounds.x, innerBounds.y+innerBounds.height-p->position.y*innerBounds.height };
+        const Vector2 screenPos = RAYGUI_CLITERAL(Vector2){ p->position.x*innerBounds.width+innerBounds.x, innerBounds.y+innerBounds.height-p->position.y*innerBounds.height };
 
         // Left control
-        Vector2 target = (Vector2){ (p->position.x-1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y-p->tangents.x)*innerBounds.height };
-        Vector2 dir = (Vector2){ target.x-screenPos.x, target.y-screenPos.y };
+        Vector2 target = RAYGUI_CLITERAL(Vector2){ (p->position.x-1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y-p->tangents.x)*innerBounds.height };
+        Vector2 dir = RAYGUI_CLITERAL(Vector2){ target.x-screenPos.x, target.y-screenPos.y };
         float d = sqrt(dir.x*dir.x + dir.y*dir.y);
-        Vector2 control = (Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
-        Rectangle controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
+        Vector2 control = RAYGUI_CLITERAL(Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
+        Rectangle controlRect = RAYGUI_CLITERAL(Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
         // Edit left tangent
         if (CheckCollisionPointRec(mouse, controlRect)) state->editLeftTangent = true;
 
         // Right control
-        target = (Vector2){ (p->position.x + 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y + p->tangents.y)*innerBounds.height };
-        dir = (Vector2){ target.x-screenPos.x, target.y-screenPos.y };
+        target = RAYGUI_CLITERAL(Vector2){ (p->position.x + 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y + p->tangents.y)*innerBounds.height };
+        dir = RAYGUI_CLITERAL(Vector2){ target.x-screenPos.x, target.y-screenPos.y };
         d = sqrt(dir.x*dir.x + dir.y*dir.y);
-        control = (Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
-        controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
+        control = RAYGUI_CLITERAL(Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
+        controlRect = RAYGUI_CLITERAL(Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
         // Edit right tangent
         if (CheckCollisionPointRec(mouse, controlRect)) state->editRightTangent = true;
@@ -256,7 +256,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         // editRightTangent == true implies selectedIndex != -1
         GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        const Vector2 dir = (Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y};
+        const Vector2 dir = RAYGUI_CLITERAL(Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y};
 
         // Calculate right tangent slope
         p->tangents.y = (dir.x < 0.001f)? dir.y/0.001f : dir.y/dir.x;
@@ -274,7 +274,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         // editLeftTangent == true implies selectedIndex != -1
         GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        const Vector2 dir = (Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y };
+        const Vector2 dir = RAYGUI_CLITERAL(Vector2){ mouseLocal.x - p->position.x, mouseLocal.y - p->position.y };
 
         // Calculate left tangent slope
         p->tangents.x = (dir.x > -0.001f)? dir.y/(-0.001f) : dir.y/dir.x;
@@ -292,7 +292,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         state->selectedIndex = hoveredPointIndex;
         const GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
-        state->mouseOffset = (Vector2){ p->position.x - mouseLocal.x, p->position.y - mouseLocal.y };
+        state->mouseOffset = RAYGUI_CLITERAL(Vector2){ p->position.x - mouseLocal.x, p->position.y - mouseLocal.y };
     }
     // Remove a point (check against bounds)
     else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && (hoveredPointIndex != -1) && CheckCollisionPointRec(mouse, bounds) && (state->numPoints > 1))
@@ -314,7 +314,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
 
         // Create new point
         GuiCurveEditorPoint p;
-        p.tangents = (Vector2){ 0.0f, 0.0f };
+        p.tangents = RAYGUI_CLITERAL(Vector2){ 0.0f, 0.0f };
         p.position = mouseLocal;
         p.leftLinear = false;
         p.rightLinear = false;
@@ -325,7 +325,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         state->numPoints += 1;
 
         // Point is add on mouse pos
-        state->mouseOffset = (Vector2){ 0, 0 };
+        state->mouseOffset = RAYGUI_CLITERAL(Vector2){ 0, 0 };
     }
     // Move selected point
     else if ((state->selectedIndex != -1) && IsMouseButtonDown(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(mouse, bounds))
@@ -333,7 +333,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         GuiCurveEditorPoint *p = &state->points[state->selectedIndex];
 
         // use mouse offset on click to prevent point teleporting to mouse
-        const Vector2 newLocalPos = (Vector2){ mouseLocal.x + state->mouseOffset.x, mouseLocal.y + state->mouseOffset.y };
+        const Vector2 newLocalPos = RAYGUI_CLITERAL(Vector2){ mouseLocal.x + state->mouseOffset.x, mouseLocal.y + state->mouseOffset.y };
 
         // Clamp to innerbounds
         p->position.x = (newLocalPos.x < 0)? 0 : ((newLocalPos.x > 1)? 1 : newLocalPos.x);
@@ -354,7 +354,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         if ((i > 0) && p->leftLinear)
         {
             const GuiCurveEditorPoint *p2 = sortedPoints[i - 1];
-            Vector2 dir = (Vector2){ p2->position.x - p->position.x, p2->position.y - p->position.y };
+            Vector2 dir = RAYGUI_CLITERAL(Vector2){ p2->position.x - p->position.x, p2->position.y - p->position.y };
             p->tangents.x = (dir.x == 0)? 0 : dir.y/dir.x;
         }
 
@@ -362,7 +362,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         if ((i < state->numPoints - 1) && p->rightLinear)
         {
             const GuiCurveEditorPoint *p2 = sortedPoints[i + 1];
-            Vector2 dir = (Vector2){ p2->position.x - p->position.x, p2->position.y - p->position.y };
+            Vector2 dir = RAYGUI_CLITERAL(Vector2){ p2->position.x - p->position.x, p2->position.y - p->position.y };
             p->tangents.y = (dir.x == 0)? 0 : dir.y/dir.x;
         }
     }
@@ -388,16 +388,16 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
 
     Font font = GuiGetFont();
     // V labels
-    DrawTextEx(font, "0", (Vector2){ innerBounds.x, bounds.y + bounds.height-fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, "0.25", (Vector2){ innerBounds.x + innerBounds.width/4.0f, bounds.y + bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, "0.5", (Vector2){ innerBounds.x + innerBounds.width/2.0f, bounds.y + bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, "0.75", (Vector2){ innerBounds.x + 3.0f*innerBounds.width/4.0f, bounds.y + bounds.height-fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, "1", (Vector2){ innerBounds.x + innerBounds.width, bounds.y+bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, "0", RAYGUI_CLITERAL(Vector2){ innerBounds.x, bounds.y + bounds.height-fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, "0.25", RAYGUI_CLITERAL(Vector2){ innerBounds.x + innerBounds.width/4.0f, bounds.y + bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, "0.5", RAYGUI_CLITERAL(Vector2){ innerBounds.x + innerBounds.width/2.0f, bounds.y + bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, "0.75", RAYGUI_CLITERAL(Vector2){ innerBounds.x + 3.0f*innerBounds.width/4.0f, bounds.y + bounds.height-fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, "1", RAYGUI_CLITERAL(Vector2){ innerBounds.x + innerBounds.width, bounds.y+bounds.height - fontSize}, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
 
     // H labels
-    DrawTextEx(font, TextFormat("%.2f", state->start), (Vector2){ innerBounds.x, innerBounds.y - fontSize+innerBounds.height }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, TextFormat("%.2f", state->start + (state->end-state->start)/2.f), (Vector2){ innerBounds.x, innerBounds.y - fontSize + innerBounds.height/2.0f }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
-    DrawTextEx(font, TextFormat("%.2f", state->end), (Vector2){ innerBounds.x, innerBounds.y }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, TextFormat("%.2f", state->start), RAYGUI_CLITERAL(Vector2){ innerBounds.x, innerBounds.y - fontSize+innerBounds.height }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, TextFormat("%.2f", state->start + (state->end-state->start)/2.f), RAYGUI_CLITERAL(Vector2){ innerBounds.x, innerBounds.y - fontSize + innerBounds.height/2.0f }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
+    DrawTextEx(font, TextFormat("%.2f", state->end), RAYGUI_CLITERAL(Vector2){ innerBounds.x, innerBounds.y }, fontSize, GuiGetStyle(DEFAULT, TEXT_SPACING), lineColor);
 
     // Draw contours
     if (CheckCollisionPointRec(mouse, bounds)) DrawRectangleLines(bounds.x, bounds.y, bounds.width, bounds.height, GetColor(GuiGetStyle(DEFAULT, BORDER_COLOR_FOCUSED)));
@@ -408,8 +408,8 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     {
         const GuiCurveEditorPoint *p = sortedPoints[i];
 
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height };
-        const Rectangle pointRect = (Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize };
+        const Vector2 screenPos = RAYGUI_CLITERAL(Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height };
+        const Rectangle pointRect = RAYGUI_CLITERAL(Rectangle){ screenPos.x - pointSize/2.0f, screenPos.y - pointSize/2.0f, pointSize, pointSize };
 
         Color pointColor = { 0 };
         Color pointBorderColor = { 0 };
@@ -420,11 +420,11 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
             // Draw left handle
             if (i > 0)
             {
-                const Vector2 target = (Vector2){ (p->position.x - 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y - p->tangents.x)*innerBounds.height };
-                const Vector2 dir = (Vector2){ target.x - screenPos.x, target.y - screenPos.y };
+                const Vector2 target = RAYGUI_CLITERAL(Vector2){ (p->position.x - 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y - p->tangents.x)*innerBounds.height };
+                const Vector2 dir = RAYGUI_CLITERAL(Vector2){ target.x - screenPos.x, target.y - screenPos.y };
                 const float d = sqrt(dir.x*dir.x + dir.y*dir.y);
-                const Vector2 control = (Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
-                const Rectangle controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
+                const Vector2 control = RAYGUI_CLITERAL(Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
+                const Rectangle controlRect = RAYGUI_CLITERAL(Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
                 Color controlColor = { 0 };
 
@@ -449,11 +449,11 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
             // Draw right handle
             if (i < state->numPoints - 1)
             {
-                const Vector2 target = (Vector2){ (p->position.x + 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y + p->tangents.y)*innerBounds.height };
-                const Vector2 dir = (Vector2){ target.x - screenPos.x, target.y - screenPos.y };
+                const Vector2 target = RAYGUI_CLITERAL(Vector2){ (p->position.x + 1)*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - (p->position.y + p->tangents.y)*innerBounds.height };
+                const Vector2 dir = RAYGUI_CLITERAL(Vector2){ target.x - screenPos.x, target.y - screenPos.y };
                 const float d = sqrt(dir.x*dir.x + dir.y*dir.y);
-                const Vector2 control = (Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
-                const Rectangle controlRect = (Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
+                const Vector2 control = RAYGUI_CLITERAL(Vector2){ screenPos.x + dir.x/d*handleLength, screenPos.y + dir.y/d*handleLength };
+                const Rectangle controlRect = RAYGUI_CLITERAL(Rectangle){ control.x - handleSize/2.0f, control.y - handleSize/2.0f, handleSize, handleSize };
 
                 Color controlColor = { 0 };
 
@@ -500,7 +500,7 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
     if (state->numPoints == 1)
     {
         const GuiCurveEditorPoint *p = sortedPoints[0];
-        const Vector2 screenPos = (Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height };
+        const Vector2 screenPos = RAYGUI_CLITERAL(Vector2){ p->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p->position.y*innerBounds.height };
         DrawLine(innerBounds.x, screenPos.y, innerBounds.x+innerBounds.width, screenPos.y, curveColor);
     }
     else
@@ -509,8 +509,8 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
         {
             const GuiCurveEditorPoint *p1 = sortedPoints[i];
             const GuiCurveEditorPoint *p2 = sortedPoints[i + 1];
-            const Vector2 screenPos1 = (Vector2){ p1->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y*innerBounds.height };
-            const Vector2 screenPos2 = (Vector2){ p2->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y*innerBounds.height };
+            const Vector2 screenPos1 = RAYGUI_CLITERAL(Vector2){ p1->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p1->position.y*innerBounds.height };
+            const Vector2 screenPos2 = RAYGUI_CLITERAL(Vector2){ p2->position.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - p2->position.y*innerBounds.height };
 
             // Constant on edge
             if ((screenPos1.x > innerBounds.x) && (i == 0))
@@ -524,15 +524,15 @@ void GuiCurveEditor(GuiCurveEditorState *state, Rectangle bounds)
 
             // Draw cubic Hermite curve
             const float scale = (p2->position.x - p1->position.x)/3.0f;
-            const Vector2 offset1 = (Vector2){ scale, scale*p1->tangents.y };
+            const Vector2 offset1 = RAYGUI_CLITERAL(Vector2){ scale, scale*p1->tangents.y };
             // negative endTangent => top part => need to invert value to calculate offset
-            const Vector2 offset2 = (Vector2){ -scale, -scale*p2->tangents.x };
+            const Vector2 offset2 = RAYGUI_CLITERAL(Vector2){ -scale, -scale*p2->tangents.x };
 
-            const Vector2 c1 = (Vector2){ p1->position.x + offset1.x, p1->position.y + offset1.y };
-            const Vector2 c2 = (Vector2){ p2->position.x + offset2.x, p2->position.y + offset2.y };
+            const Vector2 c1 = RAYGUI_CLITERAL(Vector2){ p1->position.x + offset1.x, p1->position.y + offset1.y };
+            const Vector2 c2 = RAYGUI_CLITERAL(Vector2){ p2->position.x + offset2.x, p2->position.y + offset2.y };
 
-            const Vector2 screenC1 = (Vector2){ c1.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c1.y*innerBounds.height };
-            const Vector2 screenC2 = (Vector2){ c2.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c2.y*innerBounds.height };
+            const Vector2 screenC1 = RAYGUI_CLITERAL(Vector2){ c1.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c1.y*innerBounds.height };
+            const Vector2 screenC2 = RAYGUI_CLITERAL(Vector2){ c2.x*innerBounds.width + innerBounds.x, innerBounds.y + innerBounds.height - c2.y*innerBounds.height };
 
             DrawSplineSegmentBezierCubic(screenPos1, screenC1, screenC2, screenPos2, 1, curveColor);
         }
