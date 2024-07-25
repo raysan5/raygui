@@ -147,6 +147,7 @@ cl /O2 /I../raylib/src/ /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBT
 ```
 mv src/raygui.h src/raygui.c
 gcc -o raygui.so src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+mv src/raygui.c src/raygui.h
 ```
 
 - **Mac (clang, homebrew installed raylib)**
