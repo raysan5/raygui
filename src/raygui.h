@@ -1380,8 +1380,10 @@ static unsigned int guiIconScale = 1;           // Gui icon default scale (if ic
 
 static bool guiTooltip = false;                 // Tooltip enabled/disabled
 static const char *guiTooltipPtr = NULL;        // Tooltip string pointer (string provided by user)
+static const char *guiTooltipDrawPtr = NULL;    // Tooltip string to be drawn this frame
+static Rectangle guiTooltipDrawRec = { 0.0f };  // Tooltip rectangle to be used this frame
 
-static bool guiControlExclusiveMode = false;    // Gui control exclusive mode (no inputs processed except current control)
+static bool guiControlExclusiveMode = false;     // Gui control exclusive mode (no inputs processed except current control)
 static Rectangle guiControlExclusiveRec = { 0 }; // Gui control exclusive bounds rectangle, used as an unique identifier
 
 static int textBoxCursorIndex = 0;              // Cursor index, shared by all GuiTextBox*()
@@ -1495,7 +1497,7 @@ static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
 
 static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
-static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
+static void GuiSetupTooltipForDrawing(Rectangle controlRec); // Set up tooltip to be drawn with GuiTooltip()
 
 static Color GuiFade(Color color, float alpha);         // Fade color by an alpha factor
 
@@ -1997,7 +1999,8 @@ int GuiButton(Rectangle bounds, const char *text)
     GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), GetColor(GuiGetStyle(BUTTON, BASE + (state*3))));
     GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))));
 
-    if (state == STATE_FOCUSED) GuiTooltip(bounds);
+    if (state == STATE_FOCUSED) GuiSetupTooltipForDrawing(bounds);
+    guiTooltipPtr = NULL;
     //------------------------------------------------------------------
 
     return result;      // Button pressed: result = 1
@@ -2080,7 +2083,8 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
         GuiDrawText(text, GetTextBounds(TOGGLE, bounds), GuiGetStyle(TOGGLE, TEXT_ALIGNMENT), GetColor(GuiGetStyle(TOGGLE, TEXT + state*3)));
     }
 
-    if (state == STATE_FOCUSED) GuiTooltip(bounds);
+    if (state == STATE_FOCUSED) GuiSetupTooltipForDrawing(bounds);
+    guiTooltipPtr = NULL;
     //--------------------------------------------------------------------
 
     return result;
@@ -2753,7 +2757,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         // Draw mouse position cursor (if required)
         if (mouseCursor.x >= 0) GuiDrawRectangle(mouseCursor, 0, BLANK, GetColor(GuiGetStyle(TEXTBOX, BORDER_COLOR_PRESSED)));
     }
-    else if (state == STATE_FOCUSED) GuiTooltip(bounds);
+    else if (state == STATE_FOCUSED) GuiSetupTooltipForDrawing(bounds);
+    guiTooltipPtr = NULL;
     //--------------------------------------------------------------------
 
     return result;      // Mouse button pressed: result = 1
@@ -4078,6 +4083,31 @@ void GuiDisableTooltip(void) { guiTooltip = false; }
 // Set tooltip string
 void GuiSetTooltip(const char *tooltip) { guiTooltipPtr = tooltip; }
 
+// Draw Tooltip
+void GuiTooltip()
+{
+    if (guiTooltipDrawPtr != NULL)
+    {
+        Vector2 textSize = MeasureTextEx(GuiGetFont(), guiTooltipDrawPtr, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+
+        if ((guiTooltipDrawRec.x + textSize.x + 16) > GetScreenWidth()) guiTooltipDrawRec.x -= (textSize.x + 16 - guiTooltipDrawRec.width);
+
+        GuiPanel(RAYGUI_CLITERAL(Rectangle){ guiTooltipDrawRec.x, guiTooltipDrawRec.y + guiTooltipDrawRec.height + 4, textSize.x + 16, GuiGetStyle(DEFAULT, TEXT_SIZE) + 8.f }, NULL);
+
+        int textPadding = GuiGetStyle(LABEL, TEXT_PADDING);
+        int textAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
+        GuiSetStyle(LABEL, TEXT_PADDING, 0);
+        GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+        GuiLabel(RAYGUI_CLITERAL(Rectangle){ guiTooltipDrawRec.x, guiTooltipDrawRec.y + guiTooltipDrawRec.height + 4, textSize.x + 16, GuiGetStyle(DEFAULT, TEXT_SIZE) + 8.f }, guiTooltipDrawPtr);
+        GuiSetStyle(LABEL, TEXT_ALIGNMENT, textAlignment);
+        GuiSetStyle(LABEL, TEXT_PADDING, textPadding);
+    }
+
+    guiTooltipDrawPtr = NULL;
+    guiTooltipDrawRec = RAYGUI_CLITERAL(Rectangle){0.0f, 0.0f, 0.0f, 0.0f};
+
+}
+
 //----------------------------------------------------------------------------------
 // Styles loading functions
 //----------------------------------------------------------------------------------
@@ -5099,24 +5129,12 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 #endif
 }
 
-// Draw tooltip using control bounds
-static void GuiTooltip(Rectangle controlRec)
-{
-    if (!guiLocked && guiTooltip && (guiTooltipPtr != NULL) && !guiControlExclusiveMode)
+// Setup for drawing tooltip with GuiTooltip()
+static void GuiSetupTooltipForDrawing(Rectangle controlRec) {
+    if (guiTooltip && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 textSize = MeasureTextEx(GuiGetFont(), guiTooltipPtr, (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-
-        if ((controlRec.x + textSize.x + 16) > GetScreenWidth()) controlRec.x -= (textSize.x + 16 - controlRec.width);
-
-        GuiPanel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, GuiGetStyle(DEFAULT, TEXT_SIZE) + 8.f }, NULL);
-
-        int textPadding = GuiGetStyle(LABEL, TEXT_PADDING);
-        int textAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
-        GuiSetStyle(LABEL, TEXT_PADDING, 0);
-        GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiLabel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, GuiGetStyle(DEFAULT, TEXT_SIZE) + 8.f }, guiTooltipPtr);
-        GuiSetStyle(LABEL, TEXT_ALIGNMENT, textAlignment);
-        GuiSetStyle(LABEL, TEXT_PADDING, textPadding);
+        guiTooltipDrawPtr = guiTooltipPtr;
+        guiTooltipDrawRec = controlRec;
     }
 }
 
