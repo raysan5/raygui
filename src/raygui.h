@@ -1045,6 +1045,7 @@ typedef enum {
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
+#include <ctype.h>              // required for: isspace() [GuiTextBox()]
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
@@ -2603,8 +2604,39 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
             }
 
-            // Delete codepoint from text, before current cursor position
-            if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
+            // Delete related codepoints from text, before current cursor position
+            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL))) {
+                int i = textBoxCursorIndex - 1;
+                int accCodepointSize = 0;
+
+                // Move cursor to the end of word if on space already
+                while (i > 0 && isspace(text[i])) {
+                    int prevCodepointSize = 0;
+                    GetCodepointPrevious(text + i, &prevCodepointSize);
+                    i -= prevCodepointSize;
+                    accCodepointSize += prevCodepointSize;
+                }
+
+                // Move cursor to the start of the word
+                while (i > 0 && !isspace(text[i])) {
+                    int prevCodepointSize = 0;
+                    GetCodepointPrevious(text + i, &prevCodepointSize);
+                    i -= prevCodepointSize;
+                    accCodepointSize += prevCodepointSize;
+                }
+
+                // Move forward text from cursor position
+                for (int j = (textBoxCursorIndex - accCodepointSize); j < textLength; j++) text[j] = text[j + accCodepointSize];
+
+                // Prevent cursor index from decrementing past 0
+                if (textBoxCursorIndex > 0) {
+                    textBoxCursorIndex -= accCodepointSize;
+                    textLength -= accCodepointSize;
+                }
+
+                // Make sure text last character is EOL
+                text[textLength] = '\0';
+            } else if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
 
