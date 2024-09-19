@@ -2553,7 +2553,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             int codepoint = GetCharPressed();       // Get Unicode codepoint
-            int enterPressed = IsKeyPressed(KEY_ENTER) || IsKeyPressedRepeat(KEY_ENTER);
+            int enterPressed = IsKeyPressed(KEY_ENTER);
+        	#if !defined(RAYGUI_STANDALONE)
+         	   enterPressed |= IsKeyPressedRepeat(KEY_ENTER);
+            #endif
+
             if (multiline && enterPressed) codepoint = (int)'\n';
 
             // Encode codepoint as UTF-8
