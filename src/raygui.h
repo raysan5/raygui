@@ -2469,11 +2469,15 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     return result;   // Mouse click: result = 1
 }
 
-int GetTextTotalLines(char *text) 
+// limit = -1 -> no limit
+int GetTextTotalLines(char *text, signed int limit)
 {
 	int linesTotal = 0;
-	for (int i = 0; i < textBoxCursorIndex; i++) {
+	while(*text!='\0' && limit!=0)
+	{
 		if (text[i]=='\n') linesTotal++;
+		text++;
+		limit--;
 	}
 	return linesTotal;
 }
@@ -2730,7 +2734,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetLineWidth(text + lineStart) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
             if (multiline)
             {
-            	cursor.y = GetTextTotalLines(text) * GuiGetStyle(DEFAULT, TEXT_SIZE);
+            	cursor.y = GetTextTotalLines(text, textBoxCursorIndex) * GuiGetStyle(DEFAULT, TEXT_SIZE);
             	cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
             }
 
