@@ -2468,6 +2468,14 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     return result;   // Mouse click: result = 1
 }
 
+int GetTextLines(char *text) {
+	int linesTotal = 0;
+	for (int i = 0; i < textBoxCursorIndex; i++) {
+		if (text[i]=='\n') linesTotal++;
+	}
+	return linesTotal;
+}
+
 // Text Box control
 // NOTE: Returns true on ENTER pressed (useful for data validation)
 int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
@@ -2707,7 +2715,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
             // Recalculate cursor position.y depending on textBoxCursorIndex
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
-            //if (multiline) cursor.y = GetTextLines()
+            if (multiline) {
+            	cursor.y = GetTextLines(text) * GuiGetStyle(DEFAULT, TEXT_SIZE);
+            	cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
+            }
 
             // Finish text editing on ENTER or mouse click outside bounds
             if ((!multiline && IsKeyPressed(KEY_ENTER)) ||
