@@ -2472,14 +2472,14 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
 // limit = -1 -> no limit
 int GetTextTotalLines(char *text, signed int limit)
 {
-	int linesTotal = 0;
-	while(*text!='\0' && limit!=0)
-	{
-		if (text[i]=='\n') linesTotal++;
-		text++;
-		limit--;
-	}
-	return linesTotal;
+    int linesTotal = 0;
+    while(*text!='\0' && limit!=0)
+    {
+        if (text[i]=='\n') linesTotal++;
+        text++;
+        limit--;
+    }
+    return linesTotal;
 }
 
 // Text Box control
@@ -2568,8 +2568,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
             int codepoint = GetCharPressed();       // Get Unicode codepoint
             int enterPressed = IsKeyPressed(KEY_ENTER);
-        	#if !defined(RAYGUI_STANDALONE)
-         	   enterPressed |= IsKeyPressedRepeat(KEY_ENTER);
+            #if !defined(RAYGUI_STANDALONE)
+                enterPressed |= IsKeyPressedRepeat(KEY_ENTER);
             #endif
 
             if (multiline && enterPressed) codepoint = (int)'\n';
@@ -2724,18 +2724,18 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             if (multiline)
             {
                 // calculate starting position of current line
-            	lineStart = textBoxCursorIndex;
-	            while (text[lineStart]!='\n'&&lineStart>=0)
+                lineStart = textBoxCursorIndex;
+                while (text[lineStart]!='\n'&&lineStart>=0)
                 {
-	            	lineStart--;
-	            }
-	            lineStart++;
-	        }
+                    lineStart--;
+                }
+                lineStart++;
+            }
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetLineWidth(text + lineStart) - GetLineWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
             if (multiline)
             {
-            	cursor.y = GetTextTotalLines(text, textBoxCursorIndex) * GuiGetStyle(DEFAULT, TEXT_SIZE);
-            	cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
+                cursor.y = GetTextTotalLines(text, textBoxCursorIndex) * GuiGetStyle(DEFAULT, TEXT_SIZE);
+                cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
             }
 
             // Finish text editing on ENTER or mouse click outside bounds
@@ -4767,17 +4767,17 @@ static int GetLineWidth(const char *text)
 // Get maximum text width from all lines
 static int GetTextWidth(const char *text)
 {
-	int widestLine = GetLineWidth(text);
-	while (*text!='\0')
-	{
-		if (*text=='\n')
-		{
-			int thisLineWidth = GetLineWidth(text+1);
-			if (thisLineWidth>widestLine) widestLine = thisLineWidth;
-		}
-		text++;
-	}
-	return widestLine;
+    int widestLine = GetLineWidth(text);
+    while (*text!='\0')
+    {
+        if (*text=='\n')
+        {
+            int thisLineWidth = GetLineWidth(text+1);
+            if (thisLineWidth>widestLine) widestLine = thisLineWidth;
+        }
+        text++;
+    }
+    return widestLine;
 }
 
 // Get text bounds considering control bounds
