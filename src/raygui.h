@@ -2553,7 +2553,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             int codepoint = GetCharPressed();       // Get Unicode codepoint
-            if (multiline && IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
+            int enterPressed = IsKeyPressed(KEY_ENTER) || IsKeyPressedRepeat(KEY_ENTER);
+            if (multiline && enterPressed) codepoint = (int)'\n';
 
             // Encode codepoint as UTF-8
             int codepointSize = 0;
