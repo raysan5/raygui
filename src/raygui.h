@@ -2714,7 +2714,16 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             else mouseCursor.x = -1;
 
             // Recalculate cursor position.y depending on textBoxCursorIndex
-            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
+            int lineStart = textIndexOffset;
+            if (multiline) {
+                // calculate starting position of current line
+            	lineStart = textBoxCursorIndex;
+	            while (text[lineStart]!='\n'&&lineStart>=0) {
+	            	lineStart--;
+	            }
+	            lineStart++;
+	        }
+            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + lineStart) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
             if (multiline) {
             	cursor.y = GetTextLines(text) * GuiGetStyle(DEFAULT, TEXT_SIZE);
             	cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
