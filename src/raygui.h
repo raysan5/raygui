@@ -2727,7 +2727,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 	            }
 	            lineStart++;
 	        }
-            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + lineStart) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
+            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetLineWidth(text + lineStart) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
             if (multiline)
             {
             	cursor.y = GetTextLines(text) * GuiGetStyle(DEFAULT, TEXT_SIZE);
