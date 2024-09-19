@@ -2468,7 +2468,8 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     return result;   // Mouse click: result = 1
 }
 
-int GetTextLines(char *text) {
+int GetTextLines(char *text) 
+{
 	int linesTotal = 0;
 	for (int i = 0; i < textBoxCursorIndex; i++) {
 		if (text[i]=='\n') linesTotal++;
@@ -2715,16 +2716,19 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
             // Recalculate cursor position.y depending on textBoxCursorIndex
             int lineStart = textIndexOffset;
-            if (multiline) {
+            if (multiline)
+            {
                 // calculate starting position of current line
             	lineStart = textBoxCursorIndex;
-	            while (text[lineStart]!='\n'&&lineStart>=0) {
+	            while (text[lineStart]!='\n'&&lineStart>=0)
+                {
 	            	lineStart--;
 	            }
 	            lineStart++;
 	        }
             cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + lineStart) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
-            if (multiline) {
+            if (multiline)
+            {
             	cursor.y = GetTextLines(text) * GuiGetStyle(DEFAULT, TEXT_SIZE);
             	cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
             }
