@@ -1484,6 +1484,7 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
 
 static int GetTextWidth(const char *text);                      // Gui get text width using gui font and style
+static int GetLineWidth(const char *text);                      // Gui get first line width using gui font and style
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
@@ -4697,8 +4698,8 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
     }
 }
 
-// Gui get text width considering icon
-static int GetTextWidth(const char *text)
+// Gui get line width considering icon
+static int GetLineWidth(const char *text)
 {
     #if !defined(ICON_TEXT_PADDING)
         #define ICON_TEXT_PADDING   4
@@ -4757,6 +4758,22 @@ static int GetTextWidth(const char *text)
     }
 
     return (int)textSize.x;
+}
+
+// Get maximum text width from all lines
+static int GetTextWidth(const char *text)
+{
+	int widestLine = GetLineWidth(text);
+	while (*text!='\0')
+	{
+		if (*text=='\n')
+		{
+			int thisLineWidth = GetLineWidth(text+1);
+			if (thisLineWidth>widestLine) widestLine = thisLineWidth;
+		}
+		text++;
+	}
+	return widestLine;
 }
 
 // Get text bounds considering control bounds
