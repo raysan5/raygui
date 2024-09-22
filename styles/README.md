@@ -46,5 +46,8 @@ Here it is a quick overview of those styles, you can navigate to each directory 
 #### 12. enefete: [enefete](enefete)
 ![enefete style](enefete/style_enefete.png)
 
+#### 13. amber: [amber](amber)
+![amber style](amber/style_amber.png)
 
-*NOTE: Those styles require raylib 4.5+ and raygui 4.0*
+
+*NOTE: Those styles require raylib 5.5 and raygui 4.5*
