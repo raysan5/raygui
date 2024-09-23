@@ -1,6 +1,6 @@
 # raygui styles
 
-`raygui` comes with **12 custom styles** carefully designed for the best visual experience. Those styles have been created using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool and they complement internal [default style](default), always available by `raygui`.
+`raygui` comes with **several custom UI styles** carefully designed for the best visual experience. Those styles have been created using [rGuiStyler](https://raylibtech.itch.io/rguistyler) tool and they complement internal [default style](default), always available by `raygui`.
 
 ## styles usage 
 
