@@ -2605,12 +2605,14 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Delete related codepoints from text, before current cursor position
-            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL))) {
+            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            {
                 int i = textBoxCursorIndex - 1;
                 int accCodepointSize = 0;
 
                 // Move cursor to the end of word if on space already
-                while (i > 0 && isspace(text[i])) {
+                while ((i > 0) && isspace(text[i]))
+                {
                     int prevCodepointSize = 0;
                     GetCodepointPrevious(text + i, &prevCodepointSize);
                     i -= prevCodepointSize;
@@ -2618,7 +2620,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
 
                 // Move cursor to the start of the word
-                while (i > 0 && !isspace(text[i])) {
+                while ((i > 0) && !isspace(text[i]))
+                {
                     int prevCodepointSize = 0;
                     GetCodepointPrevious(text + i, &prevCodepointSize);
                     i -= prevCodepointSize;
@@ -2629,14 +2632,16 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 for (int j = (textBoxCursorIndex - accCodepointSize); j < textLength; j++) text[j] = text[j + accCodepointSize];
 
                 // Prevent cursor index from decrementing past 0
-                if (textBoxCursorIndex > 0) {
+                if (textBoxCursorIndex > 0)
+                {
                     textBoxCursorIndex -= accCodepointSize;
                     textLength -= accCodepointSize;
                 }
 
                 // Make sure text last character is EOL
                 text[textLength] = '\0';
-            } else if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
+            } 
+            else if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
 
@@ -2652,7 +2657,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                         // Move backward text from cursor position
                         for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
 
-                        // TODO Check: >= cursor+codepointsize and <= length-codepointsize
+                        // TODO Check: i >= (cursor + codepointsize) && (i <= length-codepointsize) ???
 
                         textBoxCursorIndex -= codepointSize;
                         textLength -= codepointSize;
