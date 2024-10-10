@@ -46,6 +46,7 @@
 //  this is to test raygui operation without it. 
 //  calling GuiSetClip enables clipping 
 //  calling GuiSetClip((Rectangle){0,0,0,0});   //  disables it
+
 #define GUI_CLIP
 
 //------------------------------------------------------------------------------------
@@ -197,9 +198,10 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+#ifdef GUI_CLIP
             if (shouldScissor)
                 BeginScissorMode((int)clip.x, (int)clip.y, (int)clip.width, (int)clip.height);
-
+#endif
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
@@ -332,10 +334,9 @@ int main()
 
 
             //----------------------------------------------------------------------------------
+#ifdef GUI_CLIP            
         if (shouldScissor)
             EndScissorMode();
-
-#ifdef GUI_CLIP
         GuiShowClip();
 #endif
         EndDrawing();

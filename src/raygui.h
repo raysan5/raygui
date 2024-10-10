@@ -1391,7 +1391,7 @@ static int textBoxCursorIndex = 0;              // Cursor index, shared by all G
 static int autoCursorCooldownCounter = 0;       // Cooldown frame counter for automatic cursor movement on key-down
 static int autoCursorDelayCounter = 0;          // Delay frame counter for automatic cursor movement
 static Rectangle guiClip = {0};                 // gui clip rectangle
-static guiClipEnabled = false;                  // gui clipping enabled ( default false )
+static bool guiClipEnabled = false;                  // gui clipping enabled ( default false )
 //----------------------------------------------------------------------------------
 // Style data array for all gui style properties (allocated on data segment by default)
 //
@@ -1594,10 +1594,10 @@ void GuiSetClip(Rectangle clip)
 //  not needed but can be useful for debug
 void GuiShowClip()
 {
-    DrawRectangle(0, 0, guiClip.x, GetScreenHeight(), (Color){255,0,255,128});
-    DrawRectangle(guiClip.x, 0, guiClip.width, guiClip.y, (Color){255,0,255,128});
-    DrawRectangle(guiClip.x+guiClip.width, 0, GetScreenWidth()-guiClip.x+guiClip.width, GetScreenHeight(), (Color){255,0,255,128});
-    DrawRectangle(guiClip.x, guiClip.y+guiClip.height, guiClip.width, GetScreenHeight()-guiClip.y+guiClip.height, (Color){255,0,255,128});
+    DrawRectangle(0, 0, guiClip.x, GetScreenHeight(), (Color){0,0,0,128});
+    DrawRectangle(guiClip.x, 0, guiClip.width, guiClip.y, (Color){0,0,0,128});
+    DrawRectangle(guiClip.x+guiClip.width, 0, GetScreenWidth()-guiClip.x+guiClip.width, GetScreenHeight(), (Color){0,0,0,128});
+    DrawRectangle(guiClip.x, guiClip.y+guiClip.height, guiClip.width, GetScreenHeight()-guiClip.y+guiClip.height, (Color){0,0,0,128});
 }
 
 //  false if rectangle isn't clipped by gui clip rectangle
@@ -1616,14 +1616,19 @@ bool GuiClip(Rectangle *p)
 bool GuiCheckCollisionPointRec(Vector2 point, Rectangle rec)
 {
     bool collision = false;
-    if ((point.x >= rec.x) && (point.x < (rec.x + rec.width)) && (point.y >= rec.y) && (point.y < (rec.y + rec.height))) collision = true;
-    if ((point.x<guiClip.x) && 
-        (point.x>guiClip.x + guiClip.width) &&
-        (point.y<guiClip.y) &&
-        (point.y>guiClip.y + guiClip.height) && 
-        (guiClipEnabled==true))
+    if (guiClipEnabled==true)
     {
-        collision = false;
+        if ((point.x>guiClip.x) && 
+            (point.x<guiClip.x + guiClip.width) &&
+            (point.y>guiClip.y) &&
+            (point.y<guiClip.y + guiClip.height)) 
+        {
+            if ((point.x >= rec.x) && (point.x < (rec.x + rec.width)) && (point.y >= rec.y) && (point.y < (rec.y + rec.height))) collision = true;
+        }
+    }
+    else 
+    {
+        if ((point.x >= rec.x) && (point.x < (rec.x + rec.width)) && (point.y >= rec.y) && (point.y < (rec.y + rec.height))) collision = true;
     }
     return collision;
 }
@@ -3490,7 +3495,6 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     int startIndex = (scrollIndex == NULL)? 0 : *scrollIndex;
     if ((startIndex < 0) || (startIndex > (count - visibleItems))) startIndex = 0;
     int endIndex = startIndex + visibleItems;
-
     // Update control
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
