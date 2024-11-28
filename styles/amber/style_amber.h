@@ -11,7 +11,7 @@
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
-#define AMBER_STYLE_PROPS_COUNT  16
+#define AMBER_STYLE_PROPS_COUNT  17
 
 // Custom style name: Amber
 static const GuiStyleProp amberStyleProps[AMBER_STYLE_PROPS_COUNT] = {
@@ -28,6 +28,7 @@ static const GuiStyleProp amberStyleProps[AMBER_STYLE_PROPS_COUNT] = {
     { 0, 10, (int)0x818181ff },    // DEFAULT_BASE_COLOR_DISABLED 
     { 0, 11, (int)0x606060ff },    // DEFAULT_TEXT_COLOR_DISABLED 
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
+    { 0, 17, (int)0x00000001 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0xef922aff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x333333ff },    // DEFAULT_BACKGROUND_COLOR 
     { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
