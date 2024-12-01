@@ -1485,6 +1485,7 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
 
 static int GetTextWidth(const char *text);                      // Gui get text width using gui font and style
+static int GetLineWidth(const char *text);                      // Gui get first line width using gui font and style
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
@@ -2471,6 +2472,19 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     return result;   // Mouse click: result = 1
 }
 
+// limit = -1 -> no limit
+int GetTextTotalLines(char *text, signed int limit)
+{
+    int linesTotal = 0;
+    while(*text!='\0' && limit!=0)
+    {
+        if (text[i]=='\n') linesTotal++;
+        text++;
+        limit--;
+    }
+    return linesTotal;
+}
+
 // Text Box control
 // NOTE: Returns true on ENTER pressed (useful for data validation)
 int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
@@ -2556,7 +2570,12 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             int codepoint = GetCharPressed();       // Get Unicode codepoint
-            if (multiline && IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
+            int enterPressed = IsKeyPressed(KEY_ENTER);
+            #if !defined(RAYGUI_STANDALONE)
+                enterPressed |= IsKeyPressedRepeat(KEY_ENTER);
+            #endif
+
+            if (multiline && enterPressed) codepoint = (int)'\n';
 
             // Encode codepoint as UTF-8
             int codepointSize = 0;
@@ -2739,8 +2758,23 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             else mouseCursor.x = -1;
 
             // Recalculate cursor position.y depending on textBoxCursorIndex
-            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text + textIndexOffset) - GetTextWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
-            //if (multiline) cursor.y = GetTextLines()
+            int lineStart = textIndexOffset;
+            if (multiline)
+            {
+                // calculate starting position of current line
+                lineStart = textBoxCursorIndex;
+                while (text[lineStart]!='\n'&&lineStart>=0)
+                {
+                    lineStart--;
+                }
+                lineStart++;
+            }
+            cursor.x = bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetLineWidth(text + lineStart) - GetLineWidth(text + textBoxCursorIndex) + GuiGetStyle(DEFAULT, TEXT_SPACING);
+            if (multiline)
+            {
+                cursor.y = GetTextTotalLines(text, textBoxCursorIndex) * GuiGetStyle(DEFAULT, TEXT_SIZE);
+                cursor.y+= textBounds.y + textBounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE);
+            }
 
             // Finish text editing on ENTER or mouse click outside bounds
             if ((!multiline && IsKeyPressed(KEY_ENTER)) ||
@@ -4706,8 +4740,8 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
     }
 }
 
-// Gui get text width considering icon
-static int GetTextWidth(const char *text)
+// Gui get line width considering icon
+static int GetLineWidth(const char *text)
 {
     #if !defined(ICON_TEXT_PADDING)
         #define ICON_TEXT_PADDING   4
@@ -4766,6 +4800,22 @@ static int GetTextWidth(const char *text)
     }
 
     return (int)textSize.x;
+}
+
+// Get maximum text width from all lines
+static int GetTextWidth(const char *text)
+{
+    int widestLine = GetLineWidth(text);
+    while (*text!='\0')
+    {
+        if (*text=='\n')
+        {
+            int thisLineWidth = GetLineWidth(text+1);
+            if (thisLineWidth>widestLine) widestLine = thisLineWidth;
+        }
+        text++;
+    }
+    return widestLine;
 }
 
 // Get text bounds considering control bounds
