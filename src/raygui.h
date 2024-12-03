@@ -2642,7 +2642,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 // Make sure text last character is EOL
                 text[textLength] = '\0';
-            } 
+            }
             else if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
