@@ -5525,9 +5525,35 @@ static inline int GuiTextBoxInternal(Rectangle bounds, char *text, int textSize,
     }
     else GuiDrawRectangle(bounds, GuiGetStyle(TEXTBOX, BORDER_WIDTH), GetColor(GuiGetStyle(TEXTBOX, BORDER + (state*3))), BLANK);
 
-    // Draw text considering index offset if required
-    // NOTE: Text index offset depends on cursor position
-    GuiDrawText(text + textIndexOffset, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))));
+    if (multiline)
+    {
+        Rectangle lineBounds = textBounds;
+        lineBounds.height = GuiGetStyle(DEFAULT, TEXT_SIZE);
+        int lineStart = 0;
+        while(text[lineStart] != '\0' && lineBounds.y + lineBounds.height <= textBounds.y + textBounds.height)
+        {
+            int lineEnd = GetLineEnd(text, lineStart);
+            const char lineEnding = text[lineEnd];
+            if(textIndexOffset > lineEnd - lineStart)
+            {
+                lineStart = lineEnd + (lineEnding == '\0' ? 0 : 1);
+                continue;
+            }
+
+            // Temporarily write null to not render beyond current line
+            text[lineEnd] = '\0';
+            GuiDrawText(text + lineStart + textIndexOffset, lineBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))));
+            text[lineEnd] = lineEnding;
+            lineBounds.y += lineBounds.height;
+            lineStart = lineEnd + (lineEnding == '\0' ? 0 : 1);
+        }
+    }
+    else
+    {
+        // Draw text considering index offset if required
+        // NOTE: Text index offset depends on cursor position
+        GuiDrawText(text + textIndexOffset, textBounds, GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT), GetColor(GuiGetStyle(TEXTBOX, TEXT + (state*3))));
+    }
 
     // Draw cursor
     if (editMode && !GuiGetStyle(TEXTBOX, TEXT_READONLY))
