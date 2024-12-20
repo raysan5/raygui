@@ -347,6 +347,7 @@ endif
 # Define all source files required
 EXAMPLES = \
     controls_test_suite/controls_test_suite \
+    clipping_controls_test_suite/clipping_controls_test_suite \
     custom_file_dialog/custom_file_dialog \
     custom_input_box/custom_input_box\
     image_exporter/image_exporter \
