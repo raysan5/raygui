@@ -233,7 +233,7 @@ ifeq ($(PLATFORM),PLATFORM_WEB)
     # --preload-file resources   # specify a resources folder for data compilation
     # --source-map-base          # allow debugging in browser with source map
     # --shell-file shell.html    # define a custom shell .html and output extension
-    CFLAGS += -Os -sUSE_GLFW=3 -sFORCE_FILESYSTEM=1 -sASYNCIFY --preload-file $(dir $<)resources@resources
+    CFLAGS += -Os -sUSE_GLFW=3 -sFORCE_FILESYSTEM=1 -sASYNCIFY --preload-file $(dir $<)resources@resources -sMINIFY_HTML=0
     ifeq ($(BUILD_MODE), DEBUG)
         CFLAGS += -sASSERTIONS=1 --profiling
     endif
