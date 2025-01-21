@@ -1046,7 +1046,7 @@ typedef enum {
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #include <ctype.h>              // required for: isspace() [GuiTextBox()]
-#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
 #include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
@@ -2905,7 +2905,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
     GuiState state = guiState;
 
     char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
-    sprintf(textValue, "%i", *value);
+    snprintf(textValue, sizeof(textValue), "%i", *value);
 
     Rectangle textBounds = { 0 };
     if (text != NULL)
@@ -3021,7 +3021,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
     GuiState state = guiState;
 
     //char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
-    //sprintf(textValue, "%2.2f", *value);
+    //snprintf(textValue, sizeof(textValue), "%2.2f", *value);
 
     Rectangle textBounds = {0};
     if (text != NULL)
@@ -4354,7 +4354,7 @@ const char *GuiIconText(int iconId, const char *text)
     if (text != NULL)
     {
         memset(buffer, 0, 1024);
-        sprintf(buffer, "#%03i#", iconId);
+        snprintf(buffer, sizeof(buffer), "#%03i#", iconId);
 
         for (int i = 5; i < 1024; i++)
         {
@@ -4366,7 +4366,7 @@ const char *GuiIconText(int iconId, const char *text)
     }
     else
     {
-        sprintf(iconBuffer, "#%03i#", iconId);
+        snprintf(iconBuffer, sizeof(iconBuffer), "#%03i#", iconId);
 
         return iconBuffer;
     }
