@@ -4451,6 +4451,57 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     return guiIconsName;
 }
 
+// Load icons from memory
+// WARNING: Binary files only
+char **GuiLoadIconsFromMemory(const unsigned char *fileData, size_t dataSize, bool loadIconsName)
+{
+    const unsigned char *ptr = fileData;
+
+    char signature[5] = { 0 };
+    memcpy(signature, ptr, 4);
+    ptr += 4;
+
+    short version = *(short *)ptr;
+    ptr += sizeof(short);
+    short reserved = *(short *)ptr;
+    ptr += sizeof(short);
+    short iconCount = *(short *)ptr;
+    ptr += sizeof(short);
+    short iconSize = *(short *)ptr;
+    ptr += sizeof(short);
+
+    char **guiIconsName = NULL;
+
+    if ((signature[0] == 'r') &&
+        (signature[1] == 'G') &&
+        (signature[2] == 'I') &&
+        (signature[3] == ' '))
+    {
+        if (loadIconsName)
+        {
+            guiIconsName = (char **)RAYGUI_MALLOC(iconCount * sizeof(char *));
+            for (int i = 0; i < iconCount; i++)
+            {
+                guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
+                memcpy(guiIconsName[i], ptr, RAYGUI_ICON_MAX_NAME_LENGTH);
+                ptr += RAYGUI_ICON_MAX_NAME_LENGTH;
+            }
+        }
+        else
+        {
+            // Skip icon name data
+            ptr += iconCount * RAYGUI_ICON_MAX_NAME_LENGTH;
+        }
+
+        int iconDataSize = iconCount * (iconSize * iconSize / 32) * sizeof(unsigned int);
+        guiIconsPtr = (unsigned int *)RAYGUI_MALLOC(iconDataSize);
+
+        memcpy(guiIconsPtr, ptr, iconDataSize);
+    }
+
+    return guiIconsName;
+}
+
 // Draw selected icon using rectangles pixel-by-pixel
 void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
 {
