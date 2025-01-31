@@ -50,7 +50,12 @@
 #include "../styles/style_dark.h"              // raygui style: dark
 #include "../styles/style_bluish.h"            // raygui style: bluish
 #include "../styles/style_terminal.h"          // raygui style: terminal
-
+#include "../styles/style_candy.h"                 
+#include "../styles/style_cherry.h"             
+#include "../styles/style_ashes.h"              
+#include "../styles/style_enefete.h"                
+#include "../styles/style_sunny.h"              
+#include "../styles/style_amber.h"              
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -178,6 +183,12 @@ int main()
                 case 4: GuiLoadStyleBluish(); break;
                 case 5: GuiLoadStyleCyber(); break;
                 case 6: GuiLoadStyleTerminal(); break;
+                case 7: GuiLoadStyleCandy(); break;
+                case 8: GuiLoadStyleCherry(); break;
+                case 9: GuiLoadStyleAshes(); break;
+                case 10: GuiLoadStyleEnefete(); break;
+                case 11: GuiLoadStyleSunny(); break;
+                case 12: GuiLoadStyleAmber(); break;
                 default: break;
             }
 
@@ -222,7 +233,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal", &visualStyleActive);
+            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             GuiUnlock();
