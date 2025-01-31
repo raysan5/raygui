@@ -4462,22 +4462,21 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 // WARNING: Binary files only
 char **GuiLoadIconsFromMemory(const unsigned char *fileData, size_t dataSize, bool loadIconsName)
 {
-    const unsigned char *ptr = fileData;
+    unsigned char *fileDataPtr = (unsigned char *)fileData;
+    char **guiIconsName = NULL;
 
     char signature[5] = { 0 };
-    memcpy(signature, ptr, 4);
-    ptr += 4;
+    short version = 0;
+    short reserved = 0;
+    short iconCount = 0;
+    short iconSize = 0;
 
-    short version = *(short *)ptr;
-    ptr += sizeof(short);
-    short reserved = *(short *)ptr;
-    ptr += sizeof(short);
-    short iconCount = *(short *)ptr;
-    ptr += sizeof(short);
-    short iconSize = *(short *)ptr;
-    ptr += sizeof(short);
-
-    char **guiIconsName = NULL;
+    memcpy(signature, fileDataPtr, 4);
+    memcpy(&version, fileDataPtr + 4, sizeof(short));
+    memcpy(&reserved, fileDataPtr + 4 + 2, sizeof(short));
+    memcpy(&iconCount, fileDataPtr + 4 + 2 + 2, sizeof(short));
+    memcpy(&iconSize, fileDataPtr + 4 + 2 + 2 + 2, sizeof(short));
+    fileDataPtr += 12;
 
     if ((signature[0] == 'r') &&
         (signature[1] == 'G') &&
@@ -4490,20 +4489,20 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, size_t dataSize, bo
             for (int i = 0; i < iconCount; i++)
             {
                 guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
-                memcpy(guiIconsName[i], ptr, RAYGUI_ICON_MAX_NAME_LENGTH);
-                ptr += RAYGUI_ICON_MAX_NAME_LENGTH;
+                memcpy(guiIconsName[i], fileDataPtr, RAYGUI_ICON_MAX_NAME_LENGTH);
+                fileDataPtr += RAYGUI_ICON_MAX_NAME_LENGTH;
             }
         }
         else
         {
             // Skip icon name data if not required
-            ptr += iconCount*RAYGUI_ICON_MAX_NAME_LENGTH;
+            fileDataPtr += iconCount*RAYGUI_ICON_MAX_NAME_LENGTH;
         }
 
         int iconDataSize = iconCount*(iconSize*iconSize/32)*sizeof(unsigned int);
         guiIconsPtr = (unsigned int *)RAYGUI_MALLOC(iconDataSize);
 
-        memcpy(guiIconsPtr, ptr, iconDataSize);
+        memcpy(guiIconsPtr, fileDataPtr, iconDataSize);
     }
 
     return guiIconsName;
