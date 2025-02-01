@@ -5269,7 +5269,7 @@ static const char **GuiTextSplit(const char *text, char delimiter, int *count, i
             buffer[i] = '\0';   // Set an end of string at this point
 
             counter++;
-            if (counter > RAYGUI_TEXTSPLIT_MAX_ITEMS) break;
+            if (counter >= RAYGUI_TEXTSPLIT_MAX_ITEMS) break;
         }
     }
 
