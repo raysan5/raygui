@@ -194,14 +194,14 @@ int main()
                 if (GuiValueBox((Rectangle){ windowOffset.x + 60, windowOffset.y + 130, 80, 25 }, NULL, &heightValue, 0, 8192, heightEditMode)) heightEditMode = !heightEditMode; 
                 GuiLabel((Rectangle){ windowOffset.x + 145, windowOffset.y + 130, 30, 25 }, "pixels");
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 180, 180, 160 }, "Pixel Format");
-                GuiComboBox((Rectangle){ windowOffset.x + 20, windowOffset.y + 195, 160, 25 }, TextJoin(pixelFormatTextList, 8, ";"), &pixelFormatActive);
+                GuiComboBox((Rectangle){ windowOffset.x + 20, windowOffset.y + 195, 160, 25 }, TextJoin((char**)pixelFormatTextList, 8, ";"), &pixelFormatActive);
                 GuiLine((Rectangle){ windowOffset.x + 20, windowOffset.y + 220, 160, 20 }, NULL);
                 
                 if (pixelFormatActive != 0) GuiDisable();
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 235, 50, 20 }, "Channels:");
-                GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 255, 156/4, 25 }, TextJoin(channelsTextList, 4, ";"), &channelsActive);
+                GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 255, 156/4, 25 }, TextJoin((char**)channelsTextList, 4, ";"), &channelsActive);
                 GuiLabel((Rectangle){ windowOffset.x + 20, windowOffset.y + 285, 50, 20 }, "Bit Depth:");
-                GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 305, 160/3, 25 }, TextJoin(bitDepthTextList, 3, ";"), &bitDepthActive);
+                GuiToggleGroup((Rectangle){ windowOffset.x + 20, windowOffset.y + 305, 160/3, 25 }, TextJoin((char**)bitDepthTextList, 3, ";"), &bitDepthActive);
                 GuiEnable();
                 
                 GuiGroupBox((Rectangle){ windowOffset.x + 10, windowOffset.y + 355, 180, 50 }, "Header");
