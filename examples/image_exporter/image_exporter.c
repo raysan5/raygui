@@ -38,10 +38,10 @@ int main(int argc, char *argv[])
     bool windowBoxActive = false;
     
     int fileFormatActive = 0;
-    const char *fileFormatTextList[3] = { "IMAGE (.png)", "DATA (.raw)", "CODE (.h)" };
+    char *fileFormatTextList[3] = { "IMAGE (.png)", "DATA (.raw)", "CODE (.h)" };
 
     int pixelFormatActive = 0;
-    const char *pixelFormatTextList[7] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
+    char *pixelFormatTextList[7] = { "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
 
     bool textBoxEditMode = false;
     char fileName[64] = "untitled";

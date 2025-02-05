@@ -50,12 +50,12 @@ int main()
     bool heightEditMode = false;
     
     int pixelFormatActive = 0;
-    const char *pixelFormatTextList[8] = { "CUSTOM", "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
+    char *pixelFormatTextList[8] = { "CUSTOM", "GRAYSCALE", "GRAY ALPHA", "R5G6B5", "R8G8B8", "R5G5B5A1", "R4G4B4A4", "R8G8B8A8" };
 
     int channelsActive = 3;
-    const char *channelsTextList[4] = { "1", "2", "3", "4" };
+    char *channelsTextList[4] = { "1", "2", "3", "4" };
     int bitDepthActive = 0;
-    const char *bitDepthTextList[3] = { "8", "16", "32" };
+    char *bitDepthTextList[3] = { "8", "16", "32" };
     
     int headerSizeValue = 0;
     bool headerSizeEditMode = false;
