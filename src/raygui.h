@@ -1660,7 +1660,7 @@ int GuiGroupBox(Rectangle bounds, const char *text)
 // Line control
 int GuiLine(Rectangle bounds, const char *text)
 {
-    #if !defined(RAYGUI_LINE_ORIGIN_SIZE)
+    #if !defined(RAYGUI_LINE_MARGIN_TEXT)
         #define RAYGUI_LINE_MARGIN_TEXT  12
     #endif
     #if !defined(RAYGUI_LINE_TEXT_PADDING)
