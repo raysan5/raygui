@@ -2608,11 +2608,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 {
                     int nextCodepointSize = 0;
                     GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
-
-                    // Move backward text from cursor position
+                    
+                    // Decrease length and move text back to current cursor position
+                    textLength -= nextCodepointSize;
                     for (int i = textBoxCursorIndex; i < textLength; i++) text[i] = text[i + nextCodepointSize];
 
-                    textLength -= codepointSize;
                     if (textBoxCursorIndex > textLength) textBoxCursorIndex = textLength;
 
                     // Make sure text last character is EOL
@@ -2620,13 +2620,13 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 }
             }
 
-            // Delete related codepoints from text, before current cursor position
-            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            // Delete grouped codepoints from text, to the start of the previous word before current cursor position
+            if ((textLength > 0) && (textBoxCursorIndex > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
                 int i = textBoxCursorIndex - 1;
                 int accCodepointSize = 0;
 
-                // Move cursor to the end of word if on space already
+                // Find the end of the word if starting after space
                 while ((i > 0) && isspace(text[i]))
                 {
                     int prevCodepointSize = 0;
@@ -2635,7 +2635,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     accCodepointSize += prevCodepointSize;
                 }
 
-                // Move cursor to the start of the word
+                // Find the start of the word
                 while ((i > 0) && !isspace(text[i]))
                 {
                     int prevCodepointSize = 0;
@@ -2644,15 +2644,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     accCodepointSize += prevCodepointSize;
                 }
 
-                // Move forward text from cursor position
-                for (int j = (textBoxCursorIndex - accCodepointSize); j < textLength; j++) text[j] = text[j + accCodepointSize];
-
-                // Prevent cursor index from decrementing past 0
-                if (textBoxCursorIndex > 0)
-                {
-                    textBoxCursorIndex -= accCodepointSize;
-                    textLength -= accCodepointSize;
-                }
+                // Move remaining text back to the new cursor position
+                textLength -= accCodepointSize;
+                textBoxCursorIndex -= accCodepointSize;
+                for (int j = textBoxCursorIndex; j < textLength; j++) text[j] = text[j + accCodepointSize];
 
                 // Make sure text last character is EOL
                 text[textLength] = '\0';
@@ -2670,11 +2665,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     {
                         GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
 
-                        // Move backward text from cursor position
-                        for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
+                        // Move remaining text backwards to new cursor position
+                        textBoxCursorIndex -= prevCodepointSize;
+                        textLength -= prevCodepointSize;
+                        for (int i = textBoxCursorIndex; i < textLength; i++) text[i] = text[i + prevCodepointSize];
 
-                        textBoxCursorIndex -= codepointSize;
-                        textLength -= codepointSize;
                     }
 
                     // Make sure text last character is EOL
