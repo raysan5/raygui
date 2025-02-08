@@ -1611,9 +1611,7 @@ int GuiWindowBox(Rectangle bounds, const char *title)
     const float vPadding = statusBarHeight/2.0f - RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT/2.0f;
     Rectangle windowPanel = { bounds.x, bounds.y + (float)statusBarHeight - 1, bounds.width, bounds.height - (float)statusBarHeight + 1 };
     Rectangle closeButtonRec = { statusBar.x + statusBar.width - GuiGetStyle(STATUSBAR, BORDER_WIDTH) - RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT - vPadding,
-                                 statusBar.y + vPadding,
-                                 RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT,
-                                 RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT };
+                                 statusBar.y + vPadding, RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT, RAYGUI_WINDOWBOX_CLOSEBUTTON_HEIGHT };
 
     // Update control
     //--------------------------------------------------------------------
@@ -3494,7 +3492,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
 
         if (state == STATE_DISABLED)
         {
-            if ((startIndex + i) == itemSelected) GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_DISABLED)));
+            if ((startIndex + i) == itemSelected) GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_DISABLED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_DISABLED)));
 
             GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_DISABLED)));
         }
@@ -3503,13 +3501,13 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
             if (((startIndex + i) == itemSelected) && (active != NULL))
             {
                 // Draw item selected
-                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)));
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_PRESSED)));
             }
             else if (((startIndex + i) == itemFocused)) // && (focus != NULL))  // NOTE: We want items focused, despite not returned!
             {
                 // Draw item focused
-                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)));
+                GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)));
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_FOCUSED)));
             }
             else
