@@ -2575,9 +2575,40 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             int codepointSize = 0;
             const char *charEncoded = CodepointToUTF8(codepoint, &codepointSize);
 
+            // Handle Paste action
+            if (IsKeyPressed(KEY_V) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            {
+                const char *pasteText = GetClipboardText();
+                if (pasteText != NULL)
+                {
+                    int pasteLength = 0;
+                    int pasteCodepoint;
+                    int pasteCodepointSize;
+                    // count how many codepoints to copy, stopping at the first unwanted control character
+                    while (true)
+                    {
+                        pasteCodepoint = GetCodepointNext(pasteText + pasteLength, &pasteCodepointSize);
+                        if (textLength + pasteLength + pasteCodepointSize >= textSize) break;
+                        if (!(multiline && (pasteCodepoint == (int)'\n')) && !(pasteCodepoint >= 32)) break;
+                        pasteLength += pasteCodepointSize;
+                    }
+                    if (pasteLength > 0)
+                    {
+                        // Move forward data from cursor position
+                        for (int i = textLength + pasteLength; i > textBoxCursorIndex; i--) text[i] = text[i - pasteLength];
+
+                        // Paste data in at cursor
+                        for (int i = 0; i < pasteLength; i++) text[textBoxCursorIndex + i] = pasteText[i];
+
+                        textBoxCursorIndex += pasteLength;
+                        textLength += pasteLength;
+                        text[textLength] = '\0';
+                    }
+                }
+            }
             // Add codepoint to text, at current cursor position
             // NOTE: Make sure we do not overflow buffer size
-            if (((multiline && (codepoint == (int)'\n')) || (codepoint >= 32)) && ((textLength + codepointSize) < textSize))
+            else if (((multiline && (codepoint == (int)'\n')) || (codepoint >= 32)) && ((textLength + codepointSize) < textSize))
             {
                 // Move forward data from cursor position
                 for (int i = (textLength + codepointSize); i > textBoxCursorIndex; i--) text[i] = text[i - codepointSize];
