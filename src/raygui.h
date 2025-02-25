@@ -2594,9 +2594,6 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     }
                     if (pasteLength > 0)
                     {
-                        // Make sure we are copying full codepoints only
-                        // while (pasteText[pasteLength] != 0 && ((0x80 & pasteText[pasteLength]) != 0) && ((0xc0 & pasteText[pasteLength]) ==  0x80)) --pasteLength;
-
                         // Move forward data from cursor position
                         for (int i = textLength + pasteLength; i > textBoxCursorIndex; i--) text[i] = text[i - pasteLength];
 
