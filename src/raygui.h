@@ -2642,7 +2642,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     // Move backward text from cursor position
                     for (int i = textBoxCursorIndex; i < textLength; i++) text[i] = text[i + nextCodepointSize];
 
-                    textLength -= codepointSize;
+                    textLength -= nextCodepointSize;
                     if (textBoxCursorIndex > textLength) textBoxCursorIndex = textLength;
 
                     // Make sure text last character is EOL
@@ -2703,8 +2703,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                         // Move backward text from cursor position
                         for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
 
-                        textBoxCursorIndex -= codepointSize;
-                        textLength -= codepointSize;
+                        textBoxCursorIndex -= prevCodepointSize;
+                        textLength -= prevCodepointSize;
                     }
 
                     // Make sure text last character is EOL
@@ -2747,7 +2747,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 float widthToMouseX = 0;
                 int mouseCursorIndex = 0;
 
-                for (int i = textIndexOffset; i < textLength; i++)
+                for (int i = textIndexOffset; i < textLength; i += codepointSize)
                 {
                     codepoint = GetCodepointNext(&text[i], &codepointSize);
                     codepointIndex = GetGlyphIndex(guiFont, codepoint);
