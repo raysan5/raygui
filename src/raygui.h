@@ -4344,8 +4344,8 @@ void GuiLoadStyleDefault(void)
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
     GuiSetStyle(TOGGLE, GROUP_PADDING, 2);
-    GuiSetStyle(VALUEBOX, SLIDER_WIDTH, 16);
-    GuiSetStyle(VALUEBOX, SLIDER_PADDING, 1);
+    GuiSetStyle(SLIDER, SLIDER_WIDTH, 16);
+    GuiSetStyle(SLIDER, SLIDER_PADDING, 1);
     GuiSetStyle(PROGRESSBAR, PROGRESS_PADDING, 1);
     GuiSetStyle(CHECKBOX, CHECK_PADDING, 1);
     GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 32);
