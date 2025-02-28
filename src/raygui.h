@@ -2647,41 +2647,39 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Delete related codepoints from text, before current cursor position
-            if ((textLength > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            if ((textBoxCursorIndex > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
-                int i = textBoxCursorIndex - 1;
+                int offset = textBoxCursorIndex;
                 int accCodepointSize = 0;
+                int prevCodepointSize;
+                int prevCodepoint;
 
-                // Move cursor to the end of word if on space already
-                while ((i > 0) && isspace(text[i]))
+                // Check whitespace to delete (ASCII only)
+                while (offset > 0)
                 {
-                    int prevCodepointSize = 0;
-                    GetCodepointPrevious(text + i, &prevCodepointSize);
-                    i -= prevCodepointSize;
+                    prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
+                    if (!isspace(prevCodepoint & 0xFF))
+                        break;
+                    offset -= prevCodepointSize;
+                    accCodepointSize += prevCodepointSize;
+                }
+                // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
+                // Not using isalnum() since it only works on ASCII characters
+                bool puctuation = ispunct(prevCodepoint & 0xFF);
+                while (offset > 0)
+                {
+                    prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
+                    if ((puctuation && !ispunct(prevCodepoint & 0xFF)) || (!puctuation && (isspace(prevCodepoint & 0xFF) || ispunct(prevCodepoint & 0xFF))))
+                        break;
+                    offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
                 }
 
-                // Move cursor to the start of the word
-                while ((i > 0) && !isspace(text[i]))
-                {
-                    int prevCodepointSize = 0;
-                    GetCodepointPrevious(text + i, &prevCodepointSize);
-                    i -= prevCodepointSize;
-                    accCodepointSize += prevCodepointSize;
-                }
+                // Move text after cursor forward (including final null terminator)
+                for (int i = textBoxCursorIndex; i <= textLength; i++) text[i - accCodepointSize] = text[i];
 
-                // Move forward text from cursor position
-                for (int j = (textBoxCursorIndex - accCodepointSize); j < textLength; j++) text[j] = text[j + accCodepointSize];
-
-                // Prevent cursor index from decrementing past 0
-                if (textBoxCursorIndex > 0)
-                {
-                    textBoxCursorIndex -= accCodepointSize;
-                    textLength -= accCodepointSize;
-                }
-
-                // Make sure text last character is EOL
-                text[textLength] = '\0';
+                textLength -= accCodepointSize;
+                textBoxCursorIndex -= accCodepointSize;
             }
             else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
