@@ -2754,12 +2754,12 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textBoxCursorIndex = offset;
             }
-            else if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && autoCursorShouldTrigger))
+            else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && autoCursorShouldTrigger)))
             {
                 int prevCodepointSize = 0;
-                if (textBoxCursorIndex > 0) GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
+                GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
 
-                if (textBoxCursorIndex >= prevCodepointSize) textBoxCursorIndex -= prevCodepointSize;
+                textBoxCursorIndex -= prevCodepointSize;
             }
             else if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_RIGHT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
@@ -2791,12 +2791,12 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textBoxCursorIndex = offset;
             }
-            else if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && autoCursorShouldTrigger))
+            else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && autoCursorShouldTrigger)))
             {
                 int nextCodepointSize = 0;
                 GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
 
-                if ((textBoxCursorIndex + nextCodepointSize) <= textLength) textBoxCursorIndex += nextCodepointSize;
+                textBoxCursorIndex += nextCodepointSize;
             }
 
             // Move cursor position with mouse
