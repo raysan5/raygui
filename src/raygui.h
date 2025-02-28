@@ -2629,8 +2629,42 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             // Move cursor to end
             if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_END)) textBoxCursorIndex = textLength;
 
+            // Delete related codepoints from text, after current cursor position
+            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_DELETE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            {
+                int offset = textBoxCursorIndex;
+                int accCodepointSize = 0;
+                int nextCodepointSize;
+                int nextCodepoint;
+                // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
+                // Not using isalnum() since it only works on ASCII characters
+                nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                bool puctuation = ispunct(nextCodepoint & 0xFF);
+                while (offset < textLength)
+                {
+                    if ((puctuation && !ispunct(nextCodepoint & 0xFF)) || (!puctuation && (isspace(nextCodepoint & 0xFF) || ispunct(nextCodepoint & 0xFF))))
+                        break;
+                    offset += nextCodepointSize;
+                    accCodepointSize += nextCodepointSize;
+                    nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                }
+                // Check whitespace to delete (ASCII only)
+                while (offset < textLength)
+                {
+                    if (!isspace(nextCodepoint & 0xFF))
+                        break;
+                    offset += nextCodepointSize;
+                    accCodepointSize += nextCodepointSize;
+                    nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                }
+
+                // Move text after cursor forward (including final null terminator)
+                for (int i = offset; i <= textLength; i++) text[i - accCodepointSize] = text[i];
+
+                textLength -= accCodepointSize;
+            }
             // Delete codepoint from text, after current cursor position
-            if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
+            else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
 
@@ -2700,7 +2734,37 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Move cursor position with keys
-            if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
+            if ((textBoxCursorIndex > 0) && IsKeyPressed(KEY_LEFT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            {
+                int offset = textBoxCursorIndex;
+                int accCodepointSize = 0;
+                int prevCodepointSize;
+                int prevCodepoint;
+
+                // Check whitespace to skip (ASCII only)
+                while (offset > 0)
+                {
+                    prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
+                    if (!isspace(prevCodepoint & 0xFF))
+                        break;
+                    offset -= prevCodepointSize;
+                    accCodepointSize += prevCodepointSize;
+                }
+                // Check characters of the same type to skip (either ASCII punctuation or anything non-whitespace)
+                // Not using isalnum() since it only works on ASCII characters
+                bool puctuation = ispunct(prevCodepoint & 0xFF);
+                while (offset > 0)
+                {
+                    prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
+                    if ((puctuation && !ispunct(prevCodepoint & 0xFF)) || (!puctuation && (isspace(prevCodepoint & 0xFF) || ispunct(prevCodepoint & 0xFF))))
+                        break;
+                    offset -= prevCodepointSize;
+                    accCodepointSize += prevCodepointSize;
+                }
+
+                textBoxCursorIndex = offset;
+            }
+            else if (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
             {
                 autoCursorDelayCounter++;
 
@@ -2711,6 +2775,36 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                     if (textBoxCursorIndex >= prevCodepointSize) textBoxCursorIndex -= prevCodepointSize;
                 }
+            }
+            else if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_RIGHT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            {
+                int offset = textBoxCursorIndex;
+                int accCodepointSize = 0;
+                int nextCodepointSize;
+                int nextCodepoint;
+                // Check characters of the same type to skip (either ASCII punctuation or anything non-whitespace)
+                // Not using isalnum() since it only works on ASCII characters
+                nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                bool puctuation = ispunct(nextCodepoint & 0xFF);
+                while (offset < textLength)
+                {
+                    if ((puctuation && !ispunct(nextCodepoint & 0xFF)) || (!puctuation && (isspace(nextCodepoint & 0xFF) || ispunct(nextCodepoint & 0xFF))))
+                        break;
+                    offset += nextCodepointSize;
+                    accCodepointSize += nextCodepointSize;
+                    nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                }
+                // Check whitespace to skip (ASCII only)
+                while (offset < textLength)
+                {
+                    if (!isspace(nextCodepoint & 0xFF))
+                        break;
+                    offset += nextCodepointSize;
+                    accCodepointSize += nextCodepointSize;
+                    nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
+                }
+
+                textBoxCursorIndex = offset;
             }
             else if (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && (autoCursorCooldownCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)))
             {
