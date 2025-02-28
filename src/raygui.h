@@ -2639,14 +2639,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     int nextCodepointSize = 0;
                     GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
 
-                    // Move backward text from cursor position
-                    for (int i = textBoxCursorIndex; i < textLength; i++) text[i] = text[i + nextCodepointSize];
+                    // Move text after cursor forward (including final null terminator)
+                    for (int i = textBoxCursorIndex + nextCodepointSize; i <= textLength; i++) text[i - nextCodepointSize] = text[i];
 
                     textLength -= nextCodepointSize;
-                    if (textBoxCursorIndex > textLength) textBoxCursorIndex = textLength;
-
-                    // Make sure text last character is EOL
-                    text[textLength] = '\0';
                 }
             }
 
@@ -2687,7 +2683,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Make sure text last character is EOL
                 text[textLength] = '\0';
             }
-            else if ((textLength > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
+            else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && (autoCursorCooldownCounter >= RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN))))
             {
                 autoCursorDelayCounter++;
 
@@ -2695,20 +2691,13 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 {
                     int prevCodepointSize = 0;
 
-                    // Prevent cursor index from decrementing past 0
-                    if (textBoxCursorIndex > 0)
-                    {
-                        GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
+                    GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
 
-                        // Move backward text from cursor position
-                        for (int i = (textBoxCursorIndex - prevCodepointSize); i < textLength; i++) text[i] = text[i + prevCodepointSize];
+                    // Move text after cursor forward (including final null terminator)
+                    for (int i = textBoxCursorIndex; i <= textLength; i++) text[i - prevCodepointSize] = text[i];
 
-                        textBoxCursorIndex -= prevCodepointSize;
-                        textLength -= prevCodepointSize;
-                    }
-
-                    // Make sure text last character is EOL
-                    text[textLength] = '\0';
+                    textLength -= prevCodepointSize;
+                    textBoxCursorIndex -= prevCodepointSize;
                 }
             }
 
