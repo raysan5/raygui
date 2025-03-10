@@ -4568,7 +4568,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 
 // Load icons from memory
 // WARNING: Binary files only
-char **GuiLoadIconsFromMemory(const unsigned char *fileData, size_t dataSize, bool loadIconsName)
+char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool loadIconsName)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
     char **guiIconsName = NULL;
