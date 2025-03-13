@@ -57,6 +57,7 @@ int main()
         {
             if (CheckCollisionPointRec(mousePosition, (Rectangle){ 0, 0, screenWidth, 20 }))
             {
+                windowPosition = GetWindowPosition();
                 dragWindow = true;
                 panOffset = mousePosition;
             }
