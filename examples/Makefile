@@ -277,6 +277,9 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),BSD)
         # Consider -L$(RAYLIB_INSTALL_PATH)
         LDFLAGS += -L. -Lsrc -L/usr/local/lib
+        ifeq ($(shell uname),OpenBSD)
+            LDFLAGS += -L/usr/X11R6/lib
+        endif
     endif
     ifeq ($(PLATFORM_OS),LINUX)
         # Reset everything.
@@ -382,6 +385,10 @@ ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     endif
     ifeq ($(PLATFORM_OS),OSX)
 		find . -type f -perm +ugo+x -delete
+		rm -f *.o
+    endif
+    ifeq ($(shell uname),OpenBSD)
+		find . -type f -perm 0755 -delete
 		rm -f *.o
     endif
 endif
