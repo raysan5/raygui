@@ -67,6 +67,7 @@ int main()
         {            
             windowPosition.x += (mousePosition.x - panOffset.x);
             windowPosition.y += (mousePosition.y - panOffset.y);
+            panOffset = mousePosition;
 
             SetWindowPosition((int)windowPosition.x, (int)windowPosition.y);
             
