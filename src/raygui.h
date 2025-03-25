@@ -4561,7 +4561,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
 
             // Read icons data directly over internal icons array
-            fread(guiIconsPtr, sizeof(unsigned int), (size_t)iconCount*((size_t)iconSize*(size_t)iconSize/32), rgiFile);
+            fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
         }
 
         fclose(rgiFile);
