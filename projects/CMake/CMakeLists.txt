@@ -65,7 +65,10 @@ if(${BUILD_RAYGUI_EXAMPLES})
         # Setup the example
         add_executable(${example_name} ${example_source})
 
-        target_link_libraries(${example_name} PUBLIC raylib raygui m)
+        target_link_libraries(${example_name} PUBLIC raylib raygui)
+        if (NOT WIN32)
+            target_link_libraries(${example_name} PUBLIC m)
+        endif()
 
         string(REGEX MATCH ".*/.*/" resources_dir ${example_source})
         string(APPEND resources_dir "resources")
