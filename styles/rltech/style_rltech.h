@@ -2,7 +2,7 @@
 //                                                                              //
 // StyleAsCode exporter v2.0 - Style data exported as a values array            //
 //                                                                              //
-// USAGE: On init call: GuiLoadStyleRltech();                                   //
+// USAGE: On init call: GuiLoadStyleRLTech();                                   //
 //                                                                              //
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
@@ -13,7 +13,7 @@
 
 #define RLTECH_STYLE_PROPS_COUNT  15
 
-// Custom style name: rltech
+// Custom style name: RLTech
 static const GuiStyleProp rltechStyleProps[RLTECH_STYLE_PROPS_COUNT] = {
     { 0, 0, (int)0x000000ff },    // DEFAULT_BORDER_COLOR_NORMAL 
     { 0, 1, (int)0xf5f5f5ff },    // DEFAULT_BASE_COLOR_NORMAL 
@@ -32,7 +32,7 @@ static const GuiStyleProp rltechStyleProps[RLTECH_STYLE_PROPS_COUNT] = {
     { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
-// WARNING: This style uses a custom font: "2a03_memesbruh03.ttf" (size: 16, spacing: 1)
+// WARNING: This style uses a custom font: "2a03.ttf" (size: 16, spacing: 1)
 
 #define RLTECH_STYLE_FONT_ATLAS_COMP_SIZE 1950
 
@@ -524,8 +524,8 @@ static const GlyphInfo rltechFontGlyphs[189] = {
     { 255, 0, 3, 6, { 0 }},
 };
 
-// Style loading function: rltech
-static void GuiLoadStyleRltech(void)
+// Style loading function: RLTech
+static void GuiLoadStyleRLTech(void)
 {
     // Load style properties provided
     // NOTE: Default properties are propagated
