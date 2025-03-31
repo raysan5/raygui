@@ -149,6 +149,7 @@
 *                         ADDED: GuiLoadIconsFromMemory()
 *                         ADDED: Multiple new icons
 *                         REMOVED: GuiSpinner() from controls list, using BUTTON + VALUEBOX properties
+*                         REMOVED: GuiSliderPro(), functionality was redundant
 *                         REVIEWED: Controls using text labels to use LABEL properties
 *                         REVIEWED: Replaced sprintf() by snprintf() for more safety
 *                         REVIEWED: GuiTabBar(), close tab with mouse middle button
@@ -754,7 +755,6 @@ RAYGUIAPI int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textVal
 RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 
 RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control
-RAYGUIAPI int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth); // Slider control with extended parameters
 RAYGUIAPI int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider Bar control
 RAYGUIAPI int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Progress Bar control
 RAYGUIAPI int GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
@@ -3239,7 +3239,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
 
 // Slider control with pro parameters
 // NOTE: Other GuiSlider*() controls use this one
-int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth)
+int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
 {
     int result = 0;
     GuiState state = guiState;
@@ -3247,6 +3247,8 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     float temp = (maxValue - minValue)/2.0f;
     if (value == NULL) value = &temp;
     float oldValue = *value;
+    
+    int sliderWidth = GuiGetStyle(SLIDER, SLIDER_WIDTH);
 
     Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
                          0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
@@ -3265,7 +3267,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
                 {
                     state = STATE_PRESSED;
                     // Get equivalent value and slider position from mousePosition.x
-                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width-sliderWidth)) + minValue;
+                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
                 }
             }
             else
@@ -3285,7 +3287,7 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
                 if (!CheckCollisionPointRec(mousePoint, slider))
                 {
                     // Get equivalent value and slider position from mousePosition.x
-                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width-sliderWidth)) + minValue;
+                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
                 }
             }
             else state = STATE_FOCUSED;
@@ -3353,16 +3355,16 @@ int GuiSliderPro(Rectangle bounds, const char *textLeft, const char *textRight, 
     return result;
 }
 
-// Slider control extended, returns selected value and has text
-int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
-{
-    return GuiSliderPro(bounds, textLeft, textRight, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH));
-}
-
 // Slider Bar control extended, returns selected value
 int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue)
 {
-    return GuiSliderPro(bounds, textLeft, textRight, value, minValue, maxValue, 0);
+    int result = 0;
+    int preSliderWidth = GuiGetStyle(SLIDER, SLIDER_WIDTH);
+    GuiSetStyle(SLIDER, SLIDER_WIDTH, 0);
+    result = GuiSlider(bounds, textLeft, textRight, value, minValue, maxValue);
+    GuiSetStyle(SLIDER, SLIDER_WIDTH, preSliderWidth);
+    
+    return result;
 }
 
 // Progress Bar control extended, shows current progress value
