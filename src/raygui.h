@@ -3247,7 +3247,7 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
     float temp = (maxValue - minValue)/2.0f;
     if (value == NULL) value = &temp;
     float oldValue = *value;
-    
+
     int sliderWidth = GuiGetStyle(SLIDER, SLIDER_WIDTH);
 
     Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
@@ -3363,7 +3363,7 @@ int GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, 
     GuiSetStyle(SLIDER, SLIDER_WIDTH, 0);
     result = GuiSlider(bounds, textLeft, textRight, value, minValue, maxValue);
     GuiSetStyle(SLIDER, SLIDER_WIDTH, preSliderWidth);
-    
+
     return result;
 }
 
