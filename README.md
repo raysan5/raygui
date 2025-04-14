@@ -10,7 +10,7 @@
 
 <br>
 
-**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch. Make sure to use the appropiate versions.**
+**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch. Make sure to use the appropriate versions.**
 
 **WARNING: Latest `raygui 4.0` is an API-BREAKING redesign from previous versions (3.x), now all functions are more consistent and coherent, you can read the details about this breaking change in issue [283](https://github.com/raysan5/raygui/issues/283)**
 
