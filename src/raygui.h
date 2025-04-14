@@ -2019,6 +2019,48 @@ int GuiButton(Rectangle bounds, const char *text)
     return result;      // Button pressed: result = 1
 }
 
+// Rounded button control, returns true when clicked
+int GuiButtonRounded(Rectangle bounds, const char *text)
+{
+    int result = 0;
+    GuiState state = guiState;
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            else state = STATE_FOCUSED;
+
+            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) result = 1;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiDrawRectangleRounded(bounds, 0.25f, 12,
+        GuiGetStyle(BUTTON, BORDER_WIDTH),
+        GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))),
+        GetColor(GuiGetStyle(BUTTON, BASE + (state*3)))
+    );
+
+    GuiDrawText(text, GetTextBounds(BUTTON, bounds),
+        GuiGetStyle(BUTTON, TEXT_ALIGNMENT),
+        GetColor(GuiGetStyle(BUTTON, TEXT + (state*3)))
+    );
+
+    if (state == STATE_FOCUSED) GuiTooltip(bounds);
+    //------------------------------------------------------------------
+
+    return result;      // Button pressed: result = 1
+}
+
 // Label button control
 int GuiLabelButton(Rectangle bounds, const char *text)
 {
@@ -5301,6 +5343,26 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
         DrawRectangle((int)rec.x, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(borderColor, guiAlpha));
         DrawRectangle((int)rec.x + (int)rec.width - borderWidth, (int)rec.y + borderWidth, borderWidth, (int)rec.height - 2*borderWidth, GuiFade(borderColor, guiAlpha));
         DrawRectangle((int)rec.x, (int)rec.y + (int)rec.height - borderWidth, (int)rec.width, borderWidth, GuiFade(borderColor, guiAlpha));
+    }
+
+#if defined(RAYGUI_DEBUG_RECS_BOUNDS)
+    DrawRectangle((int)rec.x, (int)rec.y, (int)rec.width, (int)rec.height, Fade(RED, 0.4f));
+#endif
+}
+
+// Gui draw rounded rectangle using default raygui plain style with borders
+static void GuiDrawRectangleRounded(Rectangle rec, float roundness, int segments, int borderWidth, Color borderColor, Color color)
+{
+    if (color.a > 0)
+    {
+        // Filled rounded rectangle
+        DrawRectangleRounded(rec, roundness, segments, GuiFade(color, guiAlpha));
+    }
+
+    if (borderWidth > 0)
+    {
+        // Outline with rounded border
+        DrawRectangleRoundedLines(rec, roundness, segments, borderWidth, GuiFade(borderColor, guiAlpha));
     }
 
 #if defined(RAYGUI_DEBUG_RECS_BOUNDS)
