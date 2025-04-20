@@ -3045,6 +3045,34 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 
             int keyCount = (int)strlen(textValue);
 
+            // Add or remove minus symbol
+            if (IsKeyPressed(KEY_MINUS))
+            {
+                if (textValue[0] == '-')
+                {
+                    for(int i = 0 ; i < keyCount; i++ )
+                    {
+                        textValue[i] = textValue[i + 1];
+                    }
+                    keyCount--;
+                    valueHasChanged = true;
+                }
+                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS -1){
+                    if (keyCount == 0){
+                        textValue[0] = '0';
+                        textValue[1] = '\0';
+                        keyCount++;
+                    }
+                    for(int i = keyCount ; i > -1; i-- )
+                    {
+                        textValue[i + 1] = textValue[i];
+                    }
+                    textValue[0] = '-';
+                    keyCount++;
+                    valueHasChanged = true;
+                }
+            }
+
             // Only allow keys in range [48..57]
             if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
             {
@@ -3163,6 +3191,34 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             state = STATE_PRESSED;
 
             int keyCount = (int)strlen(textValue);
+
+            // Add or remove minus symbol
+            if (IsKeyPressed(KEY_MINUS))
+            {
+                if (textValue[0] == '-')
+                {
+                for (int i = 0; i < keyCount; i++)
+                {
+                    textValue[i] = textValue[i + 1];
+                }
+                keyCount--;
+                valueHasChanged = true;
+                }
+                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS - 1) {
+                if (keyCount == 0) {
+                    textValue[0] = '0';
+                    textValue[1] = '\0';
+                    keyCount++;
+                }
+                for (int i = keyCount; i > -1; i--)
+                {
+                    textValue[i + 1] = textValue[i];
+                }
+                textValue[0] = '-';
+                keyCount++;
+                valueHasChanged = true;
+                }
+            }
 
             // Only allow keys in range [48..57]
             if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
