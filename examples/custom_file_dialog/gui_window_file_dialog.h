@@ -358,7 +358,7 @@ void GuiWindowFileDialog(GuiWindowFileDialogState *state)
                 if (FileExists(TextFormat("%s/%s", state->dirPathText, state->fileNameText)))
                 {
                     // Select filename from list view
-                    for (int i = 0; i < state->dirFiles.count; i++)
+                    for (unsigned int i = 0; i < state->dirFiles.count; i++)
                     {
                         if (TextIsEqual(state->fileNameText, state->dirFiles.paths[i]))
                         {
@@ -435,7 +435,7 @@ static void ReloadDirectoryFiles(GuiWindowFileDialogState *state)
     for (int i = 0; i < MAX_DIRECTORY_FILES; i++) memset(dirFilesIcon[i], 0, MAX_ICON_PATH_LENGTH);
 
     // Copy paths as icon + fileNames into dirFilesIcon
-    for (int i = 0; i < state->dirFiles.count; i++)
+    for (unsigned int i = 0; i < state->dirFiles.count; i++)
     {
         if (IsPathFile(state->dirFiles.paths[i]))
         {
