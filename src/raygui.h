@@ -2639,10 +2639,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
                 nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
-                bool puctuation = ispunct(nextCodepoint & 0xFF);
+                bool puctuation = ispunct(nextCodepoint & 0xff);
                 while (offset < textLength)
                 {
-                    if ((puctuation && !ispunct(nextCodepoint & 0xFF)) || (!puctuation && (isspace(nextCodepoint & 0xFF) || ispunct(nextCodepoint & 0xFF))))
+                    if ((puctuation && !ispunct(nextCodepoint & 0xff)) || (!puctuation && (isspace(nextCodepoint & 0xff) || ispunct(nextCodepoint & 0xff))))
                         break;
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
@@ -2651,7 +2651,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Check whitespace to delete (ASCII only)
                 while (offset < textLength)
                 {
-                    if (!isspace(nextCodepoint & 0xFF))
+                    if (!isspace(nextCodepoint & 0xff))
                         break;
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
@@ -2687,18 +2687,18 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 while (offset > 0)
                 {
                     prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
-                    if (!isspace(prevCodepoint & 0xFF)) break;
+                    if (!isspace(prevCodepoint & 0xff)) break;
 
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
                 }
                 // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
-                bool puctuation = ispunct(prevCodepoint & 0xFF);
+                bool puctuation = ispunct(prevCodepoint & 0xff);
                 while (offset > 0)
                 {
                     prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
-                    if ((puctuation && !ispunct(prevCodepoint & 0xFF)) || (!puctuation && (isspace(prevCodepoint & 0xFF) || ispunct(prevCodepoint & 0xFF)))) break;
+                    if ((puctuation && !ispunct(prevCodepoint & 0xff)) || (!puctuation && (isspace(prevCodepoint & 0xff) || ispunct(prevCodepoint & 0xff)))) break;
 
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
@@ -2736,7 +2736,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 while (offset > 0)
                 {
                     prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
-                    if (!isspace(prevCodepoint & 0xFF)) break;
+                    if (!isspace(prevCodepoint & 0xff)) break;
 
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
@@ -2744,11 +2744,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 // Check characters of the same type to skip (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
-                bool puctuation = ispunct(prevCodepoint & 0xFF);
+                bool puctuation = ispunct(prevCodepoint & 0xff);
                 while (offset > 0)
                 {
                     prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
-                    if ((puctuation && !ispunct(prevCodepoint & 0xFF)) || (!puctuation && (isspace(prevCodepoint & 0xFF) || ispunct(prevCodepoint & 0xFF)))) break;
+                    if ((puctuation && !ispunct(prevCodepoint & 0xff)) || (!puctuation && (isspace(prevCodepoint & 0xff) || ispunct(prevCodepoint & 0xff)))) break;
 
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
@@ -2773,10 +2773,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Check characters of the same type to skip (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
                 nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
-                bool puctuation = ispunct(nextCodepoint & 0xFF);
+                bool puctuation = ispunct(nextCodepoint & 0xff);
                 while (offset < textLength)
                 {
-                    if ((puctuation && !ispunct(nextCodepoint & 0xFF)) || (!puctuation && (isspace(nextCodepoint & 0xFF) || ispunct(nextCodepoint & 0xFF)))) break;
+                    if ((puctuation && !ispunct(nextCodepoint & 0xff)) || (!puctuation && (isspace(nextCodepoint & 0xff) || ispunct(nextCodepoint & 0xff)))) break;
 
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
@@ -2786,7 +2786,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Check whitespace to skip (ASCII only)
                 while (offset < textLength)
                 {
-                    if (!isspace(nextCodepoint & 0xFF)) break;
+                    if (!isspace(nextCodepoint & 0xff)) break;
 
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
@@ -5755,10 +5755,10 @@ static Color GetColor(int hexValue)
 {
     Color color;
 
-    color.r = (unsigned char)(hexValue >> 24) & 0xFF;
-    color.g = (unsigned char)(hexValue >> 16) & 0xFF;
-    color.b = (unsigned char)(hexValue >> 8) & 0xFF;
-    color.a = (unsigned char)hexValue & 0xFF;
+    color.r = (unsigned char)(hexValue >> 24) & 0xff;
+    color.g = (unsigned char)(hexValue >> 16) & 0xff;
+    color.b = (unsigned char)(hexValue >> 8) & 0xff;
+    color.a = (unsigned char)hexValue & 0xff;
 
     return color;
 }
