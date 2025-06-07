@@ -1057,7 +1057,7 @@ typedef enum {
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #include <ctype.h>              // required for: isspace() [GuiTextBox()]
-#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsnprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
 #include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
@@ -5791,7 +5791,7 @@ static const char *TextFormat(const char *text, ...)
 
     va_list args;
     va_start(args, text);
-    vsprintf(buffer, text, args);
+    vsnprintf(buffer, RAYGUI_TEXTFORMAT_MAX_SIZE, text, args);
     va_end(args);
 
     return buffer;
