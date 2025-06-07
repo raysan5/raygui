@@ -1360,6 +1360,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 
 // NOTE: A pointer to current icons array should be defined
 static unsigned int *guiIconsPtr = guiIcons;
+static int guiIconsCount = RAYGUI_ICON_MAX_ICONS;
 
 #endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
@@ -4609,7 +4610,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         {
             if (loadIconsName)
             {
-                guiIconsName = (char **)RAYGUI_MALLOC(iconCount*sizeof(char **));
+                guiIconsName = (char **)RAYGUI_MALLOC(iconCount*sizeof(char *));
                 for (int i = 0; i < iconCount; i++)
                 {
                     guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
@@ -4618,8 +4619,13 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             }
             else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
 
+            if (iconCount > RAYGUI_ICON_MAX_ICONS)
+            {
+                iconCount = RAYGUI_ICON_MAX_ICONS;
+            }
             // Read icons data directly over internal icons array
             fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
+            guiIconsCount = iconCount;
         }
 
         fclose(rgiFile);
@@ -4671,6 +4677,7 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
 
         int iconDataSize = iconCount*((int)iconSize*(int)iconSize/32)*(int)sizeof(unsigned int);
         guiIconsPtr = (unsigned int *)RAYGUI_MALLOC(iconDataSize);
+        guiIconsCount = iconCount;
 
         memcpy(guiIconsPtr, fileDataPtr, iconDataSize);
     }
@@ -5048,11 +5055,15 @@ static const char *GetTextIcon(const char *text, int *iconId)
 
         if (text[pos] == '#')
         {
-            *iconId = TextToInteger(iconValue);
+            int rawIconId = TextToInteger(iconValue);
+            if (rawIconId < guiIconsCount)
+            {
+                *iconId = rawIconId;
 
-            // Move text pointer after icon
-            // WARNING: If only icon provided, it could point to EOL character: '\0'
-            if (*iconId >= 0) text += (pos + 1);
+                // Move text pointer after icon
+                // WARNING: If only icon provided, it could point to EOL character: '\0'
+                if (*iconId >= 0) text += (pos + 1);
+            }
         }
     }
 #endif
