@@ -5960,7 +5960,7 @@ static int GetCodepointNext(const char *text, int *codepointSize)
     }
     else if (0xe0 == (0xf0 & ptr[0]))
     {
-        // 3 byte UTF-8 codepoint */
+        // 3 byte UTF-8 codepoint
         if (((ptr[1] & 0xC0) ^ 0x80) || ((ptr[2] & 0xC0) ^ 0x80)) { return codepoint; } //10xxxxxx checks
         codepoint = ((0x0f & ptr[0]) << 12) | ((0x3f & ptr[1]) << 6) | (0x3f & ptr[2]);
         *codepointSize = 3;
