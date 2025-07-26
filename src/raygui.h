@@ -3050,23 +3050,24 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             {
                 if (textValue[0] == '-')
                 {
-                    for(int i = 0 ; i < keyCount; i++ )
+                    for (int i = 0 ; i < keyCount; i++)
                     {
                         textValue[i] = textValue[i + 1];
                     }
                     keyCount--;
                     valueHasChanged = true;
                 }
-                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS -1){
-                    if (keyCount == 0){
+                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS -1)
+                {
+                    if (keyCount == 0)
+                    {
                         textValue[0] = '0';
                         textValue[1] = '\0';
                         keyCount++;
                     }
-                    for(int i = keyCount ; i > -1; i-- )
-                    {
-                        textValue[i + 1] = textValue[i];
-                    }
+
+                    for (int i = keyCount ; i > -1; i--) textValue[i + 1] = textValue[i];
+
                     textValue[0] = '-';
                     keyCount++;
                     valueHasChanged = true;
