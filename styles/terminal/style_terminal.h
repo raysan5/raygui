@@ -7,7 +7,7 @@
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
 //                                                                              //
-// Copyright (c) 2020-2024 raylib technologies (@raylibtech)                    //
+// Copyright (c) 2020-2025 raylib technologies (@raylibtech)                    //
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -15,23 +15,23 @@
 
 // Custom style name: Terminal
 static const GuiStyleProp terminalStyleProps[TERMINAL_STYLE_PROPS_COUNT] = {
-    { 0, 0, 0x1c8d00ff },    // DEFAULT_BORDER_COLOR_NORMAL 
-    { 0, 1, 0x161313ff },    // DEFAULT_BASE_COLOR_NORMAL 
-    { 0, 2, 0x38f620ff },    // DEFAULT_TEXT_COLOR_NORMAL 
-    { 0, 3, 0xc3fbc6ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
-    { 0, 4, 0x43bf2eff },    // DEFAULT_BASE_COLOR_FOCUSED 
-    { 0, 5, 0xdcfadcff },    // DEFAULT_TEXT_COLOR_FOCUSED 
-    { 0, 6, 0x1f5b19ff },    // DEFAULT_BORDER_COLOR_PRESSED 
-    { 0, 7, 0x43ff28ff },    // DEFAULT_BASE_COLOR_PRESSED 
-    { 0, 8, 0x1e6f15ff },    // DEFAULT_TEXT_COLOR_PRESSED 
-    { 0, 9, 0x223b22ff },    // DEFAULT_BORDER_COLOR_DISABLED 
-    { 0, 10, 0x182c18ff },    // DEFAULT_BASE_COLOR_DISABLED 
-    { 0, 11, 0x244125ff },    // DEFAULT_TEXT_COLOR_DISABLED 
-    { 0, 16, 0x00000010 },    // DEFAULT_TEXT_SIZE 
-    { 0, 17, 0x00000000 },    // DEFAULT_TEXT_SPACING 
-    { 0, 18, 0xe6fce3ff },    // DEFAULT_LINE_COLOR 
-    { 0, 19, 0x0c1505ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, 0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 0, (int)0x1c8d00ff },    // DEFAULT_BORDER_COLOR_NORMAL 
+    { 0, 1, (int)0x161313ff },    // DEFAULT_BASE_COLOR_NORMAL 
+    { 0, 2, (int)0x38f620ff },    // DEFAULT_TEXT_COLOR_NORMAL 
+    { 0, 3, (int)0xc3fbc6ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
+    { 0, 4, (int)0x43bf2eff },    // DEFAULT_BASE_COLOR_FOCUSED 
+    { 0, 5, (int)0xdcfadcff },    // DEFAULT_TEXT_COLOR_FOCUSED 
+    { 0, 6, (int)0x1f5b19ff },    // DEFAULT_BORDER_COLOR_PRESSED 
+    { 0, 7, (int)0x43ff28ff },    // DEFAULT_BASE_COLOR_PRESSED 
+    { 0, 8, (int)0x1e6f15ff },    // DEFAULT_TEXT_COLOR_PRESSED 
+    { 0, 9, (int)0x223b22ff },    // DEFAULT_BORDER_COLOR_DISABLED 
+    { 0, 10, (int)0x182c18ff },    // DEFAULT_BASE_COLOR_DISABLED 
+    { 0, 11, (int)0x244125ff },    // DEFAULT_TEXT_COLOR_DISABLED 
+    { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
+    { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
+    { 0, 18, (int)0xe6fce3ff },    // DEFAULT_LINE_COLOR 
+    { 0, 19, (int)0x0c1505ff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Mecha.ttf" (size: 16, spacing: 0)
@@ -330,7 +330,7 @@ static const Rectangle terminalFontRecs[189] = {
 // Font glyphs info data
 // NOTE: No glyphs.image data provided
 static const GlyphInfo terminalFontGlyphs[189] = {
-    { 32, 0, 14, 4, { 0 }},
+    { 32, 0, 0, 4, { 0 }},
     { 33, 1, 3, 3, { 0 }},
     { 34, 1, 3, 5, { 0 }},
     { 35, 1, 3, 8, { 0 }},
@@ -430,29 +430,29 @@ static const GlyphInfo terminalFontGlyphs[189] = {
     { 163, 1, 3, 7, { 0 }},
     { 8364, 1, 3, 7, { 0 }},
     { 165, 1, 3, 7, { 0 }},
-    { 352, 0, 14, 4, { 0 }},
-    { 167, 0, 14, 4, { 0 }},
-    { 353, 0, 14, 4, { 0 }},
+    { 352, 0, 0, 0, { 0 }},
+    { 167, 0, 0, 0, { 0 }},
+    { 353, 0, 0, 0, { 0 }},
     { 169, 1, 3, 9, { 0 }},
-    { 170, 0, 14, 4, { 0 }},
-    { 171, 0, 14, 4, { 0 }},
+    { 170, 0, 0, 0, { 0 }},
+    { 171, 0, 0, 0, { 0 }},
     { 172, 1, 8, 7, { 0 }},
     { 174, 1, 3, 9, { 0 }},
     { 175, 1, 1, 7, { 0 }},
     { 176, 1, 0, 5, { 0 }},
     { 177, 1, 7, 7, { 0 }},
-    { 178, 0, 14, 4, { 0 }},
-    { 179, 0, 14, 4, { 0 }},
-    { 381, 0, 14, 4, { 0 }},
+    { 178, 0, 0, 0, { 0 }},
+    { 179, 0, 0, 0, { 0 }},
+    { 381, 0, 0, 0, { 0 }},
     { 181, 1, 6, 7, { 0 }},
     { 182, 1, 3, 9, { 0 }},
     { 183, 1, 8, 3, { 0 }},
-    { 382, 0, 14, 4, { 0 }},
-    { 185, 0, 14, 4, { 0 }},
-    { 186, 0, 14, 4, { 0 }},
-    { 187, 0, 14, 4, { 0 }},
-    { 338, 0, 14, 4, { 0 }},
-    { 339, 0, 14, 4, { 0 }},
+    { 382, 0, 0, 0, { 0 }},
+    { 185, 0, 0, 0, { 0 }},
+    { 186, 0, 0, 0, { 0 }},
+    { 187, 0, 0, 0, { 0 }},
+    { 338, 0, 0, 0, { 0 }},
+    { 339, 0, 0, 0, { 0 }},
     { 376, 1, 1, 7, { 0 }},
     { 191, 1, 3, 7, { 0 }},
     { 192, 1, 0, 7, { 0 }},

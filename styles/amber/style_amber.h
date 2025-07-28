@@ -35,7 +35,7 @@ static const GuiStyleProp amberStyleProps[AMBER_STYLE_PROPS_COUNT] = {
     { 4, 8, (int)0xf1cf9dff },    // SLIDER_TEXT_COLOR_PRESSED 
 };
 
-// WARNING: This style uses a custom font: "" (size: 16, spacing: 1)
+// WARNING: This style uses a custom font: "hello-world.ttf" (size: 16, spacing: 1)
 
 #define AMBER_STYLE_FONT_ATLAS_COMP_SIZE 2605
 

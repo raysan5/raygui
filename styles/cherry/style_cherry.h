@@ -7,7 +7,7 @@
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
 //                                                                              //
-// Copyright (c) 2020-2024 raylib technologies (@raylibtech)                    //
+// Copyright (c) 2020-2025 raylib technologies (@raylibtech)                    //
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -15,23 +15,23 @@
 
 // Custom style name: Cherry
 static const GuiStyleProp cherryStyleProps[CHERRY_STYLE_PROPS_COUNT] = {
-    { 0, 0, 0xda5757ff },    // DEFAULT_BORDER_COLOR_NORMAL 
-    { 0, 1, 0x753233ff },    // DEFAULT_BASE_COLOR_NORMAL 
-    { 0, 2, 0xe17373ff },    // DEFAULT_TEXT_COLOR_NORMAL 
-    { 0, 3, 0xfaaa97ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
-    { 0, 4, 0xe06262ff },    // DEFAULT_BASE_COLOR_FOCUSED 
-    { 0, 5, 0xfdb4aaff },    // DEFAULT_TEXT_COLOR_FOCUSED 
-    { 0, 6, 0xe03c46ff },    // DEFAULT_BORDER_COLOR_PRESSED 
-    { 0, 7, 0x5b1e20ff },    // DEFAULT_BASE_COLOR_PRESSED 
-    { 0, 8, 0xc2474fff },    // DEFAULT_TEXT_COLOR_PRESSED 
-    { 0, 9, 0xa19292ff },    // DEFAULT_BORDER_COLOR_DISABLED 
-    { 0, 10, 0x706060ff },    // DEFAULT_BASE_COLOR_DISABLED 
-    { 0, 11, 0x9e8585ff },    // DEFAULT_TEXT_COLOR_DISABLED 
-    { 0, 16, 0x0000000f },    // DEFAULT_TEXT_SIZE 
-    { 0, 17, 0x00000000 },    // DEFAULT_TEXT_SPACING 
-    { 0, 18, 0xfb8170ff },    // DEFAULT_LINE_COLOR 
-    { 0, 19, 0x3a1720ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, 0x00000016 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 0, (int)0xda5757ff },    // DEFAULT_BORDER_COLOR_NORMAL 
+    { 0, 1, (int)0x753233ff },    // DEFAULT_BASE_COLOR_NORMAL 
+    { 0, 2, (int)0xe17373ff },    // DEFAULT_TEXT_COLOR_NORMAL 
+    { 0, 3, (int)0xfaaa97ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
+    { 0, 4, (int)0xe06262ff },    // DEFAULT_BASE_COLOR_FOCUSED 
+    { 0, 5, (int)0xfdb4aaff },    // DEFAULT_TEXT_COLOR_FOCUSED 
+    { 0, 6, (int)0xe03c46ff },    // DEFAULT_BORDER_COLOR_PRESSED 
+    { 0, 7, (int)0x5b1e20ff },    // DEFAULT_BASE_COLOR_PRESSED 
+    { 0, 8, (int)0xc2474fff },    // DEFAULT_TEXT_COLOR_PRESSED 
+    { 0, 9, (int)0xa19292ff },    // DEFAULT_BORDER_COLOR_DISABLED 
+    { 0, 10, (int)0x706060ff },    // DEFAULT_BASE_COLOR_DISABLED 
+    { 0, 11, (int)0x9e8585ff },    // DEFAULT_TEXT_COLOR_DISABLED 
+    { 0, 16, (int)0x0000000f },    // DEFAULT_TEXT_SIZE 
+    { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
+    { 0, 18, (int)0xfb8170ff },    // DEFAULT_LINE_COLOR 
+    { 0, 19, (int)0x3a1720ff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 20, (int)0x00000016 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Westington.ttf" (size: 15, spacing: 0)
@@ -378,7 +378,7 @@ static const Rectangle cherryFontRecs[189] = {
 // Font glyphs info data
 // NOTE: No glyphs.image data provided
 static const GlyphInfo cherryFontGlyphs[189] = {
-    { 32, 0, 12, 5, { 0 }},
+    { 32, 0, 0, 5, { 0 }},
     { 33, 0, 2, 4, { 0 }},
     { 34, 0, 2, 6, { 0 }},
     { 35, 0, 2, 11, { 0 }},
