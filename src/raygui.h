@@ -365,17 +365,6 @@
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
-// Allow custom memory allocators
-#ifndef RAYGUI_MALLOC
-    #define RAYGUI_MALLOC(sz)       malloc(sz)
-#endif
-#ifndef RAYGUI_CALLOC
-    #define RAYGUI_CALLOC(n,sz)     calloc(n,sz)
-#endif
-#ifndef RAYGUI_FREE
-    #define RAYGUI_FREE(p)          free(p)
-#endif
-
 // Simple log system to avoid printf() calls if required
 // NOTE: Avoiding those calls, also avoids const strings memory usage
 #define RAYGUI_SUPPORT_LOG_INFO
@@ -1057,11 +1046,23 @@ typedef enum {
 #if defined(RAYGUI_IMPLEMENTATION)
 
 #include <ctype.h>              // required for: isspace() [GuiTextBox()]
-#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsnprintf() [GuiLoadStyle(), GuiLoadIcons()]
-#include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
+#include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
 #include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
 #include <math.h>               // Required for: roundf() [GuiColorPicker()]
+
+// Allow custom memory allocators
+#if defined(RAYGUI_MALLOC) || defined(RAYGUI_CALLOC) || defined(RAYGUI_FREE)
+    #if !defined(RAYGUI_MALLOC) || !defined(RAYGUI_CALLOC) || !defined(RAYGUI_FREE)
+        #error "RAYGUI: if RAYGUI_MALLOC, RAYGUI_CALLOC, or RAYGUI_FREE is customized, all three must be customized"
+    #endif
+#else
+    #include <stdlib.h>             // Required for: malloc(), calloc(), free() [GuiLoadStyle(), GuiLoadIcons()]
+
+    #define RAYGUI_MALLOC(sz)       malloc(sz)
+    #define RAYGUI_CALLOC(n,sz)     calloc(n,sz)
+    #define RAYGUI_FREE(p)          free(p)
+#endif
 
 #ifdef __cplusplus
     #define RAYGUI_CLITERAL(name) name
