@@ -717,6 +717,9 @@ RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 #endif
 
+// Utility functions
+RAYGUIAPI int GuiGetTextWidth(const char *text);                // Get text width considering gui style and icon size (if required)
+
 // Controls
 //----------------------------------------------------------------------------------------------------------
 // Container/separator controls, useful for controls organization
@@ -761,9 +764,6 @@ RAYGUIAPI int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
 RAYGUIAPI int GuiColorBarHue(Rectangle bounds, const char *text, float *value);                        // Color Bar Hue control
 RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
 RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that updates Hue-Saturation-Value color value, used by GuiColorPickerHSV()
-
-// Util
-RAYGUIAPI int GuiGetTextWidth(const char *text);                                                       // Gui get text width using gui font and style
 //----------------------------------------------------------------------------------------------------------
 
 #if !defined(RAYGUI_NO_ICONS)
@@ -4709,7 +4709,7 @@ void GuiSetIconScale(int scale)
     if (scale >= 1) guiIconScale = scale;
 }
 
-// Gui get text width considering icon
+// Get text width considering gui style and icon size (if required)
 int GuiGetTextWidth(const char *text)
 {
     #if !defined(ICON_TEXT_PADDING)
