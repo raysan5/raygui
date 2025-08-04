@@ -5065,6 +5065,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 }
 
 // Get text divided into lines (by line-breaks '\n')
+// WARNING: It returns pointers to new lines but it does not add NULL ('\0') terminator!
 static const char **GetTextLines(const char *text, int *count)
 {
     #define RAYGUI_MAX_TEXT_LINES   128
