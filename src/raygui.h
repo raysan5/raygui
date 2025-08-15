@@ -417,13 +417,16 @@
 
     // TODO: Texture2D type is very coupled to raylib, required by Font type
     // It should be redesigned to be provided by user
-    typedef struct Texture2D {
+    typedef struct Texture {
         unsigned int id;        // OpenGL texture id
         int width;              // Texture base width
         int height;             // Texture base height
         int mipmaps;            // Mipmap levels, 1 by default
         int format;             // Data format (PixelFormat type)
-    } Texture2D;
+    } Texture;
+
+    // Texture2D, same as Texture
+    typedef Texture Texture2D;
 
     // Image, pixel data stored in CPU memory (RAM)
     typedef struct Image {
