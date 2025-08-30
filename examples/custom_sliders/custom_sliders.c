@@ -45,6 +45,8 @@ int main()
     int screenWidth = 800;
     int screenHeight = 450;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - custom sliders");
 
     float value = 0.5f;

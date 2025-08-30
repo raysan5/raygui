@@ -22,6 +22,8 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
 
 int main()
 {
+	SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
 	InitWindow(250, 100, "Basic calculator");
 
 	// General variables

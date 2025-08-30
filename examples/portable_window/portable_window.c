@@ -30,7 +30,8 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 600;
     
-    SetConfigFlags(FLAG_WINDOW_UNDECORATED);
+    SetConfigFlags(FLAG_WINDOW_UNDECORATED | FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - portable window");
 
     // General variables

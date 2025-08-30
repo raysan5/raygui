@@ -28,6 +28,8 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 450;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
 
     float valueBoxValue = 0.0f;
