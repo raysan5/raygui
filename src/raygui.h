@@ -4408,7 +4408,7 @@ void GuiLoadStyle(const char *fileName)
 
             if (fileDataSize > 0)
             {
-                unsigned char *fileData = (unsigned char *)RAYGUI_MALLOC(fileDataSize*sizeof(unsigned char));
+                unsigned char *fileData = (unsigned char *)RAYGUI_CALLOC(fileDataSize, sizeof(unsigned char));
                 fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
 
                 GuiLoadStyleFromMemory(fileData, fileDataSize);
@@ -4616,10 +4616,10 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         {
             if (loadIconsName)
             {
-                guiIconsName = (char **)RAYGUI_MALLOC(iconCount*sizeof(char **));
+                guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
                 for (int i = 0; i < iconCount; i++)
                 {
-                    guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
+                    guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
                     fread(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
                 }
             }
@@ -4662,10 +4662,10 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
     {
         if (loadIconsName)
         {
-            guiIconsName = (char **)RAYGUI_MALLOC(iconCount*sizeof(char *));
+            guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
             for (int i = 0; i < iconCount; i++)
             {
-                guiIconsName[i] = (char *)RAYGUI_MALLOC(RAYGUI_ICON_MAX_NAME_LENGTH);
+                guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
                 memcpy(guiIconsName[i], fileDataPtr, RAYGUI_ICON_MAX_NAME_LENGTH);
                 fileDataPtr += RAYGUI_ICON_MAX_NAME_LENGTH;
             }
@@ -4677,7 +4677,7 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
         }
 
         int iconDataSize = iconCount*((int)iconSize*(int)iconSize/32)*(int)sizeof(unsigned int);
-        guiIconsPtr = (unsigned int *)RAYGUI_MALLOC(iconDataSize);
+        guiIconsPtr = (unsigned int *)RAYGUI_CALLOC(iconDataSize, 1);
 
         memcpy(guiIconsPtr, fileDataPtr, iconDataSize);
     }
@@ -4864,7 +4864,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
             {
                 // Compressed font atlas image data (DEFLATE), it requires DecompressData()
                 int dataUncompSize = 0;
-                unsigned char *compData = (unsigned char *)RAYGUI_MALLOC(fontImageCompSize);
+                unsigned char *compData = (unsigned char *)RAYGUI_CALLOC(fontImageCompSize, sizeof(unsigned char));
                 memcpy(compData, fileDataPtr, fontImageCompSize);
                 fileDataPtr += fontImageCompSize;
 
@@ -4878,7 +4878,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
             else
             {
                 // Font atlas image data is not compressed
-                imFont.data = (unsigned char *)RAYGUI_MALLOC(fontImageUncompSize);
+                imFont.data = (unsigned char *)RAYGUI_CALLOC(fontImageUncompSize, sizeof(unsigned char));
                 memcpy(imFont.data, fileDataPtr, fontImageUncompSize);
                 fileDataPtr += fontImageUncompSize;
             }
@@ -4906,7 +4906,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
                 {
                     // Recs data is compressed, uncompress it
-                    unsigned char *recsDataCompressed = (unsigned char *)RAYGUI_MALLOC(recsDataCompressedSize);
+                    unsigned char *recsDataCompressed = (unsigned char *)RAYGUI_CALLOC(recsDataCompressedSize, sizeof(unsigned char));
 
                     memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
                     fileDataPtr += recsDataCompressedSize;
@@ -4948,7 +4948,7 @@ static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 if ((glyphsDataCompressedSize > 0) && (glyphsDataCompressedSize != glyphsDataSize))
                 {
                     // Glyphs data is compressed, uncompress it
-                    unsigned char *glypsDataCompressed = (unsigned char *)RAYGUI_MALLOC(glyphsDataCompressedSize);
+                    unsigned char *glypsDataCompressed = (unsigned char *)RAYGUI_CALLOC(glyphsDataCompressedSize, sizeof(unsigned char));
 
                     memcpy(glypsDataCompressed, fileDataPtr, glyphsDataCompressedSize);
                     fileDataPtr += glyphsDataCompressedSize;
