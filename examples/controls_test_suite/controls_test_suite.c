@@ -67,6 +67,8 @@ int main()
     const int screenWidth = 960;
     const int screenHeight = 560;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
     SetExitKey(0);
 

@@ -35,6 +35,8 @@ int main()
     int screenWidth = 800;
     int screenHeight = 560;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - custom modal dialog");
     SetExitKey(0);
 
