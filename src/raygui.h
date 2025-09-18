@@ -3175,7 +3175,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
     //char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
     //snprintf(textValue, sizeof(textValue), "%2.2f", *value);
 
-    Rectangle textBounds = {0};
+    Rectangle textBounds = { 0 };
     if (text != NULL)
     {
         textBounds.width = (float)GuiGetTextWidth(text) + 2;
