@@ -130,6 +130,8 @@ static void DrawContent(Vector2 position, Vector2 scroll) {
 }
 
 int main(void) {
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(960, 560, "raygui - floating window example");
     SetTargetFPS(60);
     GuiLoadStyleDark();
