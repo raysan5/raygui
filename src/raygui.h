@@ -4197,6 +4197,9 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, prevTextAlignment);
     }
 
+    int prevTextBoxAlignment = GuiGetStyle(TEXTBOX, TEXT_ALIGNMENT);
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+
     if (secretViewActive != NULL)
     {
         static char stars[] = "****************";
@@ -4209,6 +4212,8 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     {
         if (GuiTextBox(textBoxBounds, text, textMaxSize, textEditMode)) textEditMode = !textEditMode;
     }
+
+    GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, prevTextBoxAlignment);
 
     int prevBtnTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
