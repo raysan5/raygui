@@ -34,6 +34,8 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 600;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - image raw importer");
     
     Texture2D texture = { 0 };
