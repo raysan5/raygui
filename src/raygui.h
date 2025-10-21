@@ -2734,7 +2734,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             if ((textBoxCursorIndex > 0) && IsKeyPressed(KEY_LEFT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
-                int accCodepointSize = 0;
+                //int accCodepointSize = 0;
                 int prevCodepointSize;
                 int prevCodepoint;
 
@@ -2745,7 +2745,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (!isspace(prevCodepoint & 0xff)) break;
 
                     offset -= prevCodepointSize;
-                    accCodepointSize += prevCodepointSize;
+                    //accCodepointSize += prevCodepointSize;
                 }
 
                 // Check characters of the same type to skip (either ASCII punctuation or anything non-whitespace)
@@ -2757,7 +2757,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if ((puctuation && !ispunct(prevCodepoint & 0xff)) || (!puctuation && (isspace(prevCodepoint & 0xff) || ispunct(prevCodepoint & 0xff)))) break;
 
                     offset -= prevCodepointSize;
-                    accCodepointSize += prevCodepointSize;
+                    //accCodepointSize += prevCodepointSize;
                 }
 
                 textBoxCursorIndex = offset;
@@ -2772,7 +2772,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             else if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_RIGHT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
-                int accCodepointSize = 0;
+                //int accCodepointSize = 0;
                 int nextCodepointSize;
                 int nextCodepoint;
 
@@ -2785,7 +2785,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if ((puctuation && !ispunct(nextCodepoint & 0xff)) || (!puctuation && (isspace(nextCodepoint & 0xff) || ispunct(nextCodepoint & 0xff)))) break;
 
                     offset += nextCodepointSize;
-                    accCodepointSize += nextCodepointSize;
+                    //accCodepointSize += nextCodepointSize;
                     nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
                 }
 
@@ -2795,7 +2795,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (!isspace(nextCodepoint & 0xff)) break;
 
                     offset += nextCodepointSize;
-                    accCodepointSize += nextCodepointSize;
+                    //accCodepointSize += nextCodepointSize;
                     nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
                 }
 
