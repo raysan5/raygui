@@ -2497,10 +2497,10 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
 int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 {
     #if !defined(RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN)
-        #define RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN  30        // Frames to wait for autocursor movement
+        #define RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN  20        // Frames to wait for autocursor movement
     #endif
     #if !defined(RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY)
-        #define RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY      2        // Frames delay for autocursor movement
+        #define RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY      1        // Frames delay for autocursor movement
     #endif
 
     int result = 0;
@@ -2581,7 +2581,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             int codepointSize = 0;
             const char *charEncoded = CodepointToUTF8(codepoint, &codepointSize);
 
-            // Handle Paste action
+            // Handle text paste action
             if (IsKeyPressed(KEY_V) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
             {
                 const char *pasteText = GetClipboardText();
@@ -2590,7 +2590,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     int pasteLength = 0;
                     int pasteCodepoint;
                     int pasteCodepointSize;
-                    // count how many codepoints to copy, stopping at the first unwanted control character
+                    
+                    // Count how many codepoints to copy, stopping at the first unwanted control character
                     while (true)
                     {
                         pasteCodepoint = GetCodepointNext(pasteText + pasteLength, &pasteCodepointSize);
@@ -2598,6 +2599,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                         if (!(multiline && (pasteCodepoint == (int)'\n')) && !(pasteCodepoint >= 32)) break;
                         pasteLength += pasteCodepointSize;
                     }
+                    
                     if (pasteLength > 0)
                     {
                         // Move forward data from cursor position
@@ -2612,10 +2614,10 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     }
                 }
             }
-            // Add codepoint to text, at current cursor position
-            // NOTE: Make sure we do not overflow buffer size
             else if (((multiline && (codepoint == (int)'\n')) || (codepoint >= 32)) && ((textLength + codepointSize) < textSize))
             {
+                // Adding codepoint to text, at current cursor position
+
                 // Move forward data from cursor position
                 for (int i = (textLength + codepointSize); i > textBoxCursorIndex; i--) text[i] = text[i - codepointSize];
 
@@ -2642,6 +2644,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 int accCodepointSize = 0;
                 int nextCodepointSize;
                 int nextCodepoint;
+
                 // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
                 nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
@@ -2654,11 +2657,12 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     accCodepointSize += nextCodepointSize;
                     nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
                 }
+
                 // Check whitespace to delete (ASCII only)
                 while (offset < textLength)
                 {
-                    if (!isspace(nextCodepoint & 0xff))
-                        break;
+                    if (!isspace(nextCodepoint & 0xff)) break;
+                    
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
                     nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
@@ -2669,9 +2673,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textLength -= accCodepointSize;
             }
-            // Delete single codepoint from text, after current cursor position
+            
             else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && autoCursorShouldTrigger)))
             {
+                // Delete single codepoint from text, after current cursor position
+                
                 int nextCodepointSize = 0;
                 GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
 
@@ -2698,6 +2704,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
                 }
+                
                 // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
                 bool puctuation = ispunct(prevCodepoint & 0xff);
@@ -2716,9 +2723,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textLength -= accCodepointSize;
                 textBoxCursorIndex -= accCodepointSize;
             }
-            // Delete single codepoint from text, before current cursor position
+            
             else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && autoCursorShouldTrigger)))
             {
+                // Delete single codepoint from text, before current cursor position
+                
                 int prevCodepointSize = 0;
 
                 GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
@@ -3056,10 +3065,8 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             {
                 if (textValue[0] == '-')
                 {
-                    for (int i = 0 ; i < keyCount; i++)
-                    {
-                        textValue[i] = textValue[i + 1];
-                    }
+                    for (int i = 0 ; i < keyCount; i++) textValue[i] = textValue[i + 1];
+
                     keyCount--;
                     valueHasChanged = true;
                 }
@@ -3204,26 +3211,25 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             {
                 if (textValue[0] == '-')
                 {
-                for (int i = 0; i < keyCount; i++)
+                    for (int i = 0; i < keyCount; i++) textValue[i] = textValue[i + 1];
+
+                    keyCount--;
+                    valueHasChanged = true;
+                }
+                else if (keyCount < (RAYGUI_VALUEBOX_MAX_CHARS - 1))
                 {
-                    textValue[i] = textValue[i + 1];
-                }
-                keyCount--;
-                valueHasChanged = true;
-                }
-                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS - 1) {
-                if (keyCount == 0) {
-                    textValue[0] = '0';
-                    textValue[1] = '\0';
+                    if (keyCount == 0)
+                    {
+                        textValue[0] = '0';
+                        textValue[1] = '\0';
+                        keyCount++;
+                    }
+                    
+                    for (int i = keyCount; i > -1; i--) textValue[i + 1] = textValue[i];
+                    
+                    textValue[0] = '-';
                     keyCount++;
-                }
-                for (int i = keyCount; i > -1; i--)
-                {
-                    textValue[i + 1] = textValue[i];
-                }
-                textValue[0] = '-';
-                keyCount++;
-                valueHasChanged = true;
+                    valueHasChanged = true;
                 }
             }
 
