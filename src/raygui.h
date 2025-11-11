@@ -2590,7 +2590,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     int pasteLength = 0;
                     int pasteCodepoint;
                     int pasteCodepointSize;
-                    
+
                     // Count how many codepoints to copy, stopping at the first unwanted control character
                     while (true)
                     {
@@ -2599,7 +2599,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                         if (!(multiline && (pasteCodepoint == (int)'\n')) && !(pasteCodepoint >= 32)) break;
                         pasteLength += pasteCodepointSize;
                     }
-                    
+
                     if (pasteLength > 0)
                     {
                         // Move forward data from cursor position
@@ -2662,7 +2662,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 while (offset < textLength)
                 {
                     if (!isspace(nextCodepoint & 0xff)) break;
-                    
+
                     offset += nextCodepointSize;
                     accCodepointSize += nextCodepointSize;
                     nextCodepoint = GetCodepointNext(text + offset, &nextCodepointSize);
@@ -2673,11 +2673,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textLength -= accCodepointSize;
             }
-            
+
             else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, after current cursor position
-                
+
                 int nextCodepointSize = 0;
                 GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
 
@@ -2704,7 +2704,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     offset -= prevCodepointSize;
                     accCodepointSize += prevCodepointSize;
                 }
-                
+
                 // Check characters of the same type to delete (either ASCII punctuation or anything non-whitespace)
                 // Not using isalnum() since it only works on ASCII characters
                 bool puctuation = ispunct(prevCodepoint & 0xff);
@@ -2723,11 +2723,11 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textLength -= accCodepointSize;
                 textBoxCursorIndex -= accCodepointSize;
             }
-            
+
             else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, before current cursor position
-                
+
                 int prevCodepointSize = 0;
 
                 GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
@@ -3224,9 +3224,9 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
                         textValue[1] = '\0';
                         keyCount++;
                     }
-                    
+
                     for (int i = keyCount; i > -1; i--) textValue[i + 1] = textValue[i];
-                    
+
                     textValue[0] = '-';
                     keyCount++;
                     valueHasChanged = true;
