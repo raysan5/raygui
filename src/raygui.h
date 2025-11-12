@@ -2692,8 +2692,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 int offset = textBoxCursorIndex;
                 int accCodepointSize = 0;
-                int prevCodepointSize;
-                int prevCodepoint;
+                int prevCodepointSize = 0;
+                int prevCodepoint = 0;
 
                 // Check whitespace to delete (ASCII only)
                 while (offset > 0)
@@ -2744,8 +2744,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 int offset = textBoxCursorIndex;
                 //int accCodepointSize = 0;
-                int prevCodepointSize;
-                int prevCodepoint;
+                int prevCodepointSize = 0;
+                int prevCodepoint = 0;
 
                 // Check whitespace to skip (ASCII only)
                 while (offset > 0)
