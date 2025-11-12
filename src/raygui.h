@@ -77,7 +77,7 @@
 *
 *           static unsigned int guiStyle[RAYGUI_MAX_CONTROLS*(RAYGUI_MAX_PROPS_BASE + RAYGUI_MAX_PROPS_EXTENDED)];
 *
-*       guiStyle size is by default: 16*(16 + 8) = 384*4 = 1536 bytes = 1.5 KB
+*       guiStyle size is by default: 16*(16 + 8) = 384 int = 384*4 bytes = 1536 bytes = 1.5 KB
 *
 *       Note that the first set of BASE properties (by default guiStyle[0..15]) belong to the generic style
 *       used for all controls, when any of those base values is set, it is automatically populated to all
@@ -1078,7 +1078,7 @@ typedef enum {
 
 // Check if two rectangles are equal, used to validate a slider bounds as an id
 #ifndef CHECK_BOUNDS_ID
-    #define CHECK_BOUNDS_ID(src, dst) ((src.x == dst.x) && (src.y == dst.y) && (src.width == dst.width) && (src.height == dst.height))
+    #define CHECK_BOUNDS_ID(src, dst) (((int)src.x == (int)dst.x) && ((int)src.y == (int)dst.y) && ((int)src.width == (int)dst.width) && ((int)src.height == (int)dst.height))
 #endif
 
 #if !defined(RAYGUI_NO_ICONS) && !defined(RAYGUI_CUSTOM_ICONS)
