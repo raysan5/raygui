@@ -1743,7 +1743,7 @@ int GuiPanel(Rectangle bounds, const char *text)
 // NOTE: Using GuiToggle() for the TABS
 int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
 {
-    #define RAYGUI_TABBAR_ITEM_WIDTH    160
+    #define RAYGUI_TABBAR_ITEM_WIDTH    148
 
     int result = -1;
     //GuiState state = guiState;
@@ -1776,12 +1776,12 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
             if (i == (*active))
             {
                 toggle = true;
-                GuiToggle(tabBounds, GuiIconText(12, text[i]), &toggle);
+                GuiToggle(tabBounds, text[i], &toggle);
             }
             else
             {
                 toggle = false;
-                GuiToggle(tabBounds, GuiIconText(12, text[i]), &toggle);
+                GuiToggle(tabBounds, text[i], &toggle);
                 if (toggle) *active = i;
             }
 
