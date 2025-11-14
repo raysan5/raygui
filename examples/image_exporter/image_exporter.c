@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
     const int screenWidth = 800;
     const int screenHeight = 450;
     
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - image exporter");
     
     // GUI controls initialization
