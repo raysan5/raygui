@@ -3033,7 +3033,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
     int result = 0;
     GuiState state = guiState;
 
-    char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
+    char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = { 0 };
     snprintf(textValue, RAYGUI_VALUEBOX_MAX_CHARS + 1, "%i", *value);
 
     Rectangle textBounds = { 0 };
@@ -3051,7 +3051,6 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
         Vector2 mousePoint = GetMousePosition();
-
         bool valueHasChanged = false;
 
         if (editMode)
@@ -3070,7 +3069,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
                     keyCount--;
                     valueHasChanged = true;
                 }
-                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS -1)
+                else if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
                 {
                     if (keyCount == 0)
                     {
@@ -3087,30 +3086,26 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
                 }
             }
 
-            // Only allow keys in range [48..57]
-            if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
+            // Add new digit to text value
+            if ((keyCount < RAYGUI_VALUEBOX_MAX_CHARS) && (GuiGetTextWidth(textValue) < bounds.width))
             {
-                if (GuiGetTextWidth(textValue) < bounds.width)
+                int key = GetCharPressed();
+                
+                // Only allow keys in range [48..57]
+                if ((key >= 48) && (key <= 57))
                 {
-                    int key = GetCharPressed();
-                    if ((key >= 48) && (key <= 57))
-                    {
-                        textValue[keyCount] = (char)key;
-                        keyCount++;
-                        valueHasChanged = true;
-                    }
+                    textValue[keyCount] = (char)key;
+                    keyCount++;
+                    valueHasChanged = true;
                 }
             }
 
             // Delete text
-            if (keyCount > 0)
+            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE))
             {
-                if (IsKeyPressed(KEY_BACKSPACE))
-                {
-                    keyCount--;
-                    textValue[keyCount] = '\0';
-                    valueHasChanged = true;
-                }
+                keyCount--;
+                textValue[keyCount] = '\0';
+                valueHasChanged = true;
             }
 
             if (valueHasChanged) *value = TextToInteger(textValue);
