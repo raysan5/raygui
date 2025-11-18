@@ -3087,7 +3087,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             }
 
             // Add new digit to text value
-            if ((keyCount < RAYGUI_VALUEBOX_MAX_CHARS) && (GuiGetTextWidth(textValue) < bounds.width))
+            if ((keyCount >= 0) && (keyCount < RAYGUI_VALUEBOX_MAX_CHARS) && (GuiGetTextWidth(textValue) < bounds.width))
             {
                 int key = GetCharPressed();
                 
