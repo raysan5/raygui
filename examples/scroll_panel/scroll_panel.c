@@ -39,6 +39,8 @@ int main()
     const int screenWidth = 800;
     const int screenHeight = 450;
 
+    SetConfigFlags(FLAG_WINDOW_HIGHDPI);
+
     InitWindow(screenWidth, screenHeight, "raygui - GuiScrollPanel()");
 
     Rectangle panelRec = { 20, 40, 200, 150 };
