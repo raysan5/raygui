@@ -141,7 +141,7 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       5.0-dev (2025)    Current dev version...
+*       5.0 (xx-Nov-2025) ADDED: Support up to 32 controls (v500)
 *                         ADDED: guiControlExclusiveMode and guiControlExclusiveRec for exclusive modes
 *                         ADDED: GuiValueBoxFloat()
 *                         ADDED: GuiDropdonwBox() properties: DROPDOWN_ARROW_HIDDEN, DROPDOWN_ROLL_UP
@@ -1091,7 +1091,7 @@ typedef enum {
 // Icons data is defined by bit array (every bit represents one pixel)
 // Those arrays are stored as unsigned int data arrays, so,
 // every array element defines 32 pixels (bits) of information
-// One icon is defined by 8 int, (8 int * 32 bit = 256 bit = 16*16 pixels)
+// One icon is defined by 8 int, (8 int*32 bit = 256 bit = 16*16 pixels)
 // NOTE: Number of elemens depend on RAYGUI_ICON_SIZE (by default 16x16 pixels)
 #define RAYGUI_ICON_DATA_ELEMENTS   (RAYGUI_ICON_SIZE*RAYGUI_ICON_SIZE/32)
 
@@ -2506,7 +2506,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     int result = 0;
     GuiState state = guiState;
 
-    bool multiline = false;     // TODO: Consider multiline text input
+    bool multiline = false; // TODO: Consider multiline text input
     int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);
 
     Rectangle textBounds = GetTextBounds(TEXTBOX, bounds);
@@ -2514,7 +2514,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
     int thisCursorIndex = textBoxCursorIndex;
     if (thisCursorIndex > textLength) thisCursorIndex = textLength;
     int textWidth = GuiGetTextWidth(text) - GuiGetTextWidth(text + thisCursorIndex);
-    int textIndexOffset = 0;    // Text index offset to start drawing in the box
+    int textIndexOffset = 0; // Text index offset to start drawing in the box
 
     // Cursor rectangle
     // NOTE: Position X value should be updated
@@ -3090,7 +3090,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             if ((keyCount >= 0) && (keyCount < RAYGUI_VALUEBOX_MAX_CHARS) && (GuiGetTextWidth(textValue) < bounds.width))
             {
                 int key = GetCharPressed();
-                
+
                 // Only allow keys in range [48..57]
                 if ((key >= 48) && (key <= 57))
                 {
@@ -4231,7 +4231,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
 // Grid control
 // NOTE: Returns grid mouse-hover selected cell
 // About drawing lines at subpixel spacing, simple put, not easy solution:
-// https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
+// Ref: https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
 int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vector2 *mouseCell)
 {
     // Grid lines alpha amount
@@ -5079,24 +5079,17 @@ static const char **GetTextLines(const char *text, int *count)
     int textSize = (int)strlen(text);
 
     lines[0] = text;
-    int len = 0;
     *count = 1;
-    //int lineSize = 0;   // Stores current line size, not returned
 
     for (int i = 0, k = 0; (i < textSize) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
     {
         if (text[i] == '\n')
         {
-            //lineSize = len;
             k++;
-            lines[k] = &text[i + 1];     // WARNING: next value is valid?
-            len = 0;
+            lines[k] = &text[i + 1]; // WARNING: next value is valid?
             *count += 1;
         }
-        else len++;
     }
-
-    //lines[*count - 1].size = len;
 
     return lines;
 }
@@ -5873,7 +5866,7 @@ static int TextToInteger(const char *text)
         text++;
     }
 
-    for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); ++i) value = value*10 + (int)(text[i] - '0');
+    for (int i = 0; ((text[i] >= '0') && (text[i] <= '9')); i++) value = value*10 + (int)(text[i] - '0');
 
     return value*sign;
 }
