@@ -5076,12 +5076,12 @@ static const char **GetTextLines(const char *text, int *count)
     static const char *lines[RAYGUI_MAX_TEXT_LINES] = { 0 };
     for (int i = 0; i < RAYGUI_MAX_TEXT_LINES; i++) lines[i] = NULL;    // Init NULL pointers to substrings
 
-    int textSize = (int)strlen(text);
+    int textLength = (int)strlen(text);
 
     lines[0] = text;
     *count = 1;
 
-    for (int i = 0, k = 0; (i < textSize) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
+    for (int i = 0, k = 0; (i < textLength) && (*count < RAYGUI_MAX_TEXT_LINES); i++)
     {
         if (text[i] == '\n')
         {
