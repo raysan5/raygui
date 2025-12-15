@@ -4509,8 +4509,9 @@ void GuiLoadStyleDefault(void)
     {
         // Unload previous font texture
         UnloadTexture(guiFont.texture);
-        RAYGUI_FREE(guiFont.recs);
-        RAYGUI_FREE(guiFont.glyphs);
+        // Fix issue #514: avoid crashing with custom allocators by checking NULL before free 
+        if (guiFont.recs != NULL) RAYGUI_FREE(guiFont.recs); 
+        if (guiFont.glyphs != NULL) RAYGUI_FREE(guiFont.glyphs); 
         guiFont.recs = NULL;
         guiFont.glyphs = NULL;
 
