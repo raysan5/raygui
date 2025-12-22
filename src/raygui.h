@@ -355,6 +355,7 @@
     #elif defined(USE_LIBTYPE_SHARED)
         #define RAYGUIAPI __declspec(dllimport)     // We are using the library as a Win32 shared library (.dll)
     #endif
+    #define _CRT_SECURE_NO_WARNINGS // disable unsafe warnings on scanf functions in MSVC
 #endif
 
 // Function specifiers definition
