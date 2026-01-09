@@ -369,9 +369,9 @@
 // NOTE: Avoiding those calls, also avoids const strings memory usage
 #define RAYGUI_SUPPORT_LOG_INFO
 #if defined(RAYGUI_SUPPORT_LOG_INFO)
-  #define RAYGUI_LOG(...)           printf(__VA_ARGS__)
+    #define RAYGUI_LOG(...)     printf(__VA_ARGS__)
 #else
-  #define RAYGUI_LOG(...)
+    #define RAYGUI_LOG(...)
 #endif
 
 //----------------------------------------------------------------------------------
