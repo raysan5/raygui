@@ -311,7 +311,6 @@
     <ClCompile Include="$(ProjectDir)..\..\..\..\raylib\src\rshapes.c" />
     <ClCompile Include="$(ProjectDir)..\..\..\..\raylib\src\rtext.c" />
     <ClCompile Include="$(ProjectDir)..\..\..\..\raylib\src\rtextures.c" />
-    <ClCompile Include="$(ProjectDir)..\..\..\..\raylib\src\utils.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(ProjectDir)..\..\..\..\raylib\src\external\cgltf.h" />
@@ -331,7 +330,6 @@
     <ClInclude Include="$(ProjectDir)..\..\..\..\raylib\src\raylib.h" />
     <ClInclude Include="$(ProjectDir)..\..\..\..\raylib\src\raymath.h" />
     <ClInclude Include="$(ProjectDir)..\..\..\..\raylib\src\rlgl.h" />
-    <ClInclude Include="$(ProjectDir)..\..\..\..\raylib\src\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\..\raylib\src\raylib.dll.rc" />
