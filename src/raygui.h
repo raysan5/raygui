@@ -5376,13 +5376,13 @@ static void GuiTooltip(Rectangle controlRec)
         if ((controlRec.y + controlRec.height + textSize.y + 12) > GetScreenHeight())
             controlRec.y -= (controlRec.height + textSize.y + 12);
 
-        GuiPanel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize + 8.0f }, NULL);
+        GuiPanel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f }, NULL);
 
         int textPadding = GuiGetStyle(LABEL, TEXT_PADDING);
         int textAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
         GuiSetStyle(LABEL, TEXT_PADDING, 0);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiLabel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize + 8.0f }, guiTooltipPtr);
+        GuiLabel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f }, guiTooltipPtr);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, textAlignment);
         GuiSetStyle(LABEL, TEXT_PADDING, textPadding);
     }
