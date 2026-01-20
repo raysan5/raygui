@@ -351,9 +351,9 @@
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll
 #if defined(_WIN32)
     #if defined(BUILD_LIBTYPE_SHARED)
-        #define RAYGUIAPI __declspec(dllexport)     // We are building the library as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllexport)     // Building the library as a Win32 shared library (.dll)
     #elif defined(USE_LIBTYPE_SHARED)
-        #define RAYGUIAPI __declspec(dllimport)     // We are using the library as a Win32 shared library (.dll)
+        #define RAYGUIAPI __declspec(dllimport)     // Using the library as a Win32 shared library (.dll)
     #endif
 #endif
 
