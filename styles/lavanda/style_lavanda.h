@@ -30,7 +30,7 @@ static const GuiStyleProp lavandaStyleProps[LAVANDA_STYLE_PROPS_COUNT] = {
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 18, (int)0x84adb7ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x5b5b81ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Cartridge.ttf" (size: 16, spacing: 1)

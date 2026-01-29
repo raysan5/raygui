@@ -31,7 +31,7 @@ static const GuiStyleProp genesisStyleProps[GENESIS_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x96a3b4ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x292c33ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 5, (int)0x97a9aeff },    // LABEL_TEXT_COLOR_FOCUSED 
     { 4, 5, (int)0xa69a9aff },    // SLIDER_TEXT_COLOR_FOCUSED 
     { 4, 6, (int)0xc3ccd5ff },    // SLIDER_BORDER_COLOR_PRESSED 

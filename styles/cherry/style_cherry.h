@@ -31,7 +31,7 @@ static const GuiStyleProp cherryStyleProps[CHERRY_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0xfb8170ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x3a1720ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000016 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000007 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Westington.ttf" (size: 15, spacing: 0)

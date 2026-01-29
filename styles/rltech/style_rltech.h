@@ -29,7 +29,7 @@ static const GuiStyleProp rltechStyleProps[RLTECH_STYLE_PROPS_COUNT] = {
     { 0, 11, (int)0xb3b3b3ff },    // DEFAULT_TEXT_COLOR_DISABLED 
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 18, (int)0x352c2cff },    // DEFAULT_LINE_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "2a03.ttf" (size: 16, spacing: 1)

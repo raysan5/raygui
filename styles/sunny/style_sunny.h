@@ -31,7 +31,7 @@ static const GuiStyleProp sunnyStyleProps[SUNNY_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x725706ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0xf0be4bff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 2, (int)0x504506ff },    // LABEL_TEXT_COLOR_NORMAL 
     { 1, 5, (int)0xfdeb9bff },    // LABEL_TEXT_COLOR_FOCUSED 
     { 1, 8, (int)0xf5e8a4ff },    // LABEL_TEXT_COLOR_PRESSED 
