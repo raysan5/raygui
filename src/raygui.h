@@ -3318,6 +3318,9 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
     Rectangle slider = { bounds.x, bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
                          0, bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING) };
 
+    // Static variable to store drag offset
+    static float dragOffsetX = 0.0f;
+
     // Update control
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
@@ -3332,7 +3335,7 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
                 {
                     state = STATE_PRESSED;
                     // Get equivalent value and slider position from mousePosition.x
-                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
+                    *value = (maxValue - minValue)*((mousePoint.x - dragOffsetX - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
                 }
             }
             else
@@ -3346,14 +3349,11 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
             {
                 state = STATE_PRESSED;
+                float currentSliderPos = bounds.x + sliderWidth/2 + (((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth));
+                dragOffsetX = mousePoint.x - currentSliderPos;
+                
                 guiControlExclusiveMode = true;
                 guiControlExclusiveRec = bounds; // Store bounds as an identifier when dragging starts
-
-                if (!CheckCollisionPointRec(mousePoint, slider))
-                {
-                    // Get equivalent value and slider position from mousePosition.x
-                    *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
-                }
             }
             else state = STATE_FOCUSED;
         }
