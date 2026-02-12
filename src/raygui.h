@@ -4503,7 +4503,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
     GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 15);        // DEFAULT, 15 pixels between lines
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 5);         // DEFAULT, pixels between lines, from bottom of first line to top of second
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
     // Initialize control-specific property values
@@ -5201,7 +5201,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
     int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
 
     // TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
-    float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_SIZE)/2);
+    float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
     float posOffsetY = 0.0f;
 
     for (int i = 0; i < lineCount; i++)
@@ -5302,7 +5302,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 if ((textOffsetX + glyphWidth) > textBounds.width - textBoundsWidthOffset)
                 {
                     textOffsetX = 0.0f;
-                    textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                    textOffsetY += (GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
 
                     if (tempWrapCharMode)   // Wrap at char level when too long words
                     {
@@ -5331,7 +5331,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 else if ((textOffsetX + nextSpaceWidth) > textBounds.width - textBoundsWidthOffset)
                 {
                     textOffsetX = 0.0f;
-                    textOffsetY += GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+                    textOffsetY += (GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
                 }
             }
 
@@ -5381,7 +5381,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             }
         }
 
-        if (wrapMode == TEXT_WRAP_NONE) posOffsetY += (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING);
+        if (wrapMode == TEXT_WRAP_NONE) posOffsetY += (float)(GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
         else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) posOffsetY += (textOffsetY + (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
         //---------------------------------------------------------------------------------
     }
