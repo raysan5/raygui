@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v4.5-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v5.0-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -141,13 +141,14 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       5.0 (xx-Nov-2025) ADDED: Support up to 32 controls (v500)
+*       5.0 (xx-Mar-2026) ADDED: Support up to 32 controls (v500)
 *                         ADDED: guiControlExclusiveMode and guiControlExclusiveRec for exclusive modes
 *                         ADDED: GuiValueBoxFloat()
 *                         ADDED: GuiDropdonwBox() properties: DROPDOWN_ARROW_HIDDEN, DROPDOWN_ROLL_UP
 *                         ADDED: GuiListView() property: LIST_ITEMS_BORDER_WIDTH
 *                         ADDED: GuiLoadIconsFromMemory()
 *                         ADDED: Multiple new icons
+*                         ADDED: Macros for inputs customization, raylib decoupling
 *                         REMOVED: GuiSpinner() from controls list, using BUTTON + VALUEBOX properties
 *                         REMOVED: GuiSliderPro(), functionality was redundant
 *                         REVIEWED: Controls using text labels to use LABEL properties
@@ -165,6 +166,7 @@
 *                         REVIEWED: GuiTextBox(), multiple improvements: autocursor and more
 *                         REVIEWED: Functions descriptions, removed wrong return value reference
 *                         REDESIGNED: GuiColorPanel(), improved HSV <-> RGBA convertion
+*                         REDESIGNED: WARNING: TEXT_LINE_SPACING does not consider text height, only lines spacing
 *
 *       4.0 (12-Sep-2023) ADDED: GuiToggleSlider()
 *                         ADDED: GuiColorPickerHSV() and GuiColorPanelHSV()
@@ -355,7 +357,7 @@
     #elif defined(USE_LIBTYPE_SHARED)
         #define RAYGUIAPI __declspec(dllimport)     // Using the library as a Win32 shared library (.dll)
     #endif
-    #define _CRT_SECURE_NO_WARNINGS // disable unsafe warnings on scanf functions in MSVC
+    #define _CRT_SECURE_NO_WARNINGS                 // Disable unsafe warnings on scanf() functions in MSVC
 #endif
 
 // Function specifiers definition
@@ -373,6 +375,45 @@
     #define RAYGUI_LOG(...)     printf(__VA_ARGS__)
 #else
     #define RAYGUI_LOG(...)
+#endif
+
+// Macros to define required UI inputs, including mapping to gamepad controls
+// TODO: Define additionally required macros for missing inputs 
+#if !defined(GUI_BUTTON_DOWN)
+    #define GUI_BUTTON_DOWN         (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+#endif
+#if !defined(GUI_BUTTON_DOWN_ALT)
+    //  Mapping to alternative button down pressed
+    #define GUI_BUTTON_DOWN_ALT     (IsMouseButtonDown(MOUSE_RIGHT_BUTTON) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+#endif
+#if !defined(GUI_BUTTON_PRESSED)
+    #define GUI_BUTTON_PRESSED      (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+#endif
+// TODO: WARNING: GuiTabBar() still requires IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)
+#if !defined(GUI_BUTTON_RELEASED)
+    #define GUI_BUTTON_RELEASED     (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) || IsGamepadButtonReleased(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+#endif
+#if !defined(GUI_SCROLL_DELTA)
+    // Mapping to scroll delta changes
+    // TODO: Review inconsistencies between platforms
+    #if defined(PLATFORM_WEB)
+        // NOTE: Gamepad axis triggers not detected on web platform
+        #define GUI_SCROLL_DELTA    ((float)IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_2) - (float)IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_TRIGGER_2))
+    #else
+        #define GUI_SCROLL_DELTA    (GetMouseWheelMove() + (GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER) + 1) - (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) + 1))
+    #endif
+#endif
+#if !defined(GUI_POINTER_POSITION)
+    #define GUI_POINTER_POSITION    GetMousePosition()
+#endif
+#if !defined(GUI_KEY_DOWN)
+    #define GUI_KEY_DOWN(key)       IsKeyDown(key)
+#endif
+#if !defined(GUI_KEY_PRESSED)
+    #define GUI_KEY_PRESSED(key)    IsKeyPressed(key)
+#endif
+#if !defined(GUI_INPUT_KEY)
+    #define GUI_INPUT_KEY           GetCharPressed()
 #endif
 
 //----------------------------------------------------------------------------------
@@ -1451,12 +1492,12 @@ static bool IsMouseButtonReleased(int button);
 
 static bool IsKeyDown(int key);
 static bool IsKeyPressed(int key);
-static int GetCharPressed(void);         // -- GuiTextBox(), GuiValueBox()
+static int GetCharPressed(void); // -- GuiTextBox(), GuiValueBox()
 //-------------------------------------------------------------------------------
 
 // Drawing required functions
 //-------------------------------------------------------------------------------
-static void DrawRectangle(int x, int y, int width, int height, Color color);        // -- GuiDrawRectangle()
+static void DrawRectangle(int x, int y, int width, int height, Color color); // -- GuiDrawRectangle()
 static void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4); // -- GuiColorPicker()
 //-------------------------------------------------------------------------------
 
@@ -1558,9 +1599,8 @@ void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
     {
-        // NOTE: If a font is tried to be set but default style has not been
-        // lazily loaded first, it will be overwritten, so
-        // default style loading needs to be forced first
+        // NOTE: If a font is tried to be set but default style has not been lazily loaded first, 
+        // it will be overwritten, so default style loading needs to be forced first
         if (!guiStyleLoaded) GuiLoadStyleDefault();
 
         guiFont = font;
@@ -1787,7 +1827,7 @@ int GuiTabBar(Rectangle bounds, const char **text, int count, int *active)
             }
 
             // Close tab with middle mouse button pressed
-            if (CheckCollisionPointRec(GetMousePosition(), tabBounds) && IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)) result = i;
+            if (CheckCollisionPointRec(GUI_POINTER_POSITION, tabBounds) && IsMouseButtonPressed(MOUSE_MIDDLE_BUTTON)) result = i;
 
             GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
@@ -1886,37 +1926,37 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
 
 #if defined(SUPPORT_SCROLLBAR_KEY_INPUT)
             if (hasHorizontalScrollBar)
             {
-                if (IsKeyDown(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                if (IsKeyDown(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (GUI_KEY_DOWN(KEY_RIGHT)) scrollPos.x -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (GUI_KEY_DOWN(KEY_LEFT)) scrollPos.x += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
 
             if (hasVerticalScrollBar)
             {
-                if (IsKeyDown(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                if (IsKeyDown(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (GUI_KEY_DOWN(KEY_DOWN)) scrollPos.y -= GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                if (GUI_KEY_DOWN(KEY_UP)) scrollPos.y += GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
             }
 #endif
-            float wheelMove = GetMouseWheelMove();
+            float scrollDelta = GUI_SCROLL_DELTA;
 
             // Set scrolling speed with mouse wheel based on ratio between bounds and content
-            Vector2 mouseWheelSpeed = { content.width/bounds.width, content.height/bounds.height };
-            if (mouseWheelSpeed.x < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.x = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
-            if (mouseWheelSpeed.y < RAYGUI_MIN_MOUSE_WHEEL_SPEED) mouseWheelSpeed.y = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
+            Vector2 scrollSpeed = { content.width/bounds.width, content.height/bounds.height };
+            if (scrollSpeed.x < RAYGUI_MIN_MOUSE_WHEEL_SPEED) scrollSpeed.x = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
+            if (scrollSpeed.y < RAYGUI_MIN_MOUSE_WHEEL_SPEED) scrollSpeed.y = RAYGUI_MIN_MOUSE_WHEEL_SPEED;
 
             // Horizontal and vertical scrolling with mouse wheel
-            if (hasHorizontalScrollBar && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT))) scrollPos.x += wheelMove*mouseWheelSpeed.x;
-            else scrollPos.y += wheelMove*mouseWheelSpeed.y; // Vertical scroll
+            if (hasHorizontalScrollBar && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_LEFT_SHIFT))) scrollPos.x += scrollDelta*scrollSpeed.x;
+            else scrollPos.y += scrollDelta*scrollSpeed.y; // Vertical scroll
         }
     }
 
@@ -2002,15 +2042,15 @@ int GuiButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
 
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) result = 1;
+            if (GUI_BUTTON_RELEASED) result = 1;
         }
     }
     //--------------------------------------------------------------------
@@ -2040,15 +2080,15 @@ int GuiLabelButton(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check checkbox state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
 
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) pressed = true;
+            if (GUI_BUTTON_RELEASED) pressed = true;
         }
     }
     //--------------------------------------------------------------------
@@ -2074,13 +2114,13 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check toggle button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
+            else if (GUI_BUTTON_RELEASED)
             {
                 state = STATE_NORMAL;
                 *active = !(*active);
@@ -2185,12 +2225,12 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
-            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
+            else if (GUI_BUTTON_RELEASED)
             {
                 state = STATE_PRESSED;
                 (*active)++;
@@ -2256,7 +2296,7 @@ int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         Rectangle totalBounds = {
             (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == TEXT_ALIGN_LEFT)? textBounds.x : bounds.x,
@@ -2268,10 +2308,10 @@ int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
         // Check checkbox state
         if (CheckCollisionPointRec(mousePoint, totalBounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
 
-            if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_RELEASED)
             {
                 *checked = !(*checked);
                 result = 1;
@@ -2324,18 +2364,18 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && (itemCount > 1) && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (CheckCollisionPointRec(mousePoint, bounds) ||
             CheckCollisionPointRec(mousePoint, selector))
         {
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_PRESSED)
             {
                 *active += 1;
                 if (*active >= itemCount) *active = 0;      // Cyclic combobox
             }
 
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
         }
     }
@@ -2393,7 +2433,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && (editMode || !guiLocked) && (itemCount > 1) && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (editMode)
         {
@@ -2402,11 +2442,11 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
             // Check if mouse has been pressed or released outside limits
             if (!CheckCollisionPointRec(mousePoint, boundsOpen))
             {
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) result = 1;
+                if (GUI_BUTTON_PRESSED || GUI_BUTTON_RELEASED) result = 1;
             }
 
             // Check if already selected item has been pressed again
-            if (CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) result = 1;
+            if (CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED) result = 1;
 
             // Check focused and selected item
             for (int i = 0; i < itemCount; i++)
@@ -2418,7 +2458,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
                     itemFocused = i;
-                    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
+                    if (GUI_BUTTON_RELEASED)
                     {
                         itemSelected = i;
                         result = 1;         // Item selected
@@ -2433,7 +2473,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                if (GUI_BUTTON_PRESSED)
                 {
                     result = 1;
                     state = STATE_PRESSED;
@@ -2548,13 +2588,13 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         !guiControlExclusiveMode &&                       // No gui slider on dragging
         (wrapMode == TEXT_WRAP_NONE))               // No wrap mode
     {
-        Vector2 mousePosition = GetMousePosition();
+        Vector2 mousePosition = GUI_POINTER_POSITION;
 
         if (editMode)
         {
             // GLOBAL: Auto-cursor movement logic
             // NOTE: Keystrokes are handled repeatedly when button is held down for some time
-            if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN) || IsKeyDown(KEY_BACKSPACE) || IsKeyDown(KEY_DELETE)) autoCursorCounter++;
+            if (GUI_KEY_DOWN(KEY_LEFT) || GUI_KEY_DOWN(KEY_RIGHT) || GUI_KEY_DOWN(KEY_UP) || GUI_KEY_DOWN(KEY_DOWN) || GUI_KEY_DOWN(KEY_BACKSPACE) || GUI_KEY_DOWN(KEY_DELETE)) autoCursorCounter++;
             else autoCursorCounter = 0;
 
             bool autoCursorShouldTrigger = (autoCursorCounter > RAYGUI_TEXTBOX_AUTO_CURSOR_COOLDOWN) && ((autoCursorCounter % RAYGUI_TEXTBOX_AUTO_CURSOR_DELAY) == 0);
@@ -2575,15 +2615,15 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textWidth = GuiGetTextWidth(text + textIndexOffset) - GuiGetTextWidth(text + textBoxCursorIndex);
             }
 
-            int codepoint = GetCharPressed();       // Get Unicode codepoint
-            if (multiline && IsKeyPressed(KEY_ENTER)) codepoint = (int)'\n';
+            int codepoint = GUI_INPUT_KEY; // Get Unicode codepoint
+            if (multiline && GUI_KEY_PRESSED(KEY_ENTER)) codepoint = (int)'\n';
 
             // Encode codepoint as UTF-8
             int codepointSize = 0;
             const char *charEncoded = CodepointToUTF8(codepoint, &codepointSize);
 
             // Handle text paste action
-            if (IsKeyPressed(KEY_V) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            if (GUI_KEY_PRESSED(KEY_V) && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 const char *pasteText = GetClipboardText();
                 if (pasteText != NULL)
@@ -2633,13 +2673,13 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Move cursor to start
-            if ((textLength > 0) && IsKeyPressed(KEY_HOME)) textBoxCursorIndex = 0;
+            if ((textLength > 0) && GUI_KEY_PRESSED(KEY_HOME)) textBoxCursorIndex = 0;
 
             // Move cursor to end
-            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_END)) textBoxCursorIndex = textLength;
+            if ((textLength > textBoxCursorIndex) && GUI_KEY_PRESSED(KEY_END)) textBoxCursorIndex = textLength;
 
             // Delete related codepoints from text, after current cursor position
-            if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_DELETE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            if ((textLength > textBoxCursorIndex) && GUI_KEY_PRESSED(KEY_DELETE) && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
                 int accCodepointSize = 0;
@@ -2675,7 +2715,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textLength -= accCodepointSize;
             }
 
-            else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_DELETE) || (IsKeyDown(KEY_DELETE) && autoCursorShouldTrigger)))
+            else if ((textLength > textBoxCursorIndex) && (GUI_KEY_PRESSED(KEY_DELETE) || (GUI_KEY_DOWN(KEY_DELETE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, after current cursor position
 
@@ -2689,7 +2729,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Delete related codepoints from text, before current cursor position
-            if ((textBoxCursorIndex > 0) && IsKeyPressed(KEY_BACKSPACE) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            if ((textBoxCursorIndex > 0) && GUI_KEY_PRESSED(KEY_BACKSPACE) && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
                 int accCodepointSize = 0;
@@ -2725,7 +2765,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textBoxCursorIndex -= accCodepointSize;
             }
 
-            else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_BACKSPACE) || (IsKeyDown(KEY_BACKSPACE) && autoCursorShouldTrigger)))
+            else if ((textBoxCursorIndex > 0) && (GUI_KEY_PRESSED(KEY_BACKSPACE) || (GUI_KEY_DOWN(KEY_BACKSPACE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, before current cursor position
 
@@ -2741,7 +2781,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Move cursor position with keys
-            if ((textBoxCursorIndex > 0) && IsKeyPressed(KEY_LEFT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            if ((textBoxCursorIndex > 0) && GUI_KEY_PRESSED(KEY_LEFT) && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
                 //int accCodepointSize = 0;
@@ -2772,14 +2812,14 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textBoxCursorIndex = offset;
             }
-            else if ((textBoxCursorIndex > 0) && (IsKeyPressed(KEY_LEFT) || (IsKeyDown(KEY_LEFT) && autoCursorShouldTrigger)))
+            else if ((textBoxCursorIndex > 0) && (GUI_KEY_PRESSED(KEY_LEFT) || (GUI_KEY_DOWN(KEY_LEFT) && autoCursorShouldTrigger)))
             {
                 int prevCodepointSize = 0;
                 GetCodepointPrevious(text + textBoxCursorIndex, &prevCodepointSize);
 
                 textBoxCursorIndex -= prevCodepointSize;
             }
-            else if ((textLength > textBoxCursorIndex) && IsKeyPressed(KEY_RIGHT) && (IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)))
+            else if ((textLength > textBoxCursorIndex) && GUI_KEY_PRESSED(KEY_RIGHT) && (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
                 //int accCodepointSize = 0;
@@ -2811,7 +2851,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textBoxCursorIndex = offset;
             }
-            else if ((textLength > textBoxCursorIndex) && (IsKeyPressed(KEY_RIGHT) || (IsKeyDown(KEY_RIGHT) && autoCursorShouldTrigger)))
+            else if ((textLength > textBoxCursorIndex) && (GUI_KEY_PRESSED(KEY_RIGHT) || (GUI_KEY_DOWN(KEY_RIGHT) && autoCursorShouldTrigger)))
             {
                 int nextCodepointSize = 0;
                 GetCodepointNext(text + textBoxCursorIndex, &nextCodepointSize);
@@ -2848,14 +2888,14 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 // Check if mouse cursor is at the last position
                 int textEndWidth = GuiGetTextWidth(text + textIndexOffset);
-                if (GetMousePosition().x >= (textBounds.x + textEndWidth - glyphWidth/2))
+                if (GUI_POINTER_POSITION.x >= (textBounds.x + textEndWidth - glyphWidth/2))
                 {
                     mouseCursor.x = textBounds.x + textEndWidth;
                     mouseCursorIndex = textLength;
                 }
 
                 // Place cursor at required index on mouse click
-                if ((mouseCursor.x >= 0) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                if ((mouseCursor.x >= 0) && GUI_BUTTON_PRESSED)
                 {
                     cursor.x = mouseCursor.x;
                     textBoxCursorIndex = mouseCursorIndex;
@@ -2868,8 +2908,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             //if (multiline) cursor.y = GetTextLines()
 
             // Finish text editing on ENTER or mouse click outside bounds
-            if ((!multiline && IsKeyPressed(KEY_ENTER)) ||
-                (!CheckCollisionPointRec(mousePosition, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+            if ((!multiline && GUI_KEY_PRESSED(KEY_ENTER)) ||
+                (!CheckCollisionPointRec(mousePosition, bounds) && GUI_BUTTON_PRESSED))
             {
                 textBoxCursorIndex = 0;     // GLOBAL: Reset the shared cursor index
                 autoCursorCounter = 0;      // GLOBAL: Reset counter for repeated keystrokes
@@ -2882,7 +2922,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             {
                 state = STATE_FOCUSED;
 
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                if (GUI_BUTTON_PRESSED)
                 {
                     textBoxCursorIndex = textLength;   // GLOBAL: Place cursor index to the end of current text
                     autoCursorCounter = 0;             // GLOBAL: Reset counter for repeated keystrokes
@@ -2976,12 +3016,12 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check spinner state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
         }
     }
@@ -3051,7 +3091,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
         bool valueHasChanged = false;
 
         if (editMode)
@@ -3061,7 +3101,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             int keyCount = (int)strlen(textValue);
 
             // Add or remove minus symbol
-            if (IsKeyPressed(KEY_MINUS))
+            if (GUI_KEY_PRESSED(KEY_MINUS))
             {
                 if (textValue[0] == '-')
                 {
@@ -3090,7 +3130,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             // Add new digit to text value
             if ((keyCount >= 0) && (keyCount < RAYGUI_VALUEBOX_MAX_CHARS) && (GuiGetTextWidth(textValue) < bounds.width))
             {
-                int key = GetCharPressed();
+                int key = GUI_INPUT_KEY;
 
                 // Only allow keys in range [48..57]
                 if ((key >= 48) && (key <= 57))
@@ -3102,7 +3142,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             }
 
             // Delete text
-            if ((keyCount > 0) && IsKeyPressed(KEY_BACKSPACE))
+            if ((keyCount > 0) && GUI_KEY_PRESSED(KEY_BACKSPACE))
             {
                 keyCount--;
                 textValue[keyCount] = '\0';
@@ -3115,7 +3155,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             //if (*value > maxValue) *value = maxValue;
             //else if (*value < minValue) *value = minValue;
 
-            if ((IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_KP_ENTER)) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) || (!CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED))
             {
                 if (*value > maxValue) *value = maxValue;
                 else if (*value < minValue) *value = minValue;
@@ -3131,7 +3171,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) result = 1;
+                if (GUI_BUTTON_PRESSED) result = 1;
             }
         }
     }
@@ -3192,7 +3232,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         bool valueHasChanged = false;
 
@@ -3203,7 +3243,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             int keyCount = (int)strlen(textValue);
 
             // Add or remove minus symbol
-            if (IsKeyPressed(KEY_MINUS))
+            if (GUI_KEY_PRESSED(KEY_MINUS))
             {
                 if (textValue[0] == '-')
                 {
@@ -3234,7 +3274,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             {
                 if (GuiGetTextWidth(textValue) < bounds.width)
                 {
-                    int key = GetCharPressed();
+                    int key = GUI_INPUT_KEY;
                     if (((key >= 48) && (key <= 57)) ||
                         (key == '.') ||
                         ((keyCount == 0) && (key == '+')) ||  // NOTE: Sign can only be in first position
@@ -3249,7 +3289,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             }
 
             // Pressed backspace
-            if (IsKeyPressed(KEY_BACKSPACE))
+            if (GUI_KEY_PRESSED(KEY_BACKSPACE))
             {
                 if (keyCount > 0)
                 {
@@ -3261,14 +3301,14 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
 
             if (valueHasChanged) *value = TextToFloat(textValue);
 
-            if ((IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_KP_ENTER)) || (!CheckCollisionPointRec(mousePoint, bounds) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))) result = 1;
+            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) || (!CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED)) result = 1;
         }
         else
         {
             if (CheckCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) result = 1;
+                if (GUI_BUTTON_PRESSED) result = 1;
             }
         }
     }
@@ -3322,11 +3362,11 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
                 {
@@ -3343,7 +3383,7 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
         }
         else if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 state = STATE_PRESSED;
                 guiControlExclusiveMode = true;
@@ -3536,12 +3576,12 @@ int GuiDummyRec(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
         if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
         }
     }
@@ -3603,7 +3643,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check mouse inside list view
         if (CheckCollisionPointRec(mousePoint, bounds))
@@ -3616,7 +3656,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
                 if (CheckCollisionPointRec(mousePoint, itemBounds))
                 {
                     itemFocused = startIndex + i;
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                    if (GUI_BUTTON_PRESSED)
                     {
                         if (itemSelected == (startIndex + i)) itemSelected = -1;
                         else itemSelected = startIndex + i;
@@ -3630,8 +3670,8 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
 
             if (useScrollBar)
             {
-                int wheelMove = (int)GetMouseWheelMove();
-                startIndex -= wheelMove;
+                float scrollDelta = GUI_SCROLL_DELTA;
+                startIndex -= (int)scrollDelta;
 
                 if (startIndex < 0) startIndex = 0;
                 else if (startIndex > (count - visibleItems)) startIndex = count - visibleItems;
@@ -3766,11 +3806,11 @@ int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
                 {
@@ -3789,7 +3829,7 @@ int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
         }
         else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 state = STATE_PRESSED;
                 guiControlExclusiveMode = true;
@@ -3851,11 +3891,11 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
                 {
@@ -3874,7 +3914,7 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
         }
         else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 state = STATE_PRESSED;
                 guiControlExclusiveMode = true;
@@ -3887,12 +3927,12 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
             }
             else state = STATE_FOCUSED;
 
-            /*if (IsKeyDown(KEY_UP))
+            /*if (GUI_KEY_DOWN(KEY_UP))
             {
                 hue -= 2.0f;
                 if (hue <= 0.0f) hue = 0.0f;
             }
-            else if (IsKeyDown(KEY_DOWN))
+            else if (GUI_KEY_DOWN(KEY_DOWN))
             {
                 hue += 2.0f;
                 if (hue >= 360.0f) hue = 360.0f;
@@ -4009,11 +4049,11 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
                 {
@@ -4043,7 +4083,7 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
         }
         else if (CheckCollisionPointRec(mousePoint, bounds))
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_DOWN)
             {
                 state = STATE_PRESSED;
                 guiControlExclusiveMode = true;
@@ -4248,7 +4288,7 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
     int result = 0;
     GuiState state = guiState;
 
-    Vector2 mousePoint = GetMousePosition();
+    Vector2 mousePoint = GUI_POINTER_POSITION;
     Vector2 currentMouseCell = { -1, -1 };
 
     float spaceWidth = spacing/(float)subdivs;
@@ -4416,11 +4456,14 @@ void GuiLoadStyle(const char *fileName)
             if (fileDataSize > 0)
             {
                 unsigned char *fileData = (unsigned char *)RAYGUI_CALLOC(fileDataSize, sizeof(unsigned char));
-                fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
+                if (fileData != NULL)
+                {
+                    fread(fileData, sizeof(unsigned char), fileDataSize, rgsFile);
 
-                GuiLoadStyleFromMemory(fileData, fileDataSize);
+                    GuiLoadStyleFromMemory(fileData, fileDataSize);
 
-                RAYGUI_FREE(fileData);
+                    RAYGUI_FREE(fileData);
+                }
             }
 
             fclose(rgsFile);
@@ -5643,11 +5686,11 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked)
     {
-        Vector2 mousePoint = GetMousePosition();
+        Vector2 mousePoint = GUI_POINTER_POSITION;
 
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) &&
+            if (GUI_BUTTON_DOWN &&
                 !CheckCollisionPointRec(mousePoint, arrowUpLeft) &&
                 !CheckCollisionPointRec(mousePoint, arrowDownRight))
             {
@@ -5670,11 +5713,11 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             state = STATE_FOCUSED;
 
             // Handle mouse wheel
-            int wheel = (int)GetMouseWheelMove();
-            if (wheel != 0) value += wheel;
+            float scrollDelta = GUI_SCROLL_DELTA;
+            if (scrollDelta != 0) value += (int)scrollDelta;
 
             // Handle mouse button down
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            if (GUI_BUTTON_PRESSED)
             {
                 guiControlExclusiveMode = true;
                 guiControlExclusiveRec = bounds; // Store bounds as an identifier when dragging starts
@@ -5696,13 +5739,13 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             /*
             if (isVertical)
             {
-                if (IsKeyDown(KEY_DOWN)) value += 5;
-                else if (IsKeyDown(KEY_UP)) value -= 5;
+                if (GUI_KEY_DOWN(KEY_DOWN)) value += 5;
+                else if (GUI_KEY_DOWN(KEY_UP)) value -= 5;
             }
             else
             {
-                if (IsKeyDown(KEY_RIGHT)) value += 5;
-                else if (IsKeyDown(KEY_LEFT)) value -= 5;
+                if (GUI_KEY_DOWN(KEY_RIGHT)) value += 5;
+                else if (GUI_KEY_DOWN(KEY_LEFT)) value -= 5;
             }
             */
         }
