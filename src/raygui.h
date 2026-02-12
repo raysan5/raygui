@@ -83,8 +83,8 @@
 *       used for all controls, when any of those base values is set, it is automatically populated to all
 *       controls, so, specific control values overwriting generic style should be set after base values
 *
-*       After the first BASE set we have the EXTENDED properties (by default guiStyle[16..23]), those
-*       properties are actually common to all controls and can not be overwritten individually (like BASE ones)
+*       After the first BASE properties set, the EXTENDED properties set is defined (by default guiStyle[16..23]),
+*       those properties are actually common to all controls and can not be overwritten individually (like BASE ones)
 *       Some of those properties are: TEXT_SIZE, TEXT_SPACING, LINE_COLOR, BACKGROUND_COLOR
 *
 *       Custom control properties can be defined using the EXTENDED properties for each independent control.
@@ -568,7 +568,7 @@ typedef enum {
 //----------------------------------------------------------------------------------
 // DEFAULT extended properties
 // NOTE: Those properties are common to all controls or global
-// WARNING: We only have 8 slots for those properties by default!!! -> New global control: TEXT?
+// WARNING: Only 8 slots vailable for those properties by default
 typedef enum {
     TEXT_SIZE = 16,             // Text size (glyphs max height)
     TEXT_SPACING,               // Text spacing between glyphs
@@ -1521,11 +1521,11 @@ static Color GuiFade(Color color, float alpha);         // Fade color by an alph
 // Gui Setup Functions Definition
 //----------------------------------------------------------------------------------
 // Enable gui global state
-// NOTE: We check for STATE_DISABLED to avoid messing custom global state setups
+// NOTE: Checking for STATE_DISABLED to avoid messing custom global state setups
 void GuiEnable(void) { if (guiState == STATE_DISABLED) guiState = STATE_NORMAL; }
 
 // Disable gui global state
-// NOTE: We check for STATE_NORMAL to avoid messing custom global state setups
+// NOTE: Checking for STATE_NORMAL to avoid messing custom global state setups
 void GuiDisable(void) { if (guiState == STATE_NORMAL) guiState = STATE_DISABLED; }
 
 // Lock gui global state
@@ -1558,9 +1558,9 @@ void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
     {
-        // NOTE: If we try to setup a font but default style has not been
-        // lazily loaded before, it will be overwritten, so we need to force
-        // default style loading first
+        // NOTE: If a font is tried to be set but default style has not been
+        // lazily loaded first, it will be overwritten, so
+        // default style loading needs to be forced first
         if (!guiStyleLoaded) GuiLoadStyleDefault();
 
         guiFont = font;
@@ -2032,7 +2032,7 @@ int GuiLabelButton(Rectangle bounds, const char *text)
     GuiState state = guiState;
     bool pressed = false;
 
-    // NOTE: We force bounds.width to be all text
+    // NOTE: Force bounds.width to be all text
     float textWidth = (float)GuiGetTextWidth(text);
     if ((bounds.width - 2*GuiGetStyle(LABEL, BORDER_WIDTH) - 2*GuiGetStyle(LABEL, TEXT_PADDING)) < textWidth) bounds.width = textWidth + 2*GuiGetStyle(LABEL, BORDER_WIDTH) + 2*GuiGetStyle(LABEL, TEXT_PADDING) + 2;
 
@@ -2564,7 +2564,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             if (textBoxCursorIndex > textLength) textBoxCursorIndex = textLength;
 
             // If text does not fit in the textbox and current cursor position is out of bounds,
-            // we add an index offset to text for drawing only what requires depending on cursor
+            // adding an index offset to text for drawing only what requires depending on cursor
             while (textWidth >= textBounds.width)
             {
                 int nextCodepointSize = 0;
@@ -3111,7 +3111,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 
             if (valueHasChanged) *value = TextToInteger(textValue);
 
-            // NOTE: We are not clamp values until user input finishes
+            // NOTE: Values are not clamped until user input finishes
             //if (*value > maxValue) *value = maxValue;
             //else if (*value < minValue) *value = minValue;
 
@@ -3579,7 +3579,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
     int itemFocused = (focus == NULL)? -1 : *focus;
     int itemSelected = (active == NULL)? -1 : *active;
 
-    // Check if we need a scroll bar
+    // Check if scroll bar is needed
     bool useScrollBar = false;
     if ((GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT) + GuiGetStyle(LISTVIEW, LIST_ITEMS_SPACING))*count > bounds.height) useScrollBar = true;
 
@@ -3670,7 +3670,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollInd
                 GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_PRESSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_PRESSED)));
                 GuiDrawText(text[startIndex + i], GetTextBounds(DEFAULT, itemBounds), GuiGetStyle(LISTVIEW, TEXT_ALIGNMENT), GetColor(GuiGetStyle(LISTVIEW, TEXT_COLOR_PRESSED)));
             }
-            else if (((startIndex + i) == itemFocused)) // && (focus != NULL))  // NOTE: We want items focused, despite not returned!
+            else if (((startIndex + i) == itemFocused)) // && (focus != NULL)) // NOTE: Items focused, despite not returned
             {
                 // Draw item focused
                 GuiDrawRectangle(itemBounds, GuiGetStyle(LISTVIEW, LIST_ITEMS_BORDER_WIDTH), GetColor(GuiGetStyle(LISTVIEW, BORDER_COLOR_FOCUSED)), GetColor(GuiGetStyle(LISTVIEW, BASE_COLOR_FOCUSED)));
@@ -4431,7 +4431,7 @@ void GuiLoadStyle(const char *fileName)
 // Load style default over global style
 void GuiLoadStyleDefault(void)
 {
-    // We set this variable first to avoid cyclic function calls
+    // Setting this flag first to avoid cyclic function calls
     // when calling GuiSetStyle() and GuiGetStyle()
     guiStyleLoaded = true;
 
@@ -4526,7 +4526,7 @@ void GuiLoadStyleDefault(void)
         // NOTE: Default raylib font character 95 is a white square
         Rectangle whiteChar = guiFont.recs[95];
 
-        // NOTE: We set up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
+        // NOTE: Setting up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
         SetShapesTexture(guiFont.texture, RAYGUI_CLITERAL(Rectangle){ whiteChar.x + 1, whiteChar.y + 1, whiteChar.width - 2, whiteChar.height - 2 });
     }
 }
@@ -5043,14 +5043,14 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 }
 
 // Get text icon if provided and move text cursor
-// NOTE: We support up to 999 values for iconId
+// NOTE: Up to #999# values supported for iconId
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if !defined(RAYGUI_NO_ICONS)
     *iconId = -1;
-    if (text[0] == '#')     // Maybe we have an icon!
+    if (text[0] == '#') // Maybe it is stars with an icon, ending # must be found
     {
-        char iconValue[4] = { 0 };  // Maximum length for icon value: 3 digits + '\0'
+        char iconValue[4] = { 0 }; // Maximum length for icon value: 3 digits + '\0'
 
         int pos = 1;
         while ((pos < 4) && (text[pos] >= '0') && (text[pos] <= '9'))
@@ -5147,7 +5147,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
     //   - For every line, wordwrap mode is checked (useful for GuitextBox(), read-only)
 
     // Get text lines (using '\n' as delimiter) to be processed individually
-    // WARNING: We can't use GuiTextSplit() function because it can be already used
+    // WARNING: GuiTextSplit() function can't be used now because it can have already been used
     // before the GuiDrawText() call and its buffer is static, it would be overriden :(
     int lineCount = 0;
     const char **lines = GetTextLines(text, &lineCount);
@@ -5171,7 +5171,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         Vector2 textBoundsPosition = { textBounds.x, textBounds.y };
         float textBoundsWidthOffset = 0.0f;
 
-        // NOTE: We get text size after icon has been processed
+        // NOTE: Get text size after icon has been processed
         // WARNING: GuiGetTextWidth() also processes text icon to get width! -> Really needed?
         int textSizeX = GuiGetTextWidth(lines[i]);
 
@@ -5206,8 +5206,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             default: break;
         }
 
-        // NOTE: Make sure we get pixel-perfect coordinates,
-        // In case of decimals we got weird text positioning
+        // NOTE: Make sure getting pixel-perfect coordinates,
+        // In case of decimals, it could result in text positioning artifacts
         textBoundsPosition.x = (float)((int)textBoundsPosition.x);
         textBoundsPosition.y = (float)((int)textBoundsPosition.y);
         //---------------------------------------------------------------------------------
@@ -5217,7 +5217,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 #if !defined(RAYGUI_NO_ICONS)
         if (iconId >= 0)
         {
-            // NOTE: We consider icon height, probably different than text size
+            // NOTE: Considering icon height, probably different than text size
             GuiDrawIcon(iconId, (int)textBoundsPosition.x, (int)(textBounds.y + textBounds.height/2 - RAYGUI_ICON_SIZE*guiIconScale/2 + TEXT_VALIGN_PIXEL_OFFSET(textBounds.height)), guiIconScale, tint);
             textBoundsPosition.x += (float)(RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
             textBoundsWidthOffset = (float)(RAYGUI_ICON_SIZE*guiIconScale + ICON_TEXT_PADDING);
@@ -5243,8 +5243,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             int codepoint = GetCodepointNext(&lines[i][c], &codepointSize);
             int index = GetGlyphIndex(guiFont, codepoint);
 
-            // NOTE: Normally we exit the decoding sequence as soon as a bad byte is found (and return 0x3f)
-            // but we need to draw all of the bad bytes using the '?' symbol moving one byte
+            // NOTE: Normally, exiting the decoding sequence as soon as a bad byte is found (and return 0x3f)
+            // but all of the bad bytes need to be drawn using the '?' symbol, moving one byte
             if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
 
             // Get glyph width to check if it goes out of bounds
@@ -5422,7 +5422,7 @@ static const char **GuiTextSplit(const char *text, char delimiter, int *count, i
 
     if (textRow != NULL) textRow[0] = 0;
 
-    // Count how many substrings we have on text and point to every one
+    // Count how many substrings text contains and point to every one of them
     for (int i = 0; i < RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE; i++)
     {
         buffer[i] = text[i];
@@ -5839,7 +5839,7 @@ const char **TextSplit(const char *text, char delimiter, int *count)
     {
         counter = 1;
 
-        // Count how many substrings we have on text and point to every one
+        // Count how many substrings text contains and point to every one of them
         for (int i = 0; i < RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE; i++)
         {
             buffer[i] = text[i];
@@ -5947,9 +5947,9 @@ static const char *CodepointToUTF8(int codepoint, int *byteSize)
 }
 
 // Get next codepoint in a UTF-8 encoded text, scanning until '\0' is found
-// When a invalid UTF-8 byte is encountered we exit as soon as possible and a '?'(0x3f) codepoint is returned
+// When a invalid UTF-8 byte is encountered, exiting as soon as possible and returning a '?'(0x3f) codepoint
 // Total number of bytes processed are returned as a parameter
-// NOTE: the standard says U+FFFD should be returned in case of errors
+// NOTE: The standard says U+FFFD should be returned in case of errors
 // but that character is not supported by the default font in raylib
 static int GetCodepointNext(const char *text, int *codepointSize)
 {
