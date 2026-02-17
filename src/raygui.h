@@ -5424,18 +5424,19 @@ static void GuiTooltip(Rectangle controlRec)
 
         if ((controlRec.x + textSize.x + 16) > GetScreenWidth()) controlRec.x -= (textSize.x + 16 - controlRec.width);
 
-        int numberOfLines;
-        GetTextLines(guiTooltipPtr, &numberOfLines);
-        if ((controlRec.y + controlRec.height + textSize.y + 4 + 8 * numberOfLines) > GetScreenHeight())
-            controlRec.y -= (controlRec.height + textSize.y + 4 + 8 * numberOfLines);
+        int lineCount = 0;
+        GetTextLines(guiTooltipPtr, &lineCount); // Only using the line count
+        if ((controlRec.y + controlRec.height + textSize.y + 4 + 8*lineCount) > GetScreenHeight())
+            controlRec.y -= (controlRec.height + textSize.y + 4 + 8*lineCount);
 
-        GuiPanel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f * numberOfLines }, NULL);
+        // TODO: Probably TEXT_LINE_SPACING should be considered on panel size instead of hardcoding 8.0f
+        GuiPanel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f*lineCount }, NULL);
 
         int textPadding = GuiGetStyle(LABEL, TEXT_PADDING);
         int textAlignment = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
         GuiSetStyle(LABEL, TEXT_PADDING, 0);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-        GuiLabel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f * numberOfLines }, guiTooltipPtr);
+        GuiLabel(RAYGUI_CLITERAL(Rectangle){ controlRec.x, controlRec.y + controlRec.height + 4, textSize.x + 16, textSize.y + 8.0f*lineCount }, guiTooltipPtr);
         GuiSetStyle(LABEL, TEXT_ALIGNMENT, textAlignment);
         GuiSetStyle(LABEL, TEXT_PADDING, textPadding);
     }
