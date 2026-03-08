@@ -50,12 +50,13 @@
 #include "../styles/style_dark.h"              // raygui style: dark
 #include "../styles/style_bluish.h"            // raygui style: bluish
 #include "../styles/style_terminal.h"          // raygui style: terminal
-#include "../styles/style_candy.h"                 
-#include "../styles/style_cherry.h"             
-#include "../styles/style_ashes.h"              
-#include "../styles/style_enefete.h"                
-#include "../styles/style_sunny.h"              
-#include "../styles/style_amber.h"              
+#include "../styles/style_candy.h"             // raygui style: candy
+#include "../styles/style_cherry.h"            // raygui style: cherry
+#include "../styles/style_ashes.h"             // raygui style: ashes
+#include "../styles/style_enefete.h"           // raygui style: enefete
+#include "../styles/style_sunny.h"             // raygui style: sunny
+#include "../styles/style_amber.h"             // raygui style: amber
+#include "../styles/style_genesis.h"           // raygui style: genesis
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -189,6 +190,7 @@ int main()
                 case 10: GuiLoadStyleEnefete(); break;
                 case 11: GuiLoadStyleSunny(); break;
                 case 12: GuiLoadStyleAmber(); break;
+                case 13: GuiLoadStyleGenesis(); break;
                 default: break;
             }
 
@@ -234,7 +236,8 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber", &visualStyleActive);
+            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, 
+                "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (dropDown000EditMode || dropDown001EditMode) GuiUnlock();
