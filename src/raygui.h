@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v5.0-dev - A simple and easy-to-use immediate-mode gui library
+*   raygui v5.0 - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -1096,11 +1096,11 @@ typedef enum {
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
-#include <ctype.h>              // required for: isspace() [GuiTextBox()]
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
 #include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
 #include <math.h>               // Required for: roundf() [GuiColorPicker()]
+#include <ctype.h>              // Required for: isspace() [GuiTextBox()]
 
 // Allow custom memory allocators
 #if defined(RAYGUI_MALLOC) || defined(RAYGUI_CALLOC) || defined(RAYGUI_FREE)
@@ -1544,22 +1544,22 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 //----------------------------------------------------------------------------------
 // Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
-static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize);    // Load style from memory (binary only)
+static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize); // Load style from memory (binary only)
 
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
-static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint);     // Gui draw text using default font
-static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color);   // Gui draw rectangle using default raygui style
+static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint); // Gui draw text using default font
+static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color); // Gui draw rectangle using default raygui style
 
-static char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow);   // Split controls text into multiple strings
+static char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow); // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
 
-static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue);   // Scroll bar control, used by GuiScrollPanel()
+static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue); // Scroll bar control, used by GuiScrollPanel()
 static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
 
-static Color GuiFade(Color color, float alpha);         // Fade color by an alpha factor
+static Color GuiFade(Color color, float alpha); // Fade color by an alpha factor
 
 //----------------------------------------------------------------------------------
 // Gui Setup Functions Definition
@@ -2718,7 +2718,6 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 textLength -= accCodepointSize;
             }
-
             else if ((textLength > textBoxCursorIndex) && (GUI_KEY_PRESSED(KEY_DELETE) || (GUI_KEY_DOWN(KEY_DELETE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, after current cursor position
@@ -2768,7 +2767,6 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 textLength -= accCodepointSize;
                 textBoxCursorIndex -= accCodepointSize;
             }
-
             else if ((textBoxCursorIndex > 0) && (GUI_KEY_PRESSED(KEY_BACKSPACE) || (GUI_KEY_DOWN(KEY_BACKSPACE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, before current cursor position
@@ -5393,7 +5391,8 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         }
 
         if (wrapMode == TEXT_WRAP_NONE) posOffsetY += (float)(GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
-        else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) posOffsetY += (textOffsetY + (float)GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
+        else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) 
+            posOffsetY += (textOffsetY + GuiGetStyle(DEFAULT, TEXT_SIZE));
         //---------------------------------------------------------------------------------
     }
 
