@@ -2,7 +2,7 @@
 //                                                                              //
 // StyleAsCode exporter v2.0 - Style data exported as a values array            //
 //                                                                              //
-// USAGE: On init call: GuiLoadStyleDark();                                   //
+// USAGE: On init call: GuiLoadStyleGenesis();                                   //
 //                                                                              //
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
@@ -11,41 +11,41 @@
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
-#define DARK_STYLE_PROPS_COUNT  23
+#define GENESIS_STYLE_PROPS_COUNT  23
 
-// Custom style name: Dark
-static const GuiStyleProp darkStyleProps[DARK_STYLE_PROPS_COUNT] = {
-    { 0, 0, (int)0x878787ff },    // DEFAULT_BORDER_COLOR_NORMAL 
-    { 0, 1, (int)0x2c2c2cff },    // DEFAULT_BASE_COLOR_NORMAL 
-    { 0, 2, (int)0xc3c3c3ff },    // DEFAULT_TEXT_COLOR_NORMAL 
-    { 0, 3, (int)0xe1e1e1ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
-    { 0, 4, (int)0x848484ff },    // DEFAULT_BASE_COLOR_FOCUSED 
-    { 0, 5, (int)0x181818ff },    // DEFAULT_TEXT_COLOR_FOCUSED 
-    { 0, 6, (int)0x000000ff },    // DEFAULT_BORDER_COLOR_PRESSED 
-    { 0, 7, (int)0xefefefff },    // DEFAULT_BASE_COLOR_PRESSED 
-    { 0, 8, (int)0x202020ff },    // DEFAULT_TEXT_COLOR_PRESSED 
-    { 0, 9, (int)0x6a6a6aff },    // DEFAULT_BORDER_COLOR_DISABLED 
-    { 0, 10, (int)0x818181ff },    // DEFAULT_BASE_COLOR_DISABLED 
-    { 0, 11, (int)0x606060ff },    // DEFAULT_TEXT_COLOR_DISABLED 
+// Custom style name: Genesis
+static const GuiStyleProp genesisStyleProps[GENESIS_STYLE_PROPS_COUNT] = {
+    { 0, 0, (int)0x667384ff },    // DEFAULT_BORDER_COLOR_NORMAL 
+    { 0, 1, (int)0x181b1eff },    // DEFAULT_BASE_COLOR_NORMAL 
+    { 0, 2, (int)0xc2c8d0ff },    // DEFAULT_TEXT_COLOR_NORMAL 
+    { 0, 3, (int)0xd3dbdfff },    // DEFAULT_BORDER_COLOR_FOCUSED 
+    { 0, 4, (int)0xa7afb0ff },    // DEFAULT_BASE_COLOR_FOCUSED 
+    { 0, 5, (int)0x020202ff },    // DEFAULT_TEXT_COLOR_FOCUSED 
+    { 0, 6, (int)0x181b1eff },    // DEFAULT_BORDER_COLOR_PRESSED 
+    { 0, 7, (int)0xac3c3cff },    // DEFAULT_BASE_COLOR_PRESSED 
+    { 0, 8, (int)0xdededeff },    // DEFAULT_TEXT_COLOR_PRESSED 
+    { 0, 9, (int)0x3e4550ff },    // DEFAULT_BORDER_COLOR_DISABLED 
+    { 0, 10, (int)0x2e353dff },    // DEFAULT_BASE_COLOR_DISABLED 
+    { 0, 11, (int)0x484f57ff },    // DEFAULT_TEXT_COLOR_DISABLED 
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
-    { 0, 18, (int)0x9d9d9dff },    // DEFAULT_LINE_COLOR 
-    { 0, 19, (int)0x3c3c3cff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 18, (int)0x96a3b4ff },    // DEFAULT_LINE_COLOR 
+    { 0, 19, (int)0x292c33ff },    // DEFAULT_BACKGROUND_COLOR 
     { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
-    { 1, 5, (int)0xf7f7f7ff },    // LABEL_TEXT_COLOR_FOCUSED 
-    { 1, 8, (int)0x898989ff },    // LABEL_TEXT_COLOR_PRESSED 
-    { 4, 5, (int)0xb0b0b0ff },    // SLIDER_TEXT_COLOR_FOCUSED 
-    { 5, 5, (int)0x848484ff },    // PROGRESSBAR_TEXT_COLOR_FOCUSED 
-    { 9, 5, (int)0xf5f5f5ff },    // TEXTBOX_TEXT_COLOR_FOCUSED 
-    { 10, 5, (int)0xf6f6f6ff },    // VALUEBOX_TEXT_COLOR_FOCUSED 
+    { 1, 5, (int)0x97a9aeff },    // LABEL_TEXT_COLOR_FOCUSED 
+    { 4, 5, (int)0xa69a9aff },    // SLIDER_TEXT_COLOR_FOCUSED 
+    { 4, 6, (int)0xc3ccd5ff },    // SLIDER_BORDER_COLOR_PRESSED 
+    { 6, 6, (int)0xa7aeb5ff },    // CHECKBOX_BORDER_COLOR_PRESSED 
+    { 9, 5, (int)0xa9a5a5ff },    // TEXTBOX_TEXT_COLOR_FOCUSED 
+    { 10, 5, (int)0xc9c7c7ff },    // VALUEBOX_TEXT_COLOR_FOCUSED 
 };
 
 // WARNING: This style uses a custom font: "PixelOperator.ttf" (size: 16, spacing: 0)
 
-#define DARK_STYLE_FONT_ATLAS_COMP_SIZE 2138
+#define GENESIS_STYLE_FONT_ATLAS_COMP_SIZE 2138
 
 // Font atlas image pixels data: DEFLATE compressed
-static unsigned char darkFontData[DARK_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
+static unsigned char genesisFontData[GENESIS_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
     0xdd, 0xdb, 0x92, 0xa5, 0xba, 0x0d, 0x00, 0x50, 0xff, 0xff, 0x4f, 0x2b, 0x0f, 0xa9, 0x54, 0x32, 0x95, 0xd3, 0x80, 0x64,
     0xd9, 0x98, 0x9e, 0x35, 0xeb, 0xad, 0x77, 0x4f, 0xc3, 0x36, 0x96, 0x6f, 0x80, 0x1c, 0x03, 0x00, 0x00, 0x00, 0xf8, 0xeb,
     0xc5, 0x3f, 0xfe, 0x24, 0x7e, 0xfc, 0xcd, 0x78, 0xfc, 0x77, 0xae, 0x7f, 0xfe, 0x9f, 0x4f, 0xe3, 0xe2, 0x58, 0xcf, 0xce,
@@ -155,7 +155,7 @@ static unsigned char darkFontData[DARK_STYLE_FONT_ATLAS_COMP_SIZE] = { 0xed,
     0x00, 0x00, 0x00, 0x80, 0x93, 0xfc, 0xfb, 0x9f, 0x72, 0x00, 0xf1, 0x0f, 0xfc, 0x75, 0xf1, 0xff, 0x2f };
 
 // Font glyphs rectangles data (on atlas)
-static const Rectangle darkFontRecs[189] = {
+static const Rectangle genesisFontRecs[189] = {
     { 4, 4, 4 , 16 },
     { 16, 4, 1 , 9 },
     { 25, 4, 3 , 3 },
@@ -349,7 +349,7 @@ static const Rectangle darkFontRecs[189] = {
 
 // Font glyphs info data
 // NOTE: No glyphs.image data provided
-static const GlyphInfo darkFontGlyphs[189] = {
+static const GlyphInfo genesisFontGlyphs[189] = {
     { 32, 0, 0, 4, { 0 }},
     { 33, 2, 4, 5, { 0 }},
     { 34, 2, 4, 7, { 0 }},
@@ -541,20 +541,20 @@ static const GlyphInfo darkFontGlyphs[189] = {
     { 255, 1, 4, 7, { 0 }},
 };
 
-// Style loading function: Dark
-static void GuiLoadStyleDark(void)
+// Style loading function: Genesis
+static void GuiLoadStyleGenesis(void)
 {
     // Load style properties provided
     // NOTE: Default properties are propagated
-    for (int i = 0; i < DARK_STYLE_PROPS_COUNT; i++)
+    for (int i = 0; i < GENESIS_STYLE_PROPS_COUNT; i++)
     {
-        GuiSetStyle(darkStyleProps[i].controlId, darkStyleProps[i].propertyId, darkStyleProps[i].propertyValue);
+        GuiSetStyle(genesisStyleProps[i].controlId, genesisStyleProps[i].propertyId, genesisStyleProps[i].propertyValue);
     }
 
     // Custom font loading
     // NOTE: Compressed font image data (DEFLATE), it requires DecompressData() function
-    int darkFontDataSize = 0;
-    unsigned char *data = DecompressData(darkFontData, DARK_STYLE_FONT_ATLAS_COMP_SIZE, &darkFontDataSize);
+    int genesisFontDataSize = 0;
+    unsigned char *data = DecompressData(genesisFontData, GENESIS_STYLE_FONT_ATLAS_COMP_SIZE, &genesisFontDataSize);
     Image imFont = { data, 512, 256, 1, 2 };
 
     Font font = { 0 };
@@ -568,12 +568,12 @@ static void GuiLoadStyleDark(void)
     // Copy char recs data from global fontRecs
     // NOTE: Required to avoid issues if trying to free font
     font.recs = (Rectangle *)RAYGUI_MALLOC(font.glyphCount*sizeof(Rectangle));
-    memcpy(font.recs, darkFontRecs, font.glyphCount*sizeof(Rectangle));
+    memcpy(font.recs, genesisFontRecs, font.glyphCount*sizeof(Rectangle));
 
     // Copy font char info data from global fontChars
     // NOTE: Required to avoid issues if trying to free font
     font.glyphs = (GlyphInfo *)RAYGUI_MALLOC(font.glyphCount*sizeof(GlyphInfo));
-    memcpy(font.glyphs, darkFontGlyphs, font.glyphCount*sizeof(GlyphInfo));
+    memcpy(font.glyphs, genesisFontGlyphs, font.glyphCount*sizeof(GlyphInfo));
 
     GuiSetFont(font);
 
