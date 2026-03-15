@@ -97,7 +97,7 @@ int main()
     int listViewExScrollIndex = 0;
     int listViewExActive = 2;
     int listViewExFocus = -1;
-    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
 
     Color colorPickerValue = RED;
 
@@ -205,7 +205,7 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-            
+
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
@@ -236,7 +236,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, 
+            GuiComboBox((Rectangle){ 25, 480, 125, 30 },
                 "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
@@ -271,7 +271,7 @@ int main()
             //GuiDisable();
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
             GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
-            
+
             GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
             GuiEnable();
 
