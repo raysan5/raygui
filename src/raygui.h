@@ -1096,6 +1096,11 @@ typedef enum {
 
 #if defined(RAYGUI_IMPLEMENTATION)
 
+#if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable: 4996)  // Disable MSVC C4996 warning for standard C functions (fopen, sscanf, etc.)
+#endif
+
 #include <stdio.h>              // Required for: FILE, fopen(), fclose(), fprintf(), feof(), fscanf(), snprintf(), vsprintf() [GuiLoadStyle(), GuiLoadIcons()]
 #include <string.h>             // Required for: strlen() [GuiTextBox(), GuiValueBox()], memset(), memcpy()
 #include <stdarg.h>             // Required for: va_list, va_start(), vfprintf(), va_end() [TextFormat()]
@@ -6048,5 +6053,9 @@ static int GetCodepointNext(const char *text, int *codepointSize)
     return codepoint;
 }
 #endif      // RAYGUI_STANDALONE
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif
 
 #endif      // RAYGUI_IMPLEMENTATION
