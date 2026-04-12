@@ -4772,8 +4772,11 @@ void GuiSetIconScale(int scale)
     if (scale >= 1) guiIconScale = scale;
 }
 
-// Get text width considering gui style and icon size (if required)
-int GuiGetTextWidth(const char *text)
+// Get the width of a single line of gui text (stops at '\n' or '\0'),
+// considering the gui font/style and an optional icon marker '#NNN#' at
+// the start. Icon detection matches GetTextIcon(): 1..3 digits, skip past
+// the closing '#'.
+static int GetLineWidth(const char *text)
 {
     #if !defined(ICON_TEXT_PADDING)
         #define ICON_TEXT_PADDING   4
@@ -4784,16 +4787,12 @@ int GuiGetTextWidth(const char *text)
 
     if ((text != NULL) && (text[0] != '\0'))
     {
+        // Icon marker: '#' + 1..3 digits + '#' (matches GetTextIcon())
         if (text[0] == '#')
         {
-            for (int i = 1; (i < 5) && (text[i] != '\0'); i++)
-            {
-                if (text[i] == '#')
-                {
-                    textIconOffset = i;
-                    break;
-                }
-            }
+            int pos = 1;
+            while ((pos < 4) && (text[pos] >= '0') && (text[pos] <= '9')) pos++;
+            if (text[pos] == '#') textIconOffset = pos + 1;
         }
 
         text += textIconOffset;
@@ -4801,10 +4800,10 @@ int GuiGetTextWidth(const char *text)
         // Make sure guiFont is set, GuiGetStyle() initializes it lazynessly
         float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
 
-        // Custom MeasureText() implementation
+        // Custom MeasureText() implementation -- single line only
         if ((guiFont.texture.id > 0) && (text != NULL))
         {
-            // Get size in bytes of text, considering end of line and line break
+            // Get size in bytes of the line, considering end of line and line break
             int size = 0;
             for (int i = 0; i < MAX_LINE_BUFFER_SIZE; i++)
             {
@@ -4832,6 +4831,32 @@ int GuiGetTextWidth(const char *text)
     }
 
     return (int)textSize.x;
+}
+
+// Get text width considering gui style and icon size (if required).
+// For multi-line text (containing '\n'), returns the width of the widest line.
+int GuiGetTextWidth(const char *text)
+{
+    if (text == NULL) return 0;
+
+    int maxWidth = 0;
+    const char *linePtr = text;
+
+    while ((linePtr[0] != '\0') && ((linePtr - text) < MAX_LINE_BUFFER_SIZE))
+    {
+        int lineWidth = GetLineWidth(linePtr);
+        if (lineWidth > maxWidth) maxWidth = lineWidth;
+
+        // Skip to the next '\n' (or end of string/buffer)
+        while ((linePtr[0] != '\0') && (linePtr[0] != '\n') && ((linePtr - text) < MAX_LINE_BUFFER_SIZE))
+        {
+            linePtr++;
+        }
+        // Advance past the '\n' delimiter to the start of the next line
+        if (linePtr[0] == '\n') linePtr++;
+    }
+
+    return maxWidth;
 }
 
 #endif      // !RAYGUI_NO_ICONS
@@ -5223,9 +5248,9 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         Vector2 textBoundsPosition = { textBounds.x, textBounds.y };
         float textBoundsWidthOffset = 0.0f;
 
-        // NOTE: Get text size after icon has been processed
-        // WARNING: GuiGetTextWidth() also processes text icon to get width! -> Really needed?
-        int textSizeX = GuiGetTextWidth(lines[i]);
+        // NOTE: Icon was already stripped above by GetTextIcon(); GetLineWidth()
+        // takes no icon path here and returns only the glyph width of this line.
+        int textSizeX = GetLineWidth(lines[i]);
 
         // If text requires an icon, add size to measure
         if (iconId >= 0)
