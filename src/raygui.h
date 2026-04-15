@@ -360,6 +360,10 @@
     #if !defined(_CRT_SECURE_NO_WARNINGS)
         #define _CRT_SECURE_NO_WARNINGS                 // Disable unsafe warnings on scanf() functions in MSVC
     #endif
+#else
+    #if defined(BUILD_LIBTYPE_SHARED)
+        #define RAYGUIAPI __attribute__((visibility("default"))) // Building as a Unix shared library (.so/.dylib)
+    #endif
 #endif
 
 // Function specifiers definition
