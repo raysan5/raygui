@@ -2381,6 +2381,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
             {
                 *active += 1;
                 if (*active >= itemCount) *active = 0;      // Cyclic combobox
+				result = 1;
             }
 
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
