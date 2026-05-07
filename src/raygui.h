@@ -753,6 +753,7 @@ RAYGUIAPI int GuiGetStyle(int control, int property);           // Get one style
 
 // Styles loading functions
 RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
+RAYGUIAPI void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize); // Load style from memory (binary only)
 RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
 
 // Tooltips management functions
@@ -1548,8 +1549,6 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 //----------------------------------------------------------------------------------
 // Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
-static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize); // Load style from memory (binary only)
-
 static Rectangle GetTextBounds(int control, Rectangle bounds);  // Get text bounds considering control bounds
 static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon if provided and move text cursor
 
@@ -4485,6 +4484,228 @@ void GuiLoadStyle(const char *fileName)
     }
 }
 
+// Load style from memory
+// WARNING: Binary files only
+void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
+{
+    unsigned char *fileDataPtr = (unsigned char *)fileData;
+
+    char signature[5] = { 0 };
+    short version = 0;
+    short reserved = 0;
+    int propertyCount = 0;
+
+    memcpy(signature, fileDataPtr, 4);
+    memcpy(&version, fileDataPtr + 4, sizeof(short));
+    memcpy(&reserved, fileDataPtr + 4 + 2, sizeof(short));
+    memcpy(&propertyCount, fileDataPtr + 4 + 2 + 2, sizeof(int));
+    fileDataPtr += 12;
+
+    if ((signature[0] == 'r') &&
+        (signature[1] == 'G') &&
+        (signature[2] == 'S') &&
+        (signature[3] == ' '))
+    {
+        short controlId = 0;
+        short propertyId = 0;
+        unsigned int propertyValue = 0;
+
+        for (int i = 0; i < propertyCount; i++)
+        {
+            memcpy(&controlId, fileDataPtr, sizeof(short));
+            memcpy(&propertyId, fileDataPtr + 2, sizeof(short));
+            memcpy(&propertyValue, fileDataPtr + 2 + 2, sizeof(unsigned int));
+            fileDataPtr += 8;
+
+            if (controlId == 0) // DEFAULT control
+            {
+                // If a DEFAULT property is loaded, it is propagated to all controls
+                // NOTE: All DEFAULT properties should be defined first in the file
+                GuiSetStyle(0, (int)propertyId, propertyValue);
+
+                if (propertyId < RAYGUI_MAX_PROPS_BASE) for (int j = 1; j < RAYGUI_MAX_CONTROLS; j++) GuiSetStyle(j, (int)propertyId, propertyValue);
+            }
+            else GuiSetStyle((int)controlId, (int)propertyId, propertyValue);
+        }
+
+        // Font loading is highly dependant on raylib API to load font data and image
+
+#if !defined(RAYGUI_STANDALONE)
+        // Load custom font if available
+        int fontDataSize = 0;
+        memcpy(&fontDataSize, fileDataPtr, sizeof(int));
+        fileDataPtr += 4;
+
+        if (fontDataSize > 0)
+        {
+            Font font = { 0 };
+            int fontType = 0;   // 0-Normal, 1-SDF
+
+            memcpy(&font.baseSize, fileDataPtr, sizeof(int));
+            memcpy(&font.glyphCount, fileDataPtr + 4, sizeof(int));
+            memcpy(&fontType, fileDataPtr + 4 + 4, sizeof(int));
+            fileDataPtr += 12;
+
+            // Load font white rectangle
+            Rectangle fontWhiteRec = { 0 };
+            memcpy(&fontWhiteRec, fileDataPtr, sizeof(Rectangle));
+            fileDataPtr += 16;
+
+            // Load font image parameters
+            int fontImageUncompSize = 0;
+            int fontImageCompSize = 0;
+            memcpy(&fontImageUncompSize, fileDataPtr, sizeof(int));
+            memcpy(&fontImageCompSize, fileDataPtr + 4, sizeof(int));
+            fileDataPtr += 8;
+
+            Image imFont = { 0 };
+            imFont.mipmaps = 1;
+            memcpy(&imFont.width, fileDataPtr, sizeof(int));
+            memcpy(&imFont.height, fileDataPtr + 4, sizeof(int));
+            memcpy(&imFont.format, fileDataPtr + 4 + 4, sizeof(int));
+            fileDataPtr += 12;
+
+            if ((fontImageCompSize > 0) && (fontImageCompSize != fontImageUncompSize))
+            {
+                // Compressed font atlas image data (DEFLATE), it requires DecompressData()
+                int dataUncompSize = 0;
+                unsigned char *compData = (unsigned char *)RAYGUI_CALLOC(fontImageCompSize, sizeof(unsigned char));
+                memcpy(compData, fileDataPtr, fontImageCompSize);
+                fileDataPtr += fontImageCompSize;
+
+                imFont.data = DecompressData(compData, fontImageCompSize, &dataUncompSize);
+
+                // Security check, dataUncompSize must match the provided fontImageUncompSize
+                if (dataUncompSize != fontImageUncompSize) RAYGUI_LOG("WARNING: Uncompressed font atlas image data could be corrupted");
+
+                RAYGUI_FREE(compData);
+            }
+            else
+            {
+                // Font atlas image data is not compressed
+                imFont.data = (unsigned char *)RAYGUI_CALLOC(fontImageUncompSize, sizeof(unsigned char));
+                memcpy(imFont.data, fileDataPtr, fontImageUncompSize);
+                fileDataPtr += fontImageUncompSize;
+            }
+
+            if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
+            font.texture = LoadTextureFromImage(imFont);
+
+            RAYGUI_FREE(imFont.data);
+
+            // Validate font atlas texture was loaded correctly
+            if (font.texture.id != 0)
+            {
+                // Load font recs data
+                int recsDataSize = font.glyphCount*sizeof(Rectangle);
+                int recsDataCompressedSize = 0;
+
+                // WARNING: Version 400 adds the compression size parameter
+                if (version >= 400)
+                {
+                    // RGS files version 400 support compressed recs data
+                    memcpy(&recsDataCompressedSize, fileDataPtr, sizeof(int));
+                    fileDataPtr += sizeof(int);
+                }
+
+                if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
+                {
+                    // Recs data is compressed, uncompress it
+                    unsigned char *recsDataCompressed = (unsigned char *)RAYGUI_CALLOC(recsDataCompressedSize, sizeof(unsigned char));
+
+                    memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
+                    fileDataPtr += recsDataCompressedSize;
+
+                    int recsDataUncompSize = 0;
+                    font.recs = (Rectangle *)DecompressData(recsDataCompressed, recsDataCompressedSize, &recsDataUncompSize);
+
+                    // Security check, data uncompressed size must match the expected original data size
+                    if (recsDataUncompSize != recsDataSize) RAYGUI_LOG("WARNING: Uncompressed font recs data could be corrupted");
+
+                    RAYGUI_FREE(recsDataCompressed);
+                }
+                else
+                {
+                    // Recs data is uncompressed
+                    font.recs = (Rectangle *)RAYGUI_CALLOC(font.glyphCount, sizeof(Rectangle));
+                    for (int i = 0; i < font.glyphCount; i++)
+                    {
+                        memcpy(&font.recs[i], fileDataPtr, sizeof(Rectangle));
+                        fileDataPtr += sizeof(Rectangle);
+                    }
+                }
+
+                // Load font glyphs info data
+                int glyphsDataSize = font.glyphCount*16;    // 16 bytes data per glyph
+                int glyphsDataCompressedSize = 0;
+
+                // WARNING: Version 400 adds the compression size parameter
+                if (version >= 400)
+                {
+                    // RGS files version 400 support compressed glyphs data
+                    memcpy(&glyphsDataCompressedSize, fileDataPtr, sizeof(int));
+                    fileDataPtr += sizeof(int);
+                }
+
+                // Allocate required glyphs space to fill with data
+                font.glyphs = (GlyphInfo *)RAYGUI_CALLOC(font.glyphCount, sizeof(GlyphInfo));
+
+                if ((glyphsDataCompressedSize > 0) && (glyphsDataCompressedSize != glyphsDataSize))
+                {
+                    // Glyphs data is compressed, uncompress it
+                    unsigned char *glypsDataCompressed = (unsigned char *)RAYGUI_CALLOC(glyphsDataCompressedSize, sizeof(unsigned char));
+
+                    memcpy(glypsDataCompressed, fileDataPtr, glyphsDataCompressedSize);
+                    fileDataPtr += glyphsDataCompressedSize;
+
+                    int glyphsDataUncompSize = 0;
+                    unsigned char *glyphsDataUncomp = DecompressData(glypsDataCompressed, glyphsDataCompressedSize, &glyphsDataUncompSize);
+
+                    // Security check, data uncompressed size must match the expected original data size
+                    if (glyphsDataUncompSize != glyphsDataSize) RAYGUI_LOG("WARNING: Uncompressed font glyphs data could be corrupted");
+
+                    unsigned char *glyphsDataUncompPtr = glyphsDataUncomp;
+
+                    for (int i = 0; i < font.glyphCount; i++)
+                    {
+                        memcpy(&font.glyphs[i].value, glyphsDataUncompPtr, sizeof(int));
+                        memcpy(&font.glyphs[i].offsetX, glyphsDataUncompPtr + 4, sizeof(int));
+                        memcpy(&font.glyphs[i].offsetY, glyphsDataUncompPtr + 8, sizeof(int));
+                        memcpy(&font.glyphs[i].advanceX, glyphsDataUncompPtr + 12, sizeof(int));
+                        glyphsDataUncompPtr += 16;
+                    }
+
+                    RAYGUI_FREE(glypsDataCompressed);
+                    RAYGUI_FREE(glyphsDataUncomp);
+                }
+                else
+                {
+                    // Glyphs data is uncompressed
+                    for (int i = 0; i < font.glyphCount; i++)
+                    {
+                        memcpy(&font.glyphs[i].value, fileDataPtr, sizeof(int));
+                        memcpy(&font.glyphs[i].offsetX, fileDataPtr + 4, sizeof(int));
+                        memcpy(&font.glyphs[i].offsetY, fileDataPtr + 8, sizeof(int));
+                        memcpy(&font.glyphs[i].advanceX, fileDataPtr + 12, sizeof(int));
+                        fileDataPtr += 16;
+                    }
+                }
+            }
+            else font = GetFontDefault();   // Fallback in case of errors loading font atlas texture
+
+            GuiSetFont(font);
+
+            // Set font texture source rectangle to be used as white texture to draw shapes
+            // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
+            if ((fontWhiteRec.x > 0) &&
+                (fontWhiteRec.y > 0) &&
+                (fontWhiteRec.width > 0) &&
+                (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
+        }
+#endif
+    }
+}
+
 // Load style default over global style
 void GuiLoadStyleDefault(void)
 {
@@ -4843,228 +5064,6 @@ int GuiGetTextWidth(const char *text)
 //----------------------------------------------------------------------------------
 // Module Internal Functions Definition
 //----------------------------------------------------------------------------------
-// Load style from memory
-// WARNING: Binary files only
-static void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
-{
-    unsigned char *fileDataPtr = (unsigned char *)fileData;
-
-    char signature[5] = { 0 };
-    short version = 0;
-    short reserved = 0;
-    int propertyCount = 0;
-
-    memcpy(signature, fileDataPtr, 4);
-    memcpy(&version, fileDataPtr + 4, sizeof(short));
-    memcpy(&reserved, fileDataPtr + 4 + 2, sizeof(short));
-    memcpy(&propertyCount, fileDataPtr + 4 + 2 + 2, sizeof(int));
-    fileDataPtr += 12;
-
-    if ((signature[0] == 'r') &&
-        (signature[1] == 'G') &&
-        (signature[2] == 'S') &&
-        (signature[3] == ' '))
-    {
-        short controlId = 0;
-        short propertyId = 0;
-        unsigned int propertyValue = 0;
-
-        for (int i = 0; i < propertyCount; i++)
-        {
-            memcpy(&controlId, fileDataPtr, sizeof(short));
-            memcpy(&propertyId, fileDataPtr + 2, sizeof(short));
-            memcpy(&propertyValue, fileDataPtr + 2 + 2, sizeof(unsigned int));
-            fileDataPtr += 8;
-
-            if (controlId == 0) // DEFAULT control
-            {
-                // If a DEFAULT property is loaded, it is propagated to all controls
-                // NOTE: All DEFAULT properties should be defined first in the file
-                GuiSetStyle(0, (int)propertyId, propertyValue);
-
-                if (propertyId < RAYGUI_MAX_PROPS_BASE) for (int j = 1; j < RAYGUI_MAX_CONTROLS; j++) GuiSetStyle(j, (int)propertyId, propertyValue);
-            }
-            else GuiSetStyle((int)controlId, (int)propertyId, propertyValue);
-        }
-
-        // Font loading is highly dependant on raylib API to load font data and image
-
-#if !defined(RAYGUI_STANDALONE)
-        // Load custom font if available
-        int fontDataSize = 0;
-        memcpy(&fontDataSize, fileDataPtr, sizeof(int));
-        fileDataPtr += 4;
-
-        if (fontDataSize > 0)
-        {
-            Font font = { 0 };
-            int fontType = 0;   // 0-Normal, 1-SDF
-
-            memcpy(&font.baseSize, fileDataPtr, sizeof(int));
-            memcpy(&font.glyphCount, fileDataPtr + 4, sizeof(int));
-            memcpy(&fontType, fileDataPtr + 4 + 4, sizeof(int));
-            fileDataPtr += 12;
-
-            // Load font white rectangle
-            Rectangle fontWhiteRec = { 0 };
-            memcpy(&fontWhiteRec, fileDataPtr, sizeof(Rectangle));
-            fileDataPtr += 16;
-
-            // Load font image parameters
-            int fontImageUncompSize = 0;
-            int fontImageCompSize = 0;
-            memcpy(&fontImageUncompSize, fileDataPtr, sizeof(int));
-            memcpy(&fontImageCompSize, fileDataPtr + 4, sizeof(int));
-            fileDataPtr += 8;
-
-            Image imFont = { 0 };
-            imFont.mipmaps = 1;
-            memcpy(&imFont.width, fileDataPtr, sizeof(int));
-            memcpy(&imFont.height, fileDataPtr + 4, sizeof(int));
-            memcpy(&imFont.format, fileDataPtr + 4 + 4, sizeof(int));
-            fileDataPtr += 12;
-
-            if ((fontImageCompSize > 0) && (fontImageCompSize != fontImageUncompSize))
-            {
-                // Compressed font atlas image data (DEFLATE), it requires DecompressData()
-                int dataUncompSize = 0;
-                unsigned char *compData = (unsigned char *)RAYGUI_CALLOC(fontImageCompSize, sizeof(unsigned char));
-                memcpy(compData, fileDataPtr, fontImageCompSize);
-                fileDataPtr += fontImageCompSize;
-
-                imFont.data = DecompressData(compData, fontImageCompSize, &dataUncompSize);
-
-                // Security check, dataUncompSize must match the provided fontImageUncompSize
-                if (dataUncompSize != fontImageUncompSize) RAYGUI_LOG("WARNING: Uncompressed font atlas image data could be corrupted");
-
-                RAYGUI_FREE(compData);
-            }
-            else
-            {
-                // Font atlas image data is not compressed
-                imFont.data = (unsigned char *)RAYGUI_CALLOC(fontImageUncompSize, sizeof(unsigned char));
-                memcpy(imFont.data, fileDataPtr, fontImageUncompSize);
-                fileDataPtr += fontImageUncompSize;
-            }
-
-            if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
-            font.texture = LoadTextureFromImage(imFont);
-
-            RAYGUI_FREE(imFont.data);
-
-            // Validate font atlas texture was loaded correctly
-            if (font.texture.id != 0)
-            {
-                // Load font recs data
-                int recsDataSize = font.glyphCount*sizeof(Rectangle);
-                int recsDataCompressedSize = 0;
-
-                // WARNING: Version 400 adds the compression size parameter
-                if (version >= 400)
-                {
-                    // RGS files version 400 support compressed recs data
-                    memcpy(&recsDataCompressedSize, fileDataPtr, sizeof(int));
-                    fileDataPtr += sizeof(int);
-                }
-
-                if ((recsDataCompressedSize > 0) && (recsDataCompressedSize != recsDataSize))
-                {
-                    // Recs data is compressed, uncompress it
-                    unsigned char *recsDataCompressed = (unsigned char *)RAYGUI_CALLOC(recsDataCompressedSize, sizeof(unsigned char));
-
-                    memcpy(recsDataCompressed, fileDataPtr, recsDataCompressedSize);
-                    fileDataPtr += recsDataCompressedSize;
-
-                    int recsDataUncompSize = 0;
-                    font.recs = (Rectangle *)DecompressData(recsDataCompressed, recsDataCompressedSize, &recsDataUncompSize);
-
-                    // Security check, data uncompressed size must match the expected original data size
-                    if (recsDataUncompSize != recsDataSize) RAYGUI_LOG("WARNING: Uncompressed font recs data could be corrupted");
-
-                    RAYGUI_FREE(recsDataCompressed);
-                }
-                else
-                {
-                    // Recs data is uncompressed
-                    font.recs = (Rectangle *)RAYGUI_CALLOC(font.glyphCount, sizeof(Rectangle));
-                    for (int i = 0; i < font.glyphCount; i++)
-                    {
-                        memcpy(&font.recs[i], fileDataPtr, sizeof(Rectangle));
-                        fileDataPtr += sizeof(Rectangle);
-                    }
-                }
-
-                // Load font glyphs info data
-                int glyphsDataSize = font.glyphCount*16;    // 16 bytes data per glyph
-                int glyphsDataCompressedSize = 0;
-
-                // WARNING: Version 400 adds the compression size parameter
-                if (version >= 400)
-                {
-                    // RGS files version 400 support compressed glyphs data
-                    memcpy(&glyphsDataCompressedSize, fileDataPtr, sizeof(int));
-                    fileDataPtr += sizeof(int);
-                }
-
-                // Allocate required glyphs space to fill with data
-                font.glyphs = (GlyphInfo *)RAYGUI_CALLOC(font.glyphCount, sizeof(GlyphInfo));
-
-                if ((glyphsDataCompressedSize > 0) && (glyphsDataCompressedSize != glyphsDataSize))
-                {
-                    // Glyphs data is compressed, uncompress it
-                    unsigned char *glypsDataCompressed = (unsigned char *)RAYGUI_CALLOC(glyphsDataCompressedSize, sizeof(unsigned char));
-
-                    memcpy(glypsDataCompressed, fileDataPtr, glyphsDataCompressedSize);
-                    fileDataPtr += glyphsDataCompressedSize;
-
-                    int glyphsDataUncompSize = 0;
-                    unsigned char *glyphsDataUncomp = DecompressData(glypsDataCompressed, glyphsDataCompressedSize, &glyphsDataUncompSize);
-
-                    // Security check, data uncompressed size must match the expected original data size
-                    if (glyphsDataUncompSize != glyphsDataSize) RAYGUI_LOG("WARNING: Uncompressed font glyphs data could be corrupted");
-
-                    unsigned char *glyphsDataUncompPtr = glyphsDataUncomp;
-
-                    for (int i = 0; i < font.glyphCount; i++)
-                    {
-                        memcpy(&font.glyphs[i].value, glyphsDataUncompPtr, sizeof(int));
-                        memcpy(&font.glyphs[i].offsetX, glyphsDataUncompPtr + 4, sizeof(int));
-                        memcpy(&font.glyphs[i].offsetY, glyphsDataUncompPtr + 8, sizeof(int));
-                        memcpy(&font.glyphs[i].advanceX, glyphsDataUncompPtr + 12, sizeof(int));
-                        glyphsDataUncompPtr += 16;
-                    }
-
-                    RAYGUI_FREE(glypsDataCompressed);
-                    RAYGUI_FREE(glyphsDataUncomp);
-                }
-                else
-                {
-                    // Glyphs data is uncompressed
-                    for (int i = 0; i < font.glyphCount; i++)
-                    {
-                        memcpy(&font.glyphs[i].value, fileDataPtr, sizeof(int));
-                        memcpy(&font.glyphs[i].offsetX, fileDataPtr + 4, sizeof(int));
-                        memcpy(&font.glyphs[i].offsetY, fileDataPtr + 8, sizeof(int));
-                        memcpy(&font.glyphs[i].advanceX, fileDataPtr + 12, sizeof(int));
-                        fileDataPtr += 16;
-                    }
-                }
-            }
-            else font = GetFontDefault();   // Fallback in case of errors loading font atlas texture
-
-            GuiSetFont(font);
-
-            // Set font texture source rectangle to be used as white texture to draw shapes
-            // NOTE: It makes possible to draw shapes and text (full UI) in a single draw call
-            if ((fontWhiteRec.x > 0) &&
-                (fontWhiteRec.y > 0) &&
-                (fontWhiteRec.width > 0) &&
-                (fontWhiteRec.height > 0)) SetShapesTexture(font.texture, fontWhiteRec);
-        }
-#endif
-    }
-}
-
 // Get text bounds considering control bounds
 static Rectangle GetTextBounds(int control, Rectangle bounds)
 {
