@@ -4794,7 +4794,7 @@ int GuiGetTextWidth(const char *text)
             {
                 if (text[i] == '#')
                 {
-                    textIconOffset = i;
+                    if(TextToInteger(&text[1]) < RAYGUI_ICON_MAX_ICONS) textIconOffset = i;
                     break;
                 }
             }
