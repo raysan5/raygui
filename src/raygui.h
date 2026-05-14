@@ -1360,7 +1360,6 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 
 // NOTE: A pointer to current icons array should be defined
 static unsigned int *guiIconsPtr = guiIcons;
-static int guiIconsCount = RAYGUI_ICON_MAX_ICONS;
 
 #endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
@@ -4619,13 +4618,8 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             }
             else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
 
-            if (iconCount > RAYGUI_ICON_MAX_ICONS)
-            {
-                iconCount = RAYGUI_ICON_MAX_ICONS;
-            }
             // Read icons data directly over internal icons array
             fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
-            guiIconsCount = iconCount;
         }
 
         fclose(rgiFile);
@@ -4677,7 +4671,6 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
 
         int iconDataSize = iconCount*((int)iconSize*(int)iconSize/32)*(int)sizeof(unsigned int);
         guiIconsPtr = (unsigned int *)RAYGUI_MALLOC(iconDataSize);
-        guiIconsCount = iconCount;
 
         memcpy(guiIconsPtr, fileDataPtr, iconDataSize);
     }
@@ -5037,7 +5030,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 }
 
 // Get text icon if provided and move text cursor
-// NOTE: We support up to 999 values for iconId
+// NOTE: We support up to RAYGUI_ICON_MAX_ICONS values for iconId
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if !defined(RAYGUI_NO_ICONS)
@@ -5056,7 +5049,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
         if (text[pos] == '#')
         {
             int rawIconId = TextToInteger(iconValue);
-            if (rawIconId < guiIconsCount)
+            if (rawIconId < RAYGUI_ICON_MAX_ICONS)
             {
                 *iconId = rawIconId;
 
