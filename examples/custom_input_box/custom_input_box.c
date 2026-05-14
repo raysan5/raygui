@@ -97,7 +97,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
     Rectangle textBounds = { 0 };
     if (text != NULL)
     {
-        textBounds.width = (float)GetTextWidth(text) + 2;
+        textBounds.width = (float)GuiGetTextWidth(text) + 2;
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(VALUEBOX, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height / 2.0f - GuiGetStyle(DEFAULT, TEXT_SIZE) / 2.0f;
@@ -124,7 +124,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
             // Only allow keys in range [48..57]
             if (keyCount < RAYGUI_VALUEBOX_MAX_CHARS)
             {
-                if (GetTextWidth(textValue) < bounds.width)
+                if (GuiGetTextWidth(textValue) < bounds.width)
                 {
                     int key = GetCharPressed();
                     if ((key >= 48) && (key <= 57) && guiFloatingPointIndex)
@@ -211,7 +211,7 @@ int GuiFloatBox(Rectangle bounds, const char* text, float* value, int minValue, 
     if (editMode)
     {
         // NOTE: ValueBox internal text is always centered
-        Rectangle cursor = { bounds.x + GetTextWidth(textValue) / 2.0f + bounds.width / 2.0f + 1, bounds.y + 2.0f * GuiGetStyle(VALUEBOX, BORDER_WIDTH), 4, bounds.height - 4 * GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
+        Rectangle cursor = { bounds.x + GuiGetTextWidth(textValue) / 2.0f + bounds.width / 2.0f + 1, bounds.y + 2.0f * GuiGetStyle(VALUEBOX, BORDER_WIDTH), 4, bounds.height - 4 * GuiGetStyle(VALUEBOX, BORDER_WIDTH) };
         GuiDrawRectangle(cursor, 0, BLANK, Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
     }
 

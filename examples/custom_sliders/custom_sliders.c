@@ -182,7 +182,7 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
     if (textTop != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textTop);
+        textBounds.width = (float)GuiGetTextWidth(textTop);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
         textBounds.y = bounds.y - textBounds.height - GuiGetStyle(SLIDER, TEXT_PADDING);
@@ -193,7 +193,7 @@ float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *te
     if (textBottom != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textBottom);
+        textBounds.width = (float)GuiGetTextWidth(textBottom);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
         textBounds.y = bounds.y + bounds.height + GuiGetStyle(SLIDER, TEXT_PADDING);
@@ -304,7 +304,7 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
     if (textLeft != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textLeft);
+        textBounds.width = (float)GuiGetTextWidth(textLeft);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -315,7 +315,7 @@ bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *text
     if (textRight != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textRight);
+        textBounds.width = (float)GuiGetTextWidth(textRight);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
         textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
@@ -435,7 +435,7 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
     if (textTop != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textTop);
+        textBounds.width = (float)GuiGetTextWidth(textTop);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
         textBounds.y = bounds.y - textBounds.height - GuiGetStyle(SLIDER, TEXT_PADDING);
@@ -446,7 +446,7 @@ bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const cha
     if (textBottom != NULL)
     {
         Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textBottom);
+        textBounds.width = (float)GuiGetTextWidth(textBottom);
         textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
         textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
         textBounds.y = bounds.y + bounds.height + GuiGetStyle(SLIDER, TEXT_PADDING);

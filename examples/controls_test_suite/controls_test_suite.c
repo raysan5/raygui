@@ -50,12 +50,13 @@
 #include "../styles/style_dark.h"              // raygui style: dark
 #include "../styles/style_bluish.h"            // raygui style: bluish
 #include "../styles/style_terminal.h"          // raygui style: terminal
-#include "../styles/style_candy.h"                 
-#include "../styles/style_cherry.h"             
-#include "../styles/style_ashes.h"              
-#include "../styles/style_enefete.h"                
-#include "../styles/style_sunny.h"              
-#include "../styles/style_amber.h"              
+#include "../styles/style_candy.h"             // raygui style: candy
+#include "../styles/style_cherry.h"            // raygui style: cherry
+#include "../styles/style_ashes.h"             // raygui style: ashes
+#include "../styles/style_enefete.h"           // raygui style: enefete
+#include "../styles/style_sunny.h"             // raygui style: sunny
+#include "../styles/style_amber.h"             // raygui style: amber
+#include "../styles/style_genesis.h"           // raygui style: genesis
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -96,7 +97,7 @@ int main()
     int listViewExScrollIndex = 0;
     int listViewExActive = 2;
     int listViewExFocus = -1;
-    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
 
     Color colorPickerValue = RED;
 
@@ -189,6 +190,7 @@ int main()
                 case 10: GuiLoadStyleEnefete(); break;
                 case 11: GuiLoadStyleSunny(); break;
                 case 12: GuiLoadStyleAmber(); break;
+                case 13: GuiLoadStyleGenesis(); break;
                 default: break;
             }
 
@@ -208,6 +210,7 @@ int main()
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
+            if (showTextInputBox) GuiLock();
 
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
@@ -233,10 +236,13 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber", &visualStyleActive);
+            GuiComboBox((Rectangle){ 25, 480, 125, 30 },
+                "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
-            GuiUnlock();
+            if (dropDown000EditMode || dropDown001EditMode) GuiUnlock();
+            if (showTextInputBox) GuiLock();    // Stay locked
+
             GuiSetStyle(DROPDOWNBOX, TEXT_PADDING, 4);
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
             if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
@@ -265,7 +271,7 @@ int main()
             //GuiDisable();
             GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
             GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
-            
+
             GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
             GuiEnable();
 
@@ -300,6 +306,8 @@ int main()
 
             if (showTextInputBox)
             {
+                GuiUnlock();
+
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
                 int result = GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", "Ok;Cancel", textInput, 255, NULL);
 

@@ -31,7 +31,7 @@ static const GuiStyleProp terminalStyleProps[TERMINAL_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0xe6fce3ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x0c1505ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Mecha.ttf" (size: 16, spacing: 0)

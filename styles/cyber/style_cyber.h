@@ -31,7 +31,7 @@ static const GuiStyleProp cyberStyleProps[CYBER_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x81c0d0ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x00222bff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000015 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000007 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "Kyrou7Wide.ttf" (size: 14, spacing: 0)

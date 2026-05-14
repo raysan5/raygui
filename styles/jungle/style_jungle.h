@@ -31,7 +31,7 @@ static const GuiStyleProp jungleStyleProps[JUNGLE_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x638465ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x2b3a3aff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000012 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000006 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "PixelIntv.otf" (size: 12, spacing: 0)

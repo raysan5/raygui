@@ -30,7 +30,7 @@ static const GuiStyleProp ashesStyleProps[ASHES_STYLE_PROPS_COUNT] = {
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 18, (int)0x9dadb1ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x6b6b6bff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "v5loxical.ttf" (size: 16, spacing: 1)

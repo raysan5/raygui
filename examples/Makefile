@@ -100,7 +100,7 @@ endif
 # Required for ldconfig or other tools that do not perform path expansion.
 ifeq ($(PLATFORM),PLATFORM_DESKTOP)
     ifeq ($(PLATFORM_OS),LINUX)
-        RAYLIB_PREFIX ?= ..
+        RAYLIB_PREFIX ?= ../../raylib
         RAYLIB_PATH    = $(realpath $(RAYLIB_PREFIX))
     endif
 endif

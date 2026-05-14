@@ -323,7 +323,7 @@ double GuiDMValueBox(Rectangle bounds, double value, double minValue, double max
     Rectangle textBounds = {bounds.x + GuiGetStyle(VALUEBOX, BORDER_WIDTH) + textPadding, bounds.y + GuiGetStyle(VALUEBOX, BORDER_WIDTH), 
         bounds.width - 2*(GuiGetStyle(VALUEBOX, BORDER_WIDTH) + textPadding), bounds.height - 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH)};
     
-    int textWidth = GetTextWidth(textValue);
+    int textWidth = GuiGetTextWidth(textValue);
     if(textWidth > textBounds.width) textBounds.width = textWidth;
     
     if (state == STATE_PRESSED)
@@ -338,7 +338,7 @@ double GuiDMValueBox(Rectangle bounds, double value, double minValue, double max
             if(cursor > 0) {
                 char c = textValue[cursor];
                 textValue[cursor] = '\0';
-                textWidthCursor = GetTextWidth(textValue);
+                textWidthCursor = GuiGetTextWidth(textValue);
                 textValue[cursor] = c;
             }
             //DrawRectangle(bounds.x + textWidthCursor + textPadding + 2, bounds.y + 2*GuiGetStyle(VALUEBOX, BORDER_WIDTH), 1, bounds.height - 4*GuiGetStyle(VALUEBOX, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(VALUEBOX, BORDER_COLOR_PRESSED)), guiAlpha));
@@ -608,7 +608,7 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
                         // draw X, Y, Z, W values (only when expanded)
                         if(!PROP_CHECK_FLAG(&props[p], GUI_PFLAG_COLLAPSED)) {
                             Rectangle slotBounds = { propBounds.x, propBounds.y+GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)+1, propBounds.width, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)-2};
-                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GetTextWidth("A"), slotBounds.height};
+                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GuiGetTextWidth("A"), slotBounds.height};
                             Rectangle valBounds = { lblBounds.x+lblBounds.width+PROPERTY_PADDING, slotBounds.y, propBounds.width-lblBounds.width-2*PROPERTY_PADDING, slotBounds.height};
                             GuiDrawText("X", lblBounds, TEXT_ALIGN_LEFT, textColor);
                             props[p].value.v2.x = GuiDMSpinner(valBounds, props[p].value.v2.x, 0.0, 0.0, 1.0, PROPERTY_DECIMAL_DIGITS, (propState == STATE_FOCUSED) && CheckCollisionPointRec(mousePos, slotBounds) );
@@ -647,7 +647,7 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
                         // draw X, Y, Width, Height values (only when expanded)
                         if(!PROP_CHECK_FLAG(&props[p], GUI_PFLAG_COLLAPSED)) {
                             Rectangle slotBounds = { propBounds.x, propBounds.y+GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)+1, propBounds.width, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)-2};
-                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GetTextWidth("Height"), slotBounds.height};
+                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GuiGetTextWidth("Height"), slotBounds.height};
                             Rectangle valBounds = { lblBounds.x+lblBounds.width+PROPERTY_PADDING, slotBounds.y, propBounds.width-lblBounds.width-2*PROPERTY_PADDING, slotBounds.height};
                             GuiDrawText("X", lblBounds, TEXT_ALIGN_LEFT, textColor);
                             props[p].value.vrect.x = GuiDMSpinner(valBounds, props[p].value.vrect.x, 0.0, 0.0, 1.0, 0, (propState == STATE_FOCUSED) && CheckCollisionPointRec(mousePos, slotBounds) );
@@ -685,8 +685,8 @@ void GuiDMPropertyList(Rectangle bounds, GuiDMProperty* props, int count, int* f
                         // draw R, G, B, A values (only when expanded)
                         if(!PROP_CHECK_FLAG(&props[p], GUI_PFLAG_COLLAPSED)) {
                             Rectangle slotBounds = { propBounds.x, propBounds.y+GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)+1, propBounds.width, GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)-2};
-                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GetTextWidth("A"), slotBounds.height};
-                            Rectangle valBounds = { lblBounds.x+lblBounds.width+PROPERTY_PADDING, slotBounds.y, GetTextWidth("000000"), slotBounds.height};
+                            Rectangle lblBounds = { propBounds.x+PROPERTY_PADDING, slotBounds.y, GuiGetTextWidth("A"), slotBounds.height};
+                            Rectangle valBounds = { lblBounds.x+lblBounds.width+PROPERTY_PADDING, slotBounds.y, GuiGetTextWidth("000000"), slotBounds.height};
                             Rectangle sbarBounds = { valBounds.x + valBounds.width + PROPERTY_PADDING, slotBounds.y, slotBounds.width - 3*PROPERTY_PADDING - lblBounds.width - valBounds.width, slotBounds.height };
                             
                             if(sbarBounds.width <= GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT)-2) valBounds.width = propBounds.width-lblBounds.width-2*PROPERTY_PADDING; // hide slider when no space

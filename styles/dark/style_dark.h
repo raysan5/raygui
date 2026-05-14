@@ -31,7 +31,7 @@ static const GuiStyleProp darkStyleProps[DARK_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x9d9d9dff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x3c3c3cff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 5, (int)0xf7f7f7ff },    // LABEL_TEXT_COLOR_FOCUSED 
     { 1, 8, (int)0x898989ff },    // LABEL_TEXT_COLOR_PRESSED 
     { 4, 5, (int)0xb0b0b0ff },    // SLIDER_TEXT_COLOR_FOCUSED 

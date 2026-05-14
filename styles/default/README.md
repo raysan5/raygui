@@ -19,4 +19,4 @@ Several options are provided to add the style to a `raygui` application, choose 
 
 ## about font
 
-raylib font by Ramon Santamaria ([@raysan5](https://twitter.com/raysan5)).
+raylib font by Ramon Santamaria ([@raysan5](https://github.com/raysan5)).
