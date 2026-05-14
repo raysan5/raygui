@@ -422,6 +422,44 @@
     #define GUI_INPUT_KEY           GetCharPressed()
 #endif
 
+// Macros to define internally used icons
+#if !defined(RAYGUI_ICON_WINDOW_CLOSE)
+    #define RAYGUI_ICON_WINDOW_CLOSE        ICON_CROSS_SMALL
+#endif
+#if !defined(RAYGUI_ICON_TABBAR_CLOSE)
+    #define RAYGUI_ICON_TABBAR_CLOSE        ICON_CROSS_SMALL
+#endif
+#if !defined(RAYGUI_ICON_DROPDOWN_ARROW_UP)
+    #define RAYGUI_ICON_DROPDOWN_ARROW_UP   ICON_ARROW_UP_FILL
+#endif
+#if !defined(RAYGUI_ICON_DROPDOWN_ARROW_DOWN)
+    #define RAYGUI_ICON_DROPDOWN_ARROW_DOWN ICON_ARROW_DOWN_FILL
+#endif
+#if !defined(RAYGUI_ICON_SPINNER_LEFT)
+    #define RAYGUI_ICON_SPINNER_LEFT        ICON_ARROW_LEFT_FILL
+#endif
+#if !defined(RAYGUI_ICON_SPINNER_RIGHT)
+    #define RAYGUI_ICON_SPINNER_RIGHT       ICON_ARROW_RIGHT_FILL
+#endif
+#if !defined(RAYGUI_ICON_TEXTBOX_EYE_ON)
+    #define RAYGUI_ICON_TEXTBOX_EYE_ON      ICON_EYE_ON
+#endif
+#if !defined(RAYGUI_ICON_TEXTBOX_EYE_OFF)
+    #define RAYGUI_ICON_TEXTBOX_EYE_OFF     ICON_EYE_OFF
+#endif
+#if !defined(RAYGUI_ICON_SCROLLBAR_UP)
+    #define RAYGUI_ICON_SCROLLBAR_UP        ICON_ARROW_UP_FILL
+#endif
+#if !defined(RAYGUI_ICON_SCROLLBAR_DOWN)
+    #define RAYGUI_ICON_SCROLLBAR_DOWN      ICON_ARROW_DOWN_FILL
+#endif
+#if !defined(RAYGUI_ICON_SCROLLBAR_LEFT)
+    #define RAYGUI_ICON_SCROLLBAR_LEFT      ICON_ARROW_LEFT_FILL
+#endif
+#if !defined(RAYGUI_ICON_SCROLLBAR_RIGHT)
+    #define RAYGUI_ICON_SCROLLBAR_RIGHT     ICON_ARROW_RIGHT_FILL
+#endif
+
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 // NOTE: Some types are required for RAYGUI_STANDALONE usage
@@ -1689,7 +1727,7 @@ int GuiWindowBox(Rectangle bounds, const char *title)
 #if defined(RAYGUI_NO_ICONS)
     result = GuiButton(closeButtonRec, "x");
 #else
-    result = GuiButton(closeButtonRec, GuiIconText(ICON_CROSS_SMALL, NULL));
+    result = GuiButton(closeButtonRec, GuiIconText(RAYGUI_ICON_WINDOW_CLOSE, NULL));
 #endif
     GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
     GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
@@ -1849,7 +1887,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
 #if defined(RAYGUI_NO_ICONS)
             if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
 #else
-            if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
+            if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, GuiIconText(RAYGUI_ICON_TABBAR_CLOSE, NULL))) result = i;
 #endif
             GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
@@ -2529,7 +2567,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         GuiDrawText("v", RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 2, 10, 10 },
             TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
 #else
-        GuiDrawText(direction? GuiIconText(ICON_ARROW_UP_FILL, NULL) : GuiIconText(ICON_ARROW_DOWN_FILL, NULL), // "#121#" : "#120#", 
+        GuiDrawText(direction? GuiIconText(RAYGUI_ICON_DROPDOWN_ARROW_UP, NULL) : GuiIconText(RAYGUI_ICON_DROPDOWN_ARROW_DOWN, NULL),
             RAYGUI_CLITERAL(Rectangle){ bounds.x + bounds.width - GuiGetStyle(DROPDOWNBOX, ARROW_PADDING), bounds.y + bounds.height/2 - 6, 10, 10 },
             TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));   // ICON_ARROW_DOWN_FILL
 #endif
@@ -3037,8 +3075,8 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
     if (GuiButton(leftButtonBound, "<")) tempValue--;
     if (GuiButton(rightButtonBound, ">")) tempValue++;
 #else
-    if (GuiButton(leftButtonBound, GuiIconText(ICON_ARROW_LEFT_FILL, NULL))) tempValue--;
-    if (GuiButton(rightButtonBound, GuiIconText(ICON_ARROW_RIGHT_FILL, NULL))) tempValue++;
+    if (GuiButton(leftButtonBound, GuiIconText(RAYGUI_ICON_SPINNER_LEFT, NULL))) tempValue--;
+    if (GuiButton(rightButtonBound, GuiIconText(RAYGUI_ICON_SPINNER_RIGHT, NULL))) tempValue++;
 #endif
 
     if (!editMode)
@@ -4268,7 +4306,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
             (*secretViewActive == 1)? "O" : "*", secretViewActive);
 #else
         GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, 
-            (*secretViewActive == 1)? GuiIconText(ICON_EYE_ON, NULL) : GuiIconText(ICON_EYE_OFF, NULL), secretViewActive);
+            (*secretViewActive == 1)? GuiIconText(RAYGUI_ICON_TEXTBOX_EYE_ON, NULL) : GuiIconText(RAYGUI_ICON_TEXTBOX_EYE_OFF, NULL), secretViewActive);
 #endif
     }
     else
@@ -5801,12 +5839,12 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
             RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
             TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(DROPDOWNBOX, TEXT + (state*3))));
 #else
-        GuiDrawText(isVertical? GuiIconText(ICON_ARROW_UP_FILL, NULL) : GuiIconText(ICON_ARROW_LEFT_FILL, NULL), // "#121#" : "#118#",
+        GuiDrawText(isVertical? GuiIconText(RAYGUI_ICON_SCROLLBAR_UP, NULL) : GuiIconText(RAYGUI_ICON_SCROLLBAR_LEFT, NULL),
             RAYGUI_CLITERAL(Rectangle){ arrowUpLeft.x, arrowUpLeft.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)));   // ICON_ARROW_UP_FILL / ICON_ARROW_LEFT_FILL
-        GuiDrawText(isVertical? GuiIconText(ICON_ARROW_DOWN_FILL, NULL) : GuiIconText(ICON_ARROW_RIGHT_FILL, NULL), // "#120#" : "#119#",
+            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)));
+        GuiDrawText(isVertical? GuiIconText(RAYGUI_ICON_SCROLLBAR_DOWN, NULL) : GuiIconText(RAYGUI_ICON_SCROLLBAR_RIGHT, NULL),
             RAYGUI_CLITERAL(Rectangle){ arrowDownRight.x, arrowDownRight.y, isVertical? bounds.width : bounds.height, isVertical? bounds.width : bounds.height },
-            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)));   // ICON_ARROW_DOWN_FILL / ICON_ARROW_RIGHT_FILL
+            TEXT_ALIGN_CENTER, GetColor(GuiGetStyle(SCROLLBAR, TEXT + state*3)));
 #endif
     }
     //--------------------------------------------------------------------
