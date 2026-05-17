@@ -18,7 +18,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2026 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -427,7 +427,7 @@ static void ReloadDirectoryFiles(GuiWindowFileDialogState *state)
 {
     UnloadDirectoryFiles(state->dirFiles);
 
-    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, (state->filterExt[0] == '\0')? NULL : state->filterExt, false);
+    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, (state->filterExt[0] == '\0')? "*.*" : TextFormat("DIRS*;%s", state->filterExt), false);
     state->itemFocused = 0;
 
     // Reset dirFilesIcon memory
