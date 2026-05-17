@@ -5020,7 +5020,7 @@ int GuiGetTextWidth(const char *text)
             {
                 if (text[i] == '#')
                 {
-                    textIconOffset = i;
+                    if(TextToInteger(&text[1]) < RAYGUI_ICON_MAX_ICONS) textIconOffset = i;
                     break;
                 }
             }
@@ -5104,7 +5104,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
 }
 
 // Get text icon if provided and move text cursor
-// NOTE: Up to #999# values supported for iconId
+// NOTE: Up to RAYGUI_ICON_MAX_ICONS supported for iconId
 static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if !defined(RAYGUI_NO_ICONS)
@@ -5122,11 +5122,15 @@ static const char *GetTextIcon(const char *text, int *iconId)
 
         if (text[pos] == '#')
         {
-            *iconId = TextToInteger(iconValue);
+            int rawIconId = TextToInteger(iconValue);
+            if (rawIconId < RAYGUI_ICON_MAX_ICONS)
+            {
+                *iconId = rawIconId;
 
-            // Move text pointer after icon
-            // WARNING: If only icon provided, it could point to EOL character: '\0'
-            if (*iconId >= 0) text += (pos + 1);
+                // Move text pointer after icon
+                // WARNING: If only icon provided, it could point to EOL character: '\0'
+                if (*iconId >= 0) text += (pos + 1);
+            }
         }
     }
 #endif
