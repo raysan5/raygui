@@ -4776,6 +4776,8 @@ void GuiSetIconScale(int scale)
     if (scale >= 1) guiIconScale = scale;
 }
 
+#endif      // !RAYGUI_NO_ICONS
+
 // Get text width considering gui style and icon size (if required)
 int GuiGetTextWidth(const char *text)
 {
@@ -4837,8 +4839,6 @@ int GuiGetTextWidth(const char *text)
 
     return (int)textSize.x;
 }
-
-#endif      // !RAYGUI_NO_ICONS
 
 //----------------------------------------------------------------------------------
 // Module Internal Functions Definition
