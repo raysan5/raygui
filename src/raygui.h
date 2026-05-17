@@ -1,6 +1,6 @@
 /*******************************************************************************************
 *
-*   raygui v5.0 - A simple and easy-to-use immediate-mode gui library
+*   raygui v5.0-dev - A simple and easy-to-use immediate-mode gui library
 *
 *   DESCRIPTION:
 *       raygui is a tools-dev-focused immediate-mode-gui library based on raylib but also
@@ -141,7 +141,8 @@
 *           Draw text bounds rectangles for debug
 *
 *   VERSIONS HISTORY:
-*       5.0 (xx-Mar-2026) ADDED: Support up to 32 controls (v500)
+*       5.0 (xx-May-2026) ADDED: Support up to 32 controls (v500)
+*                         ADDED: Support up to 512 icons (v500)
 *                         ADDED: guiControlExclusiveMode and guiControlExclusiveRec for exclusive modes
 *                         ADDED: GuiValueBoxFloat()
 *                         ADDED: GuiDropdonwBox() properties: DROPDOWN_ARROW_HIDDEN, DROPDOWN_ROLL_UP
@@ -340,8 +341,8 @@
 #ifndef RAYGUI_H
 #define RAYGUI_H
 
-#define RAYGUI_VERSION_MAJOR 4
-#define RAYGUI_VERSION_MINOR 5
+#define RAYGUI_VERSION_MAJOR 5
+#define RAYGUI_VERSION_MINOR 0
 #define RAYGUI_VERSION_PATCH 0
 #define RAYGUI_VERSION  "5.0-dev"
 
@@ -384,7 +385,7 @@
 #endif
 
 // Macros to define required UI inputs, including mapping to gamepad controls
-// TODO: Define additionally required macros for missing inputs 
+// TODO: Define additionally required macros for missing inputs
 #if !defined(GUI_BUTTON_DOWN)
     #define GUI_BUTTON_DOWN         (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
 #endif
@@ -559,6 +560,7 @@ typedef enum {
 } GuiTextWrapMode;
 
 // Gui controls
+// NOTE: Up to 16 controls supported or 32 controls (v500)
 typedef enum {
     // Default -> populates to all controls when set
     DEFAULT = 0,
@@ -579,6 +581,7 @@ typedef enum {
     COLORPICKER,
     SCROLLBAR,
     STATUSBAR
+    // NOTE: More controls can be added if required
 } GuiControl;
 
 // Gui base properties for every control
@@ -652,7 +655,7 @@ typedef enum {
 // ProgressBar
 typedef enum {
     PROGRESS_PADDING = 16,      // ProgressBar internal padding
-    PROGRESS_SIDE,              // ProgressBar increment side: 0-left->right, 1-right-left 
+    PROGRESS_SIDE,              // ProgressBar increment side: 0-left->right, 1-right-left
 } GuiProgressBarProperty;
 
 // ScrollBar
@@ -1606,7 +1609,7 @@ void GuiSetFont(Font font)
 {
     if (font.texture.id > 0)
     {
-        // NOTE: If a font is tried to be set but default style has not been lazily loaded first, 
+        // NOTE: If a font is tried to be set but default style has not been lazily loaded first,
         // it will be overwritten, so default style loading needs to be forced first
         if (!guiStyleLoaded) GuiLoadStyleDefault();
 
@@ -1792,7 +1795,9 @@ int GuiPanel(Rectangle bounds, const char *text)
 // NOTE: Using GuiToggle() for the TABS
 int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
 {
-    #define RAYGUI_TABBAR_ITEM_WIDTH    148
+    #if !defined(RAYGUI_TABBAR_ITEM_WIDTH)
+        #define RAYGUI_TABBAR_ITEM_WIDTH    148
+    #endif
 
     int result = -1;
     //GuiState state = guiState;
@@ -1803,7 +1808,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
     else if (*active > count - 1) *active = count - 1;
 
     int offsetX = 0;    // Required in case tabs go out of screen
-    offsetX = (*active + 2)*RAYGUI_TABBAR_ITEM_WIDTH - GetScreenWidth();
+    offsetX = (*active*RAYGUI_TABBAR_ITEM_WIDTH) - GetScreenWidth();
     if (offsetX < 0) offsetX = 0;
 
     bool toggle = false;    // Required for individual toggles
@@ -1812,7 +1817,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
     //--------------------------------------------------------------------
     for (int i = 0; i < count; i++)
     {
-        tabBounds.x = bounds.x + (RAYGUI_TABBAR_ITEM_WIDTH + 4)*i - offsetX;
+        tabBounds.x = bounds.x + (RAYGUI_TABBAR_ITEM_WIDTH + 4)*i + offsetX;
 
         if (tabBounds.x < GetScreenWidth())
         {
@@ -5105,7 +5110,7 @@ static const char *GetTextIcon(const char *text, int *iconId)
 {
 #if !defined(RAYGUI_NO_ICONS)
     *iconId = -1;
-    if (text[0] == '#') // Maybe it is stars with an icon, ending # must be found
+    if (text[0] == '#') // Maybe an icon, if it starts with # but an ending # must be found
     {
         char iconValue[4] = { 0 }; // Maximum length for icon value: 3 digits + '\0'
 
@@ -5395,7 +5400,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
         }
 
         if (wrapMode == TEXT_WRAP_NONE) posOffsetY += (float)(GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
-        else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD)) 
+        else if ((wrapMode == TEXT_WRAP_CHAR) || (wrapMode == TEXT_WRAP_WORD))
             posOffsetY += (textOffsetY + GuiGetStyle(DEFAULT, TEXT_SIZE));
         //---------------------------------------------------------------------------------
     }
