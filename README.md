@@ -141,7 +141,10 @@ gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTY
 ```
 copy src\raygui.h src\raygui.c
 # For `cl` to be accessible open "Developer Command Prompt for VS 2022".
-cl /O2 /I<RELATIVE_PATH_TO_RAYLIB_INCLUDE_DIR> /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH <RELATIVE_PATH_TO_raylib.lib> msvcrt.lib winmm.lib gdi32.lib user32.lib shell32.lib /subsystem:windows /machine:x64
+cl /O2 /I<RELATIVE_PATH_TO_RAYLIB_INCLUDE_DIR> /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH <RELATIVE_PATH_TO_RAYLIB_IMPORT_LIBRARY> msvcrt.lib winmm.lib gdi32.lib user32.lib shell32.lib /subsystem:windows /machine:x64
+
+# Example:
+# cl /O2 /I../raylib-6_0_win64_msvc16/include /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH ../raylib-6_0_win64_msvc16/lib/raylibdll.lib msvcrt.lib winmm.lib gdi32.lib user32.lib shell32.lib /subsystem:windows /machine:x64
 ```
 
  - **Linux (GCC)**
