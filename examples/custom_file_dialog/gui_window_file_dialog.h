@@ -321,7 +321,7 @@ void GuiWindowFileDialog(GuiWindowFileDialogState *state)
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
 
-        // Check if a path has been selected, if it is a directory, move to that directory (and reload paths)
+        // Check if path has been selected, if it is a directory, move to that directory (and reload paths)
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
             //&& (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A)))
         {
