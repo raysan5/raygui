@@ -1561,7 +1561,7 @@ static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon
 static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint); // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color); // Gui draw rectangle using default raygui style
 
-static char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow); // Split controls text into multiple strings
+static char **GuiTextSplit(const char *text, char delimiter, int *count); // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
 
@@ -2167,47 +2167,78 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
 // Toggle Group control
 int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 {
-    #if !defined(RAYGUI_TOGGLEGROUP_MAX_ITEMS)
-        #define RAYGUI_TOGGLEGROUP_MAX_ITEMS    32
+    int result = 0;
+
+    #if !defined(RAYGUI_TOGGLEGROUP_ITEM_MAX_TEXT_SIZE)
+        #define RAYGUI_TOGGLEGROUP_ITEM_MAX_TEXT_SIZE       256
     #endif
 
-    int result = 0;
-    float initBoundsX = bounds.x;
+    // One toggle group item text
+    static char itemText[RAYGUI_TOGGLEGROUP_ITEM_MAX_TEXT_SIZE] = { 0 };
+    memset(itemText, 0, RAYGUI_TOGGLEGROUP_ITEM_MAX_TEXT_SIZE);
 
     int temp = 0;
     if (active == NULL) active = &temp;
 
     bool toggle = false;    // Required for individual toggles
 
-    // Get substrings items from text (items pointers)
-    int rows[RAYGUI_TOGGLEGROUP_MAX_ITEMS] = { 0 };
-    int itemCount = 0;
-    char **items = GuiTextSplit(text, ';', &itemCount, rows);
+    char *textPtr = text;
+    bool itemReady = false;
+    float initBoundsX = bounds.x;
+    float initBoundsY = bounds.y;
 
-    int prevRow = rows[0];
-
-    for (int i = 0; i < itemCount; i++)
+    // Text parsing needed to consider potential row and col entries (vertical/horizontal layout)
+    // when '\n' found move vertically next toggle, when ';' found move horizontally 
+    for (int c = 0, k = 0, itemIndex = 0, row = 0, col = 0, exit = 0; exit == 0; c++)
     {
-        if (prevRow != rows[i])
+        // Process text to get items one by one
+        // NOTE: Setting columns and rows index properly
+        if (textPtr[c] == '\n')
         {
-            bounds.x = initBoundsX;
-            bounds.y += (bounds.height + GuiGetStyle(TOGGLE, GROUP_PADDING));
-            prevRow = rows[i];
+            row++;
+            col = 0;
+            itemReady = true;
         }
-
-        if (i == (*active))
+        else if (textPtr[c] == ';')
         {
-            toggle = true;
-            GuiToggle(bounds, items[i], &toggle);
+            col++;
+            itemReady = true;
+        }
+        else if (textPtr[c] == '\0')
+        {
+            itemReady = true;
+            exit = 1;
         }
         else
         {
-            toggle = false;
-            GuiToggle(bounds, items[i], &toggle);
-            if (toggle) *active = i;
+            itemText[k] = textPtr[c];
+            k++;
         }
 
-        bounds.x += (bounds.width + GuiGetStyle(TOGGLE, GROUP_PADDING));
+        if (itemReady)
+        {
+            // When a next item is ready, draw its toggle
+            if (itemIndex == (*active))
+            {
+                toggle = true;
+                GuiToggle(bounds, itemText, &toggle);
+            }
+            else
+            {
+                toggle = false;
+                GuiToggle(bounds, itemText, &toggle);
+                if (toggle) *active = itemIndex;
+            }
+
+            // Calculate next item position
+            bounds.x = initBoundsX + col*(bounds.width + GuiGetStyle(TOGGLE, GROUP_PADDING));
+            bounds.y = initBoundsY + row*(bounds.height + GuiGetStyle(TOGGLE, GROUP_PADDING));
+
+            itemIndex++;
+            itemReady = false;
+            memset(itemText, 0, k + 1);
+            k = 0;
+        }
     }
 
     return result;
@@ -2228,7 +2259,7 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     int itemCount = 0;
     char **items = NULL;
 
-    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount, NULL);
+    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount);
 
     Rectangle slider = {
         0,      // Calculated later depending on the active toggle
@@ -2370,7 +2401,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
 
     // Get substrings items from text (items pointers, lengths and count)
     int itemCount = 0;
-    char **items = GuiTextSplit(text, ';', &itemCount, NULL);
+    char **items = GuiTextSplit(text, ';', &itemCount);
 
     if (*active < 0) *active = 0;
     else if (*active > (itemCount - 1)) *active = itemCount - 1;
@@ -2436,7 +2467,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
 
     // Get substrings items from text (items pointers, lengths and count)
     int itemCount = 0;
-    char **items = GuiTextSplit(text, ';', &itemCount, NULL);
+    char **items = GuiTextSplit(text, ';', &itemCount);
 
     Rectangle boundsOpen = bounds;
     boundsOpen.height = (itemCount + 1)*(bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
@@ -3625,7 +3656,7 @@ int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int *activ
     int itemCount = 0;
     char **items = NULL;
 
-    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount, NULL);
+    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount);
 
     result = GuiListViewEx(bounds, items, itemCount, scrollIndex, active, NULL);
 
@@ -4161,7 +4192,7 @@ int GuiMessageBox(Rectangle bounds, const char *title, const char *message, cons
     int result = -1;    // Returns clicked button from buttons list, 0 refers to closed window button
 
     int buttonCount = 0;
-    char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount, NULL);
+    char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + RAYGUI_MESSAGEBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - RAYGUI_MESSAGEBOX_BUTTON_HEIGHT - RAYGUI_MESSAGEBOX_BUTTON_PADDING;
@@ -4220,7 +4251,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
     int result = -1;
 
     int buttonCount = 0;
-    char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount, NULL);
+    char **buttonsText = GuiTextSplit(buttons, ';', &buttonCount);
     Rectangle buttonBounds = { 0 };
     buttonBounds.x = bounds.x + RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
     buttonBounds.y = bounds.y + bounds.height - RAYGUI_TEXTINPUTBOX_BUTTON_HEIGHT - RAYGUI_TEXTINPUTBOX_BUTTON_PADDING;
@@ -5032,7 +5063,7 @@ int GuiGetTextWidth(const char *text)
             {
                 if (text[i] == '#')
                 {
-                    if(TextToInteger(&text[1]) < RAYGUI_ICON_MAX_ICONS) textIconOffset = i;
+                    if (TextToInteger(&text[1]) < RAYGUI_ICON_MAX_ICONS) textIconOffset = i;
                     break;
                 }
             }
@@ -5475,7 +5506,7 @@ static void GuiTooltip(Rectangle controlRec)
 
 // Split controls text into multiple strings
 // Also check for multiple columns (required by GuiToggleGroup())
-static char **GuiTextSplit(const char *text, char delimiter, int *count, int *textRow)
+static char **GuiTextSplit(const char *text, char delimiter, int *count)
 {
     // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
     // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
@@ -5483,9 +5514,6 @@ static char **GuiTextSplit(const char *text, char delimiter, int *count, int *te
     //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ITEMS
     //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
     // NOTE: Those definitions could be externally provided if required
-
-    // TODO: HACK: GuiTextSplit() - Review how textRows are returned to user
-    // textRow is an externally provided array of integers that stores row number for every splitted string
 
     #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
         #define RAYGUI_TEXTSPLIT_MAX_ITEMS          128
@@ -5501,8 +5529,6 @@ static char **GuiTextSplit(const char *text, char delimiter, int *count, int *te
     result[0] = buffer;
     int counter = 1;
 
-    if (textRow != NULL) textRow[0] = 0;
-
     // Count how many substrings text contains and point to every one of them
     for (int i = 0; i < RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE; i++)
     {
@@ -5511,13 +5537,6 @@ static char **GuiTextSplit(const char *text, char delimiter, int *count, int *te
         else if ((buffer[i] == delimiter) || (buffer[i] == '\n'))
         {
             result[counter] = buffer + i + 1;
-
-            if (textRow != NULL)
-            {
-                if (buffer[i] == '\n') textRow[counter] = textRow[counter - 1] + 1;
-                else textRow[counter] = textRow[counter - 1];
-            }
-
             buffer[i] = '\0';   // Set an end of string at this point
 
             counter++;
@@ -5526,7 +5545,6 @@ static char **GuiTextSplit(const char *text, char delimiter, int *count, int *te
     }
 
     *count = counter;
-
     return result;
 }
 
