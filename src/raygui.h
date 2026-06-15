@@ -1158,7 +1158,7 @@ typedef enum {
 // NOTE 2: A different icon set could be loaded over this array using GuiLoadIcons(),
 // but loaded icons set must be same RAYGUI_ICON_SIZE and no more than RAYGUI_ICON_MAX_ICONS
 //
-// guiIcons size is by default: 256*(16*16/32) = 2048*4 = 8192 bytes = 8 KB
+// guiIcons size is by default: 512*(16*16/32) = 16384 bytes = 16 KB
 //----------------------------------------------------------------------------------
 static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = {
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,      // ICON_NONE
