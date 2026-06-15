@@ -576,7 +576,7 @@ typedef enum {
     DROPDOWNBOX,
     TEXTBOX,        // Used also for: TEXTBOXMULTI
     VALUEBOX,
-    CONTROL11,
+    TABBAR,
     LISTVIEW,
     COLORPICKER,
     SCROLLBAR,
@@ -698,8 +698,8 @@ typedef enum {
     SPINNER_BUTTON_SPACING,     // Spinner buttons separation
 } GuiValueBoxProperty;
 
-// Control11
-//typedef enum { } GuiControl11Property;
+// TabBar
+//typedef enum { } GuiTabBarProperty;
 
 // ListView
 typedef enum {
@@ -5130,7 +5130,7 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case SLIDER:
         case CHECKBOX:
         case VALUEBOX:
-        case CONTROL11:
+        case TABBAR:
             // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
         {
