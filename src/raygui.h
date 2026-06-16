@@ -584,56 +584,60 @@ typedef enum {
     // NOTE: More controls can be added if required
 } GuiControl;
 
-// Gui base properties for every control
-// NOTE: RAYGUI_MAX_PROPS_BASE properties (by default 16 properties)
+// Controls BASE properties for every control (RAYGUI_MAX_PROPS_BASE = 16)
+// NOTE: Properties required for all controls, DEFAULT control sets
+// default values for them but they can be overriden per control
 typedef enum {
-    BORDER_COLOR_NORMAL = 0,    // Control border color in STATE_NORMAL
-    BASE_COLOR_NORMAL,          // Control base color in STATE_NORMAL
-    TEXT_COLOR_NORMAL,          // Control text color in STATE_NORMAL
-    BORDER_COLOR_FOCUSED,       // Control border color in STATE_FOCUSED
-    BASE_COLOR_FOCUSED,         // Control base color in STATE_FOCUSED
-    TEXT_COLOR_FOCUSED,         // Control text color in STATE_FOCUSED
-    BORDER_COLOR_PRESSED,       // Control border color in STATE_PRESSED
-    BASE_COLOR_PRESSED,         // Control base color in STATE_PRESSED
-    TEXT_COLOR_PRESSED,         // Control text color in STATE_PRESSED
-    BORDER_COLOR_DISABLED,      // Control border color in STATE_DISABLED
-    BASE_COLOR_DISABLED,        // Control base color in STATE_DISABLED
-    TEXT_COLOR_DISABLED,        // Control text color in STATE_DISABLED
-    BORDER_WIDTH = 12,          // Control border size, 0 for no border
-    //TEXT_SIZE,                  // Control text size (glyphs max height) -> GLOBAL for all controls
-    //TEXT_SPACING,               // Control text spacing between glyphs -> GLOBAL for all controls
-    //TEXT_LINE_SPACING,          // Control text spacing between lines -> GLOBAL for all controls
-    TEXT_PADDING = 13,          // Control text padding, not considering border
-    TEXT_ALIGNMENT = 14,        // Control text horizontal alignment inside control text bound (after border and padding)
-    //TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds -> GLOBAL for all controls
+    BORDER_COLOR_NORMAL   = 0,      // Control border color in STATE_NORMAL
+    BASE_COLOR_NORMAL     = 1,      // Control base color in STATE_NORMAL
+    TEXT_COLOR_NORMAL     = 2,      // Control text color in STATE_NORMAL
+    BORDER_COLOR_FOCUSED  = 3,      // Control border color in STATE_FOCUSED
+    BASE_COLOR_FOCUSED    = 4,      // Control base color in STATE_FOCUSED
+    TEXT_COLOR_FOCUSED    = 5,      // Control text color in STATE_FOCUSED
+    BORDER_COLOR_PRESSED  = 6,      // Control border color in STATE_PRESSED
+    BASE_COLOR_PRESSED    = 7,      // Control base color in STATE_PRESSED
+    TEXT_COLOR_PRESSED    = 8,      // Control text color in STATE_PRESSED
+    BORDER_COLOR_DISABLED = 9,      // Control border color in STATE_DISABLED
+    BASE_COLOR_DISABLED   = 10,     // Control base color in STATE_DISABLED
+    TEXT_COLOR_DISABLED   = 11,     // Control text color in STATE_DISABLED
+    BORDER_WIDTH          = 12,     // Control border size, 0 for no border
+    TEXT_PADDING          = 13,     // Control text padding, not considering border
+    TEXT_ALIGNMENT        = 14,     // Control text horizontal alignment inside control text bound (after border and padding)
+    BASEPROP16            = 15      // Not used yet...
 } GuiControlProperty;
 
-// TODO: Which text styling properties should be global or per-control?
-// At this moment TEXT_PADDING and TEXT_ALIGNMENT is configured and saved per control while
-// TEXT_SIZE, TEXT_SPACING, TEXT_LINE_SPACING, TEXT_ALIGNMENT_VERTICAL, TEXT_WRAP_MODE are global and
-// should be configured by user as needed while defining the UI layout
 
-// Gui extended properties depend on control
-// NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default, max 8 properties)
+// WARNING: Some properties have been chosen to be global with DEFAULT - EXTENDED properties:
+//    - TEXT_SIZE,                  // Control text size (glyphs max height)
+//    - TEXT_SPACING,               // Control text spacing between glyphs
+//    - TEXT_LINE_SPACING,          // Control text spacing between lines
+//    - TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds
+// 
+// While other properties can be setup per globally (DEFAULT) or per control: 
+//    - TEXT_PADDING                // Control text padding, not considering border
+//    - TEXT_ALIGNMENT              // Control text horizontal alignment inside control text bound
+
+
+// Controls EXTENDED properties (RAYGUI_MAX_PROPS_EXTENDED = 8)
 //----------------------------------------------------------------------------------
-// DEFAULT extended properties
-// NOTE: Those properties are common to all controls or global
+// DEFAULT control, extended properties
+// NOTE: Those properties are global for all controls, they can not be setup per control
 // WARNING: Only 8 slots vailable for those properties by default
 typedef enum {
-    TEXT_SIZE = 16,             // Text size (glyphs max height)
-    TEXT_SPACING,               // Text spacing between glyphs
-    LINE_COLOR,                 // Line control color
-    BACKGROUND_COLOR,           // Background color
-    TEXT_LINE_SPACING,          // Text spacing between lines
-    TEXT_ALIGNMENT_VERTICAL,    // Text vertical alignment inside text bounds (after border and padding)
-    TEXT_WRAP_MODE              // Text wrap-mode inside text bounds
-    //TEXT_DECORATION             // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
-    //TEXT_DECORATION_THICK       // Text decoration line thickness
+    TEXT_SIZE             = 16,     // Text size (glyphs max height)
+    TEXT_SPACING          = 17,     // Text spacing between glyphs
+    LINE_COLOR            = 18,     // Line control color
+    BACKGROUND_COLOR      = 19,     // Background color
+    TEXT_LINE_SPACING     = 20,     // Text spacing between lines
+    TEXT_ALIGNMENT_VERTICAL = 21,   // Text vertical alignment inside text bounds (after border and padding)
+    TEXT_WRAP_MODE        = 22,     // Text wrap-mode inside text bounds
+    EXTPROP08             = 23      // Not used yet...
 } GuiDefaultProperty;
 
-// Other possible text properties:
-// TEXT_WEIGHT                  // Normal, Italic, Bold -> Requires specific font change
-// TEXT_INDENT                  // Text indentation -> Now using TEXT_PADDING...
+// Other possible text extended properties:
+// TEXT_DECORATION               // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
+// TEXT_DECORATION_THICK         // Text decoration line thickness
+// TEXT_FONT_WEIGHT              // Text font weight: Normal, Italic, Bold -> Requires specific font change
 
 // Label
 //typedef enum { } GuiLabelProperty;
@@ -706,6 +710,9 @@ typedef enum {
 } GuiTabBarProperty;
 
 // ListView
+#define SCROLLBAR_LEFT_SIDE     0
+#define SCROLLBAR_RIGHT_SIDE    1
+
 typedef enum {
     LIST_ITEMS_HEIGHT = 16,     // ListView items height
     LIST_ITEMS_SPACING,         // ListView items separation
@@ -723,9 +730,6 @@ typedef enum {
     HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
     HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
 } GuiColorPickerProperty;
-
-#define SCROLLBAR_LEFT_SIDE     0
-#define SCROLLBAR_RIGHT_SIDE    1
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -4790,7 +4794,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(DEFAULT, TEXT_SPACING, 1);              // DEFAULT, shared by all controls
     GuiSetStyle(DEFAULT, LINE_COLOR, 0x90abb5ff);       // DEFAULT specific property
     GuiSetStyle(DEFAULT, BACKGROUND_COLOR, 0xf5f5f5ff); // DEFAULT specific property
-    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 5);         // DEFAULT, pixels between lines, from bottom of first line to top of second
+    GuiSetStyle(DEFAULT, TEXT_LINE_SPACING, 12);        // DEFAULT, pixels between lines, from bottom of first line to top of second
     GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);   // DEFAULT, text aligned vertically to middle of text-bounds
 
     // Initialize control-specific property values
