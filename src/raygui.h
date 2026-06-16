@@ -701,7 +701,8 @@ typedef enum {
 // TabBar
 typedef enum { 
     TAB_ITEMS_WIDTH = 16,       // TabBar tab items width
-    TAB_CLOSE_BUTTON,           // TabBar tab close button
+    TAB_CLOSE_BUTTON,           // TabBar tab close button (0-Not shown, 1-Shown)
+    TAB_LINE_SIDE,              // TabBar tabs side (0-Bottom, 1-Top)       
 } GuiTabBarProperty;
 
 // ListView
@@ -1093,7 +1094,7 @@ typedef enum {
 } GuiIconName;
 #endif
 
-#endif
+#endif // RAYGUI_NO_ICONS
 
 #if defined(__cplusplus)
 }            // Prevents name mangling of functions
@@ -1428,7 +1429,7 @@ static unsigned int guiIcons[RAYGUI_ICON_MAX_ICONS*RAYGUI_ICON_DATA_ELEMENTS] = 
 // NOTE: A pointer to current icons array should be defined
 static unsigned int *guiIconsPtr = guiIcons;
 
-#endif      // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
+#endif // !RAYGUI_NO_ICONS && !RAYGUI_CUSTOM_ICONS
 
 #ifndef RAYGUI_ICON_SIZE
     #define RAYGUI_ICON_SIZE             0
