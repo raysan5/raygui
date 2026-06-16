@@ -563,24 +563,24 @@ typedef enum {
 // NOTE: Up to 16 controls supported or 32 controls (v500)
 typedef enum {
     // Default -> populates to all controls when set
-    DEFAULT = 0,
+    DEFAULT         = 0,
 
     // Basic controls
-    LABEL,          // Used also for: LABELBUTTON
-    BUTTON,
-    TOGGLE,         // Used also for: TOGGLEGROUP
-    SLIDER,         // Used also for: SLIDERBAR, TOGGLESLIDER
-    PROGRESSBAR,
-    CHECKBOX,
-    COMBOBOX,
-    DROPDOWNBOX,
-    TEXTBOX,        // Used also for: TEXTBOXMULTI
-    VALUEBOX,
-    TABBAR,
-    LISTVIEW,
-    COLORPICKER,
-    SCROLLBAR,
-    STATUSBAR
+    LABEL           = 1,        // Used also for: LABELBUTTON
+    BUTTON          = 2,
+    TOGGLE          = 3,        // Used also for: TOGGLEGROUP
+    SLIDER          = 4,        // Used also for: SLIDERBAR, TOGGLESLIDER
+    PROGRESSBAR     = 5,
+    CHECKBOX        = 6,
+    COMBOBOX        = 7,
+    DROPDOWNBOX     = 8,
+    TEXTBOX         = 9,        // Used also for: TEXTBOXMULTI
+    VALUEBOX        = 10,
+    TABBAR          = 11,
+    LISTVIEW        = 12,
+    COLORPICKER     = 13,
+    SCROLLBAR       = 14,
+    STATUSBAR       = 15
     // NOTE: More controls can be added if required
 } GuiControl;
 
@@ -612,8 +612,8 @@ typedef enum {
 //    - TEXT_SPACING,               // Control text spacing between glyphs
 //    - TEXT_LINE_SPACING,          // Control text spacing between lines
 //    - TEXT_WRAP_MODE              // Control text wrap-mode inside text bounds
-// 
-// While other properties can be setup per globally (DEFAULT) or per control: 
+//
+// While other properties can be setup per globally (DEFAULT) or per control:
 //    - TEXT_PADDING                // Control text padding, not considering border
 //    - TEXT_ALIGNMENT              // Control text horizontal alignment inside control text bound
 
@@ -703,10 +703,10 @@ typedef enum {
 } GuiValueBoxProperty;
 
 // TabBar
-typedef enum { 
+typedef enum {
     TAB_ITEMS_WIDTH = 16,       // TabBar tab items width
     TAB_CLOSE_BUTTON,           // TabBar tab close button (0-Not shown, 1-Shown)
-    TAB_LINE_SIDE,              // TabBar tabs side (0-Bottom, 1-Top)       
+    TAB_LINE_SIDE,              // TabBar tabs side (0-Bottom, 1-Top)
 } GuiTabBarProperty;
 
 // ListView
@@ -1808,7 +1808,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
 {
     int result = -1;
     //GuiState state = guiState;
-    
+
     int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
     Rectangle tabBounds = { bounds.x, bounds.y, tabItemsWidth, bounds.height };
 
@@ -1864,7 +1864,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
             #if defined(RAYGUI_NO_ICONS)
                 if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
             #else
-                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, 
+                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 },
                     GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
             #endif
                 GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
@@ -2198,7 +2198,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
     float initBoundsY = bounds.y;
 
     // Text parsing needed to consider potential row and col entries (vertical/horizontal layout)
-    // when '\n' found move vertically next toggle, when ';' found move horizontally 
+    // when '\n' found move vertically next toggle, when ';' found move horizontally
     for (int c = 0, k = 0, itemIndex = 0, row = 0, col = 0, exit = 0; exit == 0; c++)
     {
         // Process text to get items one by one
@@ -4312,10 +4312,10 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, co
             ((*secretViewActive == 1) || textEditMode)? text : stars, textMaxSize, textEditMode)) textEditMode = !textEditMode;
 
 #if defined(RAYGUI_NO_ICONS)
-        GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, 
+        GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT },
             (*secretViewActive == 1)? "O" : "*", secretViewActive);
 #else
-        GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT }, 
+        GuiToggle(RAYGUI_CLITERAL(Rectangle){ textBoxBounds.x + textBoxBounds.width - RAYGUI_TEXTINPUTBOX_HEIGHT, textBoxBounds.y, RAYGUI_TEXTINPUTBOX_HEIGHT, RAYGUI_TEXTINPUTBOX_HEIGHT },
             (*secretViewActive == 1)? GuiIconText(ICON_EYE_ON, NULL) : GuiIconText(ICON_EYE_OFF, NULL), secretViewActive);
 #endif
     }
@@ -4938,7 +4938,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     {
         unsigned char *fileData = NULL;
         int dataSize = 0;
-        
+
         fseek(rgiFile, 0, SEEK_END);
         int size = (int)ftell(rgiFile);
         fseek(rgiFile, 0, SEEK_SET);
@@ -4948,10 +4948,10 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
             fileData = (unsigned char *)RL_CALLOC(size, sizeof(unsigned char));
             // WARNING: File can be partially loaded but ignoring it for simplicity
             dataSize = fread(fileData, sizeof(unsigned char), size, rgiFile);
-        
+
             guiIconsName = GuiLoadIconsFromMemory(fileData, dataSize, loadIconsName);
         }
-        
+
         fclose(rgiFile);
     }
 
