@@ -770,6 +770,7 @@ RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text wit
 RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
 RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
 RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
+RAYGUIAPI char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool loadIconsName); // Load raygui icons file (.rgi) from memory into internal icons data
 RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 #endif
 
@@ -4893,8 +4894,6 @@ const char *GuiIconText(int iconId, const char *text)
 unsigned int *GuiGetIcons(void) { return guiIconsPtr; }
 
 // Load raygui icons file (.rgi)
-// NOTE: In case nameIds are required, they can be requested with loadIconsName,
-// they are returned as a guiIconsName[iconCount][RAYGUI_ICON_MAX_NAME_LENGTH],
 // WARNING: guiIconsName[]][] memory should be manually freed!
 char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 {
@@ -4903,11 +4902,11 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // Offset  | Size    | Type       | Description
     // ------------------------------------------------------
     // 0       | 4       | char       | Signature: "rGI "
-    // 4       | 2       | short      | Version: 100
+    // 4       | 2       | short      | Version: 100, 500 (raygui 5.0)
     // 6       | 2       | short      | reserved
 
     // 8       | 2       | short      | Num icons (N)
-    // 10      | 2       | short      | Icons size (Options: 16, 32, 64) (S)
+    // 10      | 2       | short      | Icons Size (Options: 16, 32, 64)
 
     // Icons name id (32 bytes per name id)
     // foreach (icon)
@@ -4916,50 +4915,33 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
     // }
 
     // Icons data: One bit per pixel, stored as unsigned int array (depends on icon size)
-    // S*S pixels/32bit per unsigned int = K unsigned int per icon
+    // Size*Size pixels/32bit per unsigned int = K unsigned int per icon
     // foreach (icon)
     // {
     //   ...   | K       | unsigned int | Icon Data
     // }
 
     FILE *rgiFile = fopen(fileName, "rb");
-
     char **guiIconsName = NULL;
 
     if (rgiFile != NULL)
     {
-        char signature[5] = { 0 };
-        short version = 0;
-        short reserved = 0;
-        short iconCount = 0;
-        short iconSize = 0;
+        unsigned char *fileData = NULL;
+        int dataSize = 0;
+        
+        fseek(rgiFile, 0, SEEK_END);
+        int size = (int)ftell(rgiFile);
+        fseek(rgiFile, 0, SEEK_SET);
 
-        fread(signature, 1, 4, rgiFile);
-        fread(&version, sizeof(short), 1, rgiFile);
-        fread(&reserved, sizeof(short), 1, rgiFile);
-        fread(&iconCount, sizeof(short), 1, rgiFile);
-        fread(&iconSize, sizeof(short), 1, rgiFile);
-
-        if ((signature[0] == 'r') &&
-            (signature[1] == 'G') &&
-            (signature[2] == 'I') &&
-            (signature[3] == ' '))
+        if (size > 0)
         {
-            if (loadIconsName)
-            {
-                guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
-                for (int i = 0; i < iconCount; i++)
-                {
-                    guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
-                    fread(guiIconsName[i], 1, RAYGUI_ICON_MAX_NAME_LENGTH, rgiFile);
-                }
-            }
-            else fseek(rgiFile, iconCount*RAYGUI_ICON_MAX_NAME_LENGTH, SEEK_CUR);
-
-            // Read icons data directly over internal icons array
-            fread(guiIconsPtr, sizeof(unsigned int), (int)iconCount*((int)iconSize*(int)iconSize/32), rgiFile);
+            fileData = (unsigned char *)RL_CALLOC(size, sizeof(unsigned char));
+            // WARNING: File can be partially loaded but ignoring it for simplicity
+            dataSize = fread(fileData, sizeof(unsigned char), size, rgiFile);
+        
+            guiIconsName = GuiLoadIconsFromMemory(fileData, dataSize, loadIconsName);
         }
-
+        
         fclose(rgiFile);
     }
 
@@ -4967,7 +4949,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
 }
 
 // Load icons from memory
-// WARNING: Binary files only
+// GLOBAL: Updates global variable: guiIconsPtr
 char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool loadIconsName)
 {
     unsigned char *fileDataPtr = (unsigned char *)fileData;
@@ -4993,7 +4975,8 @@ char **GuiLoadIconsFromMemory(const unsigned char *fileData, int dataSize, bool 
     {
         if (loadIconsName)
         {
-            guiIconsName = (char **)RAYGUI_CALLOC(iconCount, sizeof(char *));
+            // NOTE: Always allocating RAYGUI_ICON_MAX_ICONS names slots
+            guiIconsName = (char **)RAYGUI_CALLOC(RAYGUI_ICON_MAX_ICONS, sizeof(char *));
             for (int i = 0; i < iconCount; i++)
             {
                 guiIconsName[i] = (char *)RAYGUI_CALLOC(RAYGUI_ICON_MAX_NAME_LENGTH, sizeof(char));
