@@ -140,6 +140,9 @@
 *       #define RAYGUI_DEBUG_TEXT_BOUNDS
 *           Draw text bounds rectangles for debug
 *
+*       #define RAYGUI_TEXT_WRAP_CHAR_SKIP_NEWLINE_SPACE
+*           Skip space at the beggining of newline when using TEXT_WRAP_CHAR
+*
 *   VERSIONS HISTORY:
 *       5.0 (xx-May-2026) ADDED: Support up to 32 controls (v500)
 *                         ADDED: Support up to 512 icons (v500)
@@ -5354,6 +5357,14 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 {
                     textOffsetX = 0.0f;
                     textOffsetY += (GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
+
+#if defined(RAYGUI_TEXT_WRAP_CHAR_SKIP_NEWLINE_SPACE)
+                    // Skip space on newline;
+                    if (codepoint == 32)
+                    {
+                        continue;
+                    }
+#endif
 
                     if (tempWrapCharMode)   // Wrap at char level when too long words
                     {
