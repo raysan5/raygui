@@ -4808,6 +4808,7 @@ void GuiLoadStyleDefault(void)
     GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
     GuiSetStyle(STATUSBAR, TEXT_PADDING, 8);
     GuiSetStyle(STATUSBAR, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiSetStyle(TABBAR, TAB_ITEMS_WIDTH, 160);
 
     // Initialize extended property values
     // NOTE: By default, extended property values are initialized to 0
