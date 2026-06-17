@@ -21,15 +21,15 @@
 *
 *
 *   DEPENDENCIES:
-*       raylib 4.5          - Windowing/input management and drawing
-*       raygui 3.5          - Immediate-mode GUI controls with custom styling and icons
+*       raylib 6.1-dev      - Windowing/input management and drawing
+*       raygui 5.0-dev      - Immediate-mode GUI controls with custom styling and icons
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2016-2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2026 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
@@ -253,7 +253,7 @@ int main()
 
             // Second GUI column
             //GuiSetStyle(LISTVIEW, LIST_ITEMS_BORDER_NORMAL, 1);
-            GuiListView((Rectangle){ 165, 25, 140, 124 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
+            GuiListView((Rectangle){ 165, 25, 140, 124 }, "Charmander;Bulbasaur;#18#Squirtle;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
             GuiListViewEx((Rectangle){ 165, 162, 140, 184 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
             GuiSetStyle(LISTVIEW, LIST_ITEMS_BORDER_NORMAL, 0);
 

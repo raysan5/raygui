@@ -18,7 +18,7 @@
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2019-2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2019-2026 Ramon Santamaria (@raysan5)
 *
 *   This software is provided "as-is", without any express or implied warranty. In no event
 *   will the authors be held liable for any damages arising from the use of this software.
@@ -161,8 +161,8 @@ FileInfo *dirFilesIcon = NULL;      // Path string + icon (for fancy drawing)
 static void ReloadDirectoryFiles(GuiWindowFileDialogState *state);
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
-// List View control for files info with extended parameters
-static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int active);
+// List View control for files info entries list and returning focus entry
+static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *scrollIndex, int *active, int *focus);
 #endif
 
 //----------------------------------------------------------------------------------
@@ -312,16 +312,16 @@ void GuiWindowFileDialog(GuiWindowFileDialogState *state)
         int prevElementsHeight = GuiGetStyle(LISTVIEW, LIST_ITEMS_HEIGHT);
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, 24);
-# if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
-        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 8, state->position.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, fileInfo, state->dirFiles.count, &state->itemFocused, &state->filesListScrollIndex, state->filesListActive);
-# else
+#if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
+        state->filesListActive = GuiListViewFiles((Rectangle){ state->position.x + 8, state->position.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, fileInfo, state->dirFiles.count, &state->filesListScrollIndex, &state->filesListActive, &state->itemFocused);
+#else
         GuiListViewEx((Rectangle){ state->windowBounds.x + 8, state->windowBounds.y + 48 + 20, state->windowBounds.width - 16, state->windowBounds.height - 60 - 16 - 68 }, 
-                      (const char**)dirFilesIcon, state->dirFiles.count, &state->filesListScrollIndex, &state->filesListActive, &state->itemFocused);
-# endif
+                      (char**)dirFilesIcon, state->dirFiles.count, &state->filesListScrollIndex, &state->filesListActive, &state->itemFocused);
+#endif
         GuiSetStyle(LISTVIEW, TEXT_ALIGNMENT, prevTextAlignment);
         GuiSetStyle(LISTVIEW, LIST_ITEMS_HEIGHT, prevElementsHeight);
 
-        // Check if a path has been selected, if it is a directory, move to that directory (and reload paths)
+        // Check if path has been selected, if it is a directory, move to that directory (and reload paths)
         if ((state->filesListActive >= 0) && (state->filesListActive != state->prevFilesListActive))
             //&& (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_DPAD_A)))
         {
@@ -427,7 +427,7 @@ static void ReloadDirectoryFiles(GuiWindowFileDialogState *state)
 {
     UnloadDirectoryFiles(state->dirFiles);
 
-    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, (state->filterExt[0] == '\0')? NULL : state->filterExt, false);
+    state->dirFiles = LoadDirectoryFilesEx(state->dirPathText, (state->filterExt[0] == '\0')? "*.*" : TextFormat("DIRS*;%s", state->filterExt), false);
     state->itemFocused = 0;
 
     // Reset dirFilesIcon memory
@@ -466,8 +466,8 @@ static void ReloadDirectoryFiles(GuiWindowFileDialogState *state)
 }
 
 #if defined(USE_CUSTOM_LISTVIEW_FILEINFO)
-// List View control for files info with extended parameters
-static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *focus, int *scrollIndex, int *active)
+// List View control for files info entries list and returning focus entry
+static int GuiListViewFiles(Rectangle bounds, FileInfo *files, int count, int *scrollIndex, int *active, int *focus)
 {
     int result = 0;
     GuiState state = guiState;

@@ -3,15 +3,15 @@
 *   Animation curves - An example demo for animation curves
 *
 *   DEPENDENCIES:
-*       raylib 4.0  - Windowing/input management and drawing.
-*       raygui 3.0  - Immediate-mode GUI controls.
+*       raylib 6.1-dev      - Windowing/input management and drawing
+*       raygui 5.0-dev      - Immediate-mode GUI controls with custom styling and icons
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2023 Pierre Jaffuer (@smallcluster)
+*   Copyright (c) 2023-2026 Pierre Jaffuer (@smallcluster) and Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
