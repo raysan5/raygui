@@ -1810,7 +1810,7 @@ int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
     //GuiState state = guiState;
 
     int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
-    Rectangle tabBounds = { bounds.x, bounds.y, tabItemsWidth, bounds.height };
+    Rectangle tabBounds = { bounds.x, bounds.y, (float)tabItemsWidth, bounds.height };
 
     if (*active < 0) *active = 0;
     else if (*active > count - 1) *active = count - 1;
@@ -2192,7 +2192,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
 
     bool toggle = false;    // Required for individual toggles
 
-    char *textPtr = text;
+    const char *textPtr = text;
     bool itemReady = false;
     float initBoundsX = bounds.x;
     float initBoundsY = bounds.y;
@@ -4947,7 +4947,7 @@ char **GuiLoadIcons(const char *fileName, bool loadIconsName)
         {
             fileData = (unsigned char *)RL_CALLOC(size, sizeof(unsigned char));
             // WARNING: File can be partially loaded but ignoring it for simplicity
-            dataSize = fread(fileData, sizeof(unsigned char), size, rgiFile);
+            dataSize = (int)fread(fileData, sizeof(unsigned char), size, rgiFile);
 
             guiIconsName = GuiLoadIconsFromMemory(fileData, dataSize, loadIconsName);
         }
