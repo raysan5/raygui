@@ -1549,7 +1549,6 @@ static Color GetColor(int hexValue);                // Returns a Color struct fr
 static int ColorToInt(Color color);                 // Returns hexadecimal value for a Color
 static bool CheckCollisionPointRec(Vector2 point, Rectangle rec);   // Check if point is inside rectangle
 static const char *TextFormat(const char *text, ...);               // Formatting of text with variables to 'embed'
-static char **TextSplit(const char *text, char delimiter, int *count);    // Split text into multiple strings
 static int TextToInteger(const char *text);         // Get integer value from text
 static float TextToFloat(const char *text);         // Get float value from text
 
@@ -3119,7 +3118,6 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
 }
 
 // Value Box control, updates input text with numbers
-// NOTE: Requires static variables: frameCounter
 int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode)
 {
     #if !defined(RAYGUI_VALUEBOX_MAX_CHARS)
@@ -3260,7 +3258,6 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
 }
 
 // Floating point Value Box control, updates input val_str with numbers
-// NOTE: Requires static variables: frameCounter
 int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float *value, bool editMode)
 {
     #if !defined(RAYGUI_VALUEBOX_MAX_CHARS)
@@ -5540,7 +5537,7 @@ static char **GuiTextSplit(const char *text, char delimiter, int *count)
         #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE     1024
     #endif
 
-    static char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL }; // String pointers array (points to buffer data)
+    static char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { 0 }; // String pointers array (points to buffer data)
     static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 }; // Buffer data (text input copy with '\0' added)
     memset(buffer, 0, RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE);
 
@@ -5927,53 +5924,6 @@ static void DrawRectangleGradientV(int posX, int posY, int width, int height, Co
 {
     Rectangle bounds = { (float)posX, (float)posY, (float)width, (float)height };
     DrawRectangleGradientEx(bounds, color1, color2, color2, color1);
-}
-
-// Split string into multiple strings
-char **TextSplit(const char *text, char delimiter, int *count)
-{
-    // NOTE: Current implementation returns a copy of the provided string with '\0' (string end delimiter)
-    // inserted between strings defined by "delimiter" parameter. No memory is dynamically allocated,
-    // all used memory is static... it has some limitations:
-    //      1. Maximum number of possible split strings is set by RAYGUI_TEXTSPLIT_MAX_ITEMS
-    //      2. Maximum size of text to split is RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE
-
-    #if !defined(RAYGUI_TEXTSPLIT_MAX_ITEMS)
-        #define RAYGUI_TEXTSPLIT_MAX_ITEMS          128
-    #endif
-    #if !defined(RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE)
-        #define RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE      1024
-    #endif
-
-    static const char *result[RAYGUI_TEXTSPLIT_MAX_ITEMS] = { NULL };
-    static char buffer[RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE] = { 0 };
-    memset(buffer, 0, RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE);
-
-    result[0] = buffer;
-    int counter = 0;
-
-    if (text != NULL)
-    {
-        counter = 1;
-
-        // Count how many substrings text contains and point to every one of them
-        for (int i = 0; i < RAYGUI_TEXTSPLIT_MAX_TEXT_SIZE; i++)
-        {
-            buffer[i] = text[i];
-            if (buffer[i] == '\0') break;
-            else if (buffer[i] == delimiter)
-            {
-                buffer[i] = '\0';   // Set an end of string at this point
-                result[counter] = buffer + i + 1;
-                counter++;
-
-                if (counter == RAYGUI_TEXTSPLIT_MAX_ITEMS) break;
-            }
-        }
-    }
-
-    *count = counter;
-    return result;
 }
 
 // Get integer value from text
