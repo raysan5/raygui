@@ -1460,6 +1460,7 @@ typedef enum { BORDER = 0, BASE, TEXT, OTHER } GuiPropertyElement;
 static GuiState guiState = STATE_NORMAL;        // Gui global state, if !STATE_NORMAL, forces defined state
 
 static Font guiFont = { 0 };                    // Gui current font (WARNING: highly coupled to raylib)
+static char guiFontName[32] = { 0 };            // Gui font filename, can be loaded from .rgs (Version: >=600)
 static bool guiLocked = false;                  // Gui lock state (no inputs processed)
 static float guiAlpha = 1.0f;                   // Gui controls transparency
 
@@ -4466,6 +4467,9 @@ void GuiLoadStyle(const char *fileName)
                         char fontFileName[256] = { 0 };
                         sscanf(buffer, "f %d %s %[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
+                        // GLOBAL: Copy font file name into guiFontName
+                        strncpy(guiFontName, fontFileName, 31);
+
                         Font font = { 0 };
                         int *codepoints = NULL;
                         int codepointCount = 0;
@@ -4573,12 +4577,12 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
     // Custom Font Data : Image (20 bytes + imData)
     // NOTE: Font image atlas is always converted to GRAY+ALPHA
     // and atlas image data can be compressed (DEFLATE)
-    // 48+4*N  | 4       | int        | Image data size (uncompressed)
-    // 52+4*N  | 4       | int        | Image data size (compressed)
-    // 56+4*N  | 4       | int        | Image width
-    // 60+4*N  | 4       | int        | Image height
-    // 64+4*N  | 4       | int        | Image format
-    // 68+4*N  | imSize  | byte       | Image data (comp or uncomp)
+    // ...     | 4       | int        | Image data size (uncompressed)
+    // ...     | 4       | int        | Image data size (compressed)
+    // ...     | 4       | int        | Image width
+    // ...     | 4       | int        | Image height
+    // ...     | 4       | int        | Image format
+    // ...     | imSize  | byte       | Image data (comp or uncomp)
 
     // Custom Font Data : Recs (32 bytes*glyphCount)
     // NOTE: Font recs data can be compressed (DEFLATE)
@@ -4671,14 +4675,15 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
         {
             Font font = { 0 };
             int fontType = 0;   // 0-Normal, 1-SDF
-            char fontFileName[32] = { 0 };
 
             // WARNING: Version 600 adds 32 bytes for the font filename (with extension)
             if (version >= 600)
             {
-                memcpy(fontFileName, fileDataPtr, sizeof(int));
+                // GLOBAL: Copy font file name into guiFontName
+                memcpy(guiFontName, fileDataPtr, 32);
                 fileDataPtr += 32;
             }
+            else memset(guiFontName, 0, 32);
 
             memcpy(&font.baseSize, fileDataPtr, sizeof(int));
             memcpy(&font.glyphCount, fileDataPtr + 4, sizeof(int));
