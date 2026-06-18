@@ -4671,6 +4671,14 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
         {
             Font font = { 0 };
             int fontType = 0;   // 0-Normal, 1-SDF
+            char fontFileName[32] = { 0 };
+
+            // WARNING: Version 600 adds 32 bytes for the font filename (with extension)
+            if (version >= 600)
+            {
+                memcpy(fontFileName, fileDataPtr, sizeof(int));
+                fileDataPtr += 32;
+            }
 
             memcpy(&font.baseSize, fileDataPtr, sizeof(int));
             memcpy(&font.glyphCount, fileDataPtr + 4, sizeof(int));
