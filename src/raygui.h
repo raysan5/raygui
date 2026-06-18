@@ -604,7 +604,7 @@ typedef enum {
     TEXT_COLOR_DISABLED   = 11,     // Control text color in STATE_DISABLED
     BORDER_WIDTH          = 12,     // Control border size, 0 for no border
     TEXT_PADDING          = 13,     // Control text padding, not considering border
-    TEXT_ALIGNMENT        = 14,     // Control text horizontal alignment inside control text bound (after border and padding)
+    TEXT_ALIGNMENT        = 14,     // Control text horizontal alignment inside control text bound (after border and padding): 0-Left, 1-Center, 2-Right
     BASEPROP16            = 15      // Not used yet...
 } GuiControlProperty;
 
@@ -621,17 +621,17 @@ typedef enum {
 
 
 // Controls EXTENDED properties (RAYGUI_MAX_PROPS_EXTENDED = 8)
+// WARNING: Only 8 slots vailable for those properties per control, including DEFAULT
 //----------------------------------------------------------------------------------
 // DEFAULT control, extended properties
 // NOTE: Those properties are global for all controls, they can not be setup per control
-// WARNING: Only 8 slots vailable for those properties by default
 typedef enum {
     TEXT_SIZE             = 16,     // Text size (glyphs max height)
     TEXT_SPACING          = 17,     // Text spacing between glyphs
     LINE_COLOR            = 18,     // Line control color
     BACKGROUND_COLOR      = 19,     // Background color
     TEXT_LINE_SPACING     = 20,     // Text spacing between lines
-    TEXT_ALIGNMENT_VERTICAL = 21,   // Text vertical alignment inside text bounds (after border and padding)
+    TEXT_ALIGNMENT_VERTICAL = 21,   // Text vertical alignment inside text bounds (after border and padding): 0-Top, 1-Middle, 2-Bottom
     TEXT_WRAP_MODE        = 22,     // Text wrap-mode inside text bounds
     EXTPROP08             = 23      // Not used yet...
 } GuiDefaultProperty;
@@ -639,17 +639,18 @@ typedef enum {
 // Other possible text extended properties:
 // TEXT_DECORATION               // Text decoration: 0-None, 1-Underline, 2-Line-through, 3-Overline
 // TEXT_DECORATION_THICK         // Text decoration line thickness
-// TEXT_FONT_WEIGHT              // Text font weight: Normal, Italic, Bold -> Requires specific font change
+// TEXT_FONT_WEIGHT              // Text font weight: 0-Normal, 1-Bold, 2-Italic -> Requires specific font change
 
 // Label
 //typedef enum { } GuiLabelProperty;
 
-// Button/Spinner
+// Button
 //typedef enum { } GuiButtonProperty;
 
 // Toggle/ToggleGroup
 typedef enum {
     GROUP_PADDING = 16,         // ToggleGroup separation between toggles
+    GROUP_WIDTH_FULL            // ToggleGroup bounds width considers all items: 0-Width per item, 1-Full width
 } GuiToggleProperty;
 
 // Slider/SliderBar
@@ -661,7 +662,7 @@ typedef enum {
 // ProgressBar
 typedef enum {
     PROGRESS_PADDING = 16,      // ProgressBar internal padding
-    PROGRESS_SIDE,              // ProgressBar increment side: 0-left->right, 1-right-left
+    PROGRESS_SIDE,              // ProgressBar increment side: 0-Left->Right, 1-Right->Left
 } GuiProgressBarProperty;
 
 // ScrollBar
@@ -690,12 +691,12 @@ typedef enum {
     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
     DROPDOWN_ITEMS_SPACING,     // DropdownBox items separation
     DROPDOWN_ARROW_HIDDEN,      // DropdownBox arrow hidden
-    DROPDOWN_ROLL_UP            // DropdownBox roll up flag (default rolls down)
+    DROPDOWN_ROLL_UP            // DropdownBox roll up flag: 0-Roll down, 1-Roll up
 } GuiDropdownBoxProperty;
 
 // TextBox/TextBoxMulti/ValueBox/Spinner
 typedef enum {
-    TEXT_READONLY = 16,         // TextBox in read-only mode: 0-text editable, 1-text no-editable
+    TEXT_READONLY = 16,         // TextBox in read-only mode: 0-Text editable, 1-Text read-only
 } GuiTextBoxProperty;
 
 // ValueBox/Spinner
@@ -707,8 +708,8 @@ typedef enum {
 // TabBar
 typedef enum {
     TAB_ITEMS_WIDTH = 16,       // TabBar tab items width
-    TAB_CLOSE_BUTTON,           // TabBar tab close button (0-Not shown, 1-Shown)
-    TAB_LINE_SIDE,              // TabBar tabs side (0-Bottom, 1-Top)
+    TAB_CLOSE_BUTTON,           // TabBar tab close button: 0-Not shown, 1-Shown
+    TAB_LINE_SIDE,              // TabBar tabs side: 0-Bottom, 1-Top
 } GuiTabBarProperty;
 
 // ListView
@@ -719,14 +720,14 @@ typedef enum {
     LIST_ITEMS_HEIGHT = 16,     // ListView items height
     LIST_ITEMS_SPACING,         // ListView items separation
     SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
-    SCROLLBAR_SIDE,             // ListView scrollbar side (0-SCROLLBAR_LEFT_SIDE, 1-SCROLLBAR_RIGHT_SIDE)
+    SCROLLBAR_SIDE,             // ListView scrollbar side: 0-Left side, 1-Right Side
     LIST_ITEMS_BORDER_NORMAL,   // ListView items border enabled in normal state
     LIST_ITEMS_BORDER_WIDTH     // ListView items border width
 } GuiListViewProperty;
 
 // ColorPicker
 typedef enum {
-    COLOR_SELECTOR_SIZE = 16,
+    COLOR_SELECTOR_SIZE = 16,   // ColorPicker selector square size
     HUEBAR_WIDTH,               // ColorPicker right hue bar width
     HUEBAR_PADDING,             // ColorPicker right hue bar separation from panel
     HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
@@ -2197,6 +2198,15 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
     bool itemReady = false;
     float initBoundsX = bounds.x;
     float initBoundsY = bounds.y;
+
+    if (GuiGetStyle(TOGGLE, GROUP_WIDTH_FULL))
+    {
+        // Calculate item width considring all horizontal items
+        // NOTE: bounds.height still considers individual items height
+        int itemCount = 1;
+        for (int c = 0; textPtr[c] != '\0'; c++) { if (textPtr[c] == ';') itemCount++; }
+        bounds.width /= itemCount;
+    }
 
     // Text parsing needed to consider potential row and col entries (vertical/horizontal layout)
     // when '\n' found move vertically next toggle, when ';' found move horizontally
