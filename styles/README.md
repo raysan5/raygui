@@ -43,11 +43,31 @@ Here it is a quick overview of those styles, you can navigate to each directory 
 #### 11. style: [ashes](ashes)
 ![ashes style](ashes/style_ashes.png)
 
-#### 12. enefete: [enefete](enefete)
+#### 12. style: [enefete](enefete)
 ![enefete style](enefete/style_enefete.png)
 
-#### 13. amber: [amber](amber)
+#### 13. style: [amber](amber)
 ![amber style](amber/style_amber.png)
 
+#### 14. style: [rltech](rltech)
+![rltech style](rltech/style_rltech.png)
 
-*NOTE: Those styles require raylib 5.5 and raygui 4.5*
+#### 15. style: [genesis](genesis)
+![genesis style](genesis/style_genesis.png)
+
+#### 16. style: [wisteria](wisteria)
+![wisteria style](wisteria/style_wisteria.png)
+
+#### 17. style: [pocket](pocket)
+![pocket style](pocket/style_pocket.png)
+
+#### 18. style: [brick](brick)
+![brick style](brick/style_brick.png)
+
+#### 19. style: [advance](advance)
+![advance style](advance/style_advance.png)
+
+#### 20. style: [turbo](turbo)
+![turbo style](turbo/style_turbo.png)
+
+*NOTE: Those styles require raylib 6.x and raygui 5.x*
