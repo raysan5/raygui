@@ -3832,119 +3832,23 @@ int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, in
 int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
 {
     int result = 0;
-    GuiState state = guiState;
-    Vector2 pickerSelector = { 0 };
-
-    const Color colWhite = { 255, 255, 255, 255 };
-    const Color colBlack = { 0, 0, 0, 255 };
 
     Vector3 vcolor = { (float)color->r/255.0f, (float)color->g/255.0f, (float)color->b/255.0f };
-    Vector3 colorHsv = ConvertRGBtoHSV(vcolor);
+    Vector3 hsv = ConvertRGBtoHSV(vcolor);
+    Vector3 prevHsv = hsv; // NOTE: Workaround to see if GuiColorPanelHSV() modifies the hsv
 
-    pickerSelector.x = bounds.x + (float)colorHsv.y*bounds.width;            // HSV: Saturation
-    pickerSelector.y = bounds.y + (1.0f - (float)colorHsv.z)*bounds.height;  // HSV: Value
+    GuiColorPanelHSV(bounds, text, &hsv);
 
-    Vector3 maxHue = { colorHsv.x, 1.0f, 1.0f };
-    Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
-    Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
-        (unsigned char)(255.0f*rgbHue.y),
-        (unsigned char)(255.0f*rgbHue.z), 255 };
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
+    // Check if the hsv was changed, only then change the color
+    // This is required, because the Color->HSV->Color conversion has precision errors
+    // Thus the assignment from HSV to Color should only be made, if the HSV has a new user-entered value
+    // Otherwise GuiColorPanel would often modify it's color without user input
+    // TODO: GuiColorPanelHSV could return 1 if the slider was dragged, to simplify this check
+    if ((hsv.x != prevHsv.x) || (hsv.y != prevHsv.y) || (hsv.z != prevHsv.z))
     {
-        Vector2 mousePoint = GUI_POINTER_POSITION;
-
-        if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
-        {
-            if (GUI_BUTTON_DOWN)
-            {
-                if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
-                {
-                    pickerSelector = mousePoint;
-
-                    if (pickerSelector.x < bounds.x) pickerSelector.x = bounds.x;
-                    if (pickerSelector.x > bounds.x + bounds.width) pickerSelector.x = bounds.x + bounds.width;
-                    if (pickerSelector.y < bounds.y) pickerSelector.y = bounds.y;
-                    if (pickerSelector.y > bounds.y + bounds.height) pickerSelector.y = bounds.y + bounds.height;
-
-                    // Calculate color from picker
-                    Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y };
-
-                    colorPick.x /= (float)bounds.width;     // Get normalized value on x
-                    colorPick.y /= (float)bounds.height;    // Get normalized value on y
-
-                    colorHsv.y = colorPick.x;
-                    colorHsv.z = 1.0f - colorPick.y;
-
-                    Vector3 rgb = ConvertHSVtoRGB(colorHsv);
-
-                    *color = RAYGUI_CLITERAL(Color){
-                        (unsigned char)(255.0f*rgb.x),
-                            (unsigned char)(255.0f*rgb.y),
-                            (unsigned char)(255.0f*rgb.z),
-                            (unsigned char)(255.0f*(float)color->a/255.0f)
-                    };
-                }
-            }
-            else
-            {
-                guiControlExclusiveMode = false;
-                guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
-            }
-        }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            if (GUI_BUTTON_DOWN)
-            {
-                state = STATE_PRESSED;
-                guiControlExclusiveMode = true;
-                guiControlExclusiveRec = bounds;
-                pickerSelector = mousePoint;
-
-                // Calculate color from picker
-                Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y };
-
-                colorPick.x /= (float)bounds.width;     // Get normalized value on x
-                colorPick.y /= (float)bounds.height;    // Get normalized value on y
-
-                colorHsv.y = colorPick.x;
-                colorHsv.z = 1.0f - colorPick.y;
-
-                Vector3 rgb = ConvertHSVtoRGB(colorHsv);
-
-                *color = RAYGUI_CLITERAL(Color){
-                    (unsigned char)(255.0f*rgb.x),
-                        (unsigned char)(255.0f*rgb.y),
-                        (unsigned char)(255.0f*rgb.z),
-                        (unsigned char)(255.0f*(float)color->a/255.0f)
-                };
-
-            }
-            else state = STATE_FOCUSED;
-        }
+        Vector3 rgb = ConvertHSVtoRGB(hsv);
+        *color = RAYGUI_CLITERAL(Color){ (unsigned char)(255.0f*rgb.x), (unsigned char)(255.0f*rgb.y), (unsigned char)(255.0f*rgb.z), color->a };
     }
-    //--------------------------------------------------------------------
-
-    // Draw control
-    //--------------------------------------------------------------------
-    if (state != STATE_DISABLED)
-    {
-        DrawRectangleGradientEx(bounds, Fade(colWhite, guiAlpha), Fade(colWhite, guiAlpha), Fade(maxHueCol, guiAlpha), Fade(maxHueCol, guiAlpha));
-        DrawRectangleGradientEx(bounds, Fade(colBlack, 0), Fade(colBlack, guiAlpha), Fade(colBlack, guiAlpha), Fade(colBlack, 0));
-
-        // Draw color picker: selector
-        Rectangle selector = { pickerSelector.x - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, pickerSelector.y - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE), (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE) };
-        GuiDrawRectangle(selector, 0, BLANK, colWhite);
-    }
-    else
-    {
-        DrawRectangleGradientEx(bounds, Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(colBlack, 0.6f), guiAlpha), Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), 0.6f), guiAlpha));
-    }
-
-    GuiDrawRectangle(bounds, GuiGetStyle(COLORPICKER, BORDER_WIDTH), GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), BLANK);
-    //--------------------------------------------------------------------
 
     return result;
 }
@@ -4181,7 +4085,7 @@ int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 
     GuiColorPanelHSV(bounds, NULL, colorHsv);
 
-    const Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle(COLORPICKER, HUEBAR_PADDING), (float)bounds.y, (float)GuiGetStyle(COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
+    Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle(COLORPICKER, HUEBAR_PADDING), (float)bounds.y, (float)GuiGetStyle(COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
 
     GuiColorBarHue(boundsHue, NULL, &colorHsv->x);
 
@@ -4203,9 +4107,7 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
 
     Vector3 maxHue = { colorHsv->x, 1.0f, 1.0f };
     Vector3 rgbHue = ConvertHSVtoRGB(maxHue);
-    Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x),
-                      (unsigned char)(255.0f*rgbHue.y),
-                      (unsigned char)(255.0f*rgbHue.z), 255 };
+    Color maxHueCol = { (unsigned char)(255.0f*rgbHue.x), (unsigned char)(255.0f*rgbHue.y), (unsigned char)(255.0f*rgbHue.z), 255 };
 
     // Update control
     //--------------------------------------------------------------------
@@ -4229,12 +4131,11 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
                     // Calculate color from picker
                     Vector2 colorPick = { pickerSelector.x - bounds.x, pickerSelector.y - bounds.y };
 
-                    colorPick.x /= (float)bounds.width;     // Get normalized value on x
-                    colorPick.y /= (float)bounds.height;    // Get normalized value on y
+                    colorPick.x /= (float)bounds.width; // Get normalized value on x
+                    colorPick.y /= (float)bounds.height; // Get normalized value on y
 
                     colorHsv->y = colorPick.x;
                     colorHsv->z = 1.0f - colorPick.y;
-
                 }
             }
             else
