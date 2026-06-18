@@ -1,0 +1,30 @@
+#
+# rgs style text file (v4.0) - raygui style file generated using rGuiStyler
+#
+# Provided info:
+#    f fontGenSize charsetFileName fontFileName
+#    p <controlId> <propertyId> <propertyValue>  Property description
+#
+# WARNING: This style uses a custom font, must be provided with style file
+#
+f 12 charset.txt PixelIntv.otf
+p 00 00 0x6f748cff    DEFAULT_®Çy÷ˆ 
+p 00 01 0xcfd0e1ff    DEFAULT_¿Çy÷ˆ 
+p 00 02 0x8c91afff    DEFAULT_ÿÇy÷ˆ 
+p 00 03 0xced9e3ff    DEFAULT_Çy÷ˆ 
+p 00 04 0xe6edfcff    DEFAULT_Éy÷ˆ 
+p 00 05 0xc2d3e1ff    DEFAULT_(Éy÷ˆ 
+p 00 06 0x574695ff    DEFAULT_@Éy÷ˆ 
+p 00 07 0xc3a5e6ff    DEFAULT_`Éy÷ˆ 
+p 00 08 0x825fb7ff    DEFAULT_xÉy÷ˆ 
+p 00 09 0xb9bbc3ff    DEFAULT_êÉy÷ˆ 
+p 00 10 0xcfd2daff    DEFAULT_∞Éy÷ˆ 
+p 00 11 0xb5b8c2ff    DEFAULT_»Éy÷ˆ 
+p 00 16 0x0000000c    TEXT_SIZE 
+p 00 17 0x00000000    TEXT_SPACING 
+p 00 18 0x9b74d2ff    LINE_COLOR 
+p 00 19 0xe9eaf6ff    BACKGROUND_COLOR 
+p 00 20 0x00000012    TEXT_LINE_SPACING 
+p 04 03 0xa9bdcfff    SLIDER_BORDER_COLOR_FOCUSED 
+p 04 05 0xacc4d8ff    SLIDER_TEXT_COLOR_FOCUSED 
+p 05 03 0xb5c7d9ff    PROGRESSBAR_BORDER_COLOR_FOCUSED 
