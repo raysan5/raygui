@@ -3843,7 +3843,7 @@ int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
     // This is required, because the Color->HSV->Color conversion has precision errors
     // Thus the assignment from HSV to Color should only be made, if the HSV has a new user-entered value
     // Otherwise GuiColorPanel would often modify it's color without user input
-    // TODO: GuiColorPanelHSV could return 1 if the slider was dragged, to simplify this check
+    // TODO: GuiColorPanelHSV() could return 1 if the slider was dragged, to simplify this check
     if ((hsv.x != prevHsv.x) || (hsv.y != prevHsv.y) || (hsv.z != prevHsv.z))
     {
         Vector3 rgb = ConvertHSVtoRGB(hsv);
