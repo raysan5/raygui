@@ -4581,13 +4581,13 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
     // ...     | 4       | int        | Image data size (compressed)
     // ...     | 4       | int        | Image width
     // ...     | 4       | int        | Image height
-    // ...     | 4       | int        | Image format
+    // ...     | 4       | int        | Image format: GRAY+ALPHA (expected)
     // ...     | imSize  | byte       | Image data (comp or uncomp)
 
     // Custom Font Data : Recs (32 bytes*glyphCount)
     // NOTE: Font recs data can be compressed (DEFLATE)
     // ...     | 4       | int        | Recs data compressed size (0 - not compressed, 1-compressed) - VERSION: >=400
-    // 
+    //
     // if (compRecsSize == 0)
     // {
     //    NOTE: Uncompressed size can be calculated: (glyphCount*16 byte)
@@ -4605,7 +4605,7 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
     // Custom Font Data : Glyph Info (32 bytes*glyphCount)
     // NOTE: Font glyphs info data can be compressed (DEFLATE)
     // ...     | 4       | int        | Glyphs data compressed size (0 - not compressed) - VERSION: >=400
-    // 
+    //
     // if (compGlyphsSize == 0)
     // {
     //    NOTE: Uncompressed size can be calculated: (glyphCount*16 byte)
@@ -4732,6 +4732,7 @@ void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize)
                 fileDataPtr += fontImageUncompSize;
             }
 
+            // Load texture from image
             if (font.texture.id != GetFontDefault().texture.id) UnloadTexture(font.texture);
             font.texture = LoadTextureFromImage(imFont);
 
