@@ -4987,6 +4987,9 @@ void GuiLoadStyleDefault(void)
 
         // NOTE: Setting up a 1px padding on char rectangle to avoid pixel bleeding on MSAA filtering
         SetShapesTexture(guiFont.texture, RAYGUI_CLITERAL(Rectangle){ whiteChar.x + 1, whiteChar.y + 1, whiteChar.width - 2, whiteChar.height - 2 });
+    
+        // Reset baked icons offset in font
+        guiIconFontOffsetY = 0;
     }
 }
 
