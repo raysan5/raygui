@@ -38,7 +38,7 @@
 //#define RAYGUI_DEBUG_RECS_BOUNDS
 //#define RAYGUI_DEBUG_TEXT_BOUNDS
 
-//#define RAYGUI_FONT_ICONS_BAKING
+#define RAYGUI_FONT_ICONS_BAKING
 #define RAYGUI_IMPLEMENTATION
 //#define RAYGUI_CUSTOM_ICONS     // It requires providing gui_icons.h in the same directory
 //#include "gui_icons.h"          // External icons data provided, it can be generated with rGuiIcons tool
@@ -74,8 +74,6 @@ int main()
 
     // GUI controls initialization
     //----------------------------------------------------------------------------------
-    char *tabNames[] = { "#124#TAB_01", "#98#TAB_02", "#217#TAB_03", "#56#TAB_04", "#24#TAB_05", "#12#TAB_06" };
-    int tabCount = 6;
     int tabActive = 0;
 
     int dropdownBox000Active = 0;
@@ -218,7 +216,7 @@ int main()
             if (showTextInputBox) GuiLock();
 
             GuiSetStyle(TABBAR, TAB_ITEMS_WIDTH, 140);
-            GuiTabBar((Rectangle){ 0, 8, GetScreenWidth(), 26 }, tabNames, tabCount, &tabActive);
+            GuiTabBar((Rectangle){ 0, 8, GetScreenWidth(), 26 }, "#176#TAB_01;#177#TAB_02;#178#TAB_03;#179#TAB_04;#180#TAB_05;#181#TAB_06", NULL, &tabActive);
 
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
@@ -244,6 +242,7 @@ int main()
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
+            GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 40);
             GuiComboBox((Rectangle){ 25, 480 + 20, 125, 30 },
                 "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis", &visualStyleActive);
 
@@ -257,7 +256,7 @@ int main()
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
             GuiSetStyle(DROPDOWNBOX, TEXT_PADDING, 0);
 
-            if (GuiDropdownBox((Rectangle){ 25, 25 + 20, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 25 + 20, 125, 30 }, "#27#ONE;#28#TWO;#29#THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
 
             // Second GUI column
             //GuiSetStyle(LISTVIEW, LIST_ITEMS_BORDER_NORMAL, 1);
