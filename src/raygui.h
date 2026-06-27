@@ -817,7 +817,6 @@ RAYGUIAPI int GuiWindowBox(Rectangle bounds, const char *title);                
 RAYGUIAPI int GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
 RAYGUIAPI int GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
 RAYGUIAPI int GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
-RAYGUIAPI int GuiTabBar(Rectangle bounds, char **text, int count, int *active);                        // Tab Bar control, returns TAB to be closed or -1
 RAYGUIAPI int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll, Rectangle *view); // Scroll Panel control
 
 // Basic controls set
@@ -845,15 +844,17 @@ RAYGUIAPI int GuiGrid(Rectangle bounds, const char *text, float spacing, int sub
 
 // Advance controls set
 RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int *active);          // List View control
-RAYGUIAPI int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, int *active, int *focus); // List View using text entries list and returning focus entry
+RAYGUIAPI int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, int *active, int *focus); // List View control, using text entries list and returning focus entry
+RAYGUIAPI int GuiTabBar(Rectangle bounds, const char *text, int *hscroll, int *active);                // Tab Bar control
+RAYGUIAPI int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *active, int *focus); // Tab Bar control, using text entries list and returning focus entry
 RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons); // Message Box control, displays a message
 RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, bool *secretViewActive); // Text Input Box control, ask for text, supports secret
-RAYGUIAPI int GuiColorPicker(Rectangle bounds, const char *text, Color *color);                        // Color Picker control (multiple color controls)
+RAYGUIAPI int GuiColorPicker(Rectangle bounds, const char *text, Color *color);                        // Color Picker control, includes Color bar controls
 RAYGUIAPI int GuiColorPanel(Rectangle bounds, const char *text, Color *color);                         // Color Panel control
 RAYGUIAPI int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha);                      // Color Bar Alpha control
 RAYGUIAPI int GuiColorBarHue(Rectangle bounds, const char *text, float *value);                        // Color Bar Hue control
-RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
-RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that updates Hue-Saturation-Value color value, used by GuiColorPickerHSV()
+RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control, using Hue-Saturation-Value color data, includes Color bar controls
+RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control, using Hue-Saturation-Value color data
 //----------------------------------------------------------------------------------------------------------
 
 #if !defined(RAYGUI_NO_ICONS)
@@ -1833,84 +1834,6 @@ int GuiPanel(Rectangle bounds, const char *text)
     //--------------------------------------------------------------------
 
     return result;
-}
-
-// Tab Bar control
-// NOTE: Using GuiToggle() for the TABS
-int GuiTabBar(Rectangle bounds, char **text, int count, int *active)
-{
-    int result = -1;
-    //GuiState state = guiState;
-
-    int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
-    Rectangle tabBounds = { bounds.x, bounds.y, (float)tabItemsWidth, bounds.height };
-
-    if (*active < 0) *active = 0;
-    else if (*active > count - 1) *active = count - 1;
-
-    int offsetX = 0;    // Required in case tabs go out of screen
-    offsetX = (*active*tabItemsWidth) - GetScreenWidth();
-    if (offsetX < 0) offsetX = 0;
-
-    bool toggle = false;    // Required for individual toggles
-
-    // Draw control
-    //--------------------------------------------------------------------
-    for (int i = 0; i < count; i++)
-    {
-        tabBounds.x = bounds.x + (tabItemsWidth + 4)*i + offsetX;
-
-        if (tabBounds.x < GetScreenWidth())
-        {
-            // Draw tabs as toggle controls
-            int textAlignment = GuiGetStyle(TOGGLE, TEXT_ALIGNMENT);
-            int textPadding = GuiGetStyle(TOGGLE, TEXT_PADDING);
-            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
-
-            if (i == (*active))
-            {
-                toggle = true;
-                GuiToggle(tabBounds, text[i], &toggle);
-            }
-            else
-            {
-                toggle = false;
-                GuiToggle(tabBounds, text[i], &toggle);
-                if (toggle) *active = i;
-            }
-
-            // Close tab with middle mouse button pressed
-            if (CheckCollisionPointRec(GUI_POINTER_POSITION, tabBounds) && GUI_BUTTON_PRESSED_MID) result = i;
-
-            GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
-            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
-
-            if (GuiGetStyle(TABBAR, TAB_CLOSE_BUTTON))
-            {
-                // Draw tab close button
-                // NOTE: Only draw close button for current tab: if (CheckCollisionPointRec(mousePosition, tabBounds))
-                int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
-                int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
-                GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
-                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
-            #if defined(RAYGUI_NO_ICONS)
-                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
-            #else
-                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 },
-                    GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
-            #endif
-                GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
-                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
-            }
-        }
-    }
-
-    // Draw tab-bar bottom line
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
-    //--------------------------------------------------------------------
-
-    return result;     // Return as result the current TAB closing requested
 }
 
 // Scroll Panel control
@@ -3859,6 +3782,98 @@ int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, in
     return result;
 }
 
+// Tab Bar control
+int GuiTabBar(Rectangle bounds, const char *text, int *hscroll, int *active)
+{
+    int result = 0;
+    int itemCount = 0;
+    char **items = NULL;
+
+    if (text != NULL) items = GuiTextSplit(text, ';', &itemCount);
+
+    result = GuiTabBarEx(bounds, items, itemCount, hscroll, active, NULL);
+
+    return result;
+}
+
+// Tab Bar control, using text entries list and returning focus entry
+// TODO: Remove using GuiToggle() for the TABS
+int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *active, int *focus)
+{
+    int result = -1;
+    //GuiState state = guiState;
+
+    int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
+    Rectangle tabBounds = { bounds.x, bounds.y, (float)tabItemsWidth, bounds.height };
+
+    if (*active < 0) *active = 0;
+    else if (*active > count - 1) *active = count - 1;
+
+    int offsetX = 0;    // Required in case tabs go out of screen
+    offsetX = (*active*tabItemsWidth) - GetScreenWidth();
+    if (offsetX < 0) offsetX = 0;
+
+    bool toggle = false;    // Required for individual toggles
+
+    // Draw control
+    //--------------------------------------------------------------------
+    for (int i = 0; i < count; i++)
+    {
+        tabBounds.x = bounds.x + (tabItemsWidth + 4)*i + offsetX;
+
+        if (tabBounds.x < GetScreenWidth())
+        {
+            // Draw tabs as toggle controls
+            int textAlignment = GuiGetStyle(TOGGLE, TEXT_ALIGNMENT);
+            int textPadding = GuiGetStyle(TOGGLE, TEXT_PADDING);
+            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+            GuiSetStyle(TOGGLE, TEXT_PADDING, 8);
+
+            if (i == (*active))
+            {
+                toggle = true;
+                GuiToggle(tabBounds, text[i], &toggle);
+            }
+            else
+            {
+                toggle = false;
+                GuiToggle(tabBounds, text[i], &toggle);
+                if (toggle) *active = i;
+            }
+
+            // Close tab with middle mouse button pressed
+            if (CheckCollisionPointRec(GUI_POINTER_POSITION, tabBounds) && GUI_BUTTON_PRESSED_MID) result = i;
+
+            GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
+            GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
+
+            if (GuiGetStyle(TABBAR, TAB_CLOSE_BUTTON))
+            {
+                // Draw tab close button
+                // NOTE: Only draw close button for current tab: if (CheckCollisionPointRec(mousePosition, tabBounds))
+                int tempBorderWidth = GuiGetStyle(BUTTON, BORDER_WIDTH);
+                int tempTextAlignment = GuiGetStyle(BUTTON, TEXT_ALIGNMENT);
+                GuiSetStyle(BUTTON, BORDER_WIDTH, 1);
+                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
+#if defined(RAYGUI_NO_ICONS)
+                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 }, "x")) result = i;
+#else
+                if (GuiButton(RAYGUI_CLITERAL(Rectangle){ tabBounds.x + tabBounds.width - 14 - 5, tabBounds.y + 5, 14, 14 },
+                    GuiIconText(ICON_CROSS_SMALL, NULL))) result = i;
+#endif
+                GuiSetStyle(BUTTON, BORDER_WIDTH, tempBorderWidth);
+                GuiSetStyle(BUTTON, TEXT_ALIGNMENT, tempTextAlignment);
+            }
+        }
+    }
+
+    // Draw tab-bar bottom line
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
+    //--------------------------------------------------------------------
+
+    return result;     // Return as result the current TAB closing requested
+}
+
 // Color Panel control
 int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
 {
@@ -5146,8 +5161,8 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
         int x = iconId%maxIconsPerLine;
         int y = iconId/maxIconsPerLine; 
 
-        Rectangle srcRec = { x*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
-            guiIconFontOffsetY + y*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
+        Rectangle srcRec = { (float)x*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
+            guiIconFontOffsetY + (float)y*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
             RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE };
         Rectangle dstRec = { posX, posY, RAYGUI_ICON_SIZE*pixelSize, RAYGUI_ICON_SIZE*pixelSize };
 
@@ -5846,7 +5861,7 @@ static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec)
     for (int i = 0; i < font.glyphCount; i++)
     {
         if ((font.recs[i].y + font.recs[i].height) > maxGlyphRecY) 
-            maxGlyphRecY = font.recs[i].y + font.recs[i].height;
+            maxGlyphRecY = (int)font.recs[i].y + (int)font.recs[i].height;
     }
 
     int maxIconsPerLine = imFont->width/(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING);
