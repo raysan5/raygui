@@ -5164,7 +5164,7 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
         Rectangle srcRec = { (float)x*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
             guiIconFontOffsetY + (float)y*(RAYGUI_ICON_SIZE + 2*RAYGUI_ICON_FONT_ATLAS_PADDING) + RAYGUI_ICON_FONT_ATLAS_PADDING, 
             RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE };
-        Rectangle dstRec = { posX, posY, RAYGUI_ICON_SIZE*pixelSize, RAYGUI_ICON_SIZE*pixelSize };
+        Rectangle dstRec = { (float)posX, (float)posY, (float)RAYGUI_ICON_SIZE*pixelSize, (float)RAYGUI_ICON_SIZE*pixelSize };
 
         DrawTexturePro(guiFont.texture, srcRec, dstRec, (Vector2){ 0, 0 }, 0.0f, color);
     }
@@ -5891,7 +5891,7 @@ static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec)
             for (int x = 0; x < 3; x++)
                 ((unsigned short *)newImData)[(imFont->height - y - 1)*imFont->width + imFont->width - x - 1] = 0xffff;
 
-        *whiteRec = (Rectangle){ imFont->width - 2, imFont->height - 2, 1, 1 };
+        *whiteRec = (Rectangle){ (float)imFont->width - 2, (float)imFont->height - 2, 1, 1 };
     }
 
     // Calculate image offset positions to start drawing
