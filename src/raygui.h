@@ -5167,7 +5167,7 @@ void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color)
             RAYGUI_ICON_SIZE, RAYGUI_ICON_SIZE };
         Rectangle dstRec = { (float)posX, (float)posY, (float)pixelSize*RAYGUI_ICON_SIZE, (float)pixelSize*RAYGUI_ICON_SIZE };
 
-        DrawTexturePro(guiFont.texture, srcRec, dstRec, (Vector2){ 0, 0 }, 0.0f, color);
+        DrawTexturePro(guiFont.texture, srcRec, dstRec, RAYGUI_CLITERAL(Vector2){ 0, 0 }, 0.0f, color);
     }
     else
     {
@@ -5892,7 +5892,7 @@ static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec)
             for (int x = 0; x < 3; x++)
                 ((unsigned short *)newImData)[(imFont->height - y - 1)*imFont->width + imFont->width - x - 1] = 0xffff;
 
-        *whiteRec = (Rectangle){ (float)imFont->width - 2, (float)imFont->height - 2, 1, 1 };
+        *whiteRec = RAYGUI_CLITERAL(Rectangle){ (float)imFont->width - 2, (float)imFont->height - 2, 1, 1 };
     }
 
     // Calculate image offset positions to start drawing
