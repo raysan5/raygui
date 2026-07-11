@@ -3231,9 +3231,6 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
     int result = 0;
     GuiState state = guiState;
 
-    //char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = "\0";
-    //snprintf(textValue, sizeof(textValue), "%2.2f", *value);
-
     Rectangle textBounds = { 0 };
     if (text != NULL)
     {
@@ -4513,8 +4510,7 @@ void GuiLoadStyle(const char *fileName)
                         sscanf(buffer, "f %d %s %[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
                         // GLOBAL: Copy font file name into guiFontName
-                        memcpy(guiFontName, fontFileName, 31);
-                        guiFontName[31] = '\0';
+                        snprintf(guiFontName, 32, "%s", fontFileName);
 
                         Font font = { 0 };
                         int *codepoints = NULL;
@@ -6167,7 +6163,8 @@ static const char *TextFormat(const char *text, ...)
         #define RAYGUI_TEXTFORMAT_MAX_SIZE   256
     #endif
 
-    static char buffer[RAYGUI_TEXTFORMAT_MAX_SIZE];
+    static char buffer[RAYGUI_TEXTFORMAT_MAX_SIZE] = { 0 };
+    memset(buffer, 0, RAYGUI_TEXTFORMAT_MAX_SIZE);
 
     va_list args;
     va_start(args, text);
