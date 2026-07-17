@@ -4506,8 +4506,8 @@ void GuiLoadStyle(const char *fileName)
 
                         int fontSize = 0;
                         char charmapFileName[256] = { 0 };
-                        char fontFileName[256] = { 0 };
-                        sscanf(buffer, "f %d %s %[^\r\n]s", &fontSize, charmapFileName, fontFileName);
+                        char fontFileName[32] = { 0 };
+                        sscanf(buffer, "f %d %s %31[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
                         // GLOBAL: Copy font file name into guiFontName
                         snprintf(guiFontName, 32, "%s", fontFileName);
