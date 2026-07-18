@@ -7,7 +7,7 @@
 // more info and bugs-report:  github.com/raysan5/raygui                        //
 // feedback and support:       ray[at]raylibtech.com                            //
 //                                                                              //
-// Copyright (c) 2020-2025 raylib technologies (@raylibtech)                    //
+// Copyright (c) 2020-2026 raylib technologies (@raylibtech)                    //
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -15,18 +15,18 @@
 
 // Custom style name: Enefete
 static const GuiStyleProp enefeteStyleProps[ENEFETE_STYLE_PROPS_COUNT] = {
-    { 0, 0, (int)0x1980d5ff },    // DEFAULT_BORDER_COLOR_NORMAL 
-    { 0, 1, (int)0x4df3ebff },    // DEFAULT_BASE_COLOR_NORMAL 
-    { 0, 2, (int)0x103e60ff },    // DEFAULT_TEXT_COLOR_NORMAL 
-    { 0, 3, (int)0xe7e2f7ff },    // DEFAULT_BORDER_COLOR_FOCUSED 
-    { 0, 4, (int)0x23d4ddff },    // DEFAULT_BASE_COLOR_FOCUSED 
-    { 0, 5, (int)0xf1f1f1ff },    // DEFAULT_TEXT_COLOR_FOCUSED 
-    { 0, 6, (int)0x6413a6ff },    // DEFAULT_BORDER_COLOR_PRESSED 
-    { 0, 7, (int)0xea66d9ff },    // DEFAULT_BASE_COLOR_PRESSED 
-    { 0, 8, (int)0x9f00bbff },    // DEFAULT_TEXT_COLOR_PRESSED 
-    { 0, 9, (int)0x4b909eff },    // DEFAULT_BORDER_COLOR_DISABLED 
-    { 0, 10, (int)0x73c7d0ff },    // DEFAULT_BASE_COLOR_DISABLED 
-    { 0, 11, (int)0x448894ff },    // DEFAULT_TEXT_COLOR_DISABLED 
+    { 0, 0, (int)0x1980d5ff },    // DEFAULT_BORDER_COLOR_NORMAL
+    { 0, 1, (int)0x4df3ebff },    // DEFAULT_BASE_COLOR_NORMAL
+    { 0, 2, (int)0x103e60ff },    // DEFAULT_TEXT_COLOR_NORMAL
+    { 0, 3, (int)0xe7e2f7ff },    // DEFAULT_BORDER_COLOR_FOCUSED
+    { 0, 4, (int)0x23d4ddff },    // DEFAULT_BASE_COLOR_FOCUSED
+    { 0, 5, (int)0xf1f1f1ff },    // DEFAULT_TEXT_COLOR_FOCUSED
+    { 0, 6, (int)0x6413a6ff },    // DEFAULT_BORDER_COLOR_PRESSED
+    { 0, 7, (int)0xea66d9ff },    // DEFAULT_BASE_COLOR_PRESSED
+    { 0, 8, (int)0x9f00bbff },    // DEFAULT_TEXT_COLOR_PRESSED
+    { 0, 9, (int)0x4b909eff },    // DEFAULT_BORDER_COLOR_DISABLED
+    { 0, 10, (int)0x73c7d0ff },    // DEFAULT_BASE_COLOR_DISABLED
+    { 0, 11, (int)0x448894ff },    // DEFAULT_TEXT_COLOR_DISABLED
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x1d3f6cff },    // DEFAULT_LINE_COLOR 
@@ -570,27 +570,38 @@ static void GuiLoadStyleEnefete(void)
     font.baseSize = 16;
     font.glyphCount = 189;
 
-    // Load texture from image
-    font.texture = LoadTextureFromImage(imFont);
-    UnloadImage(imFont);  // Uncompressed image data can be unloaded from memory
-
     // Copy char recs data from global fontRecs
     // NOTE: Required to avoid issues if trying to free font
-    font.recs = (Rectangle *)RAYGUI_MALLOC(font.glyphCount*sizeof(Rectangle));
+    font.recs = (Rectangle *)RAYGUI_CALLOC(font.glyphCount, sizeof(Rectangle));
     memcpy(font.recs, enefeteFontRecs, font.glyphCount*sizeof(Rectangle));
 
     // Copy font char info data from global fontChars
     // NOTE: Required to avoid issues if trying to free font
-    font.glyphs = (GlyphInfo *)RAYGUI_MALLOC(font.glyphCount*sizeof(GlyphInfo));
+    font.glyphs = (GlyphInfo *)RAYGUI_CALLOC(font.glyphCount, sizeof(GlyphInfo));
     memcpy(font.glyphs, enefeteFontGlyphs, font.glyphCount*sizeof(GlyphInfo));
+
+    // Define font white rectangle to be used on shapes drawing
+    // WARNING: It can be updated if icons are baked into font atlas image
+    Rectangle fontWhiteRec = { 510, 254, 1, 1 };
+
+#if defined(RAYGUI_FONT_ICONS_BAKING)
+     // Font atlas image icons baking
+     Rectangle updatedWhiteRec = { 0 };
+     guiIconFontOffsetY = GuiFontIconBaking(&imFont, font, &updatedWhiteRec);
+     if (guiIconFontOffsetY > 0) fontWhiteRec = updatedWhiteRec;
+#endif
+    // Load texture from image
+    font.texture = LoadTextureFromImage(imFont);
+    UnloadImage(imFont);  // Uncompressed image data can be unloaded from memory
 
     GuiSetFont(font);
 
     // Setup a white rectangle on the font to be used on shapes drawing,
     // it makes possible to draw shapes and text (full UI) in a single draw call
-    Rectangle fontWhiteRec = { 510, 254, 1, 1 };
     SetShapesTexture(font.texture, fontWhiteRec);
 
+    // Set font name in raygui internal variable (requires raygui 5.0)
+    snprintf(guiFontName, 32, "%s", "GMSN.ttf");
     //-----------------------------------------------------------------
 
     // TODO: Custom user style setup: Set specific properties here (if required)
