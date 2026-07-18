@@ -4487,11 +4487,16 @@ void GuiLoadStyle(const char *fileName)
             int controlId = 0;
             int propertyId = 0;
             unsigned int propertyValue = 0;
+            unsigned int version = 0;
 
             while (!feof(rgsFile))
             {
                 switch (buffer[0])
                 {
+                    case 'v':
+                    {
+                        sscanf(buffer, "v %d", &version);
+                    }
                     case 'p':
                     {
                         // Style property: p <control_id> <property_id> <property_value> <property_name>
@@ -4502,12 +4507,14 @@ void GuiLoadStyle(const char *fileName)
                     } break;
                     case 'f':
                     {
-                        // Style font: f <gen_font_size> <charmap_file> <font_file>
+                        // Style font: f <gen_font_size> <font_file> <charmap_file>
 
                         int fontSize = 0;
-                        char charmapFileName[256] = { 0 };
+                        char charmapFileName[32] = { 0 };
                         char fontFileName[32] = { 0 };
-                        sscanf(buffer, "f %d %s %31[^\r\n]s", &fontSize, charmapFileName, fontFileName);
+                        
+                        if (version >= 600) sscanf(buffer, "f %d %31s %31[^\r\n]s", &fontSize, fontFileName, charmapFileName);
+                        else sscanf(buffer, "f %d %31s %31[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
                         // GLOBAL: Copy font file name into guiFontName
                         snprintf(guiFontName, 32, "%s", fontFileName);
