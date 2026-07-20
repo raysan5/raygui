@@ -415,7 +415,7 @@
 #endif
 #if !defined(GUI_SCROLL_DELTA)
     // Mapping to scroll delta changes
-    // TODO: Review inconsistencies between platforms
+    // TODO: Review mouse scroll inconsistencies between platforms
     #if defined(PLATFORM_WEB)
         // NOTE: Gamepad axis triggers not detected on web platform
         #define GUI_SCROLL_DELTA    ((float)IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_2) - (float)IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_TRIGGER_2))
@@ -1599,8 +1599,6 @@ static float TextToFloat(const char *text);         // Get float value from text
 
 static int GetCodepointNext(const char *text, int *codepointSize);  // Get next codepoint in a UTF-8 encoded text
 static const char *CodepointToUTF8(int codepoint, int *byteSize);   // Encode codepoint into UTF-8 text (char array size returned as parameter)
-
-static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2);  // Draw rectangle vertical gradient
 //-------------------------------------------------------------------------------
 
 #endif      // RAYGUI_STANDALONE
@@ -3883,7 +3881,7 @@ int GuiTabBar(Rectangle bounds, const char *text, int *hscroll, int *active)
 
 // Tab Bar control, using text entries list and returning focus entry
 // NOTE: In case of tab close result, consider focused tab
-// TODO: Remove using GuiToggle() for the TABS
+// TODO: Reeplace GuiToggle() usage for custom implementation for the TABS
 int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *active, int *focus)
 {
     int result = RESULT_NONE;
@@ -3982,7 +3980,6 @@ int GuiColorPanel(Rectangle bounds, const char *text, Color *color)
     // This is required, because the Color->HSV->Color conversion has precision errors
     // Thus the assignment from HSV to Color should only be made, if the HSV has a new user-entered value
     // Otherwise GuiColorPanel would often modify it's color without user input
-    // TODO: GuiColorPanelHSV() could return 1 if the slider was dragged, to simplify this check
     if ((hsv.x != prevHsv.x) || (hsv.y != prevHsv.y) || (hsv.z != prevHsv.z))
     {
         Vector3 rgb = ConvertHSVtoRGB(hsv);
@@ -4159,15 +4156,32 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
     if (state != STATE_DISABLED)
     {
         // Draw hue bar:color bars
-        // TODO: Use directly DrawRectangleGradientEx(bounds, color1, color2, color2, color1);
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y), (int)bounds.width, (int)ceilf(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha));
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y + bounds.height/6), (int)bounds.width, (int)ceilf(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha));
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y + 2*(bounds.height/6)), (int)bounds.width, (int)ceilf(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha));
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y + 3*(bounds.height/6)), (int)bounds.width, (int)ceilf(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha));
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y + 4*(bounds.height/6)), (int)bounds.width, (int)ceilf(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha));
-        DrawRectangleGradientV((int)bounds.x, (int)(bounds.y + 5*(bounds.height/6)), (int)bounds.width, (int)(bounds.height/6), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha));
+        // NOTE: Using DrawRectangleGradientEx(bounds, color1, color2, color2, color1);
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y, bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha));
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + 1*(bounds.height/6.0f), bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 255, 0, 255 }, guiAlpha));
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + 2*(bounds.height/6.0f), bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 0, 255 }, guiAlpha));
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + 3*(bounds.height/6.0f), bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 255, 255, 255 }, guiAlpha));
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + 4*(bounds.height/6.0f), bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 0, 0, 255, 255 }, guiAlpha));
+        DrawRectangleGradientEx(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + 5*(bounds.height/6.0f), bounds.width, bounds.height/6.0f }, 
+            Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha),
+            Fade(RAYGUI_CLITERAL(Color){ 255, 0, 0, 255 }, guiAlpha), Fade(RAYGUI_CLITERAL(Color){ 255, 0, 255, 255 }, guiAlpha));
     }
-    else DrawRectangleGradientV((int)bounds.x, (int)bounds.y, (int)bounds.width, (int)bounds.height, Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha));
+    else
+    {
+        DrawRectangleGradientEx(bounds,
+            Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha), Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha),
+            Fade(GetColor(GuiGetStyle(COLORPICKER, BORDER_COLOR_DISABLED)), guiAlpha), Fade(Fade(GetColor(GuiGetStyle(COLORPICKER, BASE_COLOR_DISABLED)), 0.1f), guiAlpha));
+    }
 
     GuiDrawRectangle(bounds, GuiGetStyle(COLORPICKER, BORDER_WIDTH), GetColor(GuiGetStyle(COLORPICKER, BORDER + state*3)), BLANK);
 
@@ -5441,10 +5455,10 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case CHECKBOX:
         case VALUEBOX:
         case TABBAR:
-            // TODO: More special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
+            // TODO: Special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
         {
-            // TODO: WARNING: TEXT_ALIGNMENT is already considered in GuiDrawText()
+            // WARNING: TEXT_ALIGNMENT is already considered in GuiDrawText()
             if (GuiGetStyle(control, TEXT_ALIGNMENT) == TEXT_ALIGN_RIGHT) textBounds.x -= GuiGetStyle(control, TEXT_PADDING);
             else textBounds.x += GuiGetStyle(control, TEXT_PADDING);
         }
@@ -5638,8 +5652,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
             textBoundsWidthOffset = (float)(RAYGUI_ICON_SIZE*guiIconScale + RAYGUI_ICON_TEXT_PADDING);
         }
 #endif
-        // Get size in bytes of text,
-        // considering end of line and line break
+        // Get size in bytes of text, considering end of line and line break
         int lineSize = 0;
         for (int c = 0; (lines[i][c] != '\0') && (lines[i][c] != '\n') && (lines[i][c] != '\r'); c++, lineSize++){ }
         float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/guiFont.baseSize;
@@ -5660,7 +5673,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
 
             // NOTE: Normally, exiting the decoding sequence as soon as a bad byte is found (and return 0x3f)
             // but all of the bad bytes need to be drawn using the '?' symbol, moving one byte
-            if (codepoint == 0x3f) codepointSize = 1; // TODO: Review not recognized codepoints size
+            if (codepoint == 0x3f) codepointSize = 1; // WARNING: Not recognized codepoints size
 
             // Get glyph width to check if it goes out of bounds
             if (guiFont.glyphs[index].advanceX == 0) glyphWidth = ((float)guiFont.recs[index].width*scaleFactor);
@@ -5676,7 +5689,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                     textOffsetX = 0.0f;
                     textOffsetY += (GuiGetStyle(DEFAULT, TEXT_SIZE) + GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
 
-                    if (tempWrapCharMode)   // Wrap at char level when too long words
+                    if (tempWrapCharMode) // Wrap at char level when too long words
                     {
                         wrapMode = TEXT_WRAP_WORD;
                         tempWrapCharMode = false;
@@ -5707,12 +5720,12 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
                 }
             }
 
-            if (codepoint == '\n') break;   // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
+            if (codepoint == '\n') break; // WARNING: Lines are already processed manually, no need to keep drawing after this codepoint
             else
             {
-                // TODO: There are multiple types of spaces in Unicode,
+                // WARNING: There are multiple types of spaces in Unicode,
                 // maybe it's a good idea to add support for more: http://jkorpela.fi/chars/spaces.html
-                if ((codepoint != ' ') && (codepoint != '\t'))      // Do not draw codepoints with no glyph
+                if ((codepoint != ' ') && (codepoint != '\t')) // Do not draw codepoints with no glyph
                 {
                     if (wrapMode == TEXT_WRAP_NONE)
                     {
@@ -5846,7 +5859,7 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     if (valueRange <= 0) valueRange = 1;
 
     int sliderSize = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
-    if (sliderSize < 1) sliderSize = 1;  // TODO: Consider a minimum slider size
+    if (sliderSize < 1) sliderSize = 1;  // Consider a minimum slider size of 1 pixel
 
     // Calculate rectangles for all of the components
     arrowUpLeft = RAYGUI_CLITERAL(Rectangle){
@@ -6311,14 +6324,6 @@ static const char *TextFormat(const char *text, ...)
     va_end(args);
 
     return buffer;
-}
-
-// Draw rectangle with vertical gradient fill color
-// NOTE: This function is only used by GuiColorPicker()
-static void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2)
-{
-    Rectangle bounds = { (float)posX, (float)posY, (float)width, (float)height };
-    DrawRectangleGradientEx(bounds, color1, color2, color2, color1);
 }
 
 // Get integer value from text
