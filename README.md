@@ -100,7 +100,7 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 ## raygui icons
 
-`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains **256 possible icons** defined as **16x16 pixels** each; each pixel is codified using **1-bit**. The total size of the array is `2048 bytes`.
+`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains **512 possible icons** defined as **16x16 pixels** each; each pixel is codified using **1-bit**. The total size of the array is `4096 bytes`.
 
 ![raygui icons v5](images/raygui_icons_v5.png)
 
