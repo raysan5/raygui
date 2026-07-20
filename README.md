@@ -118,11 +118,11 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
  - [**rGuiStyler**](https://raylibtech.itch.io/rguistyler) - A simple and easy-to-use raygui styles editor.
 
-   ![rGuiStyler v3.1](images/rguistyler_v300.png)
+   ![rGuiStyler v6.0](images/rguistyler_v600.png)
 
  - [**rGuiIcons**](https://raylibtech.itch.io/rguiicons) - A simple and easy-to-use raygui icons editor.
 
-   ![rGuiIcons v1.0](images/rguiicons_v100.png)
+   ![rGuiIcons v4.0](images/rguiicons_v400.png)
 
  - [**rGuiLayout**](https://raylibtech.itch.io/rguilayout) - A simple and easy-to-use raygui layouts editor.
 
