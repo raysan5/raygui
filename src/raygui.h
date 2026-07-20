@@ -561,7 +561,7 @@ typedef enum {
     RESULT_PRESSED     = 1,
     RESULT_CHANGED     = 2,
 
-    RESULT_TAB_CLOSE   = 4     // GuiTabBar(), tab close request 
+    RESULT_TAB_CLOSE   = 4     // GuiTabBar(), tab close request
 } GuiResult;
 
 // Gui control state
@@ -2121,7 +2121,7 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
             {
                 state = STATE_NORMAL;
                 *active = !(*active);
-                
+
                 result = RESULT_CHANGED;
             }
             else state = STATE_FOCUSED;
@@ -2644,8 +2644,8 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         {
             // GLOBAL: Auto-cursor movement logic
             // NOTE: Keystrokes are handled repeatedly when button is held down for some time
-            if (GUI_KEY_DOWN(KEY_LEFT) || GUI_KEY_DOWN(KEY_RIGHT) || 
-                GUI_KEY_DOWN(KEY_UP) || GUI_KEY_DOWN(KEY_DOWN) || 
+            if (GUI_KEY_DOWN(KEY_LEFT) || GUI_KEY_DOWN(KEY_RIGHT) ||
+                GUI_KEY_DOWN(KEY_UP) || GUI_KEY_DOWN(KEY_DOWN) ||
                 GUI_KEY_DOWN(KEY_BACKSPACE) || GUI_KEY_DOWN(KEY_DELETE)) autoCursorCounter++;
             else autoCursorCounter = 0;
 
@@ -2748,7 +2748,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 bool puctuation = ispunct(nextCodepoint & 0xff);
                 while (offset < textLength)
                 {
-                    if ((puctuation && !ispunct(nextCodepoint & 0xff)) || 
+                    if ((puctuation && !ispunct(nextCodepoint & 0xff)) ||
                         (!puctuation && (isspace(nextCodepoint & 0xff) || ispunct(nextCodepoint & 0xff)))) break;
 
                     offset += nextCodepointSize;
@@ -2773,7 +2773,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
                 //result = RESULT_CHANGED;
             }
-            else if ((textLength > textBoxCursorIndex) && (GUI_KEY_PRESSED(KEY_DELETE) || 
+            else if ((textLength > textBoxCursorIndex) && (GUI_KEY_PRESSED(KEY_DELETE) ||
                 (GUI_KEY_DOWN(KEY_DELETE) && autoCursorShouldTrigger)))
             {
                 // Delete single codepoint from text, after current cursor position
@@ -2790,7 +2790,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Delete related codepoints from text, before current cursor position
-            if ((textBoxCursorIndex > 0) && GUI_KEY_PRESSED(KEY_BACKSPACE) && 
+            if ((textBoxCursorIndex > 0) && GUI_KEY_PRESSED(KEY_BACKSPACE) &&
                 (GUI_KEY_DOWN(KEY_LEFT_CONTROL) || GUI_KEY_DOWN(KEY_RIGHT_CONTROL)))
             {
                 int offset = textBoxCursorIndex;
@@ -2814,7 +2814,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 while (offset > 0)
                 {
                     prevCodepoint = GetCodepointPrevious(text + offset, &prevCodepointSize);
-                    if ((puctuation && !ispunct(prevCodepoint & 0xff)) || 
+                    if ((puctuation && !ispunct(prevCodepoint & 0xff)) ||
                         (!puctuation && (isspace(prevCodepoint & 0xff) || ispunct(prevCodepoint & 0xff)))) break;
 
                     offset -= prevCodepointSize;
@@ -2994,7 +2994,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 {
                     textBoxCursorIndex = textLength;   // GLOBAL: Place cursor index to the end of current text
                     autoCursorCounter = 0;             // GLOBAL: Reset counter for repeated keystrokes
-                    
+
                     //*editMode = true;
                     result = RESULT_PRESSED;
                 }
@@ -3375,7 +3375,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
 
             if (valueHasChanged) *value = TextToFloat(textValue);
 
-            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) || 
+            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) ||
                 (!CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED)) result = RESULT_PRESSED;
         }
         else
@@ -3569,7 +3569,7 @@ int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight
 
     // WARNING: Working with floats could lead to rounding issues
     if ((state != STATE_DISABLED)) progress.width = ((float)*value/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH));
-    
+
     if (prevValue != *value) result = RESULT_CHANGED;
     //--------------------------------------------------------------------
 
@@ -3906,7 +3906,7 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
     // Draw control
     //--------------------------------------------------------------------
     //if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode) // TODO: Support disabled
-    
+
     for (int i = 0; i < count; i++)
     {
         tabBounds.x = bounds.x + (tabItemsWidth + 4)*i + offsetX;
@@ -4314,8 +4314,8 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
         }
     }
 
-    if ((prevColorHsv.x != colorHsv->x) || 
-        (prevColorHsv.y != colorHsv->y) || 
+    if ((prevColorHsv.x != colorHsv->x) ||
+        (prevColorHsv.y != colorHsv->y) ||
         (prevColorHsv.z != colorHsv->z)) result = RESULT_CHANGED;
     //--------------------------------------------------------------------
 
@@ -4487,7 +4487,7 @@ int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, ch
     }
     else
     {
-        if (GuiTextBox(textBoxBounds, text, textSize, textEditMode) == RESULT_PRESSED) 
+        if (GuiTextBox(textBoxBounds, text, textSize, textEditMode) == RESULT_PRESSED)
             textEditMode = !textEditMode;
     }
 
@@ -4644,7 +4644,7 @@ void GuiLoadStyle(const char *fileName)
                         int fontSize = 0;
                         char charmapFileName[32] = { 0 };
                         char fontFileName[32] = { 0 };
-                        
+
                         if (version >= 600) sscanf(buffer, "f %d %31s %31[^\r\n]s", &fontSize, fontFileName, charmapFileName);
                         else sscanf(buffer, "f %d %31s %31[^\r\n]s", &fontSize, charmapFileName, fontFileName);
 
