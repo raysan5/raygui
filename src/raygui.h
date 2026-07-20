@@ -37,7 +37,7 @@
 *       - Line
 *       - Panel         --> StatusBar
 *       - ScrollPanel   --> StatusBar
-*       - TabBar        --> Button
+*       - TabBar        --> Toggle, Button
 *
 *     # Basic Controls
 *       - Label
@@ -163,7 +163,7 @@
 *                         REDESIGNED: GuiColorPanel(), improved HSV <-> RGBA convertion
 *                         REDESIGNED: WARNING: TEXT_LINE_SPACING does not consider text height, only lines spacing
 *                         REDESIGNED: WARNING: GuiMessageBox(), added parameter for btn return, unify result
-*                         REDESIGNED. WARNING: GuiTextInputBox(), added parameter for btn return, unify result
+*                         REDESIGNED: WARNING: GuiTextInputBox(), added parameter for btn return, unify result
 *                         REVIEWED: GuiLoadIconsFromMemory(), fixed memory issues
 *                         REVIEWED: Controls using text labels to use LABEL properties
 *                         REVIEWED: Replaced sprintf() by snprintf() for more safety
