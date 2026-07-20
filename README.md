@@ -109,7 +109,7 @@ if (GuiButton(rec, "#05#Open Image")) { /* ACTION */ }
 ```
 It's also possible to use the provided `GuiIconText()` function to prefix it automatically, using a clearer identifier (defined in `raygui.h`).
 ```c
-if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
+if (GuiButton(rec, GuiIconText(ICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 ```
 Provided set of icons can be reviewed and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
 
