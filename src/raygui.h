@@ -2160,7 +2160,7 @@ int GuiToggleGroup(Rectangle bounds, const char *text, int *active)
     memset(itemText, 0, RAYGUI_TOGGLEGROUP_MAX_ITEM_TEXT_SIZE);
 
     int temp = 0;
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
     if (active == NULL) active = &temp;
 
     bool toggle = false;    // Required for individual toggles
@@ -2245,7 +2245,7 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     GuiState state = guiState;
 
     int temp = 0;
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
     if (active == NULL) active = &temp;
 
     // Get substrings items from text (items pointers)
@@ -2388,7 +2388,7 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
     GuiState state = guiState;
 
     int temp = 0;
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
     if (active == NULL) active = &temp;
 
     bounds.width -= (GuiGetStyle(COMBOBOX, COMBO_BUTTON_WIDTH) + GuiGetStyle(COMBOBOX, COMBO_BUTTON_SPACING));
@@ -2456,7 +2456,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
     GuiState state = guiState;
 
     int temp = 0;
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
     if (active == NULL) active = &temp;
 
     int itemSelected = *active;
@@ -3144,7 +3144,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
     int result = RESULT_NONE;
     GuiState state = guiState;
 
-    int prevValue = *value;
+    //int prevValue = *value;
     char textValue[RAYGUI_VALUEBOX_MAX_CHARS + 1] = { 0 };
     snprintf(textValue, RAYGUI_VALUEBOX_MAX_CHARS + 1, "%i", *value);
 
@@ -3288,7 +3288,7 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
     int result = RESULT_NONE;
     GuiState state = guiState;
 
-    float prevValue = *value;
+    //float prevValue = *value;
 
     Rectangle textBounds = { 0 };
     if (text != NULL)
@@ -3722,7 +3722,7 @@ int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, in
 
     int itemFocused = (focus == NULL)? -1 : *focus;
     int itemSelected = (active == NULL)? -1 : *active;
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
 
     // Check if scroll bar is needed
     bool useScrollBar = false;
@@ -3893,7 +3893,7 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
     if (*active < 0) *active = 0;
     else if (*active > count - 1) *active = count - 1;
 
-    int prevActive = *active;
+    int prevActive = (active == NULL)? 0 : *active;
 
     int offsetX = 0;     // Required in case tabs go out of screen
     offsetX = (*active*tabItemsWidth) - GetScreenWidth();
