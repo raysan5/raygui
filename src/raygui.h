@@ -3887,7 +3887,7 @@ int GuiTabBar(Rectangle bounds, const char *text, int *hscroll, int *active)
 int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *active, int *focus)
 {
     int result = RESULT_NONE;
-    GuiState state = guiState;
+    //GuiState state = guiState;
 
     int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
     Rectangle tabBounds = { bounds.x, bounds.y, (float)tabItemsWidth, bounds.height };
