@@ -305,10 +305,12 @@ int main()
             if (showMessageBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiMessageBox((Rectangle){ (float)GetScreenWidth()/2 - 125, (float)GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(ICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No");
+                int btnActive = -1; 
+                GuiMessageBox((Rectangle){ (float)GetScreenWidth()/2 - 125, (float)GetScreenHeight()/2 - 50, 250, 100 }, 
+                    GuiIconText(ICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No", &btnActive);
 
-                if ((result == 0) || (result == 2)) showMessageBox = false;
-                else if (result == 1) exitWindow = true;
+                if ((btnActive == 0) || (btnActive == 2)) showMessageBox = false;
+                else if (btnActive == 1) exitWindow = true;
             }
 
             if (showTextInputBox)
@@ -316,16 +318,18 @@ int main()
                 GuiUnlock();
 
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", "Ok;Cancel", textInput, 255, NULL);
+                int btnActive = -1;
+                GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, 
+                    GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", textInput, 255, "Ok;Cancel", &btnActive, NULL);
 
-                if (result == 1)
+                if (btnActive == 1)
                 {
                     // TODO: Validate textInput value and save
 
                     TextCopy(textInputFileName, textInput);
                 }
 
-                if ((result == 0) || (result == 1) || (result == 2))
+                if ((btnActive == 0) || (btnActive == 1) || (btnActive == 2))
                 {
                     showTextInputBox = false;
                     TextCopy(textInput, "\0");
