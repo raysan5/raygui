@@ -126,7 +126,7 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
  - [**rGuiLayout**](https://raylibtech.itch.io/rguilayout) - A simple and easy-to-use raygui layouts editor.
 
-   ![rGuiLayout v2.2](images/rguilayout_v220.png)
+   ![rGuiLayout v5.0](images/rguilayout_v500.png)
 
 ## building
 
