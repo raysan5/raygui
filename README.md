@@ -10,7 +10,7 @@
 
 <br>
 
-**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch and all raylibtech tools. Make sure to use the appropriate versions.**
+**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch and all raylibtech tools. Make sure to use the latest versions.**
 
 **WARNING: Latest `raygui 5.0` introduces some API-BREAKING changes, now all functions return a result value.**
 
