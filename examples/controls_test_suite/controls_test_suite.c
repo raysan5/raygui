@@ -58,6 +58,12 @@
 #include "../styles/style_sunny.h"             // raygui style: sunny
 #include "../styles/style_amber.h"             // raygui style: amber
 #include "../styles/style_genesis.h"           // raygui style: genesis
+#include "../styles/style_brick.h"           // raygui style: genesis
+#include "../styles/style_turbo.h"           // raygui style: genesis
+#include "../styles/style_wisteria.h"           // raygui style: genesis
+#include "../styles/style_advance.h"           // raygui style: genesis
+#include "../styles/style_rltech.h"           // raygui style: genesis
+#include "../styles/style_pocket.h"           // raygui style: genesis
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -139,6 +145,8 @@ int main()
     //GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
+    int frameCounter = 0;
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -174,6 +182,14 @@ int main()
         if (progressValue > 1.0f) progressValue = 1.0f;
         else if (progressValue < 0.0f) progressValue = 0.0f;
 
+        // Style updater auto
+        frameCounter++;
+        if ((frameCounter > 300) && (frameCounter%60) == 0)
+        {
+            visualStyleActive++;
+            if (visualStyleActive >= 20) visualStyleActive = 0;
+        }
+
         if (visualStyleActive != prevVisualStyleActive)
         {
             GuiLoadStyleDefault();
@@ -194,6 +210,12 @@ int main()
                 case 11: GuiLoadStyleSunny(); break;
                 case 12: GuiLoadStyleAmber(); break;
                 case 13: GuiLoadStyleGenesis(); break;
+                case 14: GuiLoadStyleBrick(); break;
+                case 15: GuiLoadStylePocket(); break;
+                case 16: GuiLoadStyleTurbo(); break;
+                case 17: GuiLoadStyleWisteria(); break;
+                case 18: GuiLoadStyleAdvance(); break;
+                case 19: GuiLoadStyleRLTech(); break;
                 default: break;
             }
 
@@ -244,7 +266,7 @@ int main()
 
             GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 40);
             GuiComboBox((Rectangle){ 25, 480 + 20, 125, 30 },
-                "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis", &visualStyleActive);
+                "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis;Brick;Pocket;Turbo;Wisteria;Advance;RLTech", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (dropDown000EditMode || dropDown001EditMode) GuiUnlock();
