@@ -182,6 +182,7 @@ int main()
         if (progressValue > 1.0f) progressValue = 1.0f;
         else if (progressValue < 0.0f) progressValue = 0.0f;
 
+        /*
         // Style updater auto
         frameCounter++;
         if ((frameCounter > 300) && (frameCounter%60) == 0)
@@ -189,6 +190,7 @@ int main()
             visualStyleActive++;
             if (visualStyleActive >= 20) visualStyleActive = 0;
         }
+        */
 
         if (visualStyleActive != prevVisualStyleActive)
         {
