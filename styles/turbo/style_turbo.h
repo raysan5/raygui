@@ -30,7 +30,7 @@ static const GuiStyleProp turboStyleProps[TURBO_STYLE_PROPS_COUNT] = {
     { 0, 16, (int)0x00000010 },    // DEFAULT_TEXT_SIZE 
     { 0, 18, (int)0xbbaf6cff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0x60645fff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 8, (int)0xf0e4c4ff },    // LABEL_TEXT_COLOR_PRESSED
     { 1, 11, (int)0x959680ff },    // LABEL_TEXT_COLOR_DISABLED
     { 4, 8, (int)0xb4aa8dff },    // SLIDER_TEXT_COLOR_PRESSED

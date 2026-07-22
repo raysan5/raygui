@@ -31,7 +31,7 @@ static const GuiStyleProp pocketStyleProps[POCKET_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x56591eff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0xd9d9ceff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000018 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
 };
 
 // WARNING: This style uses a custom font: "GMSN.ttf" (size: 16, spacing: 0)

@@ -11,7 +11,7 @@
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
-#define BRICK_STYLE_PROPS_COUNT  17
+#define BRICK_STYLE_PROPS_COUNT  18
 
 // Custom style name: Brick
 static const GuiStyleProp brickStyleProps[BRICK_STYLE_PROPS_COUNT] = {
@@ -29,6 +29,7 @@ static const GuiStyleProp brickStyleProps[BRICK_STYLE_PROPS_COUNT] = {
     { 0, 11, (int)0x8c9c9eff },    // DEFAULT_TEXT_COLOR_DISABLED
     { 0, 18, (int)0x71a8aeff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0xeff0f3ff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 5, (int)0x568a90ff },    // LABEL_TEXT_COLOR_FOCUSED
     { 9, 5, (int)0x5e9095ff },    // TEXTBOX_TEXT_COLOR_FOCUSED
     { 10, 5, (int)0x639196ff },    // VALUEBOX_TEXT_COLOR_FOCUSED

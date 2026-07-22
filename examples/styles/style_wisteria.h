@@ -31,7 +31,7 @@ static const GuiStyleProp wisteriaStyleProps[WISTERIA_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x9b74d2ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0xe9eaf6ff },    // DEFAULT_BACKGROUND_COLOR 
-    { 0, 20, (int)0x00000012 },    // DEFAULT_TEXT_LINE_SPACING 
+    { 0, 20, (int)0x00000008 },    // DEFAULT_TEXT_LINE_SPACING 
     { 4, 3, (int)0xa9bdcfff },    // SLIDER_BORDER_COLOR_FOCUSED
     { 4, 5, (int)0xacc4d8ff },    // SLIDER_TEXT_COLOR_FOCUSED
     { 5, 3, (int)0xb5c7d9ff },    // PROGRESSBAR_BORDER_COLOR_FOCUSED

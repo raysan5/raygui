@@ -11,7 +11,7 @@
 //                                                                              //
 //////////////////////////////////////////////////////////////////////////////////
 
-#define ADVANCE_STYLE_PROPS_COUNT  25
+#define ADVANCE_STYLE_PROPS_COUNT  26
 
 // Custom style name: Advance
 static const GuiStyleProp advanceStyleProps[ADVANCE_STYLE_PROPS_COUNT] = {
@@ -31,6 +31,7 @@ static const GuiStyleProp advanceStyleProps[ADVANCE_STYLE_PROPS_COUNT] = {
     { 0, 17, (int)0x00000000 },    // DEFAULT_TEXT_SPACING 
     { 0, 18, (int)0x9eadd0ff },    // DEFAULT_LINE_COLOR 
     { 0, 19, (int)0xe6e6e6ff },    // DEFAULT_BACKGROUND_COLOR 
+    { 0, 20, (int)0x00000006 },    // DEFAULT_TEXT_LINE_SPACING 
     { 1, 5, (int)0x917de2ff },    // LABEL_TEXT_COLOR_FOCUSED
     { 1, 8, (int)0xffb033ff },    // LABEL_TEXT_COLOR_PRESSED
     { 4, 5, (int)0xb0b0e1ff },    // SLIDER_TEXT_COLOR_FOCUSED
