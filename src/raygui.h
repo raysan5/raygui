@@ -4641,8 +4641,8 @@ void GuiLoadStyle(const char *fileName)
                 {
                     case 'v':
                     {
-                        sscanf(buffer, "v %d", &version);
-                    }
+                        sscanf(buffer, "v %u", &version);
+                    } break;
                     case 'p':
                     {
                         // Style property: p <control_id> <property_id> <property_value> <property_name>
