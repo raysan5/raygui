@@ -3104,8 +3104,8 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
 
     if (!editMode)
     {
-        if (tempValue < minValue) tempValue = minValue;
-        if (tempValue > maxValue) tempValue = maxValue;
+        if (tempValue < minValue) tempValue = maxValue;
+        if (tempValue > maxValue) tempValue = minValue;
     }
     //--------------------------------------------------------------------
 
