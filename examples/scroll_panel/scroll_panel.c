@@ -69,8 +69,16 @@ int main()
 
             GuiScrollPanel(panelRec, NULL, panelContentRec, &panelScroll, &panelView);
 
+            int buttonSize = 64;
+            int rCnt = panelContentRec.height / buttonSize;
+            int cCnt = panelContentRec.width / buttonSize;
             BeginScissorMode(panelView.x, panelView.y, panelView.width, panelView.height);
+            GuiSetScissor(panelView);
                 GuiGrid((Rectangle){panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height}, NULL, 16, 3, NULL);
+                for (int r=0; r < rCnt; ++r)
+                    for (int c=0; c < cCnt; ++c)
+                        GuiButton((Rectangle) { panelRec.x + panelScroll.x + c * buttonSize, panelRec.y + panelScroll.y + r * buttonSize, buttonSize, buttonSize }, "");
+			GuiSetScissor((Rectangle) { 0 });
             EndScissorMode();
 
             if (showContentArea) DrawRectangle(panelRec.x + panelScroll.x, panelRec.y + panelScroll.y, panelContentRec.width, panelContentRec.height, Fade(RED, 0.1));

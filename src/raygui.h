@@ -804,6 +804,9 @@ RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style fi
 RAYGUIAPI void GuiLoadStyleFromMemory(const unsigned char *fileData, int dataSize); // Load style from memory (binary only)
 RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
 
+// Scissor function
+RAYGUIAPI void GuiSetScissor(Rectangle rect);                   // Clip mouse interact outside the Rectangle
+
 // Tooltips management functions
 RAYGUIAPI void GuiEnableTooltip(void);                          // Enable gui tooltips (global state)
 RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui tooltips (global state)
@@ -1504,6 +1507,8 @@ static float guiAlpha = 1.0f;                   // Gui controls transparency
 static unsigned int guiIconScale = 1;           // Gui icon default scale (if icons enabled)
 static unsigned int guiIconFontOffsetY = 0;     // Gui icon font atlas offset (if icons backed)
 
+static Rectangle scissorRectangle = { 0 };
+
 static bool guiTooltip = false;                 // Tooltip enabled/disabled
 static const char *guiTooltipPtr = NULL;        // Tooltip string pointer (string provided by user)
 
@@ -1616,6 +1621,8 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 static char **GuiTextSplit(const char *text, char delimiter, int *count); // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
 static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
+
+static bool CheckScissorCollisionPointRec(Vector2 point, Rectangle rec); // Check if point is inside rectangle and within scissor rectangle
 
 static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
 static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue); // Scroll bar control, used by GuiScrollPanel()
@@ -1924,7 +1931,7 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -2040,7 +2047,7 @@ int GuiButton(Rectangle bounds, const char *text)
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -2078,7 +2085,7 @@ int GuiLabelButton(Rectangle bounds, const char *text)
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check checkbox state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -2112,7 +2119,7 @@ int GuiToggle(Rectangle bounds, const char *text, bool *active)
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check toggle button state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else if (GUI_BUTTON_RELEASED)
@@ -2266,7 +2273,7 @@ int GuiToggleSlider(Rectangle bounds, const char *text, int *active)
     {
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else if (GUI_BUTTON_RELEASED)
@@ -2347,7 +2354,7 @@ int GuiCheckBox(Rectangle bounds, const char *text, bool *checked)
         };
 
         // Check checkbox state
-        if (CheckCollisionPointRec(mousePoint, totalBounds))
+        if (CheckScissorCollisionPointRec(mousePoint, totalBounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -2409,8 +2416,8 @@ int GuiComboBox(Rectangle bounds, const char *text, int *active)
     {
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
-        if (CheckCollisionPointRec(mousePoint, bounds) ||
-            CheckCollisionPointRec(mousePoint, selector))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds) ||
+            CheckScissorCollisionPointRec(mousePoint, selector))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -2486,13 +2493,13 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
             state = STATE_PRESSED;
 
             // Check if mouse has been pressed or released outside limits
-            if (!CheckCollisionPointRec(mousePoint, boundsOpen))
+            if (!CheckScissorCollisionPointRec(mousePoint, boundsOpen))
             {
                 if (GUI_BUTTON_PRESSED || GUI_BUTTON_RELEASED) result = 1;
             }
 
             // Check if already selected item has been pressed again
-            if (CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED) result = 1;
+            if (CheckScissorCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED) result = 1;
 
             // Check focused and selected item
             for (int i = 0; i < itemCount; i++)
@@ -2501,7 +2508,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
                 if (direction == 0) itemBounds.y += (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
                 else itemBounds.y -= (bounds.height + GuiGetStyle(DROPDOWNBOX, DROPDOWN_ITEMS_SPACING));
 
-                if (CheckCollisionPointRec(mousePoint, itemBounds))
+                if (CheckScissorCollisionPointRec(mousePoint, itemBounds))
                 {
                     itemFocused = i;
                     if (GUI_BUTTON_RELEASED)
@@ -2517,7 +2524,7 @@ int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMod
         }
         else
         {
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckScissorCollisionPointRec(mousePoint, bounds))
             {
                 if (GUI_BUTTON_PRESSED)
                 {
@@ -2924,7 +2931,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
             }
 
             // Move cursor position with mouse
-            if (CheckCollisionPointRec(mousePosition, textBounds))
+            if (CheckScissorCollisionPointRec(mousePosition, textBounds))
             {
                 float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;
                 int codepointIndex = 0;
@@ -2973,7 +2980,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
 
             // Finish text editing on ENTER or mouse click outside bounds
             if ((!multiline && GUI_KEY_PRESSED(KEY_ENTER)) ||
-                (!CheckCollisionPointRec(mousePosition, bounds) && GUI_BUTTON_PRESSED))
+                (!CheckScissorCollisionPointRec(mousePosition, bounds) && GUI_BUTTON_PRESSED))
             {
                 textBoxCursorIndex = 0;     // GLOBAL: Reset the shared cursor index
                 autoCursorCounter = 0;      // GLOBAL: Reset counter for repeated keystrokes
@@ -2984,7 +2991,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
         }
         else
         {
-            if (CheckCollisionPointRec(mousePosition, bounds))
+            if (CheckScissorCollisionPointRec(mousePosition, bounds))
             {
                 state = STATE_FOCUSED;
 
@@ -3087,7 +3094,7 @@ int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check spinner state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -3226,7 +3233,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             //if (*value > maxValue) *value = maxValue;
             //else if (*value < minValue) *value = minValue;
 
-            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) || (!CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED))
+            if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) || (!CheckScissorCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED))
             {
                 if (*value > maxValue) *value = maxValue;
                 else if (*value < minValue) *value = minValue;
@@ -3239,7 +3246,7 @@ int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, in
             if (*value > maxValue) *value = maxValue;
             else if (*value < minValue) *value = minValue;
 
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckScissorCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
 
@@ -3374,11 +3381,11 @@ int GuiValueBoxFloat(Rectangle bounds, const char *text, char *textValue, float 
             if (valueHasChanged) *value = TextToFloat(textValue);
 
             if ((GUI_KEY_PRESSED(KEY_ENTER) || GUI_KEY_PRESSED(KEY_KP_ENTER)) ||
-                (!CheckCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED)) result = RESULT_PRESSED;
+                (!CheckScissorCollisionPointRec(mousePoint, bounds) && GUI_BUTTON_PRESSED)) result = RESULT_PRESSED;
         }
         else
         {
-            if (CheckCollisionPointRec(mousePoint, bounds))
+            if (CheckScissorCollisionPointRec(mousePoint, bounds))
             {
                 state = STATE_FOCUSED;
 
@@ -3457,7 +3464,7 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
                 guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
             }
         }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
+        else if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN)
             {
@@ -3465,7 +3472,7 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
                 guiControlExclusiveMode = true;
                 guiControlExclusiveRec = bounds; // Store bounds as an identifier when dragging starts
 
-                if (!CheckCollisionPointRec(mousePoint, slider))
+                if (!CheckScissorCollisionPointRec(mousePoint, slider))
                 {
                     // Get equivalent value and slider position from mousePosition.x
                     *value = (maxValue - minValue)*((mousePoint.x - bounds.x - sliderWidth/2)/(bounds.width - sliderWidth)) + minValue;
@@ -3649,7 +3656,7 @@ int GuiStatusBar(Rectangle bounds, const char *text)
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check checkbox state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             //if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             //else state = STATE_FOCUSED;
@@ -3681,7 +3688,7 @@ int GuiDummyRec(Rectangle bounds, const char *text)
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check button state
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN) state = STATE_PRESSED;
             else state = STATE_FOCUSED;
@@ -3751,14 +3758,14 @@ int GuiListViewEx(Rectangle bounds, char **text, int count, int *scrollIndex, in
         Vector2 mousePoint = GUI_POINTER_POSITION;
 
         // Check mouse inside list view
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             state = STATE_FOCUSED;
 
             // Check focused and selected item
             for (int i = 0; i < visibleItems; i++)
             {
-                if (CheckCollisionPointRec(mousePoint, itemBounds))
+                if (CheckScissorCollisionPointRec(mousePoint, itemBounds))
                 {
                     itemFocused = startIndex + i;
                     if (GUI_BUTTON_PRESSED)
@@ -3930,7 +3937,7 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
             }
 
             // Close tab with middle mouse button pressed
-            if (CheckCollisionPointRec(GUI_POINTER_POSITION, tabBounds) && GUI_BUTTON_PRESSED_MID) result = RESULT_TAB_CLOSE;
+            if (CheckScissorCollisionPointRec(GUI_POINTER_POSITION, tabBounds) && GUI_BUTTON_PRESSED_MID) result = RESULT_TAB_CLOSE;
 
             GuiSetStyle(TOGGLE, TEXT_PADDING, textPadding);
             GuiSetStyle(TOGGLE, TEXT_ALIGNMENT, textAlignment);
@@ -4031,7 +4038,7 @@ int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha)
                 guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
             }
         }
-        else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
+        else if (CheckScissorCollisionPointRec(mousePoint, bounds) || CheckScissorCollisionPointRec(mousePoint, selector))
         {
             if (GUI_BUTTON_DOWN)
             {
@@ -4120,7 +4127,7 @@ int GuiColorBarHue(Rectangle bounds, const char *text, float *hue)
                 guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
             }
         }
-        else if (CheckCollisionPointRec(mousePoint, bounds) || CheckCollisionPointRec(mousePoint, selector))
+        else if (CheckScissorCollisionPointRec(mousePoint, bounds) || CheckScissorCollisionPointRec(mousePoint, selector))
         {
             if (GUI_BUTTON_DOWN)
             {
@@ -4306,7 +4313,7 @@ int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv)
                 guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
             }
         }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
+        else if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             if (GUI_BUTTON_DOWN)
             {
@@ -4556,7 +4563,7 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
     //--------------------------------------------------------------------
     if ((state != STATE_DISABLED) && !guiLocked && !guiControlExclusiveMode)
     {
-        if (CheckCollisionPointRec(mousePoint, bounds))
+        if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             // NOTE: Cell values must be the upper left of the cell the mouse is in
             currentMouseCell.x = floorf((mousePoint.x - bounds.x)/spacing);
@@ -4591,6 +4598,15 @@ int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vect
     if (mouseCell != NULL) *mouseCell = currentMouseCell;
 
     return result;
+}
+
+//----------------------------------------------------------------------------------
+// Scissor function
+// NOTE: Clip mouse interact outside the Rectangle
+//----------------------------------------------------------------------------------
+void GuiSetScissor(Rectangle rect)
+{
+    scissorRectangle = rect;
 }
 
 //----------------------------------------------------------------------------------
@@ -5800,6 +5816,12 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 #endif
 }
 
+static bool CheckScissorCollisionPointRec(Vector2 point, Rectangle rec)
+{
+    bool insideScissor = scissorRectangle.width <= 0 || scissorRectangle.height <= 0 || CheckCollisionPointRec(point, scissorRectangle);
+    return insideScissor && CheckCollisionPointRec(point, rec);
+}
+
 // Draw tooltip using control bounds
 static void GuiTooltip(Rectangle controlRec)
 {
@@ -5903,8 +5925,8 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
         if (guiControlExclusiveMode) // Allows to keep dragging outside of bounds
         {
             if (GUI_BUTTON_DOWN &&
-                !CheckCollisionPointRec(mousePoint, arrowUpLeft) &&
-                !CheckCollisionPointRec(mousePoint, arrowDownRight))
+                !CheckScissorCollisionPointRec(mousePoint, arrowUpLeft) &&
+                !CheckScissorCollisionPointRec(mousePoint, arrowDownRight))
             {
                 if (CHECK_BOUNDS_ID(bounds, guiControlExclusiveRec))
                 {
@@ -5920,7 +5942,7 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
                 guiControlExclusiveRec = RAYGUI_CLITERAL(Rectangle){ 0, 0, 0, 0 };
             }
         }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
+        else if (CheckScissorCollisionPointRec(mousePoint, bounds))
         {
             state = STATE_FOCUSED;
 
@@ -5935,9 +5957,9 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
                 guiControlExclusiveRec = bounds; // Store bounds as an identifier when dragging starts
 
                 // Check arrows click
-                if (CheckCollisionPointRec(mousePoint, arrowUpLeft)) value -= valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                else if (CheckCollisionPointRec(mousePoint, arrowDownRight)) value += valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
-                else if (!CheckCollisionPointRec(mousePoint, slider))
+                if (CheckScissorCollisionPointRec(mousePoint, arrowUpLeft)) value -= valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (CheckScissorCollisionPointRec(mousePoint, arrowDownRight)) value += valueRange/GuiGetStyle(SCROLLBAR, SCROLL_SPEED);
+                else if (!CheckScissorCollisionPointRec(mousePoint, slider))
                 {
                     // If click on scrollbar position but not on slider, place slider directly on that position
                     if (isVertical) value = (int)(((float)(mousePoint.y - scrollbar.y - slider.height/2)*valueRange)/(scrollbar.height - slider.height) + minValue);
