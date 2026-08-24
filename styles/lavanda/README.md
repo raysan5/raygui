@@ -1,6 +1,6 @@
 ## style: lavanda
 
-Walk thought the fields full of lavanda, feels like a dream, a touch of fantasy, just relax and close your eyes, could you feel it?
+Walking throught fields full of lavanda, it feels like a dream, a fantasy, just relax and close your eyes, could you feel it?
 
 ![lavanda style table](style_lavanda.png)
 

@@ -10,9 +10,9 @@
 
 <br>
 
-**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch. Make sure to use the appropriate versions.**
+**WARNING: Latest `raygui` from master branch is always aligned with latest `raylib` from master branch and all raylibtech tools. Make sure to use the latest versions.**
 
-**WARNING: Latest `raygui 4.0` is an API-BREAKING redesign from previous versions (3.x), now all functions are more consistent and coherent, you can read the details about this breaking change in issue [283](https://github.com/raysan5/raygui/issues/283)**
+**WARNING: Latest `raygui 5.0` introduces some API-BREAKING changes, now all functions return a result value.**
 
 *NOTE: raygui is a single-file header-only library (despite its internal dependency on raylib), so, functions definition AND implementation reside in the same file `raygui.h`, when including `raygui.h` in a module, `RAYGUI_IMPLEMENTATION` must be previously defined to include the implementation part of `raygui.h` BUT only in one compilation unit, other modules could also include `raygui.h` but `RAYGUI_IMPLEMENTATION` must not be defined again.*
 
@@ -52,10 +52,11 @@ int main()
 
             if (showMessageBox)
             {
-                int result = GuiMessageBox((Rectangle){ 85, 70, 250, 100 },
-                    "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
+                int btnActive = -1;
+                GuiMessageBox((Rectangle){ 85, 70, 250, 100 },
+                    "#191#Message Box", "Hi! This is a message!", "Nice;Cool", &btnActive);
 
-                if (result >= 0) showMessageBox = false;
+                if (btnActive >= 0) showMessageBox = false;
             }
 
         EndDrawing();
@@ -101,9 +102,9 @@ Styles can be loaded at runtime using raygui `GuiLoadStyle()` function. Simple a
 
 ## raygui icons
 
-`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains **256 possible icons** defined as **16x16 pixels** each; each pixel is codified using **1-bit**. The total size of the array is `2048 bytes`.
+`raygui` supports custom icons, by default, a predefined set of icons is provided inside `raygui` as an array of binary data; it contains **512 possible icons** defined as **16x16 pixels** each; each pixel is codified using **1-bit**. The total size of the array is `4096 bytes`.
 
-<img align="right" src="images/raygui_ricons.png">
+![raygui icons v5](images/raygui_icons_v5.png)
 
 To use any of those icons just prefix the *#iconId#* number to **any text** written within `raygui` controls:
 ```c
@@ -111,7 +112,7 @@ if (GuiButton(rec, "#05#Open Image")) { /* ACTION */ }
 ```
 It's also possible to use the provided `GuiIconText()` function to prefix it automatically, using a clearer identifier (defined in `raygui.h`).
 ```c
-if (GuiButton(rec, GuiIconText(RICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
+if (GuiButton(rec, GuiIconText(ICON_FILE_OPEN, "Open Image"))) { /* ACTION */ }
 ```
 Provided set of icons can be reviewed and customized using [rGuiIcons](https://raylibtech.itch.io/rguiicons) tool.
 
@@ -119,15 +120,15 @@ Provided set of icons can be reviewed and customized using [rGuiIcons](https://r
 
  - [**rGuiStyler**](https://raylibtech.itch.io/rguistyler) - A simple and easy-to-use raygui styles editor.
 
-   ![rGuiStyler v3.1](images/rguistyler_v300.png)
+   ![rGuiStyler v6.0](images/rguistyler_v600.png)
 
  - [**rGuiIcons**](https://raylibtech.itch.io/rguiicons) - A simple and easy-to-use raygui icons editor.
 
-   ![rGuiIcons v1.0](images/rguiicons_v100.png)
+   ![rGuiIcons v4.0](images/rguiicons_v400.png)
 
  - [**rGuiLayout**](https://raylibtech.itch.io/rguilayout) - A simple and easy-to-use raygui layouts editor.
 
-   ![rGuiLayout v2.2](images/rguilayout_v220.png)
+   ![rGuiLayout v5.0](images/rguilayout_v500.png)
 
 ## building
 
@@ -142,7 +143,11 @@ gcc -o src/raygui.dll src/raygui.c -shared -DRAYGUI_IMPLEMENTATION -DBUILD_LIBTY
  - **Windows (MSVC)**
 ```
 copy src\raygui.h src\raygui.c
-cl /O2 /I../raylib/src/ /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH ../raylib/build/raylib/Release/raylib.lib /subsystem:windows /machine:x64
+# For `cl` to be accessible open "Developer Command Prompt for VS 2022".
+cl /O2 /I<RELATIVE_PATH_TO_RAYLIB_INCLUDE_DIR> /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH <RELATIVE_PATH_TO_RAYLIB_IMPORT_LIBRARY> msvcrt.lib winmm.lib gdi32.lib user32.lib shell32.lib /subsystem:windows /machine:x64
+
+# Example:
+# cl /O2 /I../raylib-6_0_win64_msvc16/include /D_USRDLL /D_WINDLL /DRAYGUI_IMPLEMENTATION /DBUILD_LIBTYPE_SHARED src/raygui.c /LD /Feraygui.dll /link /LIBPATH ../raylib-6_0_win64_msvc16/lib/raylibdll.lib msvcrt.lib winmm.lib gdi32.lib user32.lib shell32.lib /subsystem:windows /machine:x64
 ```
 
  - **Linux (GCC)**

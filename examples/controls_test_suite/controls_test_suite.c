@@ -21,15 +21,15 @@
 *
 *
 *   DEPENDENCIES:
-*       raylib 4.5          - Windowing/input management and drawing
-*       raygui 3.5          - Immediate-mode GUI controls with custom styling and icons
+*       raylib 6.1-dev      - Windowing/input management and drawing
+*       raygui 5.0-dev      - Immediate-mode GUI controls with custom styling and icons
 *
 *   COMPILATION (Windows - MinGW):
 *       gcc -o $(NAME_PART).exe $(FILE_NAME) -I../../src -lraylib -lopengl32 -lgdi32 -std=c99
 *
 *   LICENSE: zlib/libpng
 *
-*   Copyright (c) 2016-2024 Ramon Santamaria (@raysan5)
+*   Copyright (c) 2016-2026 Ramon Santamaria (@raysan5)
 *
 **********************************************************************************************/
 
@@ -38,6 +38,7 @@
 //#define RAYGUI_DEBUG_RECS_BOUNDS
 //#define RAYGUI_DEBUG_TEXT_BOUNDS
 
+#define RAYGUI_FONT_ICONS_BAKING
 #define RAYGUI_IMPLEMENTATION
 //#define RAYGUI_CUSTOM_ICONS     // It requires providing gui_icons.h in the same directory
 //#include "gui_icons.h"          // External icons data provided, it can be generated with rGuiIcons tool
@@ -50,12 +51,19 @@
 #include "../styles/style_dark.h"              // raygui style: dark
 #include "../styles/style_bluish.h"            // raygui style: bluish
 #include "../styles/style_terminal.h"          // raygui style: terminal
-#include "../styles/style_candy.h"                 
-#include "../styles/style_cherry.h"             
-#include "../styles/style_ashes.h"              
-#include "../styles/style_enefete.h"                
-#include "../styles/style_sunny.h"              
-#include "../styles/style_amber.h"              
+#include "../styles/style_candy.h"             // raygui style: candy
+#include "../styles/style_cherry.h"            // raygui style: cherry
+#include "../styles/style_ashes.h"             // raygui style: ashes
+#include "../styles/style_enefete.h"           // raygui style: enefete
+#include "../styles/style_sunny.h"             // raygui style: sunny
+#include "../styles/style_amber.h"             // raygui style: amber
+#include "../styles/style_genesis.h"           // raygui style: genesis
+#include "../styles/style_brick.h"           // raygui style: genesis
+#include "../styles/style_turbo.h"           // raygui style: genesis
+#include "../styles/style_wisteria.h"           // raygui style: genesis
+#include "../styles/style_advance.h"           // raygui style: genesis
+#include "../styles/style_rltech.h"           // raygui style: genesis
+#include "../styles/style_pocket.h"           // raygui style: genesis
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -65,13 +73,15 @@ int main()
     // Initialization
     //---------------------------------------------------------------------------------------
     const int screenWidth = 960;
-    const int screenHeight = 560;
+    const int screenHeight = 580;
 
     InitWindow(screenWidth, screenHeight, "raygui - controls test suite");
     SetExitKey(0);
 
     // GUI controls initialization
     //----------------------------------------------------------------------------------
+    int tabActive = 0;
+
     int dropdownBox000Active = 0;
     bool dropDown000EditMode = false;
 
@@ -96,7 +106,7 @@ int main()
     int listViewExScrollIndex = 0;
     int listViewExActive = 2;
     int listViewExFocus = -1;
-    const char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
+    char *listViewExList[8] = { "This", "is", "a", "list view", "with", "disable", "elements", "amazing!" };
 
     Color colorPickerValue = RED;
 
@@ -135,6 +145,8 @@ int main()
     //GuiSetStyle(DEFAULT, TEXT_PADDING, 0);
     //GuiSetStyle(DEFAULT, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
+    int frameCounter = 0;
+
     SetTargetFPS(60);
     //--------------------------------------------------------------------------------------
 
@@ -170,6 +182,16 @@ int main()
         if (progressValue > 1.0f) progressValue = 1.0f;
         else if (progressValue < 0.0f) progressValue = 0.0f;
 
+        /*
+        // Style updater auto
+        frameCounter++;
+        if ((frameCounter > 300) && (frameCounter%60) == 0)
+        {
+            visualStyleActive++;
+            if (visualStyleActive >= 20) visualStyleActive = 0;
+        }
+        */
+
         if (visualStyleActive != prevVisualStyleActive)
         {
             GuiLoadStyleDefault();
@@ -189,6 +211,13 @@ int main()
                 case 10: GuiLoadStyleEnefete(); break;
                 case 11: GuiLoadStyleSunny(); break;
                 case 12: GuiLoadStyleAmber(); break;
+                case 13: GuiLoadStyleGenesis(); break;
+                case 14: GuiLoadStyleBrick(); break;
+                case 15: GuiLoadStylePocket(); break;
+                case 16: GuiLoadStyleTurbo(); break;
+                case 17: GuiLoadStyleWisteria(); break;
+                case 18: GuiLoadStyleAdvance(); break;
+                case 19: GuiLoadStyleRLTech(); break;
                 default: break;
             }
 
@@ -203,38 +232,43 @@ int main()
         BeginDrawing();
 
             ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
-            
+
             // raygui: controls drawing
             //----------------------------------------------------------------------------------
             // Check all possible events that require GuiLock
             if (dropDown000EditMode || dropDown001EditMode) GuiLock();
             if (showTextInputBox) GuiLock();
 
+            GuiSetStyle(TABBAR, TAB_ITEMS_WIDTH, 140);
+            GuiTabBar((Rectangle){ 0, 8, GetScreenWidth(), 26 }, "#176#TAB_01;#177#TAB_02;#178#TAB_03;#179#TAB_04;#180#TAB_05;#181#TAB_06", NULL, &tabActive);
+
             // First GUI column
             //GuiSetStyle(CHECKBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            GuiCheckBox((Rectangle){ 25, 108, 15, 15 }, "FORCE CHECK!", &forceSquaredChecked);
+            GuiCheckBox((Rectangle){ 25, 108 + 20, 15, 15 }, "FORCE CHECK!", &forceSquaredChecked);
 
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
             //GuiSetStyle(VALUEBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            if (GuiSpinner((Rectangle){ 25, 135, 125, 30 }, NULL, &spinner001Value, 0, 100, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
-            if (GuiValueBox((Rectangle){ 25, 175, 125, 30 }, NULL, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
+            if (GuiSpinner((Rectangle){ 25, 135 + 20, 125, 30 }, NULL, &spinner001Value, 0, 100, spinnerEditMode)) spinnerEditMode = !spinnerEditMode;
+            if (GuiValueBox((Rectangle){ 25, 175 + 20, 125, 30 }, NULL, &valueBox002Value, 0, 100, valueBoxEditMode)) valueBoxEditMode = !valueBoxEditMode;
             GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            if (GuiTextBox((Rectangle){ 25, 215, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
+            if (GuiTextBox((Rectangle){ 25, 215 + 20, 125, 30 }, textBoxText, 64, textBoxEditMode)) textBoxEditMode = !textBoxEditMode;
 
             GuiSetStyle(BUTTON, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
 
-            if (GuiButton((Rectangle){ 25, 255, 125, 30 }, GuiIconText(ICON_FILE_SAVE, "Save File"))) showTextInputBox = true;
+            if (GuiButton((Rectangle){ 25, 255 + 20, 125, 30 }, GuiIconText(ICON_FILE_SAVE, "Save File"))) showTextInputBox = true;
 
-            GuiGroupBox((Rectangle){ 25, 310, 125, 150 }, "STATES");
+            GuiGroupBox((Rectangle){ 25, 310 + 20, 125, 150 }, "STATES");
             //GuiLock();
-            GuiSetState(STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320, 115, 30 }, "NORMAL")) { }
-            GuiSetState(STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355, 115, 30 }, "FOCUSED")) { }
-            GuiSetState(STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390, 115, 30 }, "#15#PRESSED")) { }
-            GuiSetState(STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425, 115, 30 }, "DISABLED")) { }
+            GuiSetState(STATE_NORMAL); if (GuiButton((Rectangle){ 30, 320 + 20, 115, 30 }, "NORMAL")) { }
+            GuiSetState(STATE_FOCUSED); if (GuiButton((Rectangle){ 30, 355 + 20, 115, 30 }, "FOCUSED")) { }
+            GuiSetState(STATE_PRESSED); if (GuiButton((Rectangle){ 30, 390 + 20, 115, 30 }, "#15#PRESSED")) { }
+            GuiSetState(STATE_DISABLED); if (GuiButton((Rectangle){ 30, 425 + 20, 115, 30 }, "DISABLED")) { }
             GuiSetState(STATE_NORMAL);
             //GuiUnlock();
 
-            GuiComboBox((Rectangle){ 25, 480, 125, 30 }, "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber", &visualStyleActive);
+            GuiSetStyle(COMBOBOX, COMBO_BUTTON_WIDTH, 40);
+            GuiComboBox((Rectangle){ 25, 480 + 20, 125, 30 },
+                "default;Jungle;Lavanda;Dark;Bluish;Cyber;Terminal;Candy;Cherry;Ashes;Enefete;Sunny;Amber;Genesis;Brick;Pocket;Turbo;Wisteria;Advance;RLTech", &visualStyleActive);
 
             // NOTE: GuiDropdownBox must draw after any other control that can be covered on unfolding
             if (dropDown000EditMode || dropDown001EditMode) GuiUnlock();
@@ -242,48 +276,48 @@ int main()
 
             GuiSetStyle(DROPDOWNBOX, TEXT_PADDING, 4);
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-            if (GuiDropdownBox((Rectangle){ 25, 65, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 65 + 20, 125, 30 }, "#01#ONE;#02#TWO;#03#THREE;#04#FOUR", &dropdownBox001Active, dropDown001EditMode)) dropDown001EditMode = !dropDown001EditMode;
             GuiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
             GuiSetStyle(DROPDOWNBOX, TEXT_PADDING, 0);
 
-            if (GuiDropdownBox((Rectangle){ 25, 25, 125, 30 }, "ONE;TWO;THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
+            if (GuiDropdownBox((Rectangle){ 25, 25 + 20, 125, 30 }, "#27#ONE;#28#TWO;#29#THREE", &dropdownBox000Active, dropDown000EditMode)) dropDown000EditMode = !dropDown000EditMode;
 
             // Second GUI column
             //GuiSetStyle(LISTVIEW, LIST_ITEMS_BORDER_NORMAL, 1);
-            GuiListView((Rectangle){ 165, 25, 140, 124 }, "Charmander;Bulbasaur;#18#Squirtel;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
-            GuiListViewEx((Rectangle){ 165, 162, 140, 184 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
+            GuiListView((Rectangle){ 165, 25 + 20, 140, 124 }, "Charmander;Bulbasaur;#18#Squirtle;Pikachu;Eevee;Pidgey", &listViewScrollIndex, &listViewActive);
+            GuiListViewEx((Rectangle){ 165, 162 + 20, 140, 184 }, listViewExList, 8, &listViewExScrollIndex, &listViewExActive, &listViewExFocus);
             GuiSetStyle(LISTVIEW, LIST_ITEMS_BORDER_NORMAL, 0);
 
             //GuiToggle((Rectangle){ 165, 400, 140, 25 }, "#1#ONE", &toggleGroupActive);
-            GuiToggleGroup((Rectangle){ 165, 360, 140, 24 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
+            GuiToggleGroup((Rectangle){ 165, 360 + 20, 140, 24 }, "#1#ONE\n#3#TWO\n#8#THREE\n#23#", &toggleGroupActive);
             //GuiDisable();
             GuiSetStyle(SLIDER, SLIDER_PADDING, 2);
-            GuiToggleSlider((Rectangle){ 165, 480, 140, 30 }, "ON;OFF", &toggleSliderActive);
+            GuiToggleSlider((Rectangle){ 165, 480 + 20, 140, 30 }, "ON;OFF", &toggleSliderActive);
             GuiSetStyle(SLIDER, SLIDER_PADDING, 0);
 
             // Third GUI column
-            GuiPanel((Rectangle){ 320, 25, 225, 140 }, "Panel Info");
-            GuiColorPicker((Rectangle){ 320, 185, 196, 192 }, NULL, &colorPickerValue);
+            GuiPanel((Rectangle){ 320, 25 + 20, 225, 140 }, "Panel Info");
+            GuiColorPicker((Rectangle){ 320, 185 + 20, 196, 192 }, NULL, &colorPickerValue);
 
             //GuiDisable();
-            GuiSlider((Rectangle){ 355, 400, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
-            GuiSliderBar((Rectangle){ 320, 430, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
-            
-            GuiProgressBar((Rectangle){ 320, 460, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
+            GuiSlider((Rectangle){ 355, 400 + 20, 165, 20 }, "TEST", TextFormat("%2.2f", sliderValue), &sliderValue, -50, 100);
+            GuiSliderBar((Rectangle){ 320, 430 + 20, 200, 20 }, NULL, TextFormat("%i", (int)sliderBarValue), &sliderBarValue, 0, 100);
+
+            GuiProgressBar((Rectangle){ 320, 460 + 20, 200, 20 }, NULL, TextFormat("%i%%", (int)(progressValue*100)), &progressValue, 0.0f, 1.0f);
             GuiEnable();
 
             // NOTE: View rectangle could be used to perform some scissor test
             Rectangle view = { 0 };
-            GuiScrollPanel((Rectangle){ 560, 25, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll, &view);
+            GuiScrollPanel((Rectangle){ 560, 25 + 20, 102, 354 }, NULL, (Rectangle){ 560, 25, 300, 1200 }, &viewScroll, &view);
 
             Vector2 mouseCell = { 0 };
-            GuiGrid((Rectangle) { 560, 25 + 180 + 195, 100, 120 }, NULL, 20, 3, &mouseCell);
+            GuiGrid((Rectangle) { 560, 25 + 180 + 195 + 20, 100, 120 }, NULL, 20, 3, &mouseCell);
 
-            GuiColorBarAlpha((Rectangle){ 320, 490, 200, 30 }, NULL, &alphaValue);
+            GuiColorBarAlpha((Rectangle){ 320, 490 + 20, 200, 30 }, NULL, &alphaValue);
 
             GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_TOP);   // WARNING: Word-wrap does not work as expected in case of no-top alignment
             GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_WORD);            // WARNING: If wrap mode enabled, text editing is not supported
-            if (GuiTextBox((Rectangle){ 678, 25, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
+            if (GuiTextBox((Rectangle){ 678, 25 + 20, 258, 492 }, textBoxMultiText, 1024, textBoxMultiEditMode)) textBoxMultiEditMode = !textBoxMultiEditMode;
             GuiSetStyle(DEFAULT, TEXT_WRAP_MODE, TEXT_WRAP_NONE);
             GuiSetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL, TEXT_ALIGN_MIDDLE);
 
@@ -295,10 +329,12 @@ int main()
             if (showMessageBox)
             {
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiMessageBox((Rectangle){ (float)GetScreenWidth()/2 - 125, (float)GetScreenHeight()/2 - 50, 250, 100 }, GuiIconText(ICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No");
+                int btnActive = -1; 
+                GuiMessageBox((Rectangle){ (float)GetScreenWidth()/2 - 125, (float)GetScreenHeight()/2 - 50, 250, 100 }, 
+                    GuiIconText(ICON_EXIT, "Close Window"), "Do you really want to exit?", "Yes;No", &btnActive);
 
-                if ((result == 0) || (result == 2)) showMessageBox = false;
-                else if (result == 1) exitWindow = true;
+                if ((btnActive == 0) || (btnActive == 2)) showMessageBox = false;
+                else if (btnActive == 1) exitWindow = true;
             }
 
             if (showTextInputBox)
@@ -306,16 +342,18 @@ int main()
                 GuiUnlock();
 
                 DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(RAYWHITE, 0.8f));
-                int result = GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", "Ok;Cancel", textInput, 255, NULL);
+                int btnActive = -1;
+                GuiTextInputBox((Rectangle){ (float)GetScreenWidth()/2 - 120, (float)GetScreenHeight()/2 - 60, 240, 140 }, 
+                    GuiIconText(ICON_FILE_SAVE, "Save file as..."), "Introduce output file name:", textInput, 255, "Ok;Cancel", &btnActive, NULL);
 
-                if (result == 1)
+                if (btnActive == 1)
                 {
                     // TODO: Validate textInput value and save
 
                     TextCopy(textInputFileName, textInput);
                 }
 
-                if ((result == 0) || (result == 1) || (result == 2))
+                if ((btnActive == 0) || (btnActive == 1) || (btnActive == 2))
                 {
                     showTextInputBox = false;
                     TextCopy(textInput, "\0");
