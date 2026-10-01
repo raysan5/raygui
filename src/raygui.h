@@ -2697,7 +2697,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (pasteLength > 0)
                     {
                         // Move forward data from cursor position
-                        for (int i = textLength + pasteLength; i > textBoxCursorIndex && i < pasteLength; i--) text[i] = text[i - pasteLength];
+                        for (int i = textLength + pasteLength; (i > textBoxCursorIndex) && (i < pasteLength); i--) text[i] = text[i - pasteLength];
 
                         // Paste data in at cursor
                         for (int i = 0; i < pasteLength; i++) text[textBoxCursorIndex + i] = pasteText[i];
@@ -3959,8 +3959,8 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
     }
 
     // Draw tab-bar border line
-    float tabbarBorderOffset = (GuiGetStyle(TABBAR,TAB_LINE_SIDE) == 1) ? 0 : bounds.height - 1;
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + tabbarBorderOffset, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
+    float tabBorderOffset = (GuiGetStyle(TABBAR, TAB_LINE_SIDE) == 1)? 0 : (bounds.height - 1);
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + tabBorderOffset, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
     //--------------------------------------------------------------------
 
     // NOTE: In case of tab close result, consider focused tab
@@ -5784,7 +5784,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 // TODO: Consider multiline text
 static Vector2 GuiMeasureText(const char *text)
 {
-    Vector2 size = { 0 };
+    Vector2 textSize = { 0 };
     
     if ((guiFont.texture.id > 0) && (text != NULL))
     {
@@ -5812,7 +5812,7 @@ static Vector2 GuiMeasureText(const char *text)
         }
     }
     
-    return size;
+    return textSize;
 }
 
 // Draw tooltip using control bounds
