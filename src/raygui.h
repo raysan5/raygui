@@ -3958,8 +3958,9 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
         }
     }
 
-    // Draw tab-bar bottom line
-    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + bounds.height - 1, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
+    // Draw tab-bar border line
+    float tabbarBorderOffset = (GuiGetStyle(TABBAR,TAB_LINE_SIDE) == 1) ? 0 : bounds.height - 1;
+    GuiDrawRectangle(RAYGUI_CLITERAL(Rectangle){ bounds.x, bounds.y + tabbarBorderOffset, bounds.width, 1 }, 0, BLANK, GetColor(GuiGetStyle(TABBAR, BORDER_COLOR_NORMAL)));
     //--------------------------------------------------------------------
 
     // NOTE: In case of tab close result, consider focused tab
