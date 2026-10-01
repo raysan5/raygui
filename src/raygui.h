@@ -1586,8 +1586,6 @@ static void UnloadCodepoints(int *codepoints);               // -- GuiLoadStyle(
 
 static unsigned char *DecompressData(const unsigned char *compData, int compDataSize, int *dataSize); // -- GuiLoadStyle()
 
-static Vector2 MeasureTextEx(Font font, const char *text, float fontSize, float spacing); // Measure string size for Font
-
 static void DrawTextCodepoint(Font font, int codepoint, Vector2 position, float fontSize, Color tint); // Draw one character (codepoint)
 //-------------------------------------------------------------------------------
 
@@ -1616,6 +1614,7 @@ static const char *GetTextIcon(const char *text, int *iconId);  // Get text icon
 
 static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, Color tint); // Gui draw text using default font
 static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, Color color); // Gui draw rectangle using default raygui style
+static Vector2 GuiMeasureText(const char *text);                // Measure text size for current gui style
 
 static char **GuiTextSplit(const char *text, char delimiter, int *count); // Split controls text into multiple strings
 static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
@@ -5392,7 +5391,7 @@ static int GetLineWidth(const char *text)
 
     if ((text != NULL) && (text[0] != '\0'))
     {
-        // Icon marker: '#' + 1..3 digits + '#' (matches GetTextIcon())
+        // Check icon marker: '#' + 1..3 digits + '#' (matches GetTextIcon())
         if (text[0] == '#')
         {
             int pos = 1;
@@ -5402,35 +5401,11 @@ static int GetLineWidth(const char *text)
 
         text += textIconOffset;
 
-        // Make sure guiFont is set, GuiGetStyle() initializes it lazynessly
-        float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+        // WARNING: Make sure guiFont is set, 
+        // GuiGetStyle() does a lazy initialization
+        GuiGetStyle(DEFAULT, TEXT_SIZE);
 
-        // Custom MeasureText() implementation -- single line only
-        if ((guiFont.texture.id > 0) && (text != NULL))
-        {
-            // Get size in bytes of the line, considering end of line and line break
-            int size = 0;
-            for (int i = 0; i < MAX_LINE_BUFFER_SIZE; i++)
-            {
-                if ((text[i] != '\0') && (text[i] != '\n')) size++;
-                else break;
-            }
-
-            float scaleFactor = fontSize/(float)guiFont.baseSize;
-            textSize.y = (float)guiFont.baseSize*scaleFactor;
-            float glyphWidth = 0.0f;
-
-            for (int i = 0, codepointSize = 0; i < size; i += codepointSize)
-            {
-                int codepoint = GetCodepointNext(&text[i], &codepointSize);
-                int codepointIndex = GetGlyphIndex(guiFont, codepoint);
-
-                if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor);
-                else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor);
-
-                textSize.x += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
-            }
-        }
+        textSize = GuiMeasureText(text);
 
         if (textIconOffset > 0) textSize.x += (RAYGUI_ICON_SIZE + RAYGUI_ICON_TEXT_PADDING);
     }
@@ -5454,12 +5429,12 @@ static Rectangle GetTextBounds(int control, Rectangle bounds)
         case COMBOBOX:
         case DROPDOWNBOX:
         case LISTVIEW:
-            // TODO: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW
+            // NOTE: Special cases (no label): COMBOBOX, DROPDOWNBOX, LISTVIEW
         case SLIDER:
         case CHECKBOX:
         case VALUEBOX:
         case TABBAR:
-            // TODO: Special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
+            // NOTE: Special cases (label on side): SLIDER, CHECKBOX, VALUEBOX, SPINNER
         default:
         {
             // WARNING: TEXT_ALIGNMENT is already considered in GuiDrawText()
@@ -5590,7 +5565,7 @@ static void GuiDrawText(const char *text, Rectangle textBounds, int alignment, C
     int alignmentVertical = GuiGetStyle(DEFAULT, TEXT_ALIGNMENT_VERTICAL);
     int wrapMode = GuiGetStyle(DEFAULT, TEXT_WRAP_MODE);    // Wrap-mode only available in read-only mode, no for text editing
 
-    // TODO: WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
+    // WARNING: This totalHeight is not valid for vertical alignment in case of word-wrap
     float totalHeight = (float)(lineCount*GuiGetStyle(DEFAULT, TEXT_SIZE) + (lineCount - 1)*GuiGetStyle(DEFAULT, TEXT_LINE_SPACING));
     float posOffsetY = 0.0f;
 
@@ -5804,14 +5779,47 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 #endif
 }
 
+// Measure text size for current gui style
+// TODO: Consider multiline text
+static Vector2 GuiMeasureText(const char *text)
+{
+    Vector2 size = { 0 };
+    
+    if ((guiFont.texture.id > 0) && (text != NULL))
+    {
+        // Get size in bytes of the line, considering end of line and line break
+        int size = 0;
+        for (int i = 0; i < MAX_LINE_BUFFER_SIZE; i++)
+        {
+            if ((text[i] != '\0') && (text[i] != '\n')) size++;
+            else break;
+        }
+
+        float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;
+        textSize.y = (float)guiFont.baseSize*scaleFactor;
+        float glyphWidth = 0.0f;
+
+        for (int i = 0, codepointSize = 0; i < size; i += codepointSize)
+        {
+            int codepoint = GetCodepointNext(&text[i], &codepointSize);
+            int codepointIndex = GetGlyphIndex(guiFont, codepoint);
+
+            if (guiFont.glyphs[codepointIndex].advanceX == 0) glyphWidth = ((float)guiFont.recs[codepointIndex].width*scaleFactor);
+            else glyphWidth = ((float)guiFont.glyphs[codepointIndex].advanceX*scaleFactor);
+
+            textSize.x += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        }
+    }
+    
+    return size;
+}
+
 // Draw tooltip using control bounds
 static void GuiTooltip(Rectangle controlRec)
 {
     if (!guiLocked && guiTooltip && (guiTooltipPtr != NULL) && !guiControlExclusiveMode)
     {
-        // TODO: Remove MeasureTextEx(), implement logic directly or add custom GuiMeasureText()
-        Vector2 textSize = MeasureTextEx(guiFont, guiTooltipPtr, (float)GuiGetStyle(DEFAULT, TEXT_SIZE),
-            (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
+        Vector2 textSize = GuiMeasureText(guiTooltipPtr);
 
         if ((controlRec.x + textSize.x + 16) > GetScreenWidth()) controlRec.x -= (textSize.x + 16 - controlRec.width);
 
