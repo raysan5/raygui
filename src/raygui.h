@@ -5402,7 +5402,7 @@ static int GetLineWidth(const char *text)
 
         text += textIconOffset;
 
-        // WARNING: Make sure guiFont is set, 
+        // WARNING: Make sure guiFont is set,
         // GuiGetStyle() does a lazy initialization
         GuiGetStyle(DEFAULT, TEXT_SIZE);
 
@@ -5785,7 +5785,7 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 static Vector2 GuiMeasureText(const char *text)
 {
     Vector2 textSize = { 0 };
-    
+
     if ((guiFont.texture.id > 0) && (text != NULL))
     {
         // Get size in bytes of the line, considering end of line and line break
@@ -5811,7 +5811,7 @@ static Vector2 GuiMeasureText(const char *text)
             textSize.x += (glyphWidth + (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         }
     }
-    
+
     return textSize;
 }
 
