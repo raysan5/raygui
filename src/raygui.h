@@ -1877,7 +1877,7 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
     {
         // Move panel bounds after the header bar
         bounds.y += (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1;
-        bounds.height -= (float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT + 1;
+        bounds.height -= ((float)RAYGUI_WINDOWBOX_STATUSBAR_HEIGHT - 1);
     }
 
     bool hasHorizontalScrollBar = (content.width > bounds.width - 2*GuiGetStyle(DEFAULT, BORDER_WIDTH))? true : false;
@@ -1967,9 +1967,9 @@ int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector
 
     // Draw control
     //--------------------------------------------------------------------
-    if (text != NULL) result = GuiStatusBar(statusBar, text);  // Draw panel header as status bar
+    if (text != NULL) result = GuiStatusBar(statusBar, text); // Draw panel header as status bar
 
-    GuiDrawRectangle(bounds, 0, BLANK, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));        // Draw background
+    GuiDrawRectangle(bounds, 0, BLANK, GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR))); // Draw background
 
     // Save size of the scrollbar slider
     const int slider = GuiGetStyle(SCROLLBAR, SCROLL_SLIDER_SIZE);
