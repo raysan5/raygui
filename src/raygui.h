@@ -723,11 +723,13 @@ typedef enum {
 } GuiComboBoxProperty;
 
 // DropdownBox
+// TODO: Support dropdown with scrollbar
 typedef enum {
     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
     DROPDOWN_ITEMS_SPACING,     // DropdownBox items separation
     DROPDOWN_ARROW_HIDDEN,      // DropdownBox arrow hidden
-    DROPDOWN_ROLL_UP            // DropdownBox roll up flag: 0-Roll down, 1-Roll up
+    DROPDOWN_ROLL_UP,           // DropdownBox roll up flag: 0-Roll down, 1-Roll up
+    DROPDOWN_MAX_HEIGHT         // DropdownBox max height, using scrollbar if required, 0-No limit
 } GuiDropdownBoxProperty;
 
 // TextBox/TextBoxMulti/ValueBox/Spinner
