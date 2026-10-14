@@ -3894,13 +3894,17 @@ int GuiTabBarEx(Rectangle bounds, char **text, int count, int *hscroll, int *act
 
     int tabItemsWidth = GuiGetStyle(TABBAR, TAB_ITEMS_WIDTH);
     Rectangle tabBounds = { bounds.x, bounds.y, (float)tabItemsWidth, bounds.height };
+    
+    int prevActive = 0;
+    if (active != NULL)
+    {
+        if (*active < 0) *active = 0;
+        else if (*active > count - 1) *active = count - 1;
+        
+        prevActive = *active;
+    }
 
-    if (*active < 0) *active = 0;
-    else if (*active > count - 1) *active = count - 1;
-
-    int prevActive = (active == NULL)? 0 : *active;
-
-    int offsetX = 0;     // Required in case tabs go out of screen
+    int offsetX = 0; // Required in case tabs go out of screen
     offsetX = (*active*tabItemsWidth) - GetScreenWidth();
     if (offsetX < 0) offsetX = 0;
 
