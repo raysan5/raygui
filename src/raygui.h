@@ -3484,7 +3484,10 @@ int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, flo
     }
 
     // Slider bar limits check
-    float sliderValue = (((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
+    // NOTE: On a degenerate range (minValue == maxValue) there is no position to compute,
+    // avoiding a division by zero that would propagate NaN to the slider rectangle
+    float sliderValue = 0.0f;
+    if (maxValue != minValue) sliderValue = (((*value - minValue)/(maxValue - minValue))*(bounds.width - sliderWidth - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
     if (sliderWidth > 0)        // Slider
     {
         slider.x += sliderValue;
@@ -3571,7 +3574,8 @@ int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight
     if (*value > maxValue) *value = maxValue;
 
     // WARNING: Working with floats could lead to rounding issues
-    if ((state != STATE_DISABLED)) progress.width = ((float)*value/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH));
+    // NOTE: On a degenerate range (minValue == maxValue) keep the bar empty instead of dividing by zero
+    if ((state != STATE_DISABLED) && (maxValue != minValue)) progress.width = ((float)*value/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(PROGRESSBAR, BORDER_WIDTH));
 
     if (prevValue != *value) result = RESULT_CHANGED;
     //--------------------------------------------------------------------
