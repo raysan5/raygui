@@ -2699,7 +2699,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (pasteLength > 0)
                     {
                         // Move forward data from cursor position
-                        for (int i = textLength + pasteLength; (i > textBoxCursorIndex) && (i < pasteLength); i--) text[i] = text[i - pasteLength];
+                        for (int i = textLength + pasteLength; i >= (textBoxCursorIndex + pasteLength); i--) text[i] = text[i - pasteLength];
 
                         // Paste data in at cursor
                         for (int i = 0; i < pasteLength; i++) text[textBoxCursorIndex + i] = pasteText[i];
@@ -2717,7 +2717,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Adding codepoint to text, at current cursor position
 
                 // Move forward data from cursor position
-                for (int i = (textLength + codepointSize); i > textBoxCursorIndex; i--) text[i] = text[i - codepointSize];
+                for (int i = (textLength + codepointSize); i >= (textBoxCursorIndex + codepointSize); i--) text[i] = text[i - codepointSize];
 
                 // Add new codepoint in current cursor position
                 for (int i = 0; i < codepointSize; i++) text[textBoxCursorIndex + i] = charEncoded[i];
