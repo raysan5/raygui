@@ -5787,10 +5787,11 @@ static void GuiDrawRectangle(Rectangle rec, int borderWidth, Color borderColor, 
 }
 
 // Measure text size for current gui style
-// TODO: Consider multiline text
 static Vector2 GuiMeasureText(const char *text)
 {
     Vector2 textSize = { 0 };
+
+    int ySize = 1;
 
     if ((guiFont.texture.id > 0) && (text != NULL))
     {
@@ -5798,12 +5799,13 @@ static Vector2 GuiMeasureText(const char *text)
         int size = 0;
         for (int i = 0; i < MAX_LINE_BUFFER_SIZE; i++)
         {
-            if ((text[i] != '\0') && (text[i] != '\n')) size++;
+            if (text[i] == '\n') ySize++;
+            else if ((text[i] != '\0') && (text[i] != '\n')) size++;
             else break;
         }
 
         float scaleFactor = (float)GuiGetStyle(DEFAULT, TEXT_SIZE)/(float)guiFont.baseSize;
-        textSize.y = (float)guiFont.baseSize*scaleFactor;
+        textSize.y = ((float)guiFont.baseSize * ySize)*scaleFactor;
         float glyphWidth = 0.0f;
 
         for (int i = 0, codepointSize = 0; i < size; i += codepointSize)
